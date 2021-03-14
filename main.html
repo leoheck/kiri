@@ -1,0 +1,720 @@
+
+<!DOCTYPE HTML>
+<html lang="en">
+
+<head>
+
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+	<script src="https://code.iconify.design/1/1.0.7/iconify.min.js"></script>
+
+	<script src="https://code.jquery.com/jquery-3.5.0.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.0/dist/svg-pan-zoom.min.js"></script>
+
+	<style type="text/css">
+
+		html, body {
+			height: 100%;
+			margin: 0px;
+			padding: : 0px;
+		}
+
+		.fill {
+			min-height: 100%;
+			height: 100%;
+			min-width: 100%;
+			width: 100%;
+		}
+
+		.no-gutters {
+			margin-right: 0;
+			margin-left: 0;
+			> .col,
+			> [class*="col-"] {
+				padding-right: 0;
+				padding-left: 0;
+			}
+		}
+
+		/* ==============================
+		   COMMITS LIST
+		   ==============================
+		*/
+
+		.list-group-item {
+			user-select: none;
+		}
+
+		.list-group input[type="checkbox"] {
+			display: none;
+		}
+
+		.list-group input[type="checkbox"] + .list-group-item {
+			cursor: pointer;
+			background-color: #222;
+			color: #dbdbdb;
+			font-family: monospace;
+			padding: 2px;
+			margin: 4px;
+		}
+
+		.list-group input[type="checkbox"] + .list-group-item:before {
+			color: transparent;
+			font-weight: bold;
+		}
+
+		.list-group input[type="checkbox"]:checked + .list-group-item {
+			background-color: #111111;
+			color: #FFF;
+		}
+
+		.list-group input[type="checkbox"]:checked + .list-group-item:before {
+			color: inherit;
+		}
+
+		/* ==============================
+		   Scrollbar
+		   ==============================
+		*/
+
+		.scrollbox {
+			overflow: auto;
+			visibility: hidden;
+		}
+
+		.scrollbox-content,
+		.scrollbox:hover,
+		.scrollbox:focus {
+			visibility: visible;
+		}
+
+		::-webkit-scrollbar {
+			width: 10px;
+			height: 10px;
+		}
+
+		::-webkit-scrollbar-thumb {
+			background: rgba(90, 90, 90);
+		}
+
+		::-webkit-scrollbar-track {
+			background: rgba(0, 0, 0, 0.2);
+		}
+
+		/* ==============================
+		   LAYERS LIST
+		   ==============================
+		*/
+
+		.list-group input[type="radio"] {
+			display: none;
+		}
+
+		.list-group input[type="radio"] + .list-group-item {
+			cursor: pointer;
+			background-color: #222222;
+			color: #dbdbdb;
+			font-family: monospace;
+			padding: 2px;
+			margin: 4px;
+			width: 120px;
+		}
+
+		.list-group input[type="radio"] + .list-group-item:before {
+			color: transparent;
+			font-weight: bold;
+		}
+
+		.list-group input[type="radio"]:checked + .list-group-item {
+			background-color: #111111;
+			color: #FFF;
+		}
+
+		.list-group input[type="radio"]:checked + .list-group-item:before {
+			color: inherit;
+		}
+
+	</style>
+
+	<script>
+
+		// Limit commits list with 2 checked at most
+		$(document).ready(function () {
+			$("input[name='commit1']").change(function () {
+				var maxAllowed = 2;
+				var cnt = $("input[name='commit1']:checked").length;
+				if (cnt > maxAllowed)
+				{
+					$(this).prop("checked", "");
+				}
+			});
+		});
+
+		// =======================================
+		// HANDLE KEY PRESSES
+		// =======================================
+
+		let keysDown = {};
+
+		window.onkeydown = function(e)
+		{
+			keysDown[e.key] = true;
+			// console.log(keysDown);
+
+			// =======================================
+			// Toggle Schematic/Layout View
+			// =======================================
+
+			if (keysDown["s"] || keysDown["S"])
+			{
+				var view = $('input[name="diff_view"]:checked').val();
+				var new_view = ""
+
+				if (view == "schematics") {
+					new_view = "layout"
+					show_layout()
+				}
+				else {
+					view = "layout"
+					new_view = "schematics"
+					show_schematic()
+				}
+
+				console.log(view)
+				console.log(new_view)
+
+				$("input[name=diff_view][value=" + view + "]").checked = false
+				$("input[name=diff_view][value=" + new_view + "]").checked = true
+			}
+
+			// =======================================
+			// Next Commit Pair
+			// =======================================
+
+			if (keysDown["]"] || keysDown.ArrowDown)
+			{
+				var commits = $("#commits_form input:checkbox[name='commit1']");
+
+				var selected_commits = [];
+				var next_selected_commits = [];
+
+				for (var i=0; i <commits.length; i++) {
+					if ($("#commits_form input:checkbox[name='commit1']")[i].checked) {
+						selected_commits.push(i);
+						next_selected_commits.push(i+1);
+					}
+				}
+
+				// Keep the first item in place (move only the last commit)
+				if (keysDown["]"]) {
+					next_selected_commits[0] = selected_commits[0];
+				}
+
+				//console.log(selected_commits)
+
+				if (selected_commits[1] < commits.length-1) {
+					for (var i=0; i < selected_commits.length; i++) {
+							commits[selected_commits[i]].checked = false;
+					}
+					for (var i=0; i < selected_commits.length; i++) {
+							commits[next_selected_commits[i]].checked = true;
+					}
+				}
+
+				update_commits()
+				keysDown = {}; // clean the list, why this??
+			}
+
+			// =======================================
+			// Previows Commit Pair
+			// =======================================
+
+			if (keysDown["["] || keysDown.ArrowUp)
+			{
+
+				var commits = $("#commits_form input:checkbox[name='commit1']");
+
+				var selected_commits = []
+				var next_selected_commits = []
+
+				for (var i=0; i <commits.length; i++) {
+					if ($("#commits_form input:checkbox[name='commit1']")[i].checked) {
+						selected_commits.push(i);
+						next_selected_commits.push(i-1);
+					}
+				}
+
+				// Keep the first item in place (move only the last commit)
+				if (keysDown["["]) {
+					next_selected_commits[0] = selected_commits[0];
+				}
+
+				// console.log(selected_commits);
+
+				if (selected_commits[0] > 0) {
+					for (var i=0; i < selected_commits.length; i++) {
+							commits[selected_commits[i]].checked = false;
+					}
+					for (var i=0; i < selected_commits.length; i++) {
+							commits[next_selected_commits[i]].checked = true;
+					}
+				}
+
+				update_commits()
+				keysDown = {}; // clean the list, why this??
+			}
+
+			// =======================================
+			// Next Layer
+			// =======================================
+
+			if (keysDown["l"] || keysDown["L"] || keysDown.ArrowRight)
+			{
+				keysDown = {}; // clean the list, why this??
+
+				var layers = $("#layers_form input:radio[name='layers']");
+				var selected_layer = layers.index(layers.filter(':checked'));
+
+				var new_index = selected_layer + 1;
+				if (new_index >= layers.length) {
+					new_index = 0;
+				}
+
+				layers[new_index].checked = true;
+				change_layer()
+			}
+
+			// =======================================
+			// Previows Layer
+			// =======================================
+
+			if (keysDown["k"] || keysDown["K"] || keysDown.ArrowLeft)
+			{
+				keysDown = {}; // clean the list, why this??
+
+				var layers = $("#layers_form input:radio[name='layers']");
+				var selected_layer = layers.index(layers.filter(':checked'));
+
+				var new_index = selected_layer - 1;
+				if (new_index < 0) {
+					new_index = layers.length - 1;
+				}
+
+				layers[new_index].checked = true;
+
+				change_layer()
+			}
+		}
+
+		// =======================================
+		// =======================================
+
+		function update_commits()
+		{
+			var commits = $("#commits_form input:checkbox[name='commit1']");
+			var values = []
+
+			for (var i=0; i <commits.length; i++) {
+				if ($("#commits_form input:checkbox[name='commit1']")[i].checked) {
+					var value = $("#commits_form input:checkbox[name='commit1']")[i].value
+					values.push(value);
+				}
+			}
+
+			var timestamp = new Date().getTime();
+
+			current_src1 = document.getElementById("diff1_xlink").href.baseVal;
+			layer = current_src1.split("/")[1]
+
+			// default value
+			if(layer) {
+				layer = "F_Cu"
+			}
+
+			var ref1 = "../" + values[0].replace(/\s+/g, '') + "/" + "board-" + layer + ".svg" + "?t=" + timestamp
+			var ref2 = "../" + values[1].replace(/\s+/g, '') + "/" + "board-" + layer + ".svg" + "?t=" + timestamp
+
+			document.getElementById("diff1_xlink").href.baseVal = ref1;
+			document.getElementById("diff2_xlink").href.baseVal = ref2;
+		}
+
+		function change_layer() {
+
+			var layers = $("#layers_form input:radio[name='layers']");
+			var selected_layer = layers.index(layers.filter(':checked'));
+
+			var timestamp = new Date().getTime();
+
+			current_src1 = document.getElementById("diff1_xlink").href.baseVal;
+			current_src2 = document.getElementById("diff2_xlink").href.baseVal;
+
+			commit1 = current_src1.split("/")[1]
+			commit2 = current_src2.split("/")[1]
+
+			var ref1 = "../" + commit1 + "/" + "board-" + layers[selected_layer].value + ".svg" + "?t=" + timestamp
+			var ref2 = "../" + commit2 + "/" + "board-" + layers[selected_layer].value + ".svg" + "?t=" + timestamp
+
+			document.getElementById("diff1_xlink").href.baseVal = ref1;
+			document.getElementById("diff2_xlink").href.baseVal = ref2;
+		}
+
+		// =======================================
+		// SVG Controls
+		// =======================================
+
+		window.onload = function()
+		{
+            window.panZoomDiff = svgPanZoom('#svg-id', {
+                zoomEnabled: true,
+                controlIconsEnabled: true,
+                center: true,
+                minZoom: 1.5,
+                maxZoom: 20,
+            });
+
+            window.panZoomDiff = svgPanZoom('#svg-id2', {
+                zoomEnabled: true,
+                controlIconsEnabled: true,
+                center: true,
+                minZoom: 1.5,
+                maxZoom: 20,
+            });
+		};
+
+		// =======================================
+		// Schematic/Layout Toggle
+		// =======================================
+
+		function show_schematic()
+		{
+			var lv = document.getElementById("svg-id");
+			var sv = document.getElementById("svg-id2");
+			var layers_list = document.getElementById("layers_form");
+
+			console.log(lv)
+
+			lv.style.display = "none";
+			layers_list.style.display = "none";
+
+			sv.style.display = "inline";
+		}
+
+		function show_layout()
+		{
+			var lv = document.getElementById("svg-id");
+			var sv = document.getElementById("svg-id2");
+			var layers_list = document.getElementById("layers_form");
+
+			console.log(sv)
+
+			lv.style.display = "inline";
+			layers_list.style.display = "inline";
+
+			sv.style.display = "none";
+		}
+
+		function test() {
+		    if (document.getElementById('schematics').checked == true) {
+		        alert("hello1");
+		    }
+
+		    if (document.getElementById('layout').checked == true) {
+		        alert("hello2");
+		    }
+		}
+
+	</script>
+
+	<title>ASSoC Test Board</title>
+
+</head>
+<body>
+
+	<div class="container fill no-gutters">
+
+		<div class="row fill">
+			<div class="col col-3" style="background-color: #333; overflow: hidden">
+
+				<div class="list-group" style="padding: 0px; margin-left:10px; height: 100vh;">
+
+					<span style="margin-top: 1em"></span>
+					<h2 class="text-light">ASSoC Test Board</h2>
+					<p class="text-light">Review ABC123</p>
+
+					<div class="d-flex justify-content-right" style="width : 100%; align-items: right; margin: 0px">
+						<div class="btn-group btn-group-toggle" data-toggle="buttons" style="padding: 10px;">
+							<!-- <form id="view_form"> -->
+								<label title="Schematics" class="btn btn-secondary active">
+									<input type="radio" name="diff_view" id="schematics" value="schematics" autocomplete="off" checked onclick="test()">
+									<span class="iconify" style="width: 24px; height: 24px;" data-icon="carbon:schematics" data-inline="false"></span>
+								</label>
+								<label title="Layout" class="btn btn-secondary">
+									<input type="radio" name="diff_view" id="layout" value="layout" autocomplete="off" onclick="test()">
+									<span class="iconify" style="width: 24px; height: 24px;" data-icon="codicon:circuit-board" data-inline="false"></span>
+								</label>
+							<!-- </form> -->
+						</div>
+					</div>
+
+					<p class="text-light" >
+						<span style="margin-right:0.5em" class="iconify" data-icon="fa-solid:code-branch" data-inline="false"></span>
+						Commits
+						<small class="text-sm text-muted">
+							: Walk through using [<kbd>Ctrl</kbd>]
+							<kbd><span class="iconify" data-icon="typcn-arrow-up" data-inline="false"></span></i></kbd> and
+							<kbd><span class="iconify" data-icon="typcn-arrow-down" data-inline="false"></span></i></kbd>.
+						</small>
+					</p>
+
+
+					<div class="form-check scrollbox" style="padding: 0px; margin-left:0px; height: 80%; overflow-y: scroll">
+
+						<form id="commits_form" class="overflow-auto scrollbox-content">
+
+							<!-- EXAMPLE -->
+							<!--
+							<input class="chkGroup" type="checkbox" id="72fea62 " name="commit1" value="72fea62 " checked='checked'/>
+							<label class="text-sm-left list-group-item" for="72fea62 ">
+								<table style="width:100%">
+									<tr>
+										<td rowspan=2 style="vertical-align: top; width: 1.8em;">
+												<svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" width="15" height="15">
+														<path d="M7.5 10.5a3 3 0 010-6m0 6a3 3 0 000-6m0 6V15m0-10.5V0" stroke="currentColor"></path>
+												</svg>
+											</td>
+										<td><em class="text-info"style=""> Fix crystal's capacitor value, voltage regulator value. Improve overall placement.</em></td>
+									</tr>
+									<tr>
+										<td><span class="text-warning text-uppercase font-weight-normal">72fea62</span> | 2021-02-09 17:01:10 | Leandro Heck</td>
+									</tr>
+								</table>
+							</label>
+							-->
+
+							<!-- FILL_COMMITS_HERE -->
+
+							</form>
+					</div>
+
+				</div>
+			</div>
+
+			<div class="col col-6" style="background-color: #123">
+
+				<div class="container fill no-gutters">
+
+					<div class="row" style="height: 100%">
+
+						<div class="col col-12">
+
+							<div id="compo-container" style="width: 100%; height: 100%">
+
+									<svg id="svg-id" xmlns="http://www.w3.org/2000/svg"
+										style="display: none; width: inherit; min-width: inherit; max-width: inherit; height: inherit; min-height: inherit; max-height: inherit;" version="1.1">
+											<g>
+												<svg id="compo">
+													<defs>
+													<filter id="f1">
+														<feColorMatrix id="c1" type="matrix" values="
+														1   0   0   0   0
+														0   1   0   1   0
+														0   0   1   1   0
+														0   0   0   1   0 " />
+														</filter>
+													</defs>
+													<image id="diff1_xlink" x="0" y="0" height="100%" width="100%" filter="url(#f1)" href="[INITIAL_COMMIT_1_LAYOUT]" />
+												</svg>
+
+												<svg id="compo2">
+													<defs>
+														<filter id="f2">
+														<feColorMatrix id="c2" type="matrix" values="
+														1   0   0   1   0
+														0   1   0   0   0
+														0   0   1   0   0
+														0   0   0   .5   0" />
+														</filter>
+													</defs>
+													<image id="diff2_xlink" x="0" y="0" height="100%" width="100%" filter="url(#f2)" href="[INITIAL_COMMIT_2_LAYOUT]" />
+												</svg>
+											</g>
+									</svg>
+
+									<svg id="svg-id2" xmlns="http://www.w3.org/2000/svg"
+										style="display: inline; width: inherit; min-width: inherit; max-width: inherit; height: inherit; min-height: inherit; max-height: inherit;" version="1.1">
+											<g>
+												<svg id="compo">
+													<defs><filter id="f1"><feColorMatrix id="c1" type="matrix" values="1 0 0 0 0 0 1 0 1 0 0 0 1 1 0 0 0 0 1 0" /></filter></defs>
+													<image id="diff1_xlink" x="0" y="0" height="100%" width="100%" filter="url(#f1)" href="[INITIAL_COMMIT_1_SCH]" />
+												</svg>
+												<svg id="compo2">
+													<defs><filter id="f2"><feColorMatrix id="c2" type="matrix" values="1 0 0 1 0 0 1 0 0 0 0 0 1 0 0 0 0 0 .5 0" /></filter></defs>
+													<image id="diff2_xlink" x="0" y="0" height="100%" width="100%" filter="url(#f2)" href="[INITIAL_COMMIT_2_SCH]" />
+												</svg>
+											</g>
+									</svg>
+
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		<div class="col col" style="background-color: #345">
+
+			<div class="list-group">
+
+				<div class="form-check" style="display: none;">
+
+					<span style="margin-top: 3em"></span>
+
+					<p class="text-light">
+						<span style="margin-right:0.5em" class="iconify" data-icon="teenyicons:layers-solid" data-inline="false"></span>
+						Layers <small class="text-sm text-muted">
+							: Cycle using <kbd><span class="iconify" data-icon="typcn-arrow-left" data-inline="false"></span></kbd> and <kbd><span class="iconify" data-icon="typcn-arrow-right" data-inline="false"></span></kbd> keys</small>
+					</p>
+
+						<div class="row">
+							<div class="col">
+
+								<form id="layers_form">
+									<input type="radio" id="F_Cu" name="layers" value="F_Cu" checked="true"  onchange="change_layer()"/>
+									<label class="rounded text-sm-left list-group-item radio-box" for="F_Cu">
+										<span style="margin-left:0.5em; margin-right:0.1em; color: #952927" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+										F_Cu</label>
+
+									<input type="radio" id="B_Cu" name="layers" value="B_Cu"  onchange="change_layer()"/>
+									<label class="rounded text-sm-left list-group-item radio-box" for="B_Cu">
+										<span style="margin-left:0.5em; margin-right:0.1em; color: #359632" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+										B_Cu</label>
+
+									<input type="radio" id="In1_Cu" name="layers" value="In1_Cu"  onchange="change_layer()"/>
+									<label class="rounded text-sm-left list-group-item radio-box" for="In1_Cu">
+										<span style="margin-left:0.5em; margin-right:0.1em; color: #C2C200" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+										In1_Cu</label>
+
+									<input type="radio" id="In2_Cu" name="layers" value="In2_Cu"  onchange="change_layer()"/>
+									<label class="rounded text-sm-left list-group-item radio-box" for="In2_Cu">
+										<span style="margin-left:0.5em; margin-right:0.1em; color: #C200C2" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+										In2_Cu</label>
+
+									<input type="radio" id="In3_Cu" name="layers" value="In3_Cu"  onchange="change_layer()"/>
+									<label class="rounded text-sm-left list-group-item radio-box" for="In3_Cu">
+										<span style="margin-left:0.5em; margin-right:0.1em; color: #C20000" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+										In3_Cu</label>
+
+									<input type="radio" id="In4_Cu" name="layers" value="In4_Cu"  onchange="change_layer()"/>
+									<label class="rounded text-sm-left list-group-item radio-box" for="In4_Cu">
+										<span style="margin-left:0.5em; margin-right:0.1em; color: #0000C2" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+										In4_Cu</label>
+
+									<input type="radio" id="F_Mask" name="layers" value="F_Mask"  onchange="change_layer()"/>
+									<label class="rounded text-sm-left list-group-item radio-box" for="F_Mask">
+										<span style="margin-left:0.5em; margin-right:0.1em; color: #943197" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+										F_Mask</label>
+
+									<input type="radio" id="B_Mask" name="layers" value="B_Mask"  onchange="change_layer()"/>
+									<label class="rounded text-sm-left list-group-item radio-box" for="B_Mask">
+										<span style="margin-left:0.5em; margin-right:0.1em; color: #943197" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+										B_Mask</label>
+
+									<input type="radio" id="F_SilkS" name="layers" value="F_SilkS"  onchange="change_layer()"/>
+									<label class="rounded text-sm-left list-group-item radio-box" for="F_SilkS">
+										<span style="margin-left:0.5em; margin-right:0.1em; color: #339697" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+										F_SilkS</label>
+
+									<input type="radio" id="B_SilkS" name="layers" value="B_SilkS"  onchange="change_layer()"/>
+									<label class="rounded text-sm-left list-group-item radio-box" for="B_SilkS">
+										<span style="margin-left:0.5em; margin-right:0.1em; color: #481649" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+										B_SilkS</label>
+
+									<input type="radio" id="Edge_Cuts" name="layers" value="Edge_Cuts"  onchange="change_layer()"/>
+									<label class="rounded text-sm-left list-group-item radio-box" for="Edge_Cuts">
+										<span style="margin-left:0.5em; margin-right:0.1em; color: #C9C83B" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+										Edge_Cuts</label>
+
+									<input type="radio" id="Margin" name="layers" value="Margin"  onchange="change_layer()"/>
+									<label class="rounded text-sm-left list-group-item radio-box" for="Margin">
+										<span style="margin-left:0.5em; margin-right:0.1em; color: #D357D2" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+										Margin</label>
+
+									<input type="radio" id="Dwgs_User" name="layers" value="Dwgs_User" onchange="change_layer()"/>
+									<label class="rounded text-sm-left list-group-item radio-box" for="Dwgs_User">
+										<span style="margin-left:0.5em; margin-right:0.1em; color: #0364D3" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+										Dwgs_User</label>
+
+									<input type="radio" id="Cmts_User" name="layers" value="Cmts_User" onchange="change_layer()"/>
+									<label class="rounded text-sm-left list-group-item radio-box" for="Cmts_User">
+										<span style="margin-left:0.5em; margin-right:0.1em; color: #7AC0F4" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+										Cmts_User</label>
+
+									<input type="radio" id="Eco1_User" name="layers" value="Eco1_User" onchange="change_layer()"/>
+									<label class="rounded text-sm-left list-group-item radio-box" for="Eco1_User">
+										<span style="margin-left:0.5em; margin-right:0.1em; color: #008500" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+										Eco1_User</label>
+
+									<input type="radio" id="F_Fab" name="layers" value="F_Fab" onchange="change_layer()"/>
+									<label class="rounded text-sm-left list-group-item radio-box" for="F_Fab">
+										<span style="margin-left:0.5em; margin-right:0.1em; color: #C2C200" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+										F_Fab</label>
+
+									<input type="radio" id="B_Fab" name="layers" value="B_Fab" onchange="change_layer()"/>
+									<label class="rounded text-sm-left list-group-item radio-box" for="B_Fab">
+										<span style="margin-left:0.5em; margin-right:0.1em; color: #858585" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+										B_Fab</label>
+
+									<input type="radio" id="F_Adhes" name="layers" value="F_Adhes" onchange="change_layer()"/>
+									<label class="rounded text-sm-left list-group-item radio-box" for="F_Adhes">
+										<span style="margin-left:0.5em; margin-right:0.1em; color: #A74AA8" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+										F_Adhes</label>
+
+									<input type="radio" id="B_Adhes" name="layers" value="B_Adhes" onchange="change_layer()"/>
+									<label class="rounded text-sm-left list-group-item radio-box" for="B_Adhes">
+										<span style="margin-left:0.5em; margin-right:0.1em; color: #3545A8" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+										B_Adhes</label>
+
+									<input type="radio" id="F_CrtYd" name="layers" value="F_CrtYd" onchange="change_layer()"/>
+									<label class="rounded text-sm-left list-group-item radio-box" for="F_CrtYd">
+										<span style="margin-left:0.5em; margin-right:0.1em; color: #A7A7A7" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+										F_CrtYd</label>
+
+									<input type="radio" id="B_CrtYd" name="layers" value="B_CrtYd" onchange="change_layer()"/>
+									<label class="rounded text-sm-left list-group-item radio-box" for="B_CrtYd">
+										<span style="margin-left:0.5em; margin-right:0.1em; color: #D3D04B" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+										B_CrtYd</label>
+								</form>
+
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+</body>
+</html>

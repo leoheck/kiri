@@ -1,0 +1,237 @@
+#!/bin/bash
+
+readlink_osx()
+{
+	TARGET_FILE=$1
+
+	cd $(dirname "$TARGET_FILE")
+	TARGET_FILE=$(basename "$TARGET_FILE")
+
+	# Iterate down a (possible) chain of symlinks
+	while [ -L "$TARGET_FILE" ]
+	do
+		TARGET_FILE=$(readlink "$TARGET_FILE")
+		cd $(dirname "$TARGET_FILE")
+		TARGET_FILE=$(basename "$TARGET_FILE")
+	done
+
+	# Compute the canonicalized name by finding the physical path
+	# for the directory we're in and appending the target file.
+	PHYS_DIR=$(pwd -P)
+
+	RESULT="$PHYS_DIR/$TARGET_FILE"
+
+	echo $RESULT
+}
+
+
+ctrl_c()
+{
+	echo "** Trapped CTRL-C"
+	exit 1
+}
+
+
+insert_commits()
+{
+	html="$1"
+	commits="$2"
+
+	# GIT COMMITS FORMAT
+	#
+	# fcd81ef | 2021-01-22 17:21:39 -0300 | Leandro Heck | Initial version
+	# d20b900 | 2021-01-22 16:59:29 -0300 | Leandro Heck | Initial commit
+
+	n=0
+
+	COMMITS_LIST_HTML=""
+
+	IFS=$'\n'
+	for commit in $commits; do
+
+		hash=$(echo "$commit" | cut -d'|' -f1 | sed "s/^ //g" )
+		date=$(echo "$commit" | cut -d'|' -f2 | cut -d' ' -f1-2 | sed "s/^ //g" )
+		user=$(echo "$commit" | cut -d'|' -f3 | sed "s/^ //g" )
+		 msg=$(echo "$commit" | cut -d'|' -f4 | sed "s/^ //g" )
+
+		if [[ $n == 0 ]] || [[ $n == 1 ]]; then
+			checked=$"checked='checked'"
+		else
+			checked=""
+		fi
+
+		read -r -d '' COMMIT_HTML <<- EOM
+		    <input class="chkGroup" type="checkbox" id="${hash}" name="commit1" value="${hash}" ${checked} onchange="update_commits()"/>
+		    <label class="text-sm-left list-group-item" for="${hash}">
+		      <table style="width:100%">
+		        <tr>
+		          <td rowspan=2 style="vertical-align: top; width: 1.8em;">
+		              <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" width="15" height="15">
+		                  <path d="M7.5 10.5a3 3 0 010-6m0 6a3 3 0 000-6m0 6V15m0-10.5V0" stroke="currentColor"></path>
+		              </svg>
+		            </td>
+		          <td><em class="text-info"style="">${msg}</em></td>
+		        </tr>
+		        <tr>
+		          <td><span class="text-warning text-uppercase font-weight-normal">${hash}</span> | ${date} | ${user}</td>
+		        </tr>
+		      </table>
+		    </label>
+		EOM
+
+		n=$(($n+1))
+
+		COMMITS_LIST_HTML="${COMMITS_LIST_HTML}${COMMIT_HTML}"
+
+	done
+
+	contents=$(<$html)
+	new_contents=${contents//"<!-- FILL_COMMITS_HERE -->"/${COMMITS_LIST_HTML}}
+	printf '%s' "$new_contents" > $html
+}
+
+
+show_commits()
+{
+	commits="$1"
+
+	IFS=$'\n'
+	for commit in $commits; do
+		echo "$commit"
+	done
+}
+
+fix_urls_multi_project()
+{
+	html_file=$1
+	project=$2
+
+	sed -i "s|/web/main.html|/$project/web/main.html|g" $html_file
+}
+
+kidiff_compare()
+{
+	SCRIPTPATH=$1
+	kicad_pcb=$2
+	project=$3
+
+	if [[ $project == "" ]]; then
+		output_folder=kidiff
+	else
+		output_folder=kidiff/$project
+	fi
+
+	mkdir -p ${output_folder}/web/
+	mkdir -p ${output_folder}/diff/
+	mkdir -p ${output_folder}/sch/
+
+	commits=$(git log --date=local '--pretty=format:%h | %ai | %an | %s' $kicad_pcb "*.sch")
+	# commits=$(git log --date=local '--pretty=format:%h | %ai | %an | %s')
+
+	a=$(echo "$commits" | tac | cut -d' '  -f1);
+	b=$a
+
+	IFS=$'\n'
+
+	na=$(echo "$a" | wc -w)
+	nb=$(echo "$b" | wc -w)
+	nab=$(echo "${na} * ${nb}" | bc)
+
+	echo
+	echo "Generating ${nab} comparisons"
+
+	n=0
+	for i in $a; do
+
+		k=0
+
+		for j in $b; do
+
+			if [[ $i != $j ]]; then
+
+				k=$((k+1))
+				n=$((n+1))
+
+				# Check if diff file exists
+				if [[ -d ${output_folder}/$j ]]; then
+					continue
+				fi
+
+				if [[ $k == 1 ]]; then
+					printf "%4d. %s - %s\n" $n $i $j
+				else
+					printf "%4d. %s - %s\n" $n "       " $j
+				fi
+
+				# ====
+
+				kidiff $kicad_pcb --webserver-disable -a $i -b $j &> /dev/null
+
+				if [ -f ${output_folder}/diff.txt ]; then
+					mv -f ${output_folder}/diff.txt ${output_folder}/diff/$i-$j.txt
+				fi
+
+				# ====
+
+				REMOVED="FF0000"
+				ADDED="008FFF"
+				UNCHANGED="FFFFFF"
+				BACKGROUND="222222"
+
+				plotgitsch -k -l board-cache.lib -i echo -c ${REMOVED}:${ADDED}:${UNCHANGED}:${BACKGROUND} ${i} ${j} > /dev/null
+				if [ -f diff_board.svg ]; then
+					sed -i 's/fill="#222222"/fill="#22222200"/g' diff_board.svg
+					mv -f diff_board.svg ${output_folder}/sch/$i-$j.svg
+					ln -sf ${output_folder}/sch/$i-$j.svg ${output_folder}/sch/$j-$i.svg
+				fi
+
+			fi
+		done
+	done
+
+	# Move curent page to use the real paths of things
+	show_commits "$commits" > tee ${output_folder}/web/commits.out
+
+	cp -f ${SCRIPTPATH}/main.html ${output_folder}/web/main.html
+
+	insert_commits "${output_folder}/web/main.html" "$commits"
+
+	commit1=$(echo "$commits" | head -n1 | tail -n1 | cut -d" " -f1)
+	commit2=$(echo "$commits" | head -n2 | tail -n1 | cut -d" " -f1)
+
+	# Update initial schematic
+	sed -i "s|\[INITIAL_COMMIT_1_SCH\]|../sch/${commit1}-${commit2}.svg|g" ${output_folder}/web/main.html
+	sed -i "s|\[INITIAL_COMMIT_2_SCH\]|../sch/${commit1}-${commit2}.svg|g" ${output_folder}/web/main.html
+
+	# Update initial layout
+	sed -i "s|\[INITIAL_COMMIT_1_LAYOUT\]|../${commit1}/board-F_Cu.svg|g" ${output_folder}/web/main.html
+	sed -i "s|\[INITIAL_COMMIT_2_LAYOUT\]|../${commit2}/board-F_Cu.svg|g" ${output_folder}/web/main.html
+
+	xdg-open "${output_folder}/web/main.html" & 2> /dev/null || open "${output_folder}/web/main.html"
+}
+
+
+# ====================================================================
+
+case $OSTYPE in
+	# MaxOS
+	darwin*)
+		SCRIPT=$(readlink_osx $0)
+		SCRIPTPATH=$(dirname $SCRIPT)
+		;;
+
+	# Linux
+	*)
+		SCRIPT=$(readlink -f $0)
+		SCRIPTPATH=$(dirname $SCRIPT)
+		;;
+esac
+
+# Makesure gitplotsch is in the path
+eval $(opam config env)
+
+trap ctrl_c INT
+kicad_pcb=$1
+project=$2
+
+kidiff_compare "$SCRIPTPATH" "$kicad_pcb" "$project"
