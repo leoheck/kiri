@@ -54,13 +54,13 @@ insert_commits()
 		user=$(echo "$commit" | cut -d'|' -f3 | sed "s/^ //g" )
 		 msg=$(echo "$commit" | cut -d'|' -f4 | sed "s/^ //g" )
 
-		echo "[$hash]"
-
-		if git log --name-only --pretty='format:' -1 -U $hash | cat | grep -s ".sch"; then
+		# check for changes in .sch files
+		if git log --name-only --pretty='format:' -1 -U $hash | cat | grep -s ".sch" &> /dev/null; then
 			sch_icon='<span class="iconify" style="width: 16px; height: 16px; color: green;" data-icon="carbon:schematics" data-inline="false"></span>'
 		fi
 
-		if git log --name-only --pretty='format:' -1 -U $hash | cat | grep -s ".kicad_pcb"; then
+		# check for changes in .kicad_pcb files
+		if git log --name-only --pretty='format:' -1 -U $hash | cat | grep -s ".kicad_pcb" &> /dev/null; then
 			layout_icon='<span class="iconify" style="width: 16px; height: 16px; color: red;" data-icon="codicon:circuit-board" data-inline="false"></span>'
 		fi
 
@@ -119,7 +119,7 @@ fix_urls_multi_project()
 	sed -i "s|/web/main.html|/$project/web/main.html|g" $html_file
 }
 
-kidiff_compare()
+generate_comparisons()
 {
 	SCRIPTPATH=$1
 	kicad_pcb=$2
@@ -190,9 +190,9 @@ kidiff_compare()
 
 				plotgitsch -k -l board-cache.lib -i echo -c ${REMOVED}:${ADDED}:${UNCHANGED}:${BACKGROUND} ${i} ${j} > /dev/null
 				if [ -f diff_board.svg ]; then
+					# Change background to 0% opacity (it is not possible to do this with plotgitsch yet)
 					sed -i 's/fill="#222222"/fill="#22222200"/g' diff_board.svg
 					mv -f diff_board.svg ${output_folder}/sch/$i-$j.svg
-					ln -sf ${output_folder}/sch/$i-$j.svg ${output_folder}/sch/$j-$i.svg
 				fi
 
 			fi
@@ -200,7 +200,7 @@ kidiff_compare()
 	done
 
 	# Move curent page to use the real paths of things
-	show_commits "$commits" > tee ${output_folder}/web/commits.out
+	show_commits "$commits" > ${output_folder}/web/commits.out
 
 	cp -f ${SCRIPTPATH}/main.html ${output_folder}/web/main.html
 
@@ -216,8 +216,6 @@ kidiff_compare()
 	# Update initial layout
 	sed -i "s|\[INITIAL_COMMIT_1_LAYOUT\]|../${commit1}/board-F_Cu.svg|g" ${output_folder}/web/main.html
 	sed -i "s|\[INITIAL_COMMIT_2_LAYOUT\]|../${commit2}/board-F_Cu.svg|g" ${output_folder}/web/main.html
-
-	xdg-open "${output_folder}/web/main.html" & 2> /dev/null || open "${output_folder}/web/main.html"
 }
 
 
@@ -244,4 +242,9 @@ trap ctrl_c INT
 kicad_pcb=$1
 project=$2
 
-kidiff_compare "$SCRIPTPATH" "$kicad_pcb" "$project"
+# Run it from git root (get the project path automatically)
+# Pass git .pro file instead of the board
+
+generate_comparisons "$SCRIPTPATH" "$kicad_pcb" "$project"
+
+xdg-open "${output_folder}/web/main.html" & 2> /dev/null || open "${output_folder}/web/main.html"
