@@ -49,10 +49,20 @@ insert_commits()
 	IFS=$'\n'
 	for commit in $commits; do
 
-		hash=$(echo "$commit" | cut -d'|' -f1 | sed "s/^ //g" )
+		hash=$(echo "$commit" | cut -d'|' -f1 | sed "s/^ //g" | sed "s/[ t]\+//g" )
 		date=$(echo "$commit" | cut -d'|' -f2 | cut -d' ' -f1-2 | sed "s/^ //g" )
 		user=$(echo "$commit" | cut -d'|' -f3 | sed "s/^ //g" )
 		 msg=$(echo "$commit" | cut -d'|' -f4 | sed "s/^ //g" )
+
+		echo "[$hash]"
+
+		if git log --name-only --pretty='format:' -1 -U $hash | cat | grep -s ".sch"; then
+			sch_icon='<span class="iconify" style="width: 16px; height: 16px; color: green;" data-icon="carbon:schematics" data-inline="false"></span>'
+		fi
+
+		if git log --name-only --pretty='format:' -1 -U $hash | cat | grep -s ".kicad_pcb"; then
+			layout_icon='<span class="iconify" style="width: 16px; height: 16px; color: red;" data-icon="codicon:circuit-board" data-inline="false"></span>'
+		fi
 
 		if [[ $n == 0 ]] || [[ $n == 1 ]]; then
 			checked=$"checked='checked'"
@@ -73,7 +83,7 @@ insert_commits()
 		          <td><em class="text-info"style="">${msg}</em></td>
 		        </tr>
 		        <tr>
-		          <td><span class="text-warning text-uppercase font-weight-normal">${hash}</span> | ${date} | ${user}</td>
+		          <td><span class="text-warning text-uppercase font-weight-normal">${hash}</span> | ${date} | ${user} | ${sch_icon} ${layout_icon}</td>
 		        </tr>
 		      </table>
 		    </label>
@@ -125,8 +135,8 @@ kidiff_compare()
 	mkdir -p ${output_folder}/diff/
 	mkdir -p ${output_folder}/sch/
 
-	commits=$(git log --date=local '--pretty=format:%h | %ai | %an | %s' $kicad_pcb "*.sch")
-	# commits=$(git log --date=local '--pretty=format:%h | %ai | %an | %s')
+	# commits=$(git log --date=local '--pretty=format:%h | %ai | %an | %s' $kicad_pcb "*.sch")
+	commits=$(git log --date=local '--pretty=format:%h | %ai | %an | %s')
 
 	a=$(echo "$commits" | tac | cut -d' '  -f1);
 	b=$a
