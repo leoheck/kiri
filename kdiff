@@ -125,6 +125,11 @@ generate_comparisons()
 	kicad_pcb=$2
 	project=$3
 
+	filename=$(basename -- "$kicad_pcb")
+	extension="${filename##*.}"
+	board_name="${filename%.*}"
+
+
 	if [[ $project == "" ]]; then
 		output_folder=kidiff
 	else
@@ -188,7 +193,7 @@ generate_comparisons()
 				UNCHANGED="FFFFFF"
 				BACKGROUND="222222"
 
-				plotgitsch -k -l board-cache.lib -i echo -c ${REMOVED}:${ADDED}:${UNCHANGED}:${BACKGROUND} ${i} ${j} > /dev/null
+				plotgitsch -k -l ${board_name}-cache.lib -i echo -c ${REMOVED}:${ADDED}:${UNCHANGED}:${BACKGROUND} ${i} ${j} > /dev/null
 				if [ -f diff_board.svg ]; then
 					# Change background to 0% opacity (it is not possible to do this with plotgitsch yet)
 					sed -i 's/fill="#222222"/fill="#22222200"/g' diff_board.svg
@@ -209,13 +214,17 @@ generate_comparisons()
 	commit1=$(echo "$commits" | head -n1 | tail -n1 | cut -d" " -f1)
 	commit2=$(echo "$commits" | head -n2 | tail -n1 | cut -d" " -f1)
 
+	# Update board title
+	title=$(grep -i "(title " -R ${kicad_pcb} | cut -d"\"" -f 2)
+	sed -i "s|\[PROJECT_TITLE\]|${title}|g" ${output_folder}/web/main.html
+
 	# Update initial schematic
 	sed -i "s|\[INITIAL_COMMIT_1_SCH\]|../sch/${commit1}-${commit2}.svg|g" ${output_folder}/web/main.html
 	sed -i "s|\[INITIAL_COMMIT_2_SCH\]|../sch/${commit1}-${commit2}.svg|g" ${output_folder}/web/main.html
 
 	# Update initial layout
-	sed -i "s|\[INITIAL_COMMIT_1_LAYOUT\]|../${commit1}/board-F_Cu.svg|g" ${output_folder}/web/main.html
-	sed -i "s|\[INITIAL_COMMIT_2_LAYOUT\]|../${commit2}/board-F_Cu.svg|g" ${output_folder}/web/main.html
+	sed -i "s|\[INITIAL_COMMIT_1_LAYOUT\]|../${commit1}/${board_name}-F_Cu.svg|g" ${output_folder}/web/main.html
+	sed -i "s|\[INITIAL_COMMIT_2_LAYOUT\]|../${commit2}/${board_name}-F_Cu.svg|g" ${output_folder}/web/main.html
 }
 
 
