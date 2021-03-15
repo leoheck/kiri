@@ -429,7 +429,7 @@
 
 	</script>
 
-	<title>ASSoC Project</title>
+	<title>[PROJECT_TITLE]</title>
 
 </head>
 <body>
@@ -490,42 +490,43 @@
 				</div>
 			</div>
 
-			<div class="col col-6" style="background-color: #123">
+			<div class="col col-6" style="background-color: #123;">
 
 				<div class="row" style="width : 100%; margin: 0px">
 
-					<div class="btn-group btn-group-toggle" data-toggle="buttons" style="padding: 10px;">
+					<div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons" style="padding: 10px;">
 						<label title="Schematics" class="btn btn-secondary active">
-							<input type="radio" name="diff_view" id="schematics" value="schematics" autocomplete="off" checked onclick="test()">
-							<span class="iconify" style="width: 24px; height: 24px;" data-icon="carbon:schematics" data-inline="false"></span>
+							<input type="radio" name="diff_view" id="schematics" value="schematics" autocomplete="off" onclick="test()">
+							<span class="iconify" style="width: 20px; height: 20px;" data-icon="carbon:schematics" data-inline="false"></span>
 						</label>
 						<label title="Layout" class="btn btn-secondary">
 							<input type="radio" name="diff_view" id="layout" value="layout" autocomplete="off" onclick="test()">
-							<span class="iconify" style="width: 24px; height: 24px;" data-icon="codicon:circuit-board" data-inline="false"></span>
+							<span class="iconify" style="width: 20px; height: 20px;" data-icon="codicon:circuit-board" data-inline="false"></span>
 						</label>
 					</div>
 
-					<div class="btn-group btn-group-toggle" data-toggle="buttons" style="padding: 10px;">
-						<label title="Onion" class="btn btn-secondary">
-							<input type="radio" name="view_mode" id="layout" value="Onion" autocomplete="off" checked>
+					<div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons" style="padding: 10px;">
+						<label title="Onion" class="btn btn-secondary active">
+							<input type="radio" name="view_mode" id="layout" value="Onion" autocomplete="off">
 							Onion
 						</label>
 						<label title="Swipe" class="btn btn-secondary">
 							<input type="radio" name="view_mode" id="layout" value="Swipe" autocomplete="off">
 							Swipe
 						</label>
-						<label title="2-Up" class="btn btn-secondary active">
+						<label title="2-Up" class="btn btn-secondary">
 							<input type="radio" name="view_mode" id="schematics" value="2-Up" autocomplete="off">
 							2-Up
 						</label>
+
 					</div>
 
 				</div>
 
 
-				<div class="container fill no-gutters">
+				<div class="container no-gutters">
 
-					<div class="row" style="height: 80%">
+					<div class="row">
 
 						<div class="col col-12">
 
