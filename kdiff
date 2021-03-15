@@ -64,6 +64,11 @@ insert_commits()
 			layout_icon='<span class="iconify" style="width: 16px; height: 16px; color: red;" data-icon="codicon:circuit-board" data-inline="false"></span>'
 		fi
 
+		# check for changes in textual files
+		if git log --name-only --pretty='format:' -1 -U $hash | cat | grep -s -vE ".sch|.kicad_pcb" &> /dev/null; then
+			text_icon='<span class="iconify" style="width: 16px; height: 16px; color: text-light;" data-icon="bi:file-earmark-text" data-inline="false"></span>'
+		fi
+
 		if [[ $n == 0 ]] || [[ $n == 1 ]]; then
 			checked=$"checked='checked'"
 		else
@@ -83,7 +88,7 @@ insert_commits()
 		          <td><em class="text-info"style="">${msg}</em></td>
 		        </tr>
 		        <tr>
-		          <td><span class="text-warning text-uppercase font-weight-normal">${hash}</span> | ${date} | ${user} | ${sch_icon} ${layout_icon}</td>
+		          <td><span class="text-warning text-uppercase font-weight-normal">${hash}</span> | ${date} | ${user} | ${sch_icon} ${layout_icon} ${text_icon}</td>
 		        </tr>
 		      </table>
 		    </label>
