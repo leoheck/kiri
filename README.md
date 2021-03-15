@@ -12,11 +12,16 @@ These tools have to be in the $PATH
 - [Kicad-Diff](https://github.com/Gasman2014/KiCad-Diff)
 - [Plotgitsh](https://github.com/jnavila/plotkicadsch)
 
-## Usage
+## Setup
 
 ```
-$> cd kdiff
-kdiff $> source env.sh
-cd ../kicad_git_repo
-kicad_git_repo $> kdiff board.kicad_pcb
+gh repo clone leoheck/kdiff
+cd kdiff
+source env.sh
+```
+
+## Using
+```
+cd [kicad_git_repo]
+kdiff board.kicad_pcb
 ```
