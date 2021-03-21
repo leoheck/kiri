@@ -8,10 +8,20 @@ It is currently supporting Kicad projects that use GIT only.
 # Dependencies
 These tools have to be in the $PATH
 - [Kicad-Diff](https://github.com/Gasman2014/KiCad-Diff)
-- [Plotgitsh](https://github.com/jnavila/plotkicadsch)
+- [Plotgitsh](https://github.com/leoheck/plotkicadsch)
+
+# Installing dependecies
+```
+# Custom plotgitsch
+hg clone leoheck/plotkicadsch
+cd plotkicadsch
+./install.sh
+
+# Kicad Diff
+hg clone Gasman2014/KiCad-Diff
+```
 
 ## Setup
-
 ```
 gh repo clone leoheck/kdiff
 cd kdiff
