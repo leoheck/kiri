@@ -24,13 +24,35 @@ readlink_osx()
 	echo $RESULT
 }
 
-
 ctrl_c()
 {
 	echo "** Trapped CTRL-C"
 	exit 1
 }
 
+tac_()
+{
+	case $OSTYPE in
+		darwin*)
+			tail -r
+		;;
+		*)
+			tac
+		;;
+	esac
+}
+
+xdg-open_()
+{
+	case $OSTYPE in
+		darwin*)
+			open $@
+		;;
+		*)
+			xdg-open $@
+		;;
+	esac
+}
 
 insert_commits()
 {
@@ -56,17 +78,17 @@ insert_commits()
 
 		# check for changes in .sch files
 		if git log --name-only --pretty='format:' -1 -U $hash | cat | grep -s ".sch" &> /dev/null; then
-			sch_icon='<span class="iconify" style="width: 16px; height: 16px; color: green;" data-icon="carbon:schematics" data-inline="false"></span>'
+			sch_icon='<span class="iconify" style="width: 14px; height: 14px; color: #A6E22E;" data-icon="carbon:schematics" data-inline="false"></span>'
 		fi
 
 		# check for changes in .kicad_pcb files
 		if git log --name-only --pretty='format:' -1 -U $hash | cat | grep -s ".kicad_pcb" &> /dev/null; then
-			layout_icon='<span class="iconify" style="width: 16px; height: 16px; color: red;" data-icon="codicon:circuit-board" data-inline="false"></span>'
+			layout_icon='<span class="iconify" style="width: 14px; height: 14px; color: #F92672;" data-icon="codicon:circuit-board" data-inline="false"></span>'
 		fi
 
 		# check for changes in textual files
 		if git log --name-only --pretty='format:' -1 -U $hash | cat | grep -s -vE ".sch|.kicad_pcb" &> /dev/null; then
-			text_icon='<span class="iconify" style="width: 16px; height: 16px; color: text-light;" data-icon="bi:file-earmark-text" data-inline="false"></span>'
+			text_icon='<span class="iconify" style="width: 14px; height: 14px; color: #A1EFE4;" data-icon="bi:file-earmark-text" data-inline="false"></span>'
 		fi
 
 		if [[ $n == 0 ]] || [[ $n == 1 ]]; then
@@ -145,20 +167,25 @@ generate_comparisons()
 	mkdir -p ${output_folder}/diff/
 	mkdir -p ${output_folder}/sch/
 
-	# commits=$(git log --date=local '--pretty=format:%h | %ai | %an | %s' $kicad_pcb "*.sch")
-	commits=$(git log --date=local '--pretty=format:%h | %ai | %an | %s')
+	commits=$(git log --date=local '--pretty=format:%h | %ai | %an | %s' $kicad_pcb *.sch)
+	# commits=$(git log --date=local '--pretty=format:%h | %ai | %an | %s')
 
-	a=$(echo "$commits" | tac | cut -d' '  -f1);
+
+	a=$(echo "$commits" | tac_ | cut -d' '  -f1);
 	b=$a
 
 	IFS=$'\n'
 
 	na=$(echo "$a" | wc -w)
 	nb=$(echo "$b" | wc -w)
-	nab=$(echo "${na} * ${nb}" | bc)
+	nab=$(echo "${na} * (${nb} - 1) " | bc)
 
 	echo
 	echo "Generating ${nab} comparisons"
+	echo
+
+	# bkp for plotgitsch
+	cp -f .git/HEAD HEAD.bkp
 
 	n=0
 	for i in $a; do
@@ -172,15 +199,21 @@ generate_comparisons()
 				k=$((k+1))
 				n=$((n+1))
 
-				# Check if diff file exists
-				if [[ -d ${output_folder}/$j ]]; then
-					continue
+				if [[ -d "${output_folder}/$j" ]]; then
+					skipping=", skipping..."
+				else
+					skipping=""
 				fi
 
 				if [[ $k == 1 ]]; then
-					printf "%4d. %s - %s\n" $n $i $j
+					printf "%4d. %s - %s%s\n" $n $i $j "$skipping"
 				else
-					printf "%4d. %s - %s\n" $n "       " $j
+					printf "%4d. %s - %s%s \n" $n "       " $j "$skipping"
+				fi
+
+				# Check if diff file exists
+				if [[ -d ${output_folder}/$j ]]; then
+					continue
 				fi
 
 				# ====
@@ -198,11 +231,39 @@ generate_comparisons()
 				UNCHANGED="FFFFFF"
 				BACKGROUND="222222"
 
-				plotgitsch -k -l ${board_name}-cache.lib -i echo -c ${REMOVED}:${ADDED}:${UNCHANGED}:${BACKGROUND} ${i} ${j} > /dev/null
-				if [ -f diff_board.svg ]; then
-					# Change background to 0% opacity (it is not possible to do this with plotgitsch yet)
-					sed -i 's/fill="#222222"/fill="#22222200"/g' diff_board.svg
-					mv -f diff_board.svg ${output_folder}/sch/$i-$j.svg
+				# WORKAROUND FOR ISSUE: plotgitsch is messing with git
+				cp -f HEAD.bkp .git/HEAD
+				# Custom version does not use -k
+				plotgitsch -l ${board_name}-cache.lib -c ${REMOVED}:${ADDED}:${UNCHANGED}:${BACKGROUND} ${i} ${j} > /dev/null
+				cp -f HEAD.bkp .git/HEAD
+
+				if [ -f sch1.svg ]; then
+					# Background
+					sed -i 's/fill="#222222"/fill="#22222200"/g' sch1.svg
+					sed -i 's/fill="#FFFFFF"/fill="#FFFFFF00"/g' sch1.svg
+					# Elements
+					sed -i 's/fill="#FF0000"/fill="#000000FF"/g' sch1.svg
+					sed -i 's/fill="#00FF00"/fill="#000000FF"/g' sch1.svg
+					sed -i 's/fill="#800000"/fill="#000000FF"/g' sch1.svg
+					mv -f sch1.svg ${output_folder}/$i/sch.svg
+				fi
+
+				if [ -f sch2.svg ]; then
+					# Background
+					sed -i 's/fill="#222222"/fill="#22222200"/g' sch2.svg
+					sed -i 's/fill="#FFFFFF"/fill="#FFFFFF00"/g' sch2.svg
+					# Elements
+					sed -i 's/fill="#FF0000"/fill="#000000FF"/g' sch2.svg
+					sed -i 's/fill="#00FF00"/fill="#000000FF"/g' sch2.svg
+					sed -i 's/fill="#800000"/fill="#000000FF"/g' sch2.svg
+					mv -f sch2.svg ${output_folder}/$j/sch.svg
+				fi
+
+				# Not all commits have this (not needed too)
+				if [ -f sch-diff.svg ]; then
+					rm -rf sch-diff.svg
+					# sed -i 's/fill="#222222"/fill="#22222200"/g' sch-diff.svg
+					# mv -f sch-diff.svg ${output_folder}/sch-$i-$j.svg
 				fi
 
 			fi
@@ -224,12 +285,15 @@ generate_comparisons()
 	sed -i "s|\[PROJECT_TITLE\]|${title}|g" ${output_folder}/web/main.html
 
 	# Update initial schematic
-	sed -i "s|\[INITIAL_COMMIT_1_SCH\]|../sch/${commit1}-${commit2}.svg|g" ${output_folder}/web/main.html
-	sed -i "s|\[INITIAL_COMMIT_2_SCH\]|../sch/${commit1}-${commit2}.svg|g" ${output_folder}/web/main.html
+	sed -i "s|\[INITIAL_COMMIT_1_SCH\]|../${commit1}/sch.svg|g" ${output_folder}/web/main.html
+	sed -i "s|\[INITIAL_COMMIT_2_SCH\]|../${commit2}/sch.svg|g" ${output_folder}/web/main.html
 
 	# Update initial layout
 	sed -i "s|\[INITIAL_COMMIT_1_LAYOUT\]|../${commit1}/${board_name}-F_Cu.svg|g" ${output_folder}/web/main.html
 	sed -i "s|\[INITIAL_COMMIT_2_LAYOUT\]|../${commit2}/${board_name}-F_Cu.svg|g" ${output_folder}/web/main.html
+
+	# Blank image
+	cp -f $SCRIPTPATH/blank.svg ${output_folder}/
 }
 
 
@@ -261,4 +325,4 @@ project=$2
 
 generate_comparisons "$SCRIPTPATH" "$kicad_pcb" "$project"
 
-xdg-open "${output_folder}/web/main.html" & 2> /dev/null || open "${output_folder}/web/main.html"
+xdg-open_ "${output_folder}/web/main.html" & 2> /dev/null
