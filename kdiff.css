@@ -1,0 +1,147 @@
+
+html, body {
+	height: 100%;
+	margin: 0px;
+	padding: : 0px;
+}
+
+.fill {
+	min-height: 100%;
+	height: 100%;
+	min-width: 100%;
+	width: 100%;
+}
+
+.no-gutters {
+	margin-right: 0;
+	margin-left: 0;
+	> .col,
+	> [class*="col-"] {
+		padding-right: 0;
+		padding-left: 0;
+	}
+}
+
+/* ==============================
+   COMMITS LIST
+   ==============================
+*/
+
+.list-group-item {
+	user-select: none;
+}
+
+.list-group input[type="checkbox"] {
+	display: none;
+}
+
+.list-group input[type="checkbox"] + .list-group-item {
+	cursor: pointer;
+	background-color: #222;
+	color: #dbdbdb;
+	font-family: monospace;
+	padding: 2px;
+	margin: 4px;
+}
+
+.list-group input[type="checkbox"] + .list-group-item:before {
+	color: transparent;
+	font-weight: bold;
+}
+
+.list-group input[type="checkbox"]:checked + .list-group-item {
+	background-color: #111111;
+	color: #FFF;
+}
+
+.list-group input[type="checkbox"]:checked + .list-group-item:before {
+	color: inherit;
+}
+
+/* ==============================
+   Scrollbar
+   ==============================
+*/
+
+.scrollbox {
+	overflow: auto;
+	visibility: hidden;
+}
+
+.scrollbox-content,
+.scrollbox:hover,
+.scrollbox:focus {
+	visibility: visible;
+}
+
+::-webkit-scrollbar {
+	width: 10px;
+	height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+	background: rgba(90, 90, 90);
+}
+
+::-webkit-scrollbar-track {
+	background: rgba(0, 0, 0, 0.2);
+}
+
+/* ==============================
+   LAYERS LIST
+   ==============================
+*/
+
+.list-group input[type="radio"] {
+	display: none;
+}
+
+.list-group input[type="radio"] + .list-group-item {
+	cursor: pointer;
+	background-color: #222222;
+	color: #dbdbdb;
+	font-family: monospace;
+	padding: 2px;
+	margin: 4px;
+	width: 120px;
+}
+
+.list-group input[type="radio"] + .list-group-item:before {
+	color: transparent;
+	font-weight: bold;
+}
+
+.list-group input[type="radio"]:checked + .list-group-item {
+	background-color: #111111;
+	color: #FFF;
+}
+
+.list-group input[type="radio"]:checked + .list-group-item:before {
+	color: inherit;
+}
+
+/* ==============================
+   LAYERS LIST
+   ==============================
+*/
+
+.toolbar-group input[type="radio"] {
+	display: none;
+}
+
+.toolbar-group input[type="radio"] + .toolbar-group-item {
+	cursor: pointer;
+	font-family: monospace;
+}
+
+.toolbar-group input[type="radio"] + .toolbar-group-item:before {
+}
+
+.toolbar-group input[type="radio"]:checked + .toolbar-group-item {
+	background-color: #111111;
+	color: #FFF;
+}
+
+.toolbar-group input[type="radio"]:checked + .toolbar-group-item:before {
+	color: inherit;
+}
