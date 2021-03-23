@@ -91,12 +91,12 @@ insert_commits()
 
 		# check for changes in .sch files
 		if git log --name-only --pretty='format:' -1 -U $hash | cat | grep -s ".sch" &> /dev/null; then
-			sch_icon='<span class="iconify" style="width: 14px; height: 14px; color: #A6E22E;" data-icon="carbon:schematics" data-inline="false"></span>'
+			sch_icon='<span class="iconify" style="width: 14px; height: 14px; color: #A6E22E;" data-icon="carbon:sch" data-inline="false"></span>'
 		fi
 
 		# check for changes in .kicad_pcb files
 		if git log --name-only --pretty='format:' -1 -U $hash | cat | grep -s ".kicad_pcb" &> /dev/null; then
-			layout_icon='<span class="iconify" style="width: 14px; height: 14px; color: #F92672;" data-icon="codicon:circuit-board" data-inline="false"></span>'
+			layout_icon='<span class="iconify" style="width: 14px; height: 14px; color: #F92672;" data-icon="codicon:pcb" data-inline="false"></span>'
 		fi
 
 		# check for changes in textual files
@@ -304,8 +304,8 @@ generate_comparisons()
 	sed -i "s|\[INITIAL_COMMIT_2_SCH\]|../${commit2}/sch.svg|g" ${output_folder}/web/main.html
 
 	# Update initial layout images
-	sed -i "s|\[INITIAL_COMMIT_1_LAYOUT\]|../${commit1}/${board_name}-F_Cu.svg|g" ${output_folder}/web/main.html
-	sed -i "s|\[INITIAL_COMMIT_2_LAYOUT\]|../${commit2}/${board_name}-F_Cu.svg|g" ${output_folder}/web/main.html
+	sed -i "s|\[INITIAL_COMMIT_1_PCB\]|../${commit1}/${board_name}-F_Cu.svg|g" ${output_folder}/web/main.html
+	sed -i "s|\[INITIAL_COMMIT_2_PCB\]|../${commit2}/${board_name}-F_Cu.svg|g" ${output_folder}/web/main.html
 }
 
 
