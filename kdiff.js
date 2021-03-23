@@ -203,7 +203,7 @@ window.onkeydown = function(e)
 	{
 		keysDown = {};
 
-		var layers = $("#layers_form input:radio[name='layers']");
+		var layers = $("#layers_list input:radio[name='layers']");
 		var selected_layer = layers.index(layers.filter(':checked'));
 
 		var new_index = selected_layer + 1;
@@ -223,7 +223,7 @@ window.onkeydown = function(e)
 	{
 		keysDown = {};
 
-		var layers = $("#layers_form input:radio[name='layers']");
+		var layers = $("#layers_list input:radio[name='layers']");
 		var selected_layer = layers.index(layers.filter(':checked'));
 
 		var new_index = selected_layer - 1;
@@ -259,15 +259,25 @@ function update_commits()
 	// Update Layout
 
 	current_src1 = document.getElementById("diff1_xlink").href.baseVal;
-	layer = current_src1.split("/")[1]
 
-	// Default layer
-	if(layer) {
-		layer = "F_Cu"
+	var layers = document.getElementsByName('layers');
+	for (var layer of layers) {
+		if (layer.checked) {
+			selected_layer = layer.value
+		}
 	}
 
-	var layout_image_path_1 = "../" + hash1 + "/" + "board-" + layer + ".svg"
-	var layout_image_path_2 = "../" + hash2 + "/" + "board-" + layer + ".svg"
+	console.log("layer:", selected_layer)
+
+	if(! selected_layer) {
+		selected_layer = "F_Cu"
+	}
+
+	var layout_image_path_1 = "../" + hash1 + "/" + "board-" + selected_layer + ".svg"
+	var layout_image_path_2 = "../" + hash2 + "/" + "board-" + selected_layer + ".svg"
+
+	console.log("layout_1:", layout_image_path_1)
+	console.log("layout_2:", layout_image_path_2)
 
 	document.getElementById("diff1_xlink").href.baseVal = layout_image_path_1 + "?t=" + timestamp
 	document.getElementById("diff2_xlink").href.baseVal = layout_image_path_2 + "?t=" + timestamp
@@ -275,15 +285,11 @@ function update_commits()
 	// =======================================
 	// Update Schematic
 
-	// current_img1 = document.getElementById("diff1_xlink_sch").getAttribute("href");
-	// current_img2 = document.getElementById("diff2_xlink_sch").getAttribute("href");
-	// console.log("current_img1", current_img1)
-
 	var sch_image_path_1 = "../" + hash1 + "/" + "sch" + ".svg"
 	var sch_image_path_2 = "../" + hash2 + "/" + "sch" + ".svg"
 
-	console.log("sch_image_path_1", sch_image_path_1)
-	console.log("sch_image_path_2", sch_image_path_2)
+	console.log("   sch_1:", sch_image_path_1)
+	console.log("   sch_2:", sch_image_path_2)
 
 	document.getElementById("diff1_xlink_sch").href.baseVal = sch_image_path_1 + "?t=" + timestamp
 	document.getElementById("diff2_xlink_sch").href.baseVal = sch_image_path_2 + "?t=" + timestamp
@@ -292,7 +298,7 @@ function update_commits()
 
 function change_layer() {
 
-	var layers = $("#layers_form input:radio[name='layers']");
+	var layers = $("#layers_list input:radio[name='layers']");
 	var selected_layer = layers.index(layers.filter(':checked'));
 
 	var timestamp = new Date().getTime();
@@ -345,43 +351,48 @@ window.onload = function()
 // 	}
 // }
 
+function blur_toolbar() {
+	var view_mode = document.getElementById("view_mode");
+	var view_type = document.getElementById("view_type");
+
+	view_mode.blur();
+	view_type.blur();
+}
+
 function show_schematic()
 {
+	console.log("show_schematic")
+
 	// Hide layout image
 	var layout_view = document.getElementById("compo-container1");
 	layout_view.style.display = "none";
-	console.log("layout_view: ", layout_view)
 
 	// Hide layers list
-	var layers_list = document.getElementById("layers_form");
-	if (layers_list) {
-		layers_list.style.display = "none";
-	}
-	console.log("layers_list: ", layers_list)
+	var layers_list = document.getElementById("layers_list");
+	layers_list.style.display = "none";
 
 	// Show schematic image
 	var schematic_view = document.getElementById("compo-container2");
 	schematic_view.style.display = "inline";
-	console.log("schematic_view: ", schematic_view)
 
+	blur_toolbar();
 }
 
 function show_layout()
 {
+	console.log("show_layout")
+
 	// Show layout sch_image_path_2
 	var layout_view = document.getElementById("compo-container1");
 	layout_view.style.display = "inline";
-	console.log("layout_view: ", layout_view)
 
 	// Show layers list
-	var layers_list = document.getElementById("layers_form");
-	if (layers_list) {
-		layers_list.style.display = "inline";
-	}
-	console.log("layers_list: ", layers_list)
+	var layers_list = document.getElementById("layers_list");
+	layers_list.style.display = "inline";
 
 	// Hide layers list
 	var schematic_view = document.getElementById("compo-container2");
 	schematic_view.style.display = "none";
-	console.log("schematic_view: ", schematic_view)
+
+	blur_toolbar();
 }
