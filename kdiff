@@ -91,12 +91,12 @@ insert_commits()
 
 		# check for changes in .sch files
 		if git log --name-only --pretty='format:' -1 -U $hash | cat | grep -s ".sch" &> /dev/null; then
-			sch_icon='<span class="iconify" style="width: 14px; height: 14px; color: #A6E22E;" data-icon="carbon:sch" data-inline="false"></span>'
+			sch_icon='<span class="iconify" style="width: 14px; height: 14px; color: #A6E22E;" data-icon="carbon:schematics" data-inline="false"></span>'
 		fi
 
 		# check for changes in .kicad_pcb files
 		if git log --name-only --pretty='format:' -1 -U $hash | cat | grep -s ".kicad_pcb" &> /dev/null; then
-			layout_icon='<span class="iconify" style="width: 14px; height: 14px; color: #F92672;" data-icon="codicon:pcb" data-inline="false"></span>'
+			layout_icon='<span class="iconify" style="width: 14px; height: 14px; color: #F92672;" data-icon="codicon:circuit-board" data-inline="false"></span>'
 		fi
 
 		# check for changes in textual files
@@ -255,24 +255,24 @@ generate_comparisons()
 				cp -f HEAD.bkp .git/HEAD
 
 				if [ -f sch1.svg ]; then
-					# Background
+					# Background transparent
 					sed -i 's/fill="#222222"/fill="#22222200"/g' sch1.svg
 					sed -i 's/fill="#FFFFFF"/fill="#FFFFFF00"/g' sch1.svg
-					# Elements
+					# Elements in black
 					sed -i 's/fill="#FF0000"/fill="#000000FF"/g' sch1.svg
 					sed -i 's/fill="#00FF00"/fill="#000000FF"/g' sch1.svg
-					sed -i 's/fill="#800000"/fill="#000000FF"/g' sch1.svg
+					sed -i 's/stroke="#800000"/stroke="#000000FF"/g' sch1.svg
 					mv -f sch1.svg ${output_folder}/$i/sch.svg
 				fi
 
 				if [ -f sch2.svg ]; then
-					# Background
+					# Background transparent
 					sed -i 's/fill="#222222"/fill="#22222200"/g' sch2.svg
 					sed -i 's/fill="#FFFFFF"/fill="#FFFFFF00"/g' sch2.svg
-					# Elements
+					# Elements in black
 					sed -i 's/fill="#FF0000"/fill="#000000FF"/g' sch2.svg
 					sed -i 's/fill="#00FF00"/fill="#000000FF"/g' sch2.svg
-					sed -i 's/fill="#800000"/fill="#000000FF"/g' sch2.svg
+					sed -i 's/stroke="#800000"/stroke="#000000FF"/g' sch2.svg
 					mv -f sch2.svg ${output_folder}/$j/sch.svg
 				fi
 
