@@ -101,7 +101,7 @@ insert_commits()
 
 		# check for changes in textual files
 		if git log --name-only --pretty='format:' -1 -U $hash | cat | grep -s -vE ".sch|.kicad_pcb" &> /dev/null; then
-			text_icon='<span class="iconify" style="width: 14px; height: 14px; color: #A1EFE4;" data-icon="bi:file-earmark-text" data-inline="false"></span>'
+			text_icon='<span class="iconify" style="width: 14px; height: 14px; color: #888888;" data-icon="bi:file-earmark-text" data-inline="false"></span>'
 		fi
 
 		if [[ $n == 0 ]] || [[ $n == 1 ]]; then
@@ -123,7 +123,7 @@ insert_commits()
 		          <td><em class="text-info"style="">${msg}</em></td>
 		        </tr>
 		        <tr>
-		          <td><span class="text-warning text-uppercase font-weight-normal">${hash}</span> | ${date} | ${user} | ${sch_icon} ${layout_icon} ${text_icon}</td>
+		          <td><span class="text-success text-uppercase font-weight-normal">${hash}</span> <span class="text-muted"> | ${date} | ${user} | </span> ${sch_icon} ${layout_icon} ${text_icon}</td>
 		        </tr>
 		      </table>
 		    </label>
@@ -201,9 +201,6 @@ generate_comparisons()
 	echo "Generating ${nab} comparisons"
 	echo
 
-	# Bkp for plotgitsch
-	cp -f .git/HEAD HEAD.bkp
-
 	n=0
 	for i in $a; do
 
@@ -228,6 +225,7 @@ generate_comparisons()
 					printf "%4d. %s - %s%s \n" $n "       " $j "$skipping"
 				fi
 
+
 				# Check if diff file exists
 				if [[ -d ${output_folder}/$j ]]; then
 					continue
@@ -235,7 +233,13 @@ generate_comparisons()
 
 				# ====
 
-				kidiff $kicad_pcb --webserver-disable -a $i -b $j &> /dev/null
+				cmd="kidiff $kicad_pcb --webserver-disable -a $i -b $j > /dev/null"
+				if [[ "$VERBOSE" == 1 ]]; then
+					echo "$cmd"
+				fi
+
+				eval "$cmd"
+				# kidiff $kicad_pcb --webserver-disable -a $i -b $j > /dev/null
 
 				if [ -f ${output_folder}/diff.txt ]; then
 					mv -f ${output_folder}/diff.txt ${output_folder}/diff/$i-$j.txt
@@ -248,11 +252,25 @@ generate_comparisons()
 				UNCHANGED="FFFFFF"
 				BACKGROUND="222222"
 
-				# WORKAROUND FOR ISSUE: plotgitsch is messing with git
-				cp -f HEAD.bkp .git/HEAD
 				# Custom version does not use -kidiff
-				plotgitsch -l ${board_name}-cache.lib -c ${REMOVED}:${ADDED}:${UNCHANGED}:${BACKGROUND} ${i} ${j} > /dev/null
-				cp -f HEAD.bkp .git/HEAD
+				cmd="plotgitsch -l ${board_name}-cache.lib -c ${REMOVED}:${ADDED}:${UNCHANGED}:${BACKGROUND} ${i} ${j} > /dev/null"
+				if [[ "$VERBOSE" == 1 ]]; then
+					echo "$cmd"
+				fi
+
+				eval "$cmd"
+				# plotgitsch -l ${board_name}-cache.lib -c ${REMOVED}:${ADDED}:${UNCHANGED}:${BACKGROUND} ${i} ${j} > /dev/null
+
+
+				# Add image if missing
+				if [[ ! -f sch1.svg ]]; then
+					cp -f ${script_path}/blank.svg sch1.svg
+				fi
+
+				# ADd image if missing
+				if [[ ! -f sch2.svg ]]; then
+					cp -f ${script_path}/blank.svg sch2.svg
+				fi
 
 				if [ -f sch1.svg ]; then
 					# Background transparent
@@ -318,24 +336,55 @@ script_path=$(dirname $script)
 
 # Make sure gitplotsch is in the PATH
 eval $(opam config env)
-export PATH=../kdiff/git-imgdiff:$PATH
 
 trap ctrl_c INT
 
-kicad_pcb=$1
-project=$2
-
 ALL_COMMITS=0
 REMOVE_KDIFF_FOLDER=0
+VERBOSE=0
 
 # Arguments
-# -r remove kidiff folder before run
-# -a use all commits
+# -a : use all commits (slower)
+# -r : remove kidiff folder before run
+# -p : set nested project path
+# -v : verbose
 
+while [[ $# -gt 0 ]]
+do
+key="$1"
+
+case $key in
+    -a)
+        ALL_COMMITS=1
+        shift
+        ;;
+
+    -r)
+        REMOVE_KDIFF_FOLDER=1
+        shift
+        ;;
+
+    -p)
+        project_folder=$2
+        shift
+        shift
+        ;;
+
+    -v)
+        VERBOSE=1
+        shift
+        ;;
+
+    *)
+        kicad_pcb="$1"
+        shift # past argument
+        ;;
+esac
+done
 
 # Run it from git root (get the project path automatically)
 # Pass git .pro file instead of the board
 
-generate_comparisons "$script_path" "$kicad_pcb" "$project"
+generate_comparisons "$script_path" "$kicad_pcb" "$project_folder"
 
 xdg-open_ "${output_folder}/web/main.html" & 2> /dev/null
