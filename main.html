@@ -79,6 +79,27 @@
 									View type is not working yet.
 									</small>
 								</p>
+
+								<span style="width: 2em"></span>
+								<div id="svg_controls" class="controls btn-toolbar btn-group me-2" role="toolbar" aria-label="View Type">
+
+								<!-- <div id="svg_controls" class="controls"> -->
+									<label class="">
+										<button id="zoom-in" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary btn-sm" autocomplete="off">
+										<span class="iconify" style="width: 20px; height: 20px;" data-icon="akar-icons:zoom-in" data-inline="false"></span>
+									</label>
+									<span style="width: 1em;"></span>
+									<label class="">
+										<button id="zoom-out" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary btn-sm" autocomplete="off" style="margin: 0 0.2em 0 0.2em;">
+										<span class="iconify" style="width: 20px; height: 20px;" data-icon="akar-icons:zoom-out" data-inline="false"></span>
+									</label>
+									<span style="width: 1em;"></span>
+									<label class="">
+										<button id="reset" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary btn-sm" autocomplete="off">
+										<span class="iconify" style="width: 20px; height: 20px;" data-icon="bytesize:zoom-reset" data-inline="false"></span>
+									</label>
+								</div>
+
 							</div>
 						</div>
 					</div>
@@ -153,7 +174,7 @@
 				</div>
 				<div class="col col-2" >
 					<div class="col col">
-						<p>Textual diff area</p>
+						<p class="text-light">[Textual diff area]</p>
 					</div>
 					<div class="list-group" id="layers_list" style="display: none;">
 						<div class="form-check">
