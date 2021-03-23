@@ -35,32 +35,32 @@ window.onkeydown = function(e)
 
 		var next_view_mode = ""
 
-		if (view_mode == "show_schematic") {
-			next_view_mode = "show_layout"
+		if (view_mode == "show_sch") {
+			next_view_mode = "show_pcb"
 
-			show_layout()
+			show_pcb()
 
-			document.getElementById("show_schematic_lbl").classList.remove('active');
-			document.getElementById("show_schematic").checked = false;
+			document.getElementById("show_sch_lbl").classList.remove('active');
+			document.getElementById("show_sch").checked = false;
 
-			document.getElementById("show_layout_lbl").classList.add('active');
-			document.getElementById("show_layout").checked = true;
+			document.getElementById("show_pcb_lbl").classList.add('active');
+			document.getElementById("show_pcb").checked = true;
 		}
 		else {
-			next_view_mode = "show_schematic"
+			next_view_mode = "show_sch"
 
-			show_schematic()
+			show_sch()
 
-			document.getElementById("show_schematic_lbl").classList.add('active');
-			document.getElementById("show_schematic").checked = true;
+			document.getElementById("show_sch_lbl").classList.add('active');
+			document.getElementById("show_sch").checked = true;
 
-			document.getElementById("show_layout_lbl").classList.remove('active');
-			document.getElementById("show_layout").checked = false;
+			document.getElementById("show_pcb_lbl").classList.remove('active');
+			document.getElementById("show_pcb").checked = false;
 		}
-		console.log("1", document.getElementById("show_schematic_lbl").classList);
-		console.log("2", document.getElementById("show_schematic").checked);
-		console.log("3", document.getElementById("show_layout_lbl").classList);
-		console.log("4", document.getElementById("show_layout").checked);
+		console.log("1", document.getElementById("show_sch_lbl").classList);
+		console.log("2", document.getElementById("show_sch").checked);
+		console.log("3", document.getElementById("show_pcb_lbl").classList);
+		console.log("4", document.getElementById("show_pcb").checked);
 	}
 
 	// =======================================
@@ -246,7 +246,7 @@ function update_commits()
 
 	// Update Layout
 
-	current_src1 = document.getElementById("diff1_xlink").href.baseVal;
+	current_src1 = document.getElementById("diff-1-sch-xlink").href.baseVal;
 
 	var layers = document.getElementsByName('layers');
 	for (var layer of layers) {
@@ -262,14 +262,14 @@ function update_commits()
 		selected_layer = "F_Cu"
 	}
 
-	var layout_image_path_1 = "../" + hash1 + "/" + "board-" + selected_layer + ".svg"
-	var layout_image_path_2 = "../" + hash2 + "/" + "board-" + selected_layer + ".svg"
+	var pcb_image_path_1 = "../" + hash1 + "/" + "board-" + selected_layer + ".svg"
+	var pcb_image_path_2 = "../" + hash2 + "/" + "board-" + selected_layer + ".svg"
 
-	console.log("layout_1:", layout_image_path_1)
-	console.log("layout_2:", layout_image_path_2)
+	console.log("pcb_1:", pcb_image_path_1)
+	console.log("pcb_2:", pcb_image_path_2)
 
-	document.getElementById("diff1_xlink").href.baseVal = layout_image_path_1 + "?t=" + timestamp
-	document.getElementById("diff2_xlink").href.baseVal = layout_image_path_2 + "?t=" + timestamp
+	document.getElementById("diff-1-pcb-xlink").href.baseVal = pcb_image_path_1 + "?t=" + timestamp
+	document.getElementById("diff-2-pcb-xlink").href.baseVal = pcb_image_path_2 + "?t=" + timestamp
 
 	// =======================================
 	// Update Schematic
@@ -277,11 +277,11 @@ function update_commits()
 	var sch_image_path_1 = "../" + hash1 + "/" + "sch" + ".svg"
 	var sch_image_path_2 = "../" + hash2 + "/" + "sch" + ".svg"
 
-	console.log("   sch_1:", sch_image_path_1)
-	console.log("   sch_2:", sch_image_path_2)
+	console.log("sch_1:", sch_image_path_1)
+	console.log("sch_2:", sch_image_path_2)
 
-	document.getElementById("diff1_xlink_sch").href.baseVal = sch_image_path_1 + "?t=" + timestamp
-	document.getElementById("diff2_xlink_sch").href.baseVal = sch_image_path_2 + "?t=" + timestamp
+	document.getElementById("diff-1-sch-xlink").href.baseVal = sch_image_path_1 + "?t=" + timestamp
+	document.getElementById("diff-2-sch-xlink").href.baseVal = sch_image_path_2 + "?t=" + timestamp
 }
 
 function change_layer() {
@@ -291,17 +291,17 @@ function change_layer() {
 
 	var timestamp = new Date().getTime();
 
-	current_src1 = document.getElementById("diff1_xlink").href.baseVal;
-	current_src2 = document.getElementById("diff2_xlink").href.baseVal;
+	current_src1 = document.getElementById("diff-1-pcb-xlink").href.baseVal;
+	current_src2 = document.getElementById("diff-2-pcb-xlink").href.baseVal;
 
 	commit1= current_src1.split("/")[1]
 	commit2 = current_src2.split("/")[1]
 
-	var ref1 = "../" + commit1+ "/" + "board-" + layers[selected_layer].value + ".svg"
+	var ref1 = "../" + commit1 + "/" + "board-" + layers[selected_layer].value + ".svg"
 	var ref2 = "../" + commit2 + "/" + "board-" + layers[selected_layer].value + ".svg"
 
-	document.getElementById("diff1_xlink").href.baseVal = ref1 + "?t=" + timestamp;
-	document.getElementById("diff2_xlink").href.baseVal = ref2 + "?t=" + timestamp;
+	document.getElementById("diff-1-pcb-xlink").href.baseVal = ref1 + "?t=" + timestamp;
+	document.getElementById("diff-2-pcb-xlink").href.baseVal = ref2 + "?t=" + timestamp;
 }
 
 // =======================================
@@ -310,77 +310,57 @@ function change_layer() {
 
 window.onload = function()
 {
-	window.panZoomDiff = svgPanZoom('#svg-id1', {
-		zoomEnabled: true,
-		controlIconsEnabled: true,
-		center: true,
-		minZoom: 1,
-		maxZoom: 20,
-	});
+	window.panZoomDiff_sch = svgPanZoom(
+		'#svg-id-sch', {
+			zoomEnabled: true,
+			controlIconsEnabled: true,
+			center: true,
+			minZoom: 1,
+			maxZoom: 20
+		}
+	);
 
-	window.panZoomDiff = svgPanZoom('#svg-id2', {
-		zoomEnabled: true,
-		controlIconsEnabled: true,
-		center: true,
-		minZoom: 1,
-		maxZoom: 20,
-	});
+	window.panZoomDiff_pcb = svgPanZoom(
+		'#svg-id-pcb', {
+			zoomEnabled: true,
+			controlIconsEnabled: true,
+			center: true,
+			minZoom: 1,
+			maxZoom: 20
+		}
+	);
 };
 
 // =======================================
-// Schematic/Layout Toggle
+// Toggle Schematic/Layout
 // =======================================
 
-// function myFunction() {
-// 	if (document.getElementById("schematic").checked) {
-// 		show_schematic()
-// 	} else if (document.getElementById("layout").checked) {
-// 		show_layout()
-// 	}
-// }
-
-function blur_toolbar() {
-	var view_mode = document.getElementById("view_mode");
-	var view_type = document.getElementById("view_type");
-
-	view_mode.blur();
-	view_type.blur();
-}
-
-function show_schematic()
+function show_sch()
 {
-	console.log("> show_schematic")
+	// Show schematic image
+	var sch_view = document.getElementById("diff-sch");
+	sch_view.style.display = "inline";
 
 	// Hide layout image
-	var layout_view = document.getElementById("svg-id1");
-	layout_view.style.display = "none";
+	var pcb_view = document.getElementById("diff-pcb");
+	pcb_view.style.display = "none";
 
 	// Hide layers list
 	var layers_list = document.getElementById("layers_list");
 	layers_list.style.display = "none";
-
-	// Show schematic image
-	var schematic_view = document.getElementById("svg-id2");
-	schematic_view.style.display = "inline";
-
-	// blur_toolbar();
 }
 
-function show_layout()
+function show_pcb()
 {
-	console.log("> show_layout")
+	// Hide layers list
+	var sch_view = document.getElementById("diff-sch");
+	sch_view.style.display = "none";
 
 	// Show layout image
-	var layout_view = document.getElementById("svg-id1");
-	layout_view.style.display = "inline";
+	var pcb_view = document.getElementById("diff-pcb");
+	pcb_view.style.display = "inline";
 
 	// Show layers list
 	var layers_list = document.getElementById("layers_list");
 	layers_list.style.display = "inline";
-
-	// Hide layers list
-	var schematic_view = document.getElementById("svg-id2");
-	schematic_view.style.display = "none";
-
-	// blur_toolbar();
 }
