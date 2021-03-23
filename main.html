@@ -1,5 +1,5 @@
-
 <!DOCTYPE HTML>
+
 <html lang="en">
 
 <head>
@@ -10,17 +10,18 @@
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
-	<script src="https://code.iconify.design/1/1.0.7/iconify.min.js"></script>
+	<script integrity="" src="https://code.iconify.design/1/1.0.7/iconify.min.js"></script>
 
-	<script src="https://code.jquery.com/jquery-3.5.0.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.0/dist/svg-pan-zoom.min.js"></script>
+	<script integrity="" src="https://code.jquery.com/jquery-3.5.0.js"></script>
+	<script integrity="" src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.0/dist/svg-pan-zoom.min.js"></script>
 
-	<link rel="stylesheet" href="kdiff.css">
-	<script src="kdiff.js"></script>
+	<link integrity="" rel="stylesheet" href="kdiff.css">
+	<script integrity="" src="kdiff.js"></script>
 
 	<title>[PROJECT_TITLE]</title>
 
 </head>
+
 <body>
 
 	<div class="container fill no-gutters">
@@ -28,6 +29,7 @@
 		<div class="row fill">
 
 			<div class="col col-3" style="background-color: #333; overflow: hidden">
+
 				<div class="list-group" style="padding: 0px 0px 15px 0px; margin-left:10px; height: 100vh;">
 					<span style="margin-top: 1em"></span>
 					<h3 class="text-light">Kicad Revision Inspector</h3>
@@ -39,9 +41,10 @@
 						<span style="margin-right:0.5em" class="iconify" data-icon="fa-solid:code-branch" data-inline="false"></span>
 						Commits
 						<small class="text-sm text-muted">
-							: Walk through using <kbd>[</kbd>/<kbd>]</kbd> or
+							: Walk through using
 							<kbd><span class="iconify" data-icon="typcn-arrow-up" data-inline="false"></span></i></kbd>/
-							<kbd><span class="iconify" data-icon="typcn-arrow-down" data-inline="false"></span></i></kbd>.
+							<kbd><span class="iconify" data-icon="typcn-arrow-down" data-inline="false"></span></i></kbd>
+							or <kbd>[</kbd>/<kbd>]</kbd>.
 						</small>
 					</p>
 
@@ -61,28 +64,42 @@
 
 					<div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons" style="padding: 10px;">
 
-						<div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
+						<div id="view_mode" class="btn-toolbar" role="toolbar" aria-label="View Mode">
 							<div class="btn-group me-2" role="group" aria-label="First group">
 
-								<label class="btn btn-secondary ">
-									<input type="radio" name="options" id="option1" autocomplete="off" checked onclick="show_layout()">
-									<span class="iconify" style="width: 20px; height: 20px;" data-icon="carbon:schematics" data-inline="false"></span>
+								<label id="show_schematic_lbl" class="btn btn-secondary active">
+									<input id="show_schematic" type="radio" name="view_mode" value="show_schematic" data="show_schematic" checked autocomplete="off">
+									<span class="iconify" style="width: 20px; height: 20px;" data-icon="carbon:schematics" data-inline="false" onclick="show_schematic()"></span>
 								</label>
 
-								<label class="btn btn-secondary">
-									<input type="radio" name="options" id="option2" autocomplete="off" onclick="show_schematic()">
-									<span class="iconify" style="width: 20px; height: 20px;" data-icon="codicon:circuit-board" data-inline="false"></span>
+								<label id="show_layout_lbl" class="btn btn-secondary ">
+									<input id="show_layout" type="radio" name="view_mode" value="show_layout" data="show_layout" autocomplete="off">
+									<span class="iconify" style="width: 20px; height: 20px;" data-icon="codicon:circuit-board" data-inline="false" onclick="show_layout()"></span>
 								</label>
 
 							</div>
-						
-<!-- 							<span style="width: 1em"></span>
-						
-							<div class="btn-group me-2 disabled" role="group" aria-label="Second group">
-								<button type="button" class="btn btn-secondary active" disabled="disabled" >Onion</button>
-								<button type="button" class="btn btn-secondary" disabled="disabled" >Swipe</button>
-								<button type="button" class="btn btn-secondary" disabled="disabled" >2-Up</button>
+
+							<span style="width: 1em"></span>
+
+<!-- 							<div classid="view_type" ="btn-toolbar btn-group me-2" role="toolbar" aria-label="View Type">
+
+								<label class="btn btn-secondary ">
+									<input type="radio" name="view_type" id="Onion" autocomplete="off" checked>
+									Onion
+								</label>
+
+								<label class="btn btn-secondary ">
+									<input type="radio" name="view_type" id="Swipe" autocomplete="off">
+									Swipe
+								</label>
+
+								<label class="btn btn-secondary ">
+									<input type="radio" name="view_type" id="2-Up" autocomplete="off">
+									2-Up
+								</label>
+
 							</div> -->
+
 						</div>
 
 					</div>
@@ -93,153 +110,70 @@
 					<div class="row" style="flex: 1;">
 						<div class="col col-11" style="flex: 1;">
 
-							<div id="compo-container1" style="width: 100%; height: 80vh;">
+							<div id="compo-container1" style="display: inline; width: 100%; height: 80vh;">
 
-<!-- 								<svg id="svg-id1" xmlns="http://www.w3.org/2000/svg"
+								<svg id="svg-id1" xmlns="http://www.w3.org/2000/svg"
 									style="display: none; width: inherit; min-width: inherit; max-width: inherit; height: inherit; min-height: inherit; max-height: inherit;" version="1.1">
-										<g>
-											<svg id="compo1">
-												<defs>
-													<filter id="f1">
-													<feColorMatrix id="c1" type="matrix" values="
-													1   0   0   0   0
+									<g>
+										<svg id="compo1">
+											<defs>
+												<filter id="f1">
+												<feColorMatrix id="c1" type="matrix" values="1   0   0   0   0
 													0   1   0   1   0
 													0   0   1   1   0
 													0   0   0   1   0 " />
-													</filter>
-												</defs>
-												<image id="diff1_xlink" x="0" y="0" height="100%" width="100%" filter="url(#f1)" href="[INITIAL_COMMIT_1_LAYOUT]" />
-											</svg>
-
-											<svg id="compo2">
-												<defs>
-													<filter id="f2">
-													<feColorMatrix id="c2" type="matrix" values="
-													1   0   0   0   0
-													0   1   0   1   0
-													0   0   1   1   0
-													0   0   0   1   0 " />
-													</filter>
+												</filter>
+											</defs>
+											<image id="diff1_xlink" x="0" y="0" height="100%" width="100%" filter="url(#f1)" href="[INITIAL_COMMIT_1_LAYOUT]" />
+										</svg>
+										<svg id="compo2">
+											<defs>
+												<filter id="f2">
+												<feColorMatrix id="c2" type="matrix" values="1   0   0   1   0
+													0   1   0   0   0
+													0   0   1   0   0
+													0   0   0  .5   0" />
+												</filter>
 												</defs>
 												<image id="diff2_xlink" x="0" y="0" height="100%" width="100%" filter="url(#f2)" href="[INITIAL_COMMIT_2_LAYOUT]" />
-											</svg>
-										</g>
-								</svg> -->
-
-						        <svg id="svg-id1" xmlns="http://www.w3.org/2000/svg" 
-						        	style="display: none; width: inherit; min-width: inherit; max-width: inherit; height: inherit; min-height: inherit; max-height: inherit;" version="1.1">
-						            <g>
-						                <svg id="compo1">
-						                    <defs>
-						                        <filter id="f1">
-						                            <feColorMatrix id="c1" type="matrix" values="
-						                            1   0   0   0   0
-						                			0   1   0   1   0
-						                			0   0   1   1   0
-						                			0   0   0   1   0 " />
-							                       </filter>
-						                    </defs>
-						                    <image id="diff1_xlink" x="0" y="0" height="100%" width="100%" filter="url(#f1)" href="[INITIAL_COMMIT_1_LAYOUT]" />
-						                </svg>
-
-						                <svg id="compo2">
-						                    <defs>
-						                        <filter id="f2">
-						                            <feColorMatrix id="c2" type="matrix" values="
-						                            1   0   0   1   0
-						                			0   1   0   0   0
-						                			0   0   1   0   0
-						                			0   0   0  .5   0" />
-						                        </filter>
-						                    </defs>
-						                    <image id="diff2_xlink" x="0" y="0" height="100%" width="100%" filter="url(#f2)" href="[INITIAL_COMMIT_2_LAYOUT]" />
-						                </svg>
-						            </g>
-						        </svg>
-						    </div>
-
-
-
-
-							<div id="compo-container2" style="width: 100%; height: 80vh;">
-
-<!-- 								<svg id="svg-id2" xmlns="http://www.w3.org/2000/svg"
-									style="display: inline; width: inherit; min-width: inherit; max-width: inherit; height: inherit; min-height: inherit; max-height: inherit;" version="1.1">
-										<g>
-											<svg id="compo1">
-												<defs>
-													<filter id="f1">
-													<feColorMatrix id="c1" type="matrix" values="
-													1   0   0   0   0
-													0   1   0   1   0
-													0   0   1   1   0
-													0   0   0   1   0 " />
-													</filter>
-												</defs>
-												<image id="diff1_xlink_sch" x="0" y="0" height="100%" width="100%" filter="url(#f1)" href="[INITIAL_COMMIT_1_SCH]" />
-											</svg>
-											<svg id="compo2">
-												<defs>
-													<filter id="f2">
-													<feColorMatrix id="c2" type="matrix" values="
-													1   0   0   0   0
-													0   1   0   1   0
-													0   0   1   1   0
-													0   0   0   1   0 " />
-													</filter>
-												</defs>
-												<image id="diff2_xlink_sch" x="0" y="0" height="100%" width="100%" filter="url(#f2)" href="[INITIAL_COMMIT_2_SCH]" />
-											</svg>
-										</g>
+										</svg>
+									</g>
 								</svg>
- -->								
 
-								<svg id="svg-id2" xmlns="http://www.w3.org/2000/svg" 
-						        	style="display: inline; width: inherit; min-width: inherit; max-width: inherit; height: inherit; min-height: inherit; max-height: inherit;" version="1.1">
-						            <g>
-						                <svg id="compo1">
-						                    <defs>
-						                        <filter id="f1">
-						                            <feColorMatrix id="c1" type="matrix" values="
-						                            1   0   0   0   0
-						                			0   1   0   1   0
-						                			0   0   1   1   0
-						                			0   0   0   1   0 " />
-						                        </filter>
-						                    </defs>
-						                    <image id="diff1_xlink_sch" x="0" y="0" height="100%" width="100%" filter="url(#f1)" href="[INITIAL_COMMIT_1_SCH]" />
-						                </svg>
+								<svg id="svg-id2" xmlns="http://www.w3.org/2000/svg"
+									style="display: inline; width: inherit; min-width: inherit; max-width: inherit; height: inherit; min-height: inherit; max-height: inherit;" version="1.1">
+									<g>
+										<svg id="compo1">
+											<defs>
+											<filter id="f1">
+											<feColorMatrix id="c1" type="matrix" values="1   0   0   0   0
+											0   1   0   1   0
+											0   0   1   1   0
+											0   0   0   1   0 " />
+											</filter>
+											</defs>
+											<image id="diff1_xlink_sch" x="0" y="0" height="100%" width="100%" filter="url(#f1)" href="[INITIAL_COMMIT_1_SCH]" />
+										</svg>
 
-						                <svg id="compo2">
-						                    <defs>
-						                        <filter id="f2">
-						                            <feColorMatrix id="c2" type="matrix" values="
-						                            1   0   0   1   0
-						                			0   1   0   0   0
-						                			0   0   1   0   0
-						                			0   0   0  .5   0" />
-						                        </filter>
-						                    </defs>
-						                    <image id="diff2_xlink_sch" x="0" y="0" height="100%" width="100%" filter="url(#f2)" href="[INITIAL_COMMIT_2_SCH]" />
-						                </svg>
-						            </g>
-						        </svg>
-
-
+										<svg id="compo2">
+											<defs>
+												<filter id="f2">
+												<feColorMatrix id="c2" type="matrix" values="1   0   0   1   0
+													0   1   0   0   0
+													0   0   1   0   0
+													0   0   0  .5   0" />
+												</filter>
+											</defs>
+											<image id="diff2_xlink_sch" x="0" y="0" height="100%" width="100%" filter="url(#f2)" href="[INITIAL_COMMIT_2_SCH]" />
+										</svg>
+									</g>
+								</svg>
 							</div>
 						</div>
 
+						<div class="col col-2" style="height: 90vh" >
 
-
-
-
-
-
-
-
-						<div class="col col-2" style="height: 90vh; background-color: #222" id="layers_form" style="display: none;">
-
-							<div class="list-group" >
+							<div class="list-group" id="layers_list" style="display: none;">
 
 								<div class="form-check">
 
@@ -248,7 +182,9 @@
 									<p class="text-light">
 										<span style="margin-right:0.5em" class="iconify" data-icon="teenyicons:layers-solid" data-inline="false"></span>
 										Layers <small class="text-sm text-muted">
-											: Cycle using <kbd><span class="iconify" data-icon="typcn-arrow-left" data-inline="false"></span></kbd> and <kbd><span class="iconify" data-icon="typcn-arrow-right" data-inline="false"></span></kbd> keys</small>
+											: Cycle using
+											<kbd><span class="iconify" data-icon="typcn-arrow-left" data-inline="false"></span></kbd>/
+											<kbd><span class="iconify" data-icon="typcn-arrow-right" data-inline="false"></span>.
 									</p>
 
 									<div class="row">
@@ -369,8 +305,8 @@
 						</div>
 
 					</div>
-
 				</div>
+
 			</div>
 
 			<div class="col col-3" style="background-color: #345">
@@ -382,7 +318,7 @@
 	</div>
 
 	<!-- jQuery first, then Popper.js, then Bootstrap JS -->
-	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6	jizo" crossorigin="anonymous"></script>
+	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
 	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 

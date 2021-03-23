@@ -11,7 +11,6 @@ $(document).ready(function () {
 	});
 });
 
-
 // =======================================
 // HANDLE KEY PRESSES
 // =======================================
@@ -21,7 +20,7 @@ let keysDown = {};
 window.onkeydown = function(e)
 {
 	keysDown[e.key] = true;
-	// console.log(keysDown);
+	console.log(keysDown);
 
 	// =======================================
 	// Toggle Schematic/Layout View
@@ -29,48 +28,39 @@ window.onkeydown = function(e)
 
 	if (keysDown["s"])
 	{
-		var elements = document.getElementsByName('view_mode');
-		var checkedButton;
+		console.log("==========================")
 
-		console.log(elements);
+		var view_mode = $('#view_mode input[name="view_mode"]:checked').val();
+		console.log("view_mode: ", view_mode)
 
-		elements.forEach(e => {
-		if (e.checked) {
-			checkedButton = e.value;
-		}
-		});
+		var next_view_mode = ""
 
-		console.log(checkedButton);
+		if (view_mode == "show_schematic") {
+			next_view_mode = "show_layout"
 
-		if (checkedButton == "schematic") {
-			new_view = "layout"
 			show_layout()
-			// $("layout").set("checked", true)
+
+			document.getElementById("show_schematic_lbl").classList.remove('active');
+			document.getElementById("show_schematic").checked = false;
+
+			document.getElementById("show_layout_lbl").classList.add('active');
+			document.getElementById("show_layout").checked = true;
 		}
 		else {
-			new_view = "schematic"
+			next_view_mode = "show_schematic"
+
 			show_schematic()
-			// $("schematic").set("checked", true)
+
+			document.getElementById("show_schematic_lbl").classList.add('active');
+			document.getElementById("show_schematic").checked = true;
+
+			document.getElementById("show_layout_lbl").classList.remove('active');
+			document.getElementById("show_layout").checked = false;
 		}
-
-		// var view = $('input[name="view_mode"]:checked').val();
-		// var new_view = ""
-
-		// if (view == "schematic") {
-		// 	new_view = "layout"
-		// 	show_layout()
-		// }
-		// else {
-		// 	view = "layout"
-		// 	new_view = "schematic"
-		// 	show_schematic()
-		// }
-
-		// console.log("view: ", view)
-		// console.log("new_view: ", new_view)
-
-		// $("input[name=view_mode][value=" + view + "]").checked = false
-		// $("input[name=view_mode][value=" + new_view + "]").checked = true
+		console.log("1", document.getElementById("show_schematic_lbl").classList);
+		console.log("2", document.getElementById("show_schematic").checked);
+		console.log("3", document.getElementById("show_layout_lbl").classList);
+		console.log("4", document.getElementById("show_layout").checked);
 	}
 
 	// =======================================
@@ -104,7 +94,6 @@ window.onkeydown = function(e)
 		}
 
 		update_commits()
-		keysDown = {};
 	}
 
 	if (keysDown.ArrowDown)
@@ -131,7 +120,6 @@ window.onkeydown = function(e)
 		}
 
 		update_commits()
-		keysDown = {};
 	}
 
 	// =======================================
@@ -164,7 +152,6 @@ window.onkeydown = function(e)
 		}
 
 		update_commits()
-		keysDown = {};
 	}
 
 	if (keysDown.ArrowUp)
@@ -192,7 +179,6 @@ window.onkeydown = function(e)
 		}
 
 		update_commits()
-		keysDown = {};
 	}
 
 	// =======================================
@@ -235,6 +221,8 @@ window.onkeydown = function(e)
 
 		change_layer()
 	}
+
+	keysDown = {};
 }
 
 // =======================================
@@ -267,6 +255,7 @@ function update_commits()
 		}
 	}
 
+	console.log("==========================")
 	console.log("layer:", selected_layer)
 
 	if(! selected_layer) {
@@ -294,7 +283,6 @@ function update_commits()
 	document.getElementById("diff1_xlink_sch").href.baseVal = sch_image_path_1 + "?t=" + timestamp
 	document.getElementById("diff2_xlink_sch").href.baseVal = sch_image_path_2 + "?t=" + timestamp
 }
-
 
 function change_layer() {
 
@@ -361,10 +349,10 @@ function blur_toolbar() {
 
 function show_schematic()
 {
-	console.log("show_schematic")
+	console.log("> show_schematic")
 
 	// Hide layout image
-	var layout_view = document.getElementById("compo-container1");
+	var layout_view = document.getElementById("svg-id1");
 	layout_view.style.display = "none";
 
 	// Hide layers list
@@ -372,18 +360,18 @@ function show_schematic()
 	layers_list.style.display = "none";
 
 	// Show schematic image
-	var schematic_view = document.getElementById("compo-container2");
+	var schematic_view = document.getElementById("svg-id2");
 	schematic_view.style.display = "inline";
 
-	blur_toolbar();
+	// blur_toolbar();
 }
 
 function show_layout()
 {
-	console.log("show_layout")
+	console.log("> show_layout")
 
-	// Show layout sch_image_path_2
-	var layout_view = document.getElementById("compo-container1");
+	// Show layout image
+	var layout_view = document.getElementById("svg-id1");
 	layout_view.style.display = "inline";
 
 	// Show layers list
@@ -391,8 +379,8 @@ function show_layout()
 	layers_list.style.display = "inline";
 
 	// Hide layers list
-	var schematic_view = document.getElementById("compo-container2");
+	var schematic_view = document.getElementById("svg-id2");
 	schematic_view.style.display = "none";
 
-	blur_toolbar();
+	// blur_toolbar();
 }

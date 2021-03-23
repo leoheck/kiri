@@ -1,33 +1,40 @@
 #!/bin/bash
 
+
 readlink_osx()
 {
-	TARGET_FILE=$1
+	target_file=$1
 
-	cd $(dirname "$TARGET_FILE")
-	TARGET_FILE=$(basename "$TARGET_FILE")
+	cd $(dirname "$target_file")
+	target_file=$(basename "$target_file")
 
 	# Iterate down a (possible) chain of symlinks
-	while [ -L "$TARGET_FILE" ]
+	while [ -L "$target_file" ]
 	do
-		TARGET_FILE=$(readlink "$TARGET_FILE")
-		cd $(dirname "$TARGET_FILE")
-		TARGET_FILE=$(basename "$TARGET_FILE")
+		target_file=$(readlink "$target_file")
+		cd $(dirname "$target_file")
+		target_file=$(basename "$target_file")
 	done
 
 	# Compute the canonicalized name by finding the physical path
 	# for the directory we're in and appending the target file.
-	PHYS_DIR=$(pwd -P)
+	physical_dir=$(pwd -P)
 
-	RESULT="$PHYS_DIR/$TARGET_FILE"
+	RESULT="$physical_dir/$target_file"
 
 	echo $RESULT
 }
 
-ctrl_c()
+readlink_()
 {
-	echo "** Trapped CTRL-C"
-	exit 1
+	case $OSTYPE in
+		darwin*)
+			readlink_osx $@
+			;;
+		*)
+			readlink -f $@
+			;;
+	esac
 }
 
 tac_()
@@ -52,6 +59,12 @@ xdg-open_()
 			xdg-open $@
 		;;
 	esac
+}
+
+ctrl_c()
+{
+	echo "** Trapped CTRL-C"
+	exit 1
 }
 
 insert_commits()
@@ -98,7 +111,7 @@ insert_commits()
 		fi
 
 		read -r -d '' COMMIT_HTML <<- EOM
-		    <input class="chkGroup" type="checkbox" id="${hash}" name="commit1" value="${hash}" ${checked} onchange="update_commits()"/>
+		    <input class="chkGroup" type="checkbox" id="${hash}" name="commit" value="${hash}" ${checked} onchange="update_commits()"/>
 		    <label class="text-sm-left list-group-item" for="${hash}">
 		      <table style="width:100%">
 		        <tr>
@@ -148,7 +161,7 @@ fix_urls_multi_project()
 
 generate_comparisons()
 {
-	SCRIPTPATH=$1
+	script_path=$1
 	kicad_pcb=$2
 	project=$3
 
@@ -156,20 +169,24 @@ generate_comparisons()
 	extension="${filename##*.}"
 	board_name="${filename%.*}"
 
-
 	if [[ $project == "" ]]; then
 		output_folder=kidiff
 	else
 		output_folder=kidiff/$project
 	fi
 
+	if [[ "$REMOVE_KDIFF_FOLDER" == "1" ]]; then
+		rm -rf ${output_folder}
+	fi
+
 	mkdir -p ${output_folder}/web/
 	mkdir -p ${output_folder}/diff/
-	mkdir -p ${output_folder}/sch/
 
-	commits=$(git log --date=local '--pretty=format:%h | %ai | %an | %s' $kicad_pcb *.sch)
-	# commits=$(git log --date=local '--pretty=format:%h | %ai | %an | %s')
-
+	if [[ "$ALL_COMMITS" == "0" ]]; then
+		commits=$(git log --date=local '--pretty=format:%h | %ai | %an | %s' $kicad_pcb *.sch)
+	else
+		commits=$(git log --date=local '--pretty=format:%h | %ai | %an | %s')
+	fi
 
 	a=$(echo "$commits" | tac_ | cut -d' '  -f1);
 	b=$a
@@ -184,7 +201,7 @@ generate_comparisons()
 	echo "Generating ${nab} comparisons"
 	echo
 
-	# bkp for plotgitsch
+	# Bkp for plotgitsch
 	cp -f .git/HEAD HEAD.bkp
 
 	n=0
@@ -233,7 +250,7 @@ generate_comparisons()
 
 				# WORKAROUND FOR ISSUE: plotgitsch is messing with git
 				cp -f HEAD.bkp .git/HEAD
-				# Custom version does not use -k
+				# Custom version does not use -kidiff
 				plotgitsch -l ${board_name}-cache.lib -c ${REMOVED}:${ADDED}:${UNCHANGED}:${BACKGROUND} ${i} ${j} > /dev/null
 				cp -f HEAD.bkp .git/HEAD
 
@@ -259,70 +276,66 @@ generate_comparisons()
 					mv -f sch2.svg ${output_folder}/$j/sch.svg
 				fi
 
-				# Not all commits have this (not needed too)
 				if [ -f sch-diff.svg ]; then
 					rm -rf sch-diff.svg
-					# sed -i 's/fill="#222222"/fill="#22222200"/g' sch-diff.svg
-					# mv -f sch-diff.svg ${output_folder}/sch-$i-$j.svg
 				fi
 
 			fi
 		done
 	done
 
-	# Move curent page to use the real paths of things
-	show_commits "$commits" > ${output_folder}/web/commits.out
-
-	cp -f ${SCRIPTPATH}/main.html ${output_folder}/web/main.html
+	# Copy assets
+	cp -f ${script_path}/main.html ${output_folder}/web/main.html
+	cp -f ${script_path}/kdiff.css ${output_folder}/web/
+	cp -f ${script_path}/kdiff.js  ${output_folder}/web/
+	cp -f ${script_path}/blank.svg ${output_folder}/
 
 	insert_commits "${output_folder}/web/main.html" "$commits"
-
-	commit1=$(echo "$commits" | head -n1 | tail -n1 | cut -d" " -f1)
-	commit2=$(echo "$commits" | head -n2 | tail -n1 | cut -d" " -f1)
 
 	# Update board title
 	title=$(grep -i "(title " -R ${kicad_pcb} | cut -d"\"" -f 2)
 	sed -i "s|\[PROJECT_TITLE\]|${title}|g" ${output_folder}/web/main.html
 
-	# Update initial schematic
+	commit1=$(echo "$commits" | head -n1 | tail -n1 | cut -d" " -f1)
+	commit2=$(echo "$commits" | head -n2 | tail -n1 | cut -d" " -f1)
+
+	# Update initial schematic images
 	sed -i "s|\[INITIAL_COMMIT_1_SCH\]|../${commit1}/sch.svg|g" ${output_folder}/web/main.html
 	sed -i "s|\[INITIAL_COMMIT_2_SCH\]|../${commit2}/sch.svg|g" ${output_folder}/web/main.html
 
-	# Update initial layout
+	# Update initial layout images
 	sed -i "s|\[INITIAL_COMMIT_1_LAYOUT\]|../${commit1}/${board_name}-F_Cu.svg|g" ${output_folder}/web/main.html
 	sed -i "s|\[INITIAL_COMMIT_2_LAYOUT\]|../${commit2}/${board_name}-F_Cu.svg|g" ${output_folder}/web/main.html
-
-	# Blank image
-	cp -f $SCRIPTPATH/blank.svg ${output_folder}/
 }
 
 
 # ====================================================================
+# ====================================================================
 
-case $OSTYPE in
-	# MaxOS
-	darwin*)
-		SCRIPT=$(readlink_osx $0)
-		SCRIPTPATH=$(dirname $SCRIPT)
-		;;
 
-	# Linux
-	*)
-		SCRIPT=$(readlink -f $0)
-		SCRIPTPATH=$(dirname $SCRIPT)
-		;;
-esac
+script=$(readlink_ -f $0)
+script_path=$(dirname $script)
 
-# Makesure gitplotsch is in the path
+# Make sure gitplotsch is in the PATH
 eval $(opam config env)
+export PATH=../kdiff/git-imgdiff:$PATH
 
 trap ctrl_c INT
+
 kicad_pcb=$1
 project=$2
+
+ALL_COMMITS=0
+REMOVE_KDIFF_FOLDER=0
+
+# Arguments
+# -r remove kidiff folder before run
+# -a use all commits
+
 
 # Run it from git root (get the project path automatically)
 # Pass git .pro file instead of the board
 
-generate_comparisons "$SCRIPTPATH" "$kicad_pcb" "$project"
+generate_comparisons "$script_path" "$kicad_pcb" "$project"
 
 xdg-open_ "${output_folder}/web/main.html" & 2> /dev/null

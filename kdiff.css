@@ -23,7 +23,7 @@ html, body {
 }
 
 /* ==============================
-   COMMITS LIST
+   Commits List
    ==============================
 */
 
@@ -88,7 +88,24 @@ html, body {
 }
 
 /* ==============================
-   LAYERS LIST
+   Toolbar buttons
+   ==============================
+*/
+
+.btn-group input[type="radio"] {
+	display: none;
+}
+
+.btn-group input[type="radio"] + .btn-group-item {
+	cursor: pointer;
+	font-family: monospace;
+}
+
+.btn-group input[type="radio"] + .btn-group-item:before {
+}
+
+/* ==============================
+   Layers List
    ==============================
 */
 
@@ -117,31 +134,5 @@ html, body {
 }
 
 .list-group input[type="radio"]:checked + .list-group-item:before {
-	color: inherit;
-}
-
-/* ==============================
-   LAYERS LIST
-   ==============================
-*/
-
-.toolbar-group input[type="radio"] {
-	display: none;
-}
-
-.toolbar-group input[type="radio"] + .toolbar-group-item {
-	cursor: pointer;
-	font-family: monospace;
-}
-
-.toolbar-group input[type="radio"] + .toolbar-group-item:before {
-}
-
-.toolbar-group input[type="radio"]:checked + .toolbar-group-item {
-	background-color: #111111;
-	color: #FFF;
-}
-
-.toolbar-group input[type="radio"]:checked + .toolbar-group-item:before {
 	color: inherit;
 }
