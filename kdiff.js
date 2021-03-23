@@ -31,7 +31,7 @@ window.onkeydown = function(e)
 		console.log("==========================")
 
 		var view_mode = $('#view_mode input[name="view_mode"]:checked').val();
-		console.log("view_mode: ", view_mode)
+		console.log("view_mode:", view_mode)
 
 		var next_view_mode = ""
 
@@ -310,25 +310,53 @@ function change_layer() {
 
 window.onload = function()
 {
-	window.panZoomDiff_sch = svgPanZoom(
+	var panZoom_sch = svgPanZoom(
 		'#svg-id-sch', {
 			zoomEnabled: true,
-			controlIconsEnabled: true,
+			controlIconsEnabled: false,
 			center: true,
 			minZoom: 1,
-			maxZoom: 20
+			maxZoom: 20,
+			// panEnabled: true,
+			// dblClickZoomEnabled: true,
+			// mouseWheelZoomEnabled: true,
+			// fit: true,
+			// refreshRate: 'auto'
 		}
 	);
 
-	window.panZoomDiff_pcb = svgPanZoom(
+	var panZoom_pcb = svgPanZoom(
 		'#svg-id-pcb', {
 			zoomEnabled: true,
-			controlIconsEnabled: true,
+			controlIconsEnabled: false,
 			center: true,
 			minZoom: 1,
-			maxZoom: 20
+			maxZoom: 20,
 		}
 	);
+
+    document.getElementById('zoom-in').addEventListener('click', function(ev) 
+    {
+      ev.preventDefault()
+      panZoom_sch.zoomIn()
+      panZoom_pcb.zoomIn()
+    });
+
+    document.getElementById('zoom-out').addEventListener('click', function(ev)
+    {
+      ev.preventDefault()
+      panZoom_sch.zoomOut()
+      panZoom_pcb.zoomOut()
+    });
+
+    document.getElementById('reset').addEventListener('click', function(ev)
+    {
+      ev.preventDefault()
+      panZoom_sch.resetZoom()
+      panZoom_sch.fit()
+      panZoom_pcb.resetZoom()
+      panZoom_pcb.fit()
+    });
 };
 
 // =======================================
