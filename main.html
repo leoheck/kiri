@@ -1,394 +1,299 @@
 <!DOCTYPE HTML>
-
 <html lang="en">
-
-<head>
-
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-
-	<script integrity="" src="https://code.iconify.design/1/1.0.7/iconify.min.js"></script>
-
-	<script integrity="" src="https://code.jquery.com/jquery-3.5.0.js"></script>
-	<script integrity="" src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.0/dist/svg-pan-zoom.min.js"></script>
-
-	<link integrity="" rel="stylesheet" href="kdiff.css">
-	<script integrity="" src="kdiff.js"></script>
-
-	<title>[PROJECT_TITLE]</title>
-
-</head>
-
-<body>
-
-	<div class="container fill no-gutters" style="background-color: #333;">
-
-		<div class="row fill">
-
-			<div class="col col-3" style="overflow: hidden">
-
-				<div class="list-group" style="padding: 0px 0px 15px 0px; margin-left:10px; height: 100vh;">
-					<span style="margin-top: 1em"></span>
-					<h3 class="text-light">Kicad Revision Inspector</h3>
-
-					<h4 class="text-light text-bold">ASSoC Project</h4>
-					<p class="text-light">Review ABC123</p>
-
-					<p class="text-light" >
-						<span style="margin-right:0.5em" class="iconify" data-icon="fa-solid:code-branch" data-inline="false"></span>
-						Commits
-						<small class="text-sm text-muted">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+		<script integrity="" src="https://code.iconify.design/1/1.0.7/iconify.min.js"></script>
+		<script integrity="" src="https://code.jquery.com/jquery-3.5.0.js"></script>
+		<script integrity="" src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.0/dist/svg-pan-zoom.min.js"></script>
+		<link integrity="" rel="stylesheet" href="kdiff.css">
+		<script integrity="" src="kdiff.js"></script>
+		<title>[PROJECT_TITLE]</title>
+	</head>
+	<body>
+		<div class="container fill no-gutters" style="background-color: #333;">
+			<div class="row fill">
+				<div class="col col-3" style="overflow: hidden">
+					<div class="list-group" style="padding: 0px 0px 15px 0px; margin-left:10px; height: 100vh;">
+						<span style="margin-top: 1em"></span>
+						<h3 class="text-light">Kicad Revision Inspector</h3>
+						<h4 class="text-light text-bold">ASSoC Project</h4>
+						<p class="text-light">Review ABC123</p>
+						<p class="text-light" >
+							<span style="margin-right:0.5em" class="iconify" data-icon="fa-solid:code-branch" data-inline="false"></span>
+							Commits
+							<small class="text-sm text-muted">
 							: Walk through using
 							<kbd><span class="iconify" data-icon="typcn-arrow-up" data-inline="false"></span></i></kbd>/
 							<kbd><span class="iconify" data-icon="typcn-arrow-down" data-inline="false"></span></i></kbd>
 							or <kbd>[</kbd>/<kbd>]</kbd>.
-						</small>
-					</p>
-
-					<div class="form-check scrollbox" style="padding: 0px 0px 10px 0px ; margin-left:0px; overflow-y: scroll">
-						<form id="commits_form" class="overflow-auto scrollbox-content">
-							<!-- FILL_COMMITS_HERE -->
-						</form>
-					</div>
-				</div>
-			</div>
-
-
-			<div class="col col-6" style="background-color: #111;">
-
-				<div class="row" style="width : 100%; margin: 0px">
-
-					<div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons" style="padding: 10px;">
-
-						<div id="view_mode" class="btn-toolbar" role="toolbar" aria-label="View Mode">
-
-							<div class="btn-group me-2" role="group" aria-label="First group">
-
-								<label id="show_sch_lbl" class="btn btn-secondary active">
-									<input id="show_sch" type="radio" name="view_mode" value="show_sch" data="show_sch" checked autocomplete="off">
-									<span class="iconify" style="width: 20px; height: 20px;" data-icon="carbon:schematics" data-inline="false" onclick="show_sch()"></span>
-								</label>
-
-								<label id="show_pcb_lbl" class="btn btn-secondary ">
-									<input id="show_pcb" type="radio" name="view_mode" value="show_pcb" data="show_pcb" autocomplete="off">
-									<span class="iconify" style="width: 20px; height: 20px;" data-icon="codicon:circuit-board" data-inline="false" onclick="show_pcb()"></span>
-								</label>
-
-							</div>
-
-							<span style="width: 0.5em"></span>
-							<p class="text-light" >
-								<small class="text-sm">
-									Toggle view mode with <kbd>s</kbd>
-								</small>
-							</p>
-
-							<span style="width: 2em"></span>
-
-							<div id="view_type" class="btn-toolbar btn-group me-2" role="toolbar" aria-label="View Type">
-
-								<label class="btn btn-secondary disabled">
-									<input type="radio" name="view_type" id="Onion" autocomplete="off">
-									Onion
-								</label>
-
-								<label class="btn btn-secondary disabled">
-									<input type="radio" name="view_type" id="Swipe" autocomplete="off">
-									Swipe
-								</label>
-
-								<label class="btn btn-secondary disabled">
-									<input type="radio" name="view_type" id="2-Up" autocomplete="off">
-									2-Up
-								</label>
-
-							</div>
-
-							<span style="width: 0.5em"></span>
-							<p class="text-light" >
-								<small class="text-sm">
-									View type is not working yet.
-								</small>
-							</p>
-
+							</small>
+						</p>
+						<div class="form-check scrollbox" style="padding: 0px 0px 10px 0px ; margin-left:0px; overflow-y: scroll">
+							<form id="commits_form" class="overflow-auto scrollbox-content">
+								<!-- FILL_COMMITS_HERE -->
+							</form>
 						</div>
-
 					</div>
 				</div>
-
-
-				<div class="container no-gutters" style="flex: 1;">
-					<div class="row no-gutters" style="flex: 1;">
-						<div class="col col-11" style="flex: 1;">
-
-							<div id="diff-sch" style="width: 100%; height: 70vh; display: inline;">
-
-								<svg id="svg-id-sch" xmlns="http://www.w3.org/2000/svg"
-									style="display: inherit; width: inherit; min-width: inherit; max-width: inherit; height: inherit; min-height: inherit; max-height: inherit;" version="1.1">
-									<g>
-
-										<svg id="img-1-sch">
-											<defs>
+				<div class="col col-6" style="background-color: #111;">
+					<div class="row" style="width : 100%; margin: 0px">
+						<div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons" style="padding: 10px;">
+							<div id="view_mode" class="btn-toolbar" role="toolbar" aria-label="View Mode">
+								<div class="btn-group me-2" role="group" aria-label="First group">
+									<label id="show_sch_lbl" class="btn btn-secondary active">
+										<input id="show_sch" type="radio" name="view_mode" value="show_sch" data="show_sch" checked autocomplete="off">
+										<span class="iconify" style="width: 20px; height: 20px;" data-icon="carbon:schematics" data-inline="false" onclick="show_sch()"></span>
+									</label>
+									<label id="show_pcb_lbl" class="btn btn-secondary ">
+										<input id="show_pcb" type="radio" name="view_mode" value="show_pcb" data="show_pcb" autocomplete="off">
+										<span class="iconify" style="width: 20px; height: 20px;" data-icon="codicon:circuit-board" data-inline="false" onclick="show_pcb()"></span>
+									</label>
+								</div>
+								<span style="width: 0.5em"></span>
+								<p class="text-light" >
+									<small class="text-sm">
+									Toggle view mode with <kbd>s</kbd>
+									</small>
+								</p>
+								<span style="width: 2em"></span>
+								<div id="view_type" class="btn-toolbar btn-group me-2" role="toolbar" aria-label="View Type">
+									<label class="btn btn-secondary disabled">
+										<input type="radio" name="view_type" id="Onion" autocomplete="off">
+										Onion
+									</label>
+									<label class="btn btn-secondary disabled">
+										<input type="radio" name="view_type" id="Swipe" autocomplete="off">
+										Swipe
+									</label>
+									<label class="btn btn-secondary disabled">
+										<input type="radio" name="view_type" id="2-Up" autocomplete="off">
+										2-Up
+									</label>
+								</div>
+								<span style="width: 0.5em"></span>
+								<p class="text-light" >
+									<small class="text-sm">
+									View type is not working yet.
+									</small>
+								</p>
+							</div>
+						</div>
+					</div>
+					<div class="container no-gutters" style="flex: 1;">
+						<div class="row no-gutters" style="flex: 1;">
+							<div class="col col-11" style="flex: 1;">
+								<div id="diff-sch" style="width: 100%; height: 70vh; display: inline;">
+									<svg id="svg-id-sch" xmlns="http://www.w3.org/2000/svg"
+										style="display: inherit; width: inherit; min-width: inherit; max-width: inherit; height: inherit; min-height: inherit; max-height: inherit;" version="1.1">
+										<g>
+											<svg id="img-1-sch">
+												<defs>
 												<filter id="f1_sch">
 												<feColorMatrix id="c1-sch" type="matrix" values="
-													1   0   0   0   0
-													0   1   0   1   0
-													0   0   1   1   0
-													0   0   0   1   0 " />
+												1   0   0   0   0
+												0   1   0   1   0
+												0   0   1   1   0
+												0   0   0   1   0 " />
 												</filter>
-											</defs>
-											<image id="diff-1-sch-xlink" x="0" y="0" height="100%" width="100%" filter="url(#f1_sch)" href="[INITIAL_COMMIT_1_SCH]" />
-										</svg>
-
-										<svg id="img-2-sch-sch">
-											<defs>
+												</defs>
+												<image id="diff-1-sch-xlink" x="0" y="0" height="100%" width="100%" filter="url(#f1_sch)" href="[INITIAL_COMMIT_1_SCH]" />
+											</svg>
+											<svg id="img-2-sch-sch">
+												<defs>
 												<filter id="f2_sch">
 												<feColorMatrix id="c2-sch" type="matrix" values="
-														1   0   0   1   0
-														0   1   0   0   0
-														0   0   1   0   0
-														0   0   0  .5   0" />
+												1   0   0   1   0
+												0   1   0   0   0
+												0   0   1   0   0
+												0   0   0  .5   0" />
 												</filter>
-											</defs>
-											<image id="diff-2-sch-xlink" x="0" y="0" height="100%" width="100%" filter="url(#f2_sch)" href="[INITIAL_COMMIT_2_SCH]" />
-										</svg>
-
-									</g>
-								</svg>
-
-							</div>
-
-							<div id="diff-pcb" style="width: 100%; height: 70vh; display: none;">
-
-<!-- 								<svg id="svg-id-pcb" xmlns="http://www.w3.org/2000/svg"
-									style="display: inherit; width: inherit; min-width: inherit; max-width: inherit; height: inherit; min-height: inherit; max-height: inherit;" version="1.1">
-									<g>
-
-										<svg id="img-1-pcb">
-											<defs>
-												<filter id="f1_pcb">
-												<feColorMatrix id="c1-pcb" type="matrix" values="
-														1   0   0   0   0
-														0   1   0   1   0
-														0   0   1   1   0
-														0   0   0   1   0 " />
-												</filter>
-											</defs>
-											<image id="diff-1-pcb-xlink" x="0" y="0" height="100%" width="100%" filter="url(#f1_pcb)" href="[INITIAL_COMMIT_1_PCB]" />
-										</svg>
-
-										<svg id="img-2-pcb">
-											<defs>
-												<filter id="f2_pcb">
-												<feColorMatrix id="c2-pcb" type="matrix" values="
-														1   0   0   1   0
-														0   1   0   0   0
-														0   0   1   0   0
-														0   0   0  .5   0" />
-												</filter>
-											</defs>
-											<image id="diff-2-pcb-xlink" x="0" y="0" height="100%" width="100%" filter="url(#f2_pcb)" href="[INITIAL_COMMIT_2_PCB]" />
-										</svg>
-									</g>
-								</svg>
- -->
-
-								<svg id="svg-id-pcb" xmlns="http://www.w3.org/2000/svg"
-									style="display: inherit; width: inherit; min-width: inherit; max-width: inherit; height: inherit; min-height: inherit; max-height: inherit;" version="1.1">
-									<g>
-
-										<svg id="img-1-pcb">
-											<defs>
+												</defs>
+												<image id="diff-2-sch-xlink" x="0" y="0" height="100%" width="100%" filter="url(#f2_sch)" href="[INITIAL_COMMIT_2_SCH]" />
+											</svg>
+										</g>
+									</svg>
+								</div>
+								<div id="diff-pcb" style="width: 100%; height: 70vh; display: none;">
+									<!-- 								<svg id="svg-id-pcb" xmlns="http://www.w3.org/2000/svg"
+											style="display: inherit; width: inherit; min-width: inherit; max-width: inherit; height: inherit; min-height: inherit; max-height: inherit;" version="1.1">
+											<g>
+													<svg id="img-1-pcb">
+															<defs>
+																<filter id="f1_pcb">
+																<feColorMatrix id="c1-pcb" type="matrix" values="
+																		1   0   0   0   0
+																		0   1   0   1   0
+																		0   0   1   1   0
+																		0   0   0   1   0 " />
+																</filter>
+															</defs>
+															<image id="diff-1-pcb-xlink" x="0" y="0" height="100%" width="100%" filter="url(#f1_pcb)" href="[INITIAL_COMMIT_1_PCB]" />
+													</svg>
+													<svg id="img-2-pcb">
+															<defs>
+																<filter id="f2_pcb">
+																<feColorMatrix id="c2-pcb" type="matrix" values="
+																		1   0   0   1   0
+																		0   1   0   0   0
+																		0   0   1   0   0
+																		0   0   0  .5   0" />
+																</filter>
+															</defs>
+															<image id="diff-2-pcb-xlink" x="0" y="0" height="100%" width="100%" filter="url(#f2_pcb)" href="[INITIAL_COMMIT_2_PCB]" />
+													</svg>
+											</g>
+									</svg>
+									-->
+									<svg id="svg-id-pcb" xmlns="http://www.w3.org/2000/svg"
+										style="display: inherit; width: inherit; min-width: inherit; max-width: inherit; height: inherit; min-height: inherit; max-height: inherit;" version="1.1">
+										<g>
+											<svg id="img-1-pcb">
+												<defs>
 												<filter id="f3_pcb">
 												<feColorMatrix id="c3-pcb" type="matrix" values="
-													1   0   0   0   0
-													0   1   0   1   0
-													0   0   1   1   0
-													0   0   0   1   0 " />
+												1   0   0   0   0
+												0   1   0   1   0
+												0   0   1   1   0
+												0   0   0   1   0 " />
 												</filter>
-											</defs>
-											<image id="diff-1-pcb-xlink" x="0" y="0" height="100%" width="100%" filter="url(#f3_pcb)" href="[INITIAL_COMMIT_1_PCB]" />
-										</svg>
-
-										<svg id="img-2-pcb-pcb">
-											<defs>
+												</defs>
+												<image id="diff-1-pcb-xlink" x="0" y="0" height="100%" width="100%" filter="url(#f3_pcb)" href="[INITIAL_COMMIT_1_PCB]" />
+											</svg>
+											<svg id="img-2-pcb-pcb">
+												<defs>
 												<filter id="f4_pcb">
 												<feColorMatrix id="c4-pcb" type="matrix" values="
-														1   0   0   1   0
-														0   1   0   0   0
-														0   0   1   0   0
-														0   0   0  .5   0" />
+												1   0   0   1   0
+												0   1   0   0   0
+												0   0   1   0   0
+												0   0   0  .5   0" />
 												</filter>
-											</defs>
-											<image id="diff-2-pcb-xlink" x="0" y="0" height="100%" width="100%" filter="url(#f4_pcb)" href="[INITIAL_COMMIT_2_PCB]" />
-										</svg>
-
-									</g>
-								</svg>
-
-							</div>
-
-
-							</div>
-						</div>
-
-
-					</div>
-				</div>
-
-
-						<div class="col col-2" >
-
-							<div class="col col">
-								<p>Textual diff area</p>
-							</div>
-
-							<div class="list-group" id="layers_list" style="display: none;">
-
-
-								<div class="form-check">
-
-									<span style="margin-top: 3em"></span>
-
-									<p class="text-light">
-										<span style="margin-right:0.5em" class="iconify" data-icon="teenyicons:layers-solid" data-inline="false"></span>
-										Layers <small class="text-sm text-muted">
-											: Cycle using
-											<kbd><span class="iconify" data-icon="typcn-arrow-left" data-inline="false"></span></kbd>/
-											<kbd><span class="iconify" data-icon="typcn-arrow-right" data-inline="false"></span>.
-									</p>
-
-									<div class="row">
-										<div class="col">
-
-											<form>
-												<input type="radio" id="F_Cu" name="layers" value="F_Cu" checked="true"  onchange="change_layer()"/>
-												<label class="rounded text-sm-left list-group-item radio-box" for="F_Cu">
-													<span style="margin-left:0.5em; margin-right:0.1em; color: #952927" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
-													F_Cu</label>
-
-												<input type="radio" id="B_Cu" name="layers" value="B_Cu"  onchange="change_layer()"/>
-												<label class="rounded text-sm-left list-group-item radio-box" for="B_Cu">
-													<span style="margin-left:0.5em; margin-right:0.1em; color: #359632" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
-													B_Cu</label>
-
-												<input type="radio" id="In1_Cu" name="layers" value="In1_Cu"  onchange="change_layer()"/>
-												<label class="rounded text-sm-left list-group-item radio-box" for="In1_Cu">
-													<span style="margin-left:0.5em; margin-right:0.1em; color: #C2C200" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
-													In1_Cu</label>
-
-												<input type="radio" id="In2_Cu" name="layers" value="In2_Cu"  onchange="change_layer()"/>
-												<label class="rounded text-sm-left list-group-item radio-box" for="In2_Cu">
-													<span style="margin-left:0.5em; margin-right:0.1em; color: #C200C2" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
-													In2_Cu</label>
-
-												<input type="radio" id="In3_Cu" name="layers" value="In3_Cu"  onchange="change_layer()"/>
-												<label class="rounded text-sm-left list-group-item radio-box" for="In3_Cu">
-													<span style="margin-left:0.5em; margin-right:0.1em; color: #C20000" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
-													In3_Cu</label>
-
-												<input type="radio" id="In4_Cu" name="layers" value="In4_Cu"  onchange="change_layer()"/>
-												<label class="rounded text-sm-left list-group-item radio-box" for="In4_Cu">
-													<span style="margin-left:0.5em; margin-right:0.1em; color: #0000C2" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
-													In4_Cu</label>
-
-												<input type="radio" id="F_Mask" name="layers" value="F_Mask"  onchange="change_layer()"/>
-												<label class="rounded text-sm-left list-group-item radio-box" for="F_Mask">
-													<span style="margin-left:0.5em; margin-right:0.1em; color: #943197" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
-													F_Mask</label>
-
-												<input type="radio" id="B_Mask" name="layers" value="B_Mask"  onchange="change_layer()"/>
-												<label class="rounded text-sm-left list-group-item radio-box" for="B_Mask">
-													<span style="margin-left:0.5em; margin-right:0.1em; color: #943197" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
-													B_Mask</label>
-
-												<input type="radio" id="F_SilkS" name="layers" value="F_SilkS"  onchange="change_layer()"/>
-												<label class="rounded text-sm-left list-group-item radio-box" for="F_SilkS">
-													<span style="margin-left:0.5em; margin-right:0.1em; color: #339697" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
-													F_SilkS</label>
-
-												<input type="radio" id="B_SilkS" name="layers" value="B_SilkS"  onchange="change_layer()"/>
-												<label class="rounded text-sm-left list-group-item radio-box" for="B_SilkS">
-													<span style="margin-left:0.5em; margin-right:0.1em; color: #481649" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
-													B_SilkS</label>
-
-												<input type="radio" id="Edge_Cuts" name="layers" value="Edge_Cuts"  onchange="change_layer()"/>
-												<label class="rounded text-sm-left list-group-item radio-box" for="Edge_Cuts">
-													<span style="margin-left:0.5em; margin-right:0.1em; color: #C9C83B" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
-													Edge_Cuts</label>
-
-												<input type="radio" id="Margin" name="layers" value="Margin"  onchange="change_layer()"/>
-												<label class="rounded text-sm-left list-group-item radio-box" for="Margin">
-													<span style="margin-left:0.5em; margin-right:0.1em; color: #D357D2" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
-													Margin</label>
-
-												<input type="radio" id="Dwgs_User" name="layers" value="Dwgs_User" onchange="change_layer()"/>
-												<label class="rounded text-sm-left list-group-item radio-box" for="Dwgs_User">
-													<span style="margin-left:0.5em; margin-right:0.1em; color: #0364D3" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
-													Dwgs_User</label>
-
-												<input type="radio" id="Cmts_User" name="layers" value="Cmts_User" onchange="change_layer()"/>
-												<label class="rounded text-sm-left list-group-item radio-box" for="Cmts_User">
-													<span style="margin-left:0.5em; margin-right:0.1em; color: #7AC0F4" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
-													Cmts_User</label>
-
-												<input type="radio" id="Eco1_User" name="layers" value="Eco1_User" onchange="change_layer()"/>
-												<label class="rounded text-sm-left list-group-item radio-box" for="Eco1_User">
-													<span style="margin-left:0.5em; margin-right:0.1em; color: #008500" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
-													Eco1_User</label>
-
-												<input type="radio" id="F_Fab" name="layers" value="F_Fab" onchange="change_layer()"/>
-												<label class="rounded text-sm-left list-group-item radio-box" for="F_Fab">
-													<span style="margin-left:0.5em; margin-right:0.1em; color: #C2C200" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
-													F_Fab</label>
-
-												<input type="radio" id="B_Fab" name="layers" value="B_Fab" onchange="change_layer()"/>
-												<label class="rounded text-sm-left list-group-item radio-box" for="B_Fab">
-													<span style="margin-left:0.5em; margin-right:0.1em; color: #858585" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
-													B_Fab</label>
-
-												<input type="radio" id="F_Adhes" name="layers" value="F_Adhes" onchange="change_layer()"/>
-												<label class="rounded text-sm-left list-group-item radio-box" for="F_Adhes">
-													<span style="margin-left:0.5em; margin-right:0.1em; color: #A74AA8" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
-													F_Adhes</label>
-
-												<input type="radio" id="B_Adhes" name="layers" value="B_Adhes" onchange="change_layer()"/>
-												<label class="rounded text-sm-left list-group-item radio-box" for="B_Adhes">
-													<span style="margin-left:0.5em; margin-right:0.1em; color: #3545A8" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
-													B_Adhes</label>
-
-												<input type="radio" id="F_CrtYd" name="layers" value="F_CrtYd" onchange="change_layer()"/>
-												<label class="rounded text-sm-left list-group-item radio-box" for="F_CrtYd">
-													<span style="margin-left:0.5em; margin-right:0.1em; color: #A7A7A7" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
-													F_CrtYd</label>
-
-												<input type="radio" id="B_CrtYd" name="layers" value="B_CrtYd" onchange="change_layer()"/>
-												<label class="rounded text-sm-left list-group-item radio-box" for="B_CrtYd">
-													<span style="margin-left:0.5em; margin-right:0.1em; color: #D3D04B" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
-													B_CrtYd</label>
-											</form>
-
-										</div>
-									</div>
-
+												</defs>
+												<image id="diff-2-pcb-xlink" x="0" y="0" height="100%" width="100%" filter="url(#f4_pcb)" href="[INITIAL_COMMIT_2_PCB]" />
+											</svg>
+										</g>
+									</svg>
 								</div>
 							</div>
-
 						</div>
-
+					</div>
+				</div>
+				<div class="col col-2" >
+					<div class="col col">
+						<p>Textual diff area</p>
+					</div>
+					<div class="list-group" id="layers_list" style="display: none;">
+						<div class="form-check">
+							<span style="margin-top: 3em"></span>
+							<p class="text-light">
+								<span style="margin-right:0.5em" class="iconify" data-icon="teenyicons:layers-solid" data-inline="false"></span>
+								Layers <small class="text-sm text-muted">
+								: Cycle using
+								<kbd><span class="iconify" data-icon="typcn-arrow-left" data-inline="false"></span></kbd>/
+								<kbd><span class="iconify" data-icon="typcn-arrow-right" data-inline="false"></span>.
+							</p>
+							<div class="row">
+								<div class="col">
+									<form>
+										<input type="radio" id="F_Cu" name="layers" value="F_Cu" checked="true"  onchange="change_layer()"/>
+										<label class="rounded text-sm-left list-group-item radio-box" for="F_Cu">
+											<span style="margin-left:0.5em; margin-right:0.1em; color: #952927" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+										F_Cu</label>
+										<input type="radio" id="B_Cu" name="layers" value="B_Cu"  onchange="change_layer()"/>
+										<label class="rounded text-sm-left list-group-item radio-box" for="B_Cu">
+											<span style="margin-left:0.5em; margin-right:0.1em; color: #359632" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+										B_Cu</label>
+										<input type="radio" id="In1_Cu" name="layers" value="In1_Cu"  onchange="change_layer()"/>
+										<label class="rounded text-sm-left list-group-item radio-box" for="In1_Cu">
+											<span style="margin-left:0.5em; margin-right:0.1em; color: #C2C200" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+										In1_Cu</label>
+										<input type="radio" id="In2_Cu" name="layers" value="In2_Cu"  onchange="change_layer()"/>
+										<label class="rounded text-sm-left list-group-item radio-box" for="In2_Cu">
+											<span style="margin-left:0.5em; margin-right:0.1em; color: #C200C2" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+										In2_Cu</label>
+										<input type="radio" id="In3_Cu" name="layers" value="In3_Cu"  onchange="change_layer()"/>
+										<label class="rounded text-sm-left list-group-item radio-box" for="In3_Cu">
+											<span style="margin-left:0.5em; margin-right:0.1em; color: #C20000" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+										In3_Cu</label>
+										<input type="radio" id="In4_Cu" name="layers" value="In4_Cu"  onchange="change_layer()"/>
+										<label class="rounded text-sm-left list-group-item radio-box" for="In4_Cu">
+											<span style="margin-left:0.5em; margin-right:0.1em; color: #0000C2" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+										In4_Cu</label>
+										<input type="radio" id="F_Mask" name="layers" value="F_Mask"  onchange="change_layer()"/>
+										<label class="rounded text-sm-left list-group-item radio-box" for="F_Mask">
+											<span style="margin-left:0.5em; margin-right:0.1em; color: #943197" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+										F_Mask</label>
+										<input type="radio" id="B_Mask" name="layers" value="B_Mask"  onchange="change_layer()"/>
+										<label class="rounded text-sm-left list-group-item radio-box" for="B_Mask">
+											<span style="margin-left:0.5em; margin-right:0.1em; color: #943197" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+										B_Mask</label>
+										<input type="radio" id="F_SilkS" name="layers" value="F_SilkS"  onchange="change_layer()"/>
+										<label class="rounded text-sm-left list-group-item radio-box" for="F_SilkS">
+											<span style="margin-left:0.5em; margin-right:0.1em; color: #339697" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+										F_SilkS</label>
+										<input type="radio" id="B_SilkS" name="layers" value="B_SilkS"  onchange="change_layer()"/>
+										<label class="rounded text-sm-left list-group-item radio-box" for="B_SilkS">
+											<span style="margin-left:0.5em; margin-right:0.1em; color: #481649" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+										B_SilkS</label>
+										<input type="radio" id="Edge_Cuts" name="layers" value="Edge_Cuts"  onchange="change_layer()"/>
+										<label class="rounded text-sm-left list-group-item radio-box" for="Edge_Cuts">
+											<span style="margin-left:0.5em; margin-right:0.1em; color: #C9C83B" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+										Edge_Cuts</label>
+										<input type="radio" id="Margin" name="layers" value="Margin"  onchange="change_layer()"/>
+										<label class="rounded text-sm-left list-group-item radio-box" for="Margin">
+											<span style="margin-left:0.5em; margin-right:0.1em; color: #D357D2" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+										Margin</label>
+										<input type="radio" id="Dwgs_User" name="layers" value="Dwgs_User" onchange="change_layer()"/>
+										<label class="rounded text-sm-left list-group-item radio-box" for="Dwgs_User">
+											<span style="margin-left:0.5em; margin-right:0.1em; color: #0364D3" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+										Dwgs_User</label>
+										<input type="radio" id="Cmts_User" name="layers" value="Cmts_User" onchange="change_layer()"/>
+										<label class="rounded text-sm-left list-group-item radio-box" for="Cmts_User">
+											<span style="margin-left:0.5em; margin-right:0.1em; color: #7AC0F4" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+										Cmts_User</label>
+										<input type="radio" id="Eco1_User" name="layers" value="Eco1_User" onchange="change_layer()"/>
+										<label class="rounded text-sm-left list-group-item radio-box" for="Eco1_User">
+											<span style="margin-left:0.5em; margin-right:0.1em; color: #008500" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+										Eco1_User</label>
+										<input type="radio" id="F_Fab" name="layers" value="F_Fab" onchange="change_layer()"/>
+										<label class="rounded text-sm-left list-group-item radio-box" for="F_Fab">
+											<span style="margin-left:0.5em; margin-right:0.1em; color: #C2C200" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+										F_Fab</label>
+										<input type="radio" id="B_Fab" name="layers" value="B_Fab" onchange="change_layer()"/>
+										<label class="rounded text-sm-left list-group-item radio-box" for="B_Fab">
+											<span style="margin-left:0.5em; margin-right:0.1em; color: #858585" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+										B_Fab</label>
+										<input type="radio" id="F_Adhes" name="layers" value="F_Adhes" onchange="change_layer()"/>
+										<label class="rounded text-sm-left list-group-item radio-box" for="F_Adhes">
+											<span style="margin-left:0.5em; margin-right:0.1em; color: #A74AA8" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+										F_Adhes</label>
+										<input type="radio" id="B_Adhes" name="layers" value="B_Adhes" onchange="change_layer()"/>
+										<label class="rounded text-sm-left list-group-item radio-box" for="B_Adhes">
+											<span style="margin-left:0.5em; margin-right:0.1em; color: #3545A8" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+										B_Adhes</label>
+										<input type="radio" id="F_CrtYd" name="layers" value="F_CrtYd" onchange="change_layer()"/>
+										<label class="rounded text-sm-left list-group-item radio-box" for="F_CrtYd">
+											<span style="margin-left:0.5em; margin-right:0.1em; color: #A7A7A7" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+										F_CrtYd</label>
+										<input type="radio" id="B_CrtYd" name="layers" value="B_CrtYd" onchange="change_layer()"/>
+										<label class="rounded text-sm-left list-group-item radio-box" for="B_CrtYd">
+											<span style="margin-left:0.5em; margin-right:0.1em; color: #D3D04B" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+										B_CrtYd</label>
+									</form>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
 			</div>
-
-
 		</div>
 	</div>
-
 	<!-- jQuery first, then Popper.js, then Bootstrap JS -->
 	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
 	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-
 </body>
 </html>
