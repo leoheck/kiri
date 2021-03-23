@@ -1,9 +1,8 @@
 #!/bin/bash
 
-
 readlink_osx()
 {
-	target_file=$1
+	target_file="$1"
 
 	cd $(dirname "$target_file")
 	target_file=$(basename "$target_file")
@@ -12,27 +11,27 @@ readlink_osx()
 	while [ -L "$target_file" ]
 	do
 		target_file=$(readlink "$target_file")
-		cd $(dirname "$target_file")
+		cd "$(dirname "$target_file")"
 		target_file=$(basename "$target_file")
 	done
 
 	# Compute the canonicalized name by finding the physical path
 	# for the directory we're in and appending the target file.
-	physical_dir=$(pwd -P)
+	phys_dir=$(pwd -P)
 
-	RESULT="$physical_dir/$target_file"
+	result="$phys_dir/$target_file"
 
-	echo $RESULT
+	echo "$result"
 }
 
 readlink_()
 {
 	case $OSTYPE in
 		darwin*)
-			readlink_osx $@
+			readlink_osx "$1"
 			;;
 		*)
-			readlink -f $@
+			readlink -f "$1"
 			;;
 	esac
 }
@@ -53,10 +52,10 @@ xdg-open_()
 {
 	case $OSTYPE in
 		darwin*)
-			open $@
+			open "$1" &
 		;;
 		*)
-			xdg-open $@
+			xdg-open "$1" 2> /dev/null &
 		;;
 	esac
 }
@@ -90,17 +89,17 @@ insert_commits()
 		 msg=$(echo "$commit" | cut -d'|' -f4 | sed "s/^ //g" )
 
 		# check for changes in .sch files
-		if git log --name-only --pretty='format:' -1 -U $hash | cat | grep -s ".sch" &> /dev/null; then
+		if git log --name-only --pretty='format:' -1 -U "${hash}" | cat | grep -s ".sch" &> /dev/null; then
 			sch_icon='<span class="iconify" style="width: 14px; height: 14px; color: #A6E22E;" data-icon="carbon:schematics" data-inline="false"></span>'
 		fi
 
 		# check for changes in .kicad_pcb files
-		if git log --name-only --pretty='format:' -1 -U $hash | cat | grep -s ".kicad_pcb" &> /dev/null; then
+		if git log --name-only --pretty='format:' -1 -U "${hash}" | cat | grep -s ".kicad_pcb" &> /dev/null; then
 			layout_icon='<span class="iconify" style="width: 14px; height: 14px; color: #F92672;" data-icon="codicon:circuit-board" data-inline="false"></span>'
 		fi
 
 		# check for changes in textual files
-		if git log --name-only --pretty='format:' -1 -U $hash | cat | grep -s -vE ".sch|.kicad_pcb" &> /dev/null; then
+		if git log --name-only --pretty='format:' -1 -U "${hash}" | cat | grep -s -vE ".sch|.kicad_pcb" &> /dev/null; then
 			text_icon='<span class="iconify" style="width: 14px; height: 14px; color: #888888;" data-icon="bi:file-earmark-text" data-inline="false"></span>'
 		fi
 
@@ -129,15 +128,15 @@ insert_commits()
 		    </label>
 		EOM
 
-		n=$(($n+1))
+		n=$((n+1))
 
 		COMMITS_LIST_HTML="${COMMITS_LIST_HTML}${COMMIT_HTML}"
 
 	done
 
-	contents=$(<$html)
+	contents=$(<"$html")
 	new_contents=${contents//"<!-- FILL_COMMITS_HERE -->"/${COMMITS_LIST_HTML}}
-	printf '%s' "$new_contents" > $html
+	printf '%s' "$new_contents" > "$html"
 }
 
 
@@ -156,7 +155,7 @@ fix_urls_multi_project()
 	html_file=$1
 	project=$2
 
-	sed -i "s|/web/main.html|/$project/web/main.html|g" $html_file
+	sed -i "s|/web/main.html|/$project/web/main.html|g" "$html_file"
 }
 
 generate_comparisons()
@@ -166,24 +165,24 @@ generate_comparisons()
 	project=$3
 
 	filename=$(basename -- "$kicad_pcb")
-	extension="${filename##*.}"
+	# extension="${filename##*.}"
 	board_name="${filename%.*}"
 
 	if [[ $project == "" ]]; then
-		output_folder=kidiff
+		output_folder="kidiff"
 	else
-		output_folder=kidiff/$project
+		output_folder="kidiff/$project"
 	fi
 
 	if [[ "$REMOVE_KDIFF_FOLDER" == "1" ]]; then
-		rm -rf ${output_folder}
+		rm -rf "${output_folder}"
 	fi
 
-	mkdir -p ${output_folder}/web/
-	mkdir -p ${output_folder}/diff/
+	mkdir -p "${output_folder}/web/"
+	mkdir -p "${output_folder}/diff/"
 
 	if [[ "$ALL_COMMITS" == "0" ]]; then
-		commits=$(git log --date=local '--pretty=format:%h | %ai | %an | %s' $kicad_pcb *.sch)
+		commits=$(git log --date=local '--pretty=format:%h | %ai | %an | %s' "$kicad_pcb" "*.sch")
 	else
 		commits=$(git log --date=local '--pretty=format:%h | %ai | %an | %s')
 	fi
@@ -208,7 +207,7 @@ generate_comparisons()
 
 		for j in $b; do
 
-			if [[ $i != $j ]]; then
+			if [[ "$i" != "$j" ]]; then
 
 				k=$((k+1))
 				n=$((n+1))
@@ -220,14 +219,14 @@ generate_comparisons()
 				fi
 
 				if [[ $k == 1 ]]; then
-					printf "%4d. %s - %s%s\n" $n $i $j "$skipping"
+					printf "%4d. %s - %s%s\n" "$n" "$i" "$j" "$skipping"
 				else
-					printf "%4d. %s - %s%s \n" $n "       " $j "$skipping"
+					printf "%4d. %s - %s%s \n" "$n" "       " "$j" "$skipping"
 				fi
 
 
 				# Check if diff file exists
-				if [[ -d ${output_folder}/$j ]]; then
+				if [[ -d "${output_folder}/$j" ]]; then
 					continue
 				fi
 
@@ -237,12 +236,10 @@ generate_comparisons()
 				if [[ "$VERBOSE" == 1 ]]; then
 					echo "$cmd"
 				fi
-
 				eval "$cmd"
-				# kidiff $kicad_pcb --webserver-disable -a $i -b $j > /dev/null
 
-				if [ -f ${output_folder}/diff.txt ]; then
-					mv -f ${output_folder}/diff.txt ${output_folder}/diff/$i-$j.txt
+				if [ -f "${output_folder}/diff.txt" ]; then
+					mv -f "${output_folder}/diff.txt" "${output_folder}/diff/$i-$j.txt"
 				fi
 
 				# ====
@@ -257,19 +254,16 @@ generate_comparisons()
 				if [[ "$VERBOSE" == 1 ]]; then
 					echo "$cmd"
 				fi
-
 				eval "$cmd"
-				# plotgitsch -l ${board_name}-cache.lib -c ${REMOVED}:${ADDED}:${UNCHANGED}:${BACKGROUND} ${i} ${j} > /dev/null
-
 
 				# Add image if missing
 				if [[ ! -f sch1.svg ]]; then
-					cp -f ${script_path}/blank.svg sch1.svg
+					cp -f "${script_path}/blank.svg" sch1.svg
 				fi
 
 				# ADd image if missing
 				if [[ ! -f sch2.svg ]]; then
-					cp -f ${script_path}/blank.svg sch2.svg
+					cp -f "${script_path}/blank.svg" sch2.svg
 				fi
 
 				if [ -f sch1.svg ]; then
@@ -280,7 +274,7 @@ generate_comparisons()
 					sed -i 's/fill="#FF0000"/fill="#000000FF"/g' sch1.svg
 					sed -i 's/fill="#00FF00"/fill="#000000FF"/g' sch1.svg
 					sed -i 's/stroke="#800000"/stroke="#000000FF"/g' sch1.svg
-					mv -f sch1.svg ${output_folder}/$i/sch.svg
+					mv -f sch1.svg "${output_folder}/$i/sch.svg"
 				fi
 
 				if [ -f sch2.svg ]; then
@@ -291,7 +285,7 @@ generate_comparisons()
 					sed -i 's/fill="#FF0000"/fill="#000000FF"/g' sch2.svg
 					sed -i 's/fill="#00FF00"/fill="#000000FF"/g' sch2.svg
 					sed -i 's/stroke="#800000"/stroke="#000000FF"/g' sch2.svg
-					mv -f sch2.svg ${output_folder}/$j/sch.svg
+					mv -f sch2.svg "${output_folder}/$j/sch.svg"
 				fi
 
 				if [ -f sch-diff.svg ]; then
@@ -303,27 +297,27 @@ generate_comparisons()
 	done
 
 	# Copy assets
-	cp -f ${script_path}/main.html ${output_folder}/web/main.html
-	cp -f ${script_path}/kdiff.css ${output_folder}/web/
-	cp -f ${script_path}/kdiff.js  ${output_folder}/web/
-	cp -f ${script_path}/blank.svg ${output_folder}/
+	cp -f "${script_path}/main.html" "${output_folder}/web/main.html"
+	cp -f "${script_path}/kdiff.css" "${output_folder}/web/"
+	cp -f "${script_path}/kdiff.js"  "${output_folder}/web/"
+	cp -f "${script_path}/blank.svg" "${output_folder}/"
 
 	insert_commits "${output_folder}/web/main.html" "$commits"
 
 	# Update board title
-	title=$(grep -i "(title " -R ${kicad_pcb} | cut -d"\"" -f 2)
-	sed -i "s|\[PROJECT_TITLE\]|${title}|g" ${output_folder}/web/main.html
+	title=$(grep -i "(title " -R "${kicad_pcb}" | cut -d"\"" -f 2)
+	sed -i "s|\[PROJECT_TITLE\]|${title}|g" "${output_folder}/web/main.html"
 
 	commit1=$(echo "$commits" | head -n1 | tail -n1 | cut -d" " -f1)
 	commit2=$(echo "$commits" | head -n2 | tail -n1 | cut -d" " -f1)
 
 	# Update initial schematic images
-	sed -i "s|\[INITIAL_COMMIT_1_SCH\]|../${commit1}/sch.svg|g" ${output_folder}/web/main.html
-	sed -i "s|\[INITIAL_COMMIT_2_SCH\]|../${commit2}/sch.svg|g" ${output_folder}/web/main.html
+	sed -i "s|\[INITIAL_COMMIT_1_SCH\]|../${commit1}/sch.svg|g" "${output_folder}/web/main.html"
+	sed -i "s|\[INITIAL_COMMIT_2_SCH\]|../${commit2}/sch.svg|g" "${output_folder}/web/main.html"
 
 	# Update initial layout images
-	sed -i "s|\[INITIAL_COMMIT_1_PCB\]|../${commit1}/${board_name}-F_Cu.svg|g" ${output_folder}/web/main.html
-	sed -i "s|\[INITIAL_COMMIT_2_PCB\]|../${commit2}/${board_name}-F_Cu.svg|g" ${output_folder}/web/main.html
+	sed -i "s|\[INITIAL_COMMIT_1_PCB\]|../${commit1}/${board_name}-F_Cu.svg|g" "${output_folder}/web/main.html"
+	sed -i "s|\[INITIAL_COMMIT_2_PCB\]|../${commit2}/${board_name}-F_Cu.svg|g" "${output_folder}/web/main.html"
 }
 
 
@@ -331,11 +325,11 @@ generate_comparisons()
 # ====================================================================
 
 
-script=$(readlink_ -f $0)
-script_path=$(dirname $script)
+script=$(readlink_ "$0")
+script_path=$(dirname "$script")
 
 # Make sure gitplotsch is in the PATH
-eval $(opam config env)
+eval "$(opam config env)"
 
 trap ctrl_c INT
 
@@ -365,7 +359,7 @@ case $key in
         ;;
 
     -p)
-        project_folder=$2
+        project_folder="$2"
         shift
         shift
         ;;
@@ -387,4 +381,4 @@ done
 
 generate_comparisons "$script_path" "$kicad_pcb" "$project_folder"
 
-xdg-open_ "${output_folder}/web/main.html" & 2> /dev/null
+xdg-open_ "${output_folder}/web/main.html"
