@@ -215,7 +215,6 @@ window.onkeydown = function(e)
 		}
 
 		layers[new_index].checked = true;
-
 		change_page()
 		change_layer()
 	}
@@ -402,11 +401,13 @@ window.onload = function()
 
 		if (document.getElementById('diff-sch').style.display === "inline") {
 			panZoom_sch.resetZoom()
+			panZoom_pcb.center();
 			// panZoom_sch.fit() // cannot be used, bug?
 		}
 		else
 		{
 			panZoom_pcb.resetZoom()
+			panZoom_pcb.center();
 			// panZoom_pcb.fit() // cannot be used, bug?
 		}
 	});
