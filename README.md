@@ -19,6 +19,10 @@ cd plotkicadsch
 
 # Kicad Diff
 hg clone Gasman2014/KiCad-Diff
+
+# On OSX
+brew install gsed
+brew install findutils
 ```
 
 ## Setup
