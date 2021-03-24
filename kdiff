@@ -3,6 +3,27 @@
 #set -x
 #set -e
 
+show_help()
+{
+	read -r -d '' HELP_MESSAGE <<-EOM
+
+	USAGE :
+
+	    kdiff [OPTIONS] kicad_pcb
+
+	OPTIONS:
+
+	    -a          Track all commits (slower). By default it looks only commits related with *.kicad_pcb and *.sch files
+	    -r          Remove kidiff folder before run
+	    -p [path]   Set nested project path
+	    -v          Verbose
+	    -h          This help
+
+	EOM
+
+	echo -e "\n$HELP_MESSAGE\n"
+}
+
 readlink_osx()
 {
 	target_file="$1"
@@ -431,12 +452,6 @@ REMOVE_KDIFF_FOLDER=0
 VERBOSE=0
 DRY_RUN=0
 
-# Arguments
-# -a : use all commits (slower)
-# -r : remove kidiff folder before run
-# -p : set nested project path
-# -v : verbose
-
 while [[ $# -gt 0 ]]
 do
 key="$1"
@@ -468,6 +483,11 @@ case $key in
         DRY_RUN=1
         shift
         ;;
+
+	-h)
+		show_help
+		exit 1
+		;;
 
     *)
         kicad_pcb="$1"
