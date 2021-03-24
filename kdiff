@@ -109,8 +109,6 @@ insert_pages()
 	IFS=$'\n'
 	for page in $pages; do
 
-		echo "$page"
-
 		page_name=$(echo "$page" | cut -d'|' -f1 | sed_ "s/^ //g" | sed_ "s/[ t]\+//g")
 		page_id=$(echo "$page" | cut -d'|' -f2 | sed_ "s/^ //g")
 
@@ -306,10 +304,12 @@ generate_comparisons()
 				# ====
 
 				cmd="kidiff $kicad_pcb --webserver-disable -a $i -b $j > /dev/null"
-				if [[ "$VERBOSE" == 1 ]]; then
+				if [[ "$VERBOSE" == "1" ]]; then
 					echo "$cmd"
 				fi
-				eval "$cmd"
+				if [[ "$DRY_RUN" == "0" ]]; then
+					eval "$cmd"
+				fi
 
 				if [ -f "${output_folder}/diff.txt" ]; then
 					mv -f "${output_folder}/diff.txt" "${output_folder}/diff/$i-$j.txt"
@@ -324,10 +324,12 @@ generate_comparisons()
 
 				# Custom version does not use -kidiff
 				cmd="plotgitsch -l ${board_name}-cache.lib -c ${REMOVED}:${ADDED}:${UNCHANGED}:${BACKGROUND} ${i} ${j} > /dev/null"
-				if [[ "$VERBOSE" == 1 ]]; then
+				if [[ "$VERBOSE" == "1" ]]; then
 					echo "$cmd"
 				fi
-				eval "$cmd"
+				if [[ "$DRY_RUN" == "0" ]]; then
+					eval "$cmd"
+				fi
 
 				# Add image if missing
 				if [[ ! -f sch1.svg ]]; then
@@ -348,9 +350,9 @@ generate_comparisons()
 					sed_ -i 's/fill="#00FF00"/fill="#000000FF"/g' sch1.svg
 					sed_ -i 's/stroke="#800000"/stroke="#000000FF"/g' sch1.svg
 					mkdir -p "${output_folder}/$i/"
-					mv -f sch1.svg "${output_folder}/$i/sch.svg"
+					mv -f sch1.svg "${output_folder}/$i/sch.svg" 2> /dev/null
 					# Work in progress - extra schematic pages
-					mv -f "sch-1-*.svg" "${output_folder}/$i/"
+					mv -f "sch-1-*.svg" "${output_folder}/$i/" 2> /dev/null
 				fi
 
 				if [ -f sch2.svg ]; then
@@ -362,9 +364,9 @@ generate_comparisons()
 					sed_ -i 's/fill="#00FF00"/fill="#000000FF"/g' sch2.svg
 					sed_ -i 's/stroke="#800000"/stroke="#000000FF"/g' sch2.svg
 					mkdir -p "${output_folder}/$j/"
-					mv -f sch2.svg "${output_folder}/$j/sch.svg"
+					mv -f sch2.svg "${output_folder}/$j/sch.svg" 2> /dev/null
 					# Work in progress - extra schematic pages
-					mv -f "sch-2-*.svg" "${output_folder}/$j/"
+					mv -f "sch-2-*.svg" "${output_folder}/$j/" 2> /dev/null
 				fi
 
 				if [ -f sch-diff.svg ]; then
@@ -421,6 +423,7 @@ trap ctrl_c INT
 ALL_COMMITS=0
 REMOVE_KDIFF_FOLDER=0
 VERBOSE=0
+DRY_RUN=0
 
 # Arguments
 # -a : use all commits (slower)
@@ -454,6 +457,12 @@ case $key in
         shift
         ;;
 
+    -d)
+        VERBOSE=1
+        DRY_RUN=1
+        shift
+        ;;
+
     *)
         kicad_pcb="$1"
         shift # past argument
@@ -465,4 +474,7 @@ done
 # Pass git .pro file instead of the board
 
 generate_comparisons "$script_path" "$kicad_pcb" "$project_folder"
-xdg-open_ "${output_folder}/web/main.html"
+
+if [[ "$DRY_RUN" == "0" ]]; then
+	xdg-open_ "${output_folder}/web/main.html"
+fi
