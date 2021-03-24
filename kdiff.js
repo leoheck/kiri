@@ -57,10 +57,6 @@ window.onkeydown = function(e)
 			document.getElementById("show_pcb_lbl").classList.remove('active');
 			document.getElementById("show_pcb").checked = false;
 		}
-		console.log("1", document.getElementById("show_sch_lbl").classList);
-		console.log("2", document.getElementById("show_sch").checked);
-		console.log("3", document.getElementById("show_pcb_lbl").classList);
-		console.log("4", document.getElementById("show_pcb").checked);
 	}
 
 	// =======================================
@@ -198,6 +194,7 @@ window.onkeydown = function(e)
 		}
 
 		layers[new_index].checked = true;
+		change_page()
 		change_layer()
 	}
 
@@ -219,6 +216,7 @@ window.onkeydown = function(e)
 
 		layers[new_index].checked = true;
 
+		change_page()
 		change_layer()
 	}
 
@@ -286,15 +284,32 @@ function update_commits()
 	document.getElementById("diff-xlink-2-sch").href.baseVal = sch_image_path_2 + "?t=" + timestamp
 }
 
-function change_layer() {
+// NOT working yet
+function change_page()
+{
+	var pages = $("#pages_list input:radio[name='pages']");
+	var selected_page = pages.index(pages.filter(':checked'));
 
+	var timestamp = new Date().getTime();
+
+	var current_src1 = document.getElementById("diff-xlink-1-sch").href.baseVal;
+	var current_src2 = document.getElementById("diff-xlink-2-sch").href.baseVal;
+
+	var board_name = "board"
+
+	console.log("sch:", current_src1)
+	console.log("sch:", current_src2)
+}
+
+function change_layer()
+{
 	var layers = $("#layers_list input:radio[name='layers']");
 	var selected_layer = layers.index(layers.filter(':checked'));
 
 	var timestamp = new Date().getTime();
 
-	current_src1 = document.getElementById("diff-xlink-1-pcb").href.baseVal;
-	current_src2 = document.getElementById("diff-xlink-2-pcb").href.baseVal;
+	var current_src1 = document.getElementById("diff-xlink-1-pcb").href.baseVal;
+	var current_src2 = document.getElementById("diff-xlink-2-pcb").href.baseVal;
 
 	commit1= current_src1.split("/")[1]
 	commit2 = current_src2.split("/")[1]
@@ -399,8 +414,8 @@ function show_sch()
 	// Show schematic image
 	var sch_view = document.getElementById("diff-sch");
 	sch_view.style.display = "inline";
-	reload("diff-sch")
-	reload("svg-id-sch")
+	// reload("diff-sch")
+	// reload("svg-id-sch")
 
 	// Show pages list
 	var layers_list = document.getElementById("pages_list");
@@ -428,8 +443,8 @@ function show_pcb()
 	// Show layout image
 	var pcb_view = document.getElementById("diff-pcb");
 	pcb_view.style.display = "inline";
-	reload("diff-pcb")
-	reload("svg-id-pcb")
+	// reload("diff-pcb")
+	// reload("svg-id-pcb")
 
 	// Show layers list
 	var layers_list = document.getElementById("layers_list");
