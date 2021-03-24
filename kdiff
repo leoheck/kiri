@@ -254,16 +254,16 @@ generate_comparisons()
 {
 	script_path=$1
 	kicad_pcb=$2
-	project=$3
+	project_path=$3
 
 	filename=$(basename -- "$kicad_pcb")
 	# extension="${filename##*.}"
 	board_name="${filename%.*}"
 
-	if [[ $project == "" ]]; then
+	if [[ "$project_path" == "" ]]; then
 		output_folder="kidiff"
 	else
-		output_folder="kidiff/$project"
+		output_folder="../kidiff/$project_path"
 	fi
 
 	if [[ "$REMOVE_KDIFF_FOLDER" == "1" ]]; then
@@ -289,7 +289,7 @@ generate_comparisons()
 	nab=$(echo "${na} * (${nb} - 1) " | bc)
 
 	echo
-	echo "Generating ${nab} comparisons"
+	echo "Generating images for ${na} commits, (total ${nab} comparisons)"
 	echo
 
 	n=0
@@ -454,52 +454,54 @@ DRY_RUN=0
 
 while [[ $# -gt 0 ]]
 do
-key="$1"
+	key="$1"
 
-case $key in
-    -a)
-        ALL_COMMITS=1
-        shift
-        ;;
+	case $key in
+	    -a)
+	        ALL_COMMITS=1
+	        shift
+	        ;;
 
-    -r)
-        REMOVE_KDIFF_FOLDER=1
-        shift
-        ;;
+	    -r)
+	        REMOVE_KDIFF_FOLDER=1
+	        shift
+	        ;;
 
-    -p)
-        project_folder="$2"
-        shift
-        shift
-        ;;
+	    -p)
+	        project_folder="$2"
+	        shift
+	        shift
+	        ;;
 
-    -v)
-        VERBOSE=1
-        shift
-        ;;
+	    -v)
+	        VERBOSE=1
+	        shift
+	        ;;
 
-    -d)
-        VERBOSE=1
-        DRY_RUN=1
-        shift
-        ;;
+	    -d)
+	        VERBOSE=1
+	        DRY_RUN=1
+	        shift
+	        ;;
 
-	-h)
-		show_help
-		exit 1
-		;;
+		-h)
+			show_help
+			exit 1
+			;;
 
-    *)
-        kicad_pcb="$1"
-        shift # past argument
-        ;;
-esac
+	    *)
+	        kicad_pcb="$1"
+	        shift # past argument
+	        ;;
+	esac
 done
 
-# Run it from git root (get the project path automatically)
-# Pass git .pro file instead of the board
-
-generate_comparisons "$script_path" "$kicad_pcb" "$project_folder"
+if [[ -f "$kicad_pcb" ]]; then
+	generate_comparisons "$script_path" "$kicad_pcb" "$project_folder"
+else
+	echo "The board $kicad_pcb does not exit"
+	exit 1
+fi
 
 if [[ "$DRY_RUN" == "0" ]]; then
 	xdg-open_ "${output_folder}/web/main.html"

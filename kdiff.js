@@ -238,8 +238,8 @@ function update_commits()
 		}
 	}
 
-	var hash1 = values[0].replace(/\s+/g, '')
-	var hash2 = values[1].replace(/\s+/g, '')
+	var commit1 = values[0].replace(/\s+/g, '')
+	var commit2 = values[1].replace(/\s+/g, '')
 	var timestamp = new Date().getTime();
 
 	// =======================================
@@ -262,8 +262,8 @@ function update_commits()
 		selected_layer = "F_Cu"
 	}
 
-	var pcb_image_path_1 = "../" + hash1 + "/" + board_name + "-" + selected_layer + ".svg"
-	var pcb_image_path_2 = "../" + hash2 + "/" + board_name + "-" + selected_layer + ".svg"
+	var pcb_image_path_1 = "../" + commit1 + "/" + board_name + "-" + selected_layer + ".svg"
+	var pcb_image_path_2 = "../" + commit2 + "/" + board_name + "-" + selected_layer + ".svg"
 
 	console.log("pcb_1:", pcb_image_path_1)
 	console.log("pcb_2:", pcb_image_path_2)
@@ -274,14 +274,21 @@ function update_commits()
 	// =======================================
 	// Update Schematic
 
-	var sch_image_path_1 = "../" + hash1 + "/" + "sch" + ".svg"
-	var sch_image_path_2 = "../" + hash2 + "/" + "sch" + ".svg"
+	var sch_image_path_1 = "../" + commit1 + "/" + "sch" + ".svg"
+	var sch_image_path_2 = "../" + commit2 + "/" + "sch" + ".svg"
 
 	console.log("sch_1:", sch_image_path_1)
 	console.log("sch_2:", sch_image_path_2)
 
 	document.getElementById("diff-xlink-1-sch").href.baseVal = sch_image_path_1 + "?t=" + timestamp
 	document.getElementById("diff-xlink-2-sch").href.baseVal = sch_image_path_2 + "?t=" + timestamp
+
+	// =======================================
+	// Update Legend
+
+	// # Update legend hash (where is the best place to put this?)
+	document.getElementById("commit1_legend_hash").innerHTML = commit1;
+	document.getElementById("commit2_legend_hash").innerHTML = commit2;
 }
 
 // NOT working yet
@@ -320,7 +327,7 @@ function change_layer()
 	var current_src1 = document.getElementById("diff-xlink-1-pcb").href.baseVal;
 	var current_src2 = document.getElementById("diff-xlink-2-pcb").href.baseVal;
 
-	commit1= current_src1.split("/")[1]
+	commit1 = current_src1.split("/")[1]
 	commit2 = current_src2.split("/")[1]
 
 	var board_name = "board"
@@ -458,4 +465,15 @@ function show_pcb()
 	// Show layers list
 	var layers_list = document.getElementById("layers_list");
 	layers_list.style.display = "inline";
+}
+
+// =======================================
+// =======================================
+
+function imgError(image)
+{
+	console.log(image)
+	// image.onerror = "../blank.svg";
+	// image.src = "../blank.svg";
+	return true;
 }
