@@ -352,12 +352,8 @@ generate_comparisons()
 
 	insert_commits "${output_folder}/web/main.html" "$commits"
 
-	# TODO: Get this info from the project
-	read -r -d '' pages <<- EOM
-	page_1|123456
-	page_2|223456
-	page_3|323456
-	EOM
+	# TODO: How to get pages from this?
+	pages=$(find -name "*.sch" -printf "%f\n")
 	insert_pages "${output_folder}/web/main.html" "$pages"
 
 	# Update board title
