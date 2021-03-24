@@ -398,6 +398,10 @@ function show_sch()
 	reload("diff-sch")
 	reload("svg-id-sch")
 
+	// Show pages list
+	var layers_list = document.getElementById("pages_list");
+	pages_list.style.display = "inline";
+
 	// Hide layout image
 	var pcb_view = document.getElementById("diff-pcb");
 	pcb_view.style.display = "none";
@@ -412,6 +416,10 @@ function show_pcb()
 	// Hide layers list
 	var sch_view = document.getElementById("diff-sch");
 	sch_view.style.display = "none";
+
+	// Hide pages list
+	var layers_list = document.getElementById("pages_list");
+	pages_list.style.display = "none";
 
 	// Show layout image
 	var pcb_view = document.getElementById("diff-pcb");

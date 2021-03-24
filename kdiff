@@ -66,6 +66,51 @@ ctrl_c()
 	exit 1
 }
 
+insert_pages()
+{
+	html="$1"
+	pages="$2"
+
+	# FORMAT
+	# pagename|pageId
+
+	n=0
+
+	PAGES_LIST_HTML=""
+
+	IFS=$'\n'
+	for page in $pages; do
+
+		echo "$page"
+
+		page_name=$(echo "$page" | cut -d'|' -f1 | sed "s/^ //g" | sed "s/[ t]\+//g")
+		page_id=$(echo "$page" | cut -d'|' -f2 | sed "s/^ //g")
+
+		if [[ $n == 0 ]]; then
+			checked=$"checked='checked'"
+		else
+			checked=""
+		fi
+
+		read -r -d '' PAGE_HTML <<- EOM
+		<input type="radio" id="${page_id}" value="${page_id}" name="layers" ${checked} onchange="change_page()"/>
+		<label class="rounded text-sm-left list-group-item radio-box" for="${page_id}">
+		<span style="margin-left:0.5em; margin-right:0.1em;" class="iconify" data-icon="gridicons:pages" data-inline="false"></span>
+			${page_name}
+		</label>
+		EOM
+
+		n=$((n+1))
+
+		PAGES_LIST_HTML="${PAGES_LIST_HTML}${PAGE_HTML}"
+
+	done
+
+	contents=$(<"$html")
+	new_contents=${contents//"<!-- FILL_PAGES_HERE -->"/${PAGES_LIST_HTML}}
+	printf '%s' "$new_contents" > "$html"
+}
+
 insert_commits()
 {
 	html="$1"
@@ -292,6 +337,9 @@ generate_comparisons()
 					rm -rf sch-diff.svg
 				fi
 
+				# Extra svgs (all pages) TODO: Reorganize this
+				mv -f *.svg "${output_folder}/$i/"
+
 			fi
 		done
 	done
@@ -303,6 +351,14 @@ generate_comparisons()
 	cp -f "${script_path}/blank.svg" "${output_folder}/"
 
 	insert_commits "${output_folder}/web/main.html" "$commits"
+
+	# TODO: Get this info from the project
+	read -r -d '' pages <<- EOM
+	page_1|123456
+	page_2|223456
+	page_3|323456
+	EOM
+	insert_pages "${output_folder}/web/main.html" "$pages"
 
 	# Update board title
 	title=$(grep -i "(title " -R "${kicad_pcb}" | cut -d"\"" -f 2)

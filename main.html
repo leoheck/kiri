@@ -172,10 +172,34 @@
 						</div>
 					</div>
 				</div>
-				<div class="col col-2" >
-					<div class="col col">
-						<p class="text-light">[Textual diff area]</p>
+
+				<div class="col col-3" >
+
+					<div class="col col-5">
+						<!-- <p class="text-light"></p> -->
+						<p></p>
 					</div>
+
+					<div class="list-group" id="pages_list" style="display: inline;">
+						<div class="form-check">
+							<span style="margin-top: 3em"></span>
+							<p class="text-light">
+								<span style="margin-right:0.5em" class="iconify" data-icon="gridicons:next-page" data-inline="false"></span>
+								Pages <small class="text-sm text-muted">
+								: Cycle using
+								<kbd><span class="iconify" data-icon="typcn-arrow-left" data-inline="false"></span></kbd>/
+								<kbd><span class="iconify" data-icon="typcn-arrow-right" data-inline="false"></span></kbd>.
+							</p>
+							<div class="row">
+								<div class="col col">
+									<form>
+										<!-- FILL_PAGES_HERE -->
+									</form>
+								</div>
+							</div>
+						</div>
+					</div>
+
 					<div class="list-group" id="layers_list" style="display: none;">
 						<div class="form-check">
 							<span style="margin-top: 3em"></span>
@@ -187,7 +211,7 @@
 								<kbd><span class="iconify" data-icon="typcn-arrow-right" data-inline="false"></span></kbd>.
 							</p>
 							<div class="row">
-								<div class="col">
+								<div class="col col">
 									<form>
 										<input type="radio" id="F_Cu" name="layers" value="F_Cu" checked="true"  onchange="change_layer()"/>
 										<label class="rounded text-sm-left list-group-item radio-box" for="F_Cu">
