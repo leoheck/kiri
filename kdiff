@@ -1,5 +1,8 @@
 #!/bin/bash
 
+#set -x
+#set -e
+
 readlink_osx()
 {
 	target_file="$1"
@@ -48,8 +51,33 @@ tac_()
 	esac
 }
 
+sed_()
+{
+	case $OSTYPE in
+		darwin*)
+			gsed "$@"
+			;;
+		*)
+			sed "$@"
+			;;
+	esac
+}
+
+find_()
+{
+	case $OSTYPE in
+		darwin*)
+			gfind "$@"
+			;;
+		*)
+			find "$@"
+			;;
+	esac
+}
+
 xdg-open_()
 {
+	echo "Launching $1"
 	case $OSTYPE in
 		darwin*)
 			open "$1" &
@@ -83,21 +111,21 @@ insert_pages()
 
 		echo "$page"
 
-		page_name=$(echo "$page" | cut -d'|' -f1 | sed "s/^ //g" | sed "s/[ t]\+//g")
-		page_id=$(echo "$page" | cut -d'|' -f2 | sed "s/^ //g")
+		page_name=$(echo "$page" | cut -d'|' -f1 | sed_ "s/^ //g" | sed_ "s/[ t]\+//g")
+		page_id=$(echo "$page" | cut -d'|' -f2 | sed_ "s/^ //g")
 
 		if [[ $n == 0 ]]; then
-			checked=$"checked='checked'"
+			checked="checked='checked'"
 		else
 			checked=""
 		fi
 
-		read -r -d '' PAGE_HTML <<- EOM
-		<input type="radio" id="${page_id}" value="${page_id}" name="layers" ${checked} onchange="change_page()"/>
-		<label class="rounded text-sm-left list-group-item radio-box" for="${page_id}">
-		<span style="margin-left:0.5em; margin-right:0.1em;" class="iconify" data-icon="gridicons:pages" data-inline="false"></span>
+		read -r -d '' PAGE_HTML <<-EOM
+			<input type="radio" id="${page_id}" value="${page_id}" name="layers" ${checked} onchange="change_page()"/>
+			<label class="rounded text-sm-left list-group-item radio-box" for="${page_id}">
+			<span style="margin-left:0.5em; margin-right:0.1em;" class="iconify" data-icon="gridicons:pages" data-inline="false"></span>
 			${page_name}
-		</label>
+			</label>
 		EOM
 
 		n=$((n+1))
@@ -128,10 +156,10 @@ insert_commits()
 	IFS=$'\n'
 	for commit in $commits; do
 
-		hash=$(echo "$commit" | cut -d'|' -f1 | sed "s/^ //g" | sed "s/[ t]\+//g" )
-		date=$(echo "$commit" | cut -d'|' -f2 | cut -d' ' -f1-2 | sed "s/^ //g" )
-		user=$(echo "$commit" | cut -d'|' -f3 | sed "s/^ //g" )
-		 msg=$(echo "$commit" | cut -d'|' -f4 | sed "s/^ //g" )
+		hash=$(echo "$commit" | cut -d'|' -f1 | sed_ "s/^ //g" | sed_ "s/[ t]\+//g" )
+		date=$(echo "$commit" | cut -d'|' -f2 | cut -d' ' -f1-2 | sed_ "s/^ //g" )
+		user=$(echo "$commit" | cut -d'|' -f3 | sed_ "s/^ //g" )
+		 msg=$(echo "$commit" | cut -d'|' -f4 | sed_ "s/^ //g" )
 
 		# check for changes in .sch files
 		if git log --name-only --pretty='format:' -1 -U "${hash}" | cat | grep -s ".sch" &> /dev/null; then
@@ -149,12 +177,12 @@ insert_commits()
 		fi
 
 		if [[ $n == 0 ]] || [[ $n == 1 ]]; then
-			checked=$"checked='checked'"
+			checked="checked='checked'"
 		else
 			checked=""
 		fi
 
-		read -r -d '' COMMIT_HTML <<- EOM
+		read -r -d '' COMMIT_HTML <<-EOM
 		    <input class="chkGroup" type="checkbox" id="${hash}" name="commit" value="${hash}" ${checked} onchange="update_commits()"/>
 		    <label class="text-sm-left list-group-item" for="${hash}">
 		      <table style="width:100%">
@@ -200,7 +228,7 @@ fix_urls_multi_project()
 	html_file=$1
 	project=$2
 
-	sed -i "s|/web/main.html|/$project/web/main.html|g" "$html_file"
+	sed_ -i "s|/web/main.html|/$project/web/main.html|g" "$html_file"
 }
 
 generate_comparisons()
@@ -306,40 +334,42 @@ generate_comparisons()
 					cp -f "${script_path}/blank.svg" sch1.svg
 				fi
 
-				# ADd image if missing
+				# Add image if missing
 				if [[ ! -f sch2.svg ]]; then
 					cp -f "${script_path}/blank.svg" sch2.svg
 				fi
 
 				if [ -f sch1.svg ]; then
 					# Background transparent
-					sed -i 's/fill="#222222"/fill="#22222200"/g' sch1.svg
-					sed -i 's/fill="#FFFFFF"/fill="#FFFFFF00"/g' sch1.svg
+					sed_ -i 's/fill="#222222"/fill="#22222200"/g' sch1.svg
+					sed_ -i 's/fill="#FFFFFF"/fill="#FFFFFF00"/g' sch1.svg
 					# Elements in black
-					sed -i 's/fill="#FF0000"/fill="#000000FF"/g' sch1.svg
-					sed -i 's/fill="#00FF00"/fill="#000000FF"/g' sch1.svg
-					sed -i 's/stroke="#800000"/stroke="#000000FF"/g' sch1.svg
+					sed_ -i 's/fill="#FF0000"/fill="#000000FF"/g' sch1.svg
+					sed_ -i 's/fill="#00FF00"/fill="#000000FF"/g' sch1.svg
+					sed_ -i 's/stroke="#800000"/stroke="#000000FF"/g' sch1.svg
+					mkdir -p "${output_folder}/$i/"
 					mv -f sch1.svg "${output_folder}/$i/sch.svg"
+					# Work in progress - extra schematic pages
+					mv -f "sch-1-*.svg" "${output_folder}/$i/"
 				fi
 
 				if [ -f sch2.svg ]; then
 					# Background transparent
-					sed -i 's/fill="#222222"/fill="#22222200"/g' sch2.svg
-					sed -i 's/fill="#FFFFFF"/fill="#FFFFFF00"/g' sch2.svg
+					sed_ -i 's/fill="#222222"/fill="#22222200"/g' sch2.svg
+					sed_ -i 's/fill="#FFFFFF"/fill="#FFFFFF00"/g' sch2.svg
 					# Elements in black
-					sed -i 's/fill="#FF0000"/fill="#000000FF"/g' sch2.svg
-					sed -i 's/fill="#00FF00"/fill="#000000FF"/g' sch2.svg
-					sed -i 's/stroke="#800000"/stroke="#000000FF"/g' sch2.svg
+					sed_ -i 's/fill="#FF0000"/fill="#000000FF"/g' sch2.svg
+					sed_ -i 's/fill="#00FF00"/fill="#000000FF"/g' sch2.svg
+					sed_ -i 's/stroke="#800000"/stroke="#000000FF"/g' sch2.svg
+					mkdir -p "${output_folder}/$j/"
 					mv -f sch2.svg "${output_folder}/$j/sch.svg"
+					# Work in progress - extra schematic pages
+					mv -f "sch-2-*.svg" "${output_folder}/$j/"
 				fi
 
 				if [ -f sch-diff.svg ]; then
 					rm -rf sch-diff.svg
 				fi
-
-				# Extra svgs (all pages) TODO: Reorganize this
-				mv -f *.svg "${output_folder}/$i/"
-
 			fi
 		done
 	done
@@ -352,24 +382,27 @@ generate_comparisons()
 
 	insert_commits "${output_folder}/web/main.html" "$commits"
 
-	# TODO: How to get pages from this?
-	pages=$(find -name "*.sch" -printf "%f\n")
+	# TODO: How to get pages of the Kicad project here?
+	pages=$(find_ -name "*.sch" -printf "%f\n")
 	insert_pages "${output_folder}/web/main.html" "$pages"
 
 	# Update board title
 	title=$(grep -i "(title " -R "${kicad_pcb}" | cut -d"\"" -f 2)
-	sed -i "s|\[PROJECT_TITLE\]|${title}|g" "${output_folder}/web/main.html"
+	sed_ -i "s|\[PROJECT_TITLE\]|${title}|g" "${output_folder}/web/main.html"
 
 	commit1=$(echo "$commits" | head -n1 | tail -n1 | cut -d" " -f1)
 	commit2=$(echo "$commits" | head -n2 | tail -n1 | cut -d" " -f1)
 
+	# Update board name
+	sed_ -i "s|var board_name =.*|var board_name = \"${board_name}\"; // generated by kdiff script |g" "${output_folder}/web/kdiff.js"
+
 	# Update initial schematic images
-	sed -i "s|\[INITIAL_COMMIT_1_SCH\]|../${commit1}/sch.svg|g" "${output_folder}/web/main.html"
-	sed -i "s|\[INITIAL_COMMIT_2_SCH\]|../${commit2}/sch.svg|g" "${output_folder}/web/main.html"
+	sed_ -i "s|\[INITIAL_COMMIT_1_SCH\]|../${commit1}/sch.svg|g" "${output_folder}/web/main.html"
+	sed_ -i "s|\[INITIAL_COMMIT_2_SCH\]|../${commit2}/sch.svg|g" "${output_folder}/web/main.html"
 
 	# Update initial layout images
-	sed -i "s|\[INITIAL_COMMIT_1_PCB\]|../${commit1}/${board_name}-F_Cu.svg|g" "${output_folder}/web/main.html"
-	sed -i "s|\[INITIAL_COMMIT_2_PCB\]|../${commit2}/${board_name}-F_Cu.svg|g" "${output_folder}/web/main.html"
+	sed_ -i "s|\[INITIAL_COMMIT_1_PCB\]|../${commit1}/${board_name}-F_Cu.svg|g" "${output_folder}/web/main.html"
+	sed_ -i "s|\[INITIAL_COMMIT_2_PCB\]|../${commit2}/${board_name}-F_Cu.svg|g" "${output_folder}/web/main.html"
 }
 
 
@@ -432,5 +465,4 @@ done
 # Pass git .pro file instead of the board
 
 generate_comparisons "$script_path" "$kicad_pcb" "$project_folder"
-
 xdg-open_ "${output_folder}/web/main.html"
