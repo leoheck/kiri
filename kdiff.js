@@ -244,9 +244,11 @@ function update_commits()
 	var hash2 = values[1].replace(/\s+/g, '')
 	var timestamp = new Date().getTime();
 
+	// =======================================
 	// Update Layout
 
-	current_src1 = document.getElementById("diff-xlink-1-sch").href.baseVal;
+	var current_src1 = document.getElementById("diff-xlink-1-sch").href.baseVal;
+	var board_name = "board"
 
 	var layers = document.getElementsByName('layers');
 	for (var layer of layers) {
@@ -262,8 +264,8 @@ function update_commits()
 		selected_layer = "F_Cu"
 	}
 
-	var pcb_image_path_1 = "../" + hash1 + "/" + "board-" + selected_layer + ".svg"
-	var pcb_image_path_2 = "../" + hash2 + "/" + "board-" + selected_layer + ".svg"
+	var pcb_image_path_1 = "../" + hash1 + "/" + board_name + "-" + selected_layer + ".svg"
+	var pcb_image_path_2 = "../" + hash2 + "/" + board_name + "-" + selected_layer + ".svg"
 
 	console.log("pcb_1:", pcb_image_path_1)
 	console.log("pcb_2:", pcb_image_path_2)
@@ -297,8 +299,10 @@ function change_layer() {
 	commit1= current_src1.split("/")[1]
 	commit2 = current_src2.split("/")[1]
 
-	var ref1 = "../" + commit1 + "/" + "board-" + layers[selected_layer].value + ".svg"
-	var ref2 = "../" + commit2 + "/" + "board-" + layers[selected_layer].value + ".svg"
+	var board_name = "board"
+
+	var ref1 = "../" + commit1 + "/" + board_name + "-" + layers[selected_layer].value + ".svg"
+	var ref2 = "../" + commit2 + "/" + board_name + "-" + layers[selected_layer].value + ".svg"
 
 	document.getElementById("diff-xlink-1-pcb").href.baseVal = ref1 + "?t=" + timestamp;
 	document.getElementById("diff-xlink-2-pcb").href.baseVal = ref2 + "?t=" + timestamp;
