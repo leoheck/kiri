@@ -82,8 +82,6 @@
 
 								<span style="width: 2em"></span>
 								<div id="svg_controls" class="controls btn-toolbar btn-group me-2" role="toolbar" aria-label="View Type">
-
-								<!-- <div id="svg_controls" class="controls"> -->
 									<label class="">
 										<button id="zoom-in" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary btn-sm" autocomplete="off">
 										<span class="iconify" style="width: 20px; height: 20px;" data-icon="akar-icons:zoom-in" data-inline="false"></span>
@@ -103,9 +101,23 @@
 							</div>
 						</div>
 					</div>
+
 					<div class="container no-gutters" style="flex: 1;">
 						<div class="row no-gutters" style="flex: 1;">
 							<div class="col col-11" style="flex: 1;">
+
+
+								<div id="legend_">
+									<form class="rounded form-inline" style="background-color: #222; padding: 10px 5px 10px 5px">
+										<span id=commit1_legend style="margin-left:0.5em; margin-right:0.5em; color: #00FFFF" style="width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
+										<small class="text-sm text-light">Newer commit <span id=commit1_legend_hash>(hash)</span></small>
+										<span style="width: 1em;"></span>
+										<span id="commit2_legend" style="margin-left:0.5em; margin-right:0.5em; color: #880808" style="width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
+										<small class="text-sm text-light">Older commit <span id=commit2_legend_hash>(hash)</span></small>
+									</form>
+								</div>
+
+
 								<div id="diff-sch" style="width: 100%; height: 70vh; display: inline;">
 									<svg id="svg-id-sch" xmlns="http://www.w3.org/2000/svg"
 										style="display: inline; width: inherit; min-width: inherit; max-width: inherit; height: inherit; min-height: inherit; max-height: inherit;" version="1.1">
@@ -184,7 +196,7 @@
 						<div class="form-check">
 							<span style="margin-top: 3em"></span>
 							<p class="text-light">
-								<span style="margin-right:0.5em" class="iconify" data-icon="gridicons:next-page" data-inline="false"></span>
+								<span style="margin-right:0.5em" style="width: 20px; height: 20px;" class="iconify" data-icon="gridicons:next-page" data-inline="false"></span>
 								Pages <small class="text-sm text-muted">
 								: Cycle using
 								<kbd><span class="iconify" data-icon="typcn-arrow-left" data-inline="false"></span></kbd>/
@@ -204,7 +216,7 @@
 						<div class="form-check">
 							<span style="margin-top: 3em"></span>
 							<p class="text-light">
-								<span style="margin-right:0.5em" class="iconify" data-icon="teenyicons:layers-solid" data-inline="false"></span>
+								<span style="margin-right:0.5em" style="width: 20px; height: 20px;" class="iconify" data-icon="teenyicons:layers-solid" data-inline="false"></span>
 								Layers <small class="text-sm text-muted">
 								: Cycle using
 								<kbd><span class="iconify" data-icon="typcn-arrow-left" data-inline="false"></span></kbd>/
