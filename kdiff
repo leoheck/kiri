@@ -362,12 +362,10 @@ generate_comparisons()
 					case "$sch_page_svg" in
 
 						sch1.svg)
-							echo sch1.svg
 							mv -f "$sch_page_svg" "${output_folder}/$i/sch.svg" 2> /dev/null
 							;;
 
 						sch2.svg)
-							echo sch2.svg
 							mv -f "$sch_page_svg" "${output_folder}/$j/sch.svg" 2> /dev/null
 							;;
 
