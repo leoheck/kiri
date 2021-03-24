@@ -305,6 +305,7 @@ generate_comparisons()
 
 				cmd="kidiff $kicad_pcb --webserver-disable -a $i -b $j > /dev/null"
 				if [[ "$VERBOSE" == "1" ]]; then
+					echo
 					echo "$cmd"
 				fi
 				if [[ "$DRY_RUN" == "0" ]]; then
@@ -326,6 +327,7 @@ generate_comparisons()
 				cmd="plotgitsch -l ${board_name}-cache.lib -c ${REMOVED}:${ADDED}:${UNCHANGED}:${BACKGROUND} ${i} ${j} > /dev/null"
 				if [[ "$VERBOSE" == "1" ]]; then
 					echo "$cmd"
+					echo
 				fi
 				if [[ "$DRY_RUN" == "0" ]]; then
 					eval "$cmd"
