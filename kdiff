@@ -109,8 +109,8 @@ insert_pages()
 	IFS=$'\n'
 	for page in $pages; do
 
-		page_name=$(echo "$page" | cut -d'|' -f1 | sed_ "s/^ //g" | sed_ "s/[ t]\+//g")
-		page_id=$(echo "$page" | cut -d'|' -f2 | sed_ "s/^ //g")
+		page_name=$(echo "$page" | cut -d'|' -f1 | sed_ "s/[ t]\+//g")
+		page_id=$(  echo "$page" | cut -d'|' -f2 | sed_ "s/[ \t]\+//g")
 
 		if [[ $n == 0 ]]; then
 			checked="checked='checked'"
@@ -119,7 +119,7 @@ insert_pages()
 		fi
 
 		read -r -d '' PAGE_HTML <<-EOM
-			<input type="radio" id="${page_id}" value="${page_id}" name="layers" ${checked} onchange="change_page()"/>
+			<input type="radio" id="${page_id}" value="${page_id}" name="pages" ${checked} onchange="change_page()"/>
 			<label class="rounded text-sm-left list-group-item radio-box" for="${page_id}">
 			<span style="margin-left:0.5em; margin-right:0.1em;" class="iconify" data-icon="gridicons:pages" data-inline="false"></span>
 			${page_name}
@@ -334,7 +334,7 @@ generate_comparisons()
 				fi
 
 				# Add image if missing
-				if [[ ! -f sch1.svg ]]; then
+				if [[ ! -f svg1.svg ]]; then
 					cp -f "${script_path}/blank.svg" sch1.svg
 				fi
 
@@ -343,37 +343,43 @@ generate_comparisons()
 					cp -f "${script_path}/blank.svg" sch2.svg
 				fi
 
-				if [ -f sch1.svg ]; then
-					# Background transparent
-					sed_ -i 's/fill="#222222"/fill="#22222200"/g' sch1.svg
-					sed_ -i 's/fill="#FFFFFF"/fill="#FFFFFF00"/g' sch1.svg
-					# Elements in black
-					sed_ -i 's/fill="#FF0000"/fill="#000000FF"/g' sch1.svg
-					sed_ -i 's/fill="#00FF00"/fill="#000000FF"/g' sch1.svg
-					sed_ -i 's/stroke="#800000"/stroke="#000000FF"/g' sch1.svg
-					mkdir -p "${output_folder}/$i/"
-					mv -f sch1.svg "${output_folder}/$i/sch.svg" 2> /dev/null
-					# Work in progress - extra schematic pages
-					mv -f "sch-1-*.svg" "${output_folder}/$i/" 2> /dev/null
-				fi
+				mkdir -p "${output_folder}/$i/"
+				mkdir -p "${output_folder}/$j/"
 
-				if [ -f sch2.svg ]; then
-					# Background transparent
-					sed_ -i 's/fill="#222222"/fill="#22222200"/g' sch2.svg
-					sed_ -i 's/fill="#FFFFFF"/fill="#FFFFFF00"/g' sch2.svg
-					# Elements in black
-					sed_ -i 's/fill="#FF0000"/fill="#000000FF"/g' sch2.svg
-					sed_ -i 's/fill="#00FF00"/fill="#000000FF"/g' sch2.svg
-					sed_ -i 's/stroke="#800000"/stroke="#000000FF"/g' sch2.svg
-					mkdir -p "${output_folder}/$j/"
-					mv -f sch2.svg "${output_folder}/$j/sch.svg" 2> /dev/null
-					# Work in progress - extra schematic pages
-					mv -f "sch-2-*.svg" "${output_folder}/$j/" 2> /dev/null
-				fi
+				rm -rf sch-diff.svg
 
-				if [ -f sch-diff.svg ]; then
-					rm -rf sch-diff.svg
-				fi
+				for sch_page_svg in *.svg; do
+
+					# Background transparent
+					sed_ -i 's/fill="#222222"/fill="#22222200"/g' "$sch_page_svg"
+					sed_ -i 's/fill="#FFFFFF"/fill="#FFFFFF00"/g' "$sch_page_svg"
+
+					# Elements in black
+					sed_ -i 's/fill="#FF0000"/fill="#000000FF"/g' "$sch_page_svg"
+					sed_ -i 's/fill="#00FF00"/fill="#000000FF"/g' "$sch_page_svg"
+					sed_ -i 's/stroke="#800000"/stroke="#000000FF"/g' "$sch_page_svg"
+
+					case "$sch_page_svg" in
+
+						sch1.svg)
+							echo sch1.svg
+							mv -f "$sch_page_svg" "${output_folder}/$i/sch.svg" 2> /dev/null
+							;;
+
+						sch2.svg)
+							echo sch2.svg
+							mv -f "$sch_page_svg" "${output_folder}/$j/sch.svg" 2> /dev/null
+							;;
+
+						sch-1*)
+							mv -f "$sch_page_svg" "${output_folder}/$i/" 2> /dev/null
+							;;
+
+						sch-2*)
+							mv -f "$sch_page_svg" "${output_folder}/$j/" 2> /dev/null
+							;;
+					esac
+				done
 			fi
 		done
 	done
@@ -387,7 +393,7 @@ generate_comparisons()
 	insert_commits "${output_folder}/web/main.html" "$commits"
 
 	# TODO: How to get pages of the Kicad project here?
-	pages=$(find_ -name "*.sch" -printf "%f\n")
+	pages=$(find_ -name "*.sch" -printf "%f\n" | sed_ "s/\(.*\)\.sch/\1|\1_id/g")
 	insert_pages "${output_folder}/web/main.html" "$pages"
 
 	# Update board title
