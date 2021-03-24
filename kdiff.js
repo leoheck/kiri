@@ -299,6 +299,15 @@ function change_page()
 
 	console.log("sch:", current_src1)
 	console.log("sch:", current_src2)
+
+	commit1= current_src1.split("/")[1]
+	commit2 = current_src2.split("/")[1]
+
+	// var ref1 = "../" + commit1 + "/" + board_name + "-" + layers[selected_layer].value + ".svg"
+	// var ref2 = "../" + commit2 + "/" + board_name + "-" + layers[selected_layer].value + ".svg"
+
+	// document.getElementById("diff-xlink-1-pcb").href.baseVal = ref1 + "?t=" + timestamp;
+	// document.getElementById("diff-xlink-2-pcb").href.baseVal = ref2 + "?t=" + timestamp;
 }
 
 function change_layer()
