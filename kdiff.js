@@ -401,7 +401,7 @@ window.onload = function()
 
 		if (document.getElementById('diff-sch').style.display === "inline") {
 			panZoom_sch.resetZoom()
-			panZoom_pcb.center();
+			panZoom_sch.center();
 			// panZoom_sch.fit() // cannot be used, bug?
 		}
 		else

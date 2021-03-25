@@ -440,7 +440,6 @@ generate_comparisons()
 	insert_commits "${output_folder}/web/main.html" "$commits"
 
 	pages=$(get_pages ${board_name}.sch)
-	echo "$pages"
 	insert_pages "${output_folder}/web/main.html" "$pages"
 
 	# Update board title

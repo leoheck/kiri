@@ -40,8 +40,9 @@ html, body {
 	background-color: #222;
 	color: #dbdbdb;
 	font-family: monospace;
-	padding: 2px;
+	padding: 1px;
 	margin: 4px;
+	border-radius: 4px;
 }
 
 .list-group input[type="checkbox"] + .list-group-item:before {
@@ -52,6 +53,7 @@ html, body {
 .list-group input[type="checkbox"]:checked + .list-group-item {
 	background-color: #111111;
 	color: #FFF;
+	border-radius: 4px;
 }
 
 .list-group input[type="checkbox"]:checked + .list-group-item:before {
@@ -168,4 +170,16 @@ html, body {
 .B_CrtYd   { filter: invert(79%) sepia(92%) saturate(322%)  hue-rotate(3deg)   brightness(89%)  contrast(92%);  }
 
 
-/*div { border: 1px solid white; }*/
+#svg-id-sch {
+	border: 1px solid #333;
+	border-radius: 4px;
+	margin-top: 15px;
+	background-color: #222;
+}
+
+#svg-id-pcb {
+	margin-top: 15px;
+	border: 1px solid #333;
+	background-color: #222;
+	border-radius: 4px;
+}

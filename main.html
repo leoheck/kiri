@@ -14,8 +14,8 @@
 	</head>
 	<body>
 		<div class="container fill no-gutters" style="background-color: #333;">
-			<div class="row fill">
-				<div class="col col-3" style="overflow: hidden">
+			<div class="row fill no-gutters">
+				<div class="col col-3 no-gutters" style="overflow: hidden">
 					<div class="list-group" style="padding: 0px 0px 15px 0px; margin-left:10px; height: 100vh;">
 						<span style="margin-top: 1em"></span>
 						<h3 class="text-light">Kicad Revision Inspector</h3>
@@ -38,22 +38,22 @@
 						</div>
 					</div>
 				</div>
-				<div class="col col-6" style="background-color: #111;">
-					<div class="row" style="width : 100%; margin: 0px">
+				<div class="col col-6 no-gutters" style="background-color: #333;">
+					<div class="row" style="width : 100%; margin: 0px;">
 						<div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons" style="padding: 10px;">
 							<div id="view_mode" class="btn-toolbar" role="toolbar" aria-label="View Mode">
 								<div class="btn-group me-2" role="group" aria-label="First group">
-									<label id="show_sch_lbl" class="btn btn-secondary active">
+									<label id="show_sch_lbl" title="Schematic" class="btn btn-secondary active">
 										<input id="show_sch" type="radio" name="view_mode" value="show_sch" data="show_sch" checked autocomplete="off">
 										<span class="iconify" style="width: 20px; height: 20px;" data-icon="carbon:schematics" data-inline="false" onclick="show_sch()"></span>
 									</label>
-									<label id="show_pcb_lbl" class="btn btn-secondary ">
+									<label id="show_pcb_lbl" title="Layout" class="btn btn-secondary">
 										<input id="show_pcb" type="radio" name="view_mode" value="show_pcb" data="show_pcb" autocomplete="off">
 										<span class="iconify" style="width: 20px; height: 20px;" data-icon="codicon:circuit-board" data-inline="false" onclick="show_pcb()"></span>
 									</label>
 								</div>
 								<span style="width: 0.5em"></span>
-								<p class="text-light" >
+								<p class="text-light" style="padding-top: 5px">
 									<small class="text-sm">
 									Toggle view mode with <kbd>s</kbd>
 									</small>
@@ -61,38 +61,38 @@
 								<span style="width: 2em"></span>
 								<div id="view_type" class="btn-toolbar btn-group me-2" role="toolbar" aria-label="View Type">
 									<label class="btn btn-secondary disabled">
-										<input type="radio" name="view_type" id="Onion" autocomplete="off">
+										<input type="radio" title="Onion Mode" name="view_type" id="Onion" autocomplete="off">
 										Onion
 									</label>
 									<label class="btn btn-secondary disabled">
-										<input type="radio" name="view_type" id="Swipe" autocomplete="off">
+										<input type="radio" title="Swipe Mode" name="view_type" id="Swipe" autocomplete="off">
 										Swipe
 									</label>
 									<label class="btn btn-secondary disabled">
-										<input type="radio" name="view_type" id="2-Up" autocomplete="off">
+										<input type="radio" title="2-Up Mode" name="view_type" id="2-Up" autocomplete="off">
 										2-Up
 									</label>
 								</div>
 								<span style="width: 0.5em"></span>
-								<p class="text-light" >
+								<p class="text-light" style="padding-top: 5px">
 									<small class="text-sm">
 									View type is not working yet.
 									</small>
 								</p>
 								<span style="width: 2em"></span>
-								<div id="svg_controls" class="controls btn-toolbar btn-group me-2" role="toolbar" aria-label="View Type">
+								<div id="svg_controls" class="controls btn-toolbar btn-group me-2" role="toolbar" aria-label="Zoom Level">
 									<label class="">
-										<button id="zoom-in" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary btn-sm" autocomplete="off">
+										<button id="zoom-in" title="Zoom In" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary btn-sm" autocomplete="off">
 										<span class="iconify" style="width: 20px; height: 20px;" data-icon="akar-icons:zoom-in" data-inline="false"></span>
 									</label>
 									<span style="width: 1em;"></span>
-									<label class="">
-										<button id="zoom-out" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary btn-sm" autocomplete="off" style="margin: 0 0.2em 0 0.2em;">
+									<label class="" >
+										<button id="zoom-out" title="Zoom Out" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary btn-sm" autocomplete="off" style="margin: 0 0.2em 0 0.2em;">
 										<span class="iconify" style="width: 20px; height: 20px;" data-icon="akar-icons:zoom-out" data-inline="false"></span>
 									</label>
 									<span style="width: 1em;"></span>
-									<label class="">
-										<button id="reset" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary btn-sm" autocomplete="off">
+									<label class="" >
+										<button id="reset" title="Reset View" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary btn-sm" autocomplete="off">
 										<span class="iconify" style="width: 20px; height: 20px;" data-icon="bytesize:zoom-reset" data-inline="false"></span>
 									</label>
 								</div>
