@@ -152,49 +152,6 @@ get_pages()
 	echo -e "$pages"
 }
 
-insert_pages()
-{
-	html="$1"
-	pages="$2"
-
-	# FORMAT
-	# pagename|pagepath.sch
-
-	n=0
-
-	PAGES_LIST_HTML=""
-
-	IFS=$'\n'
-	for page in $pages; do
-
-		page_name=$(echo "$page" | cut -d'|' -f1 | sed_ "s/[ \t]\+//g")
-		page_filename=$(  echo "$page" | cut -d'|' -f2 | sed_ "s/[ \t]\+//g" | sed_ "s/.sch//g")
-
-		if [[ $n == 0 ]]; then
-			checked="checked='checked'"
-		else
-			checked=""
-		fi
-
-		read -r -d '' PAGE_HTML <<-EOM
-			<input type="radio" id="${page_filename}" value="${page_filename}" name="pages" ${checked} onchange="change_page()"/>
-			<label class="rounded text-sm-left list-group-item radio-box" for="${page_filename}">
-			<span style="margin-left:0.5em; margin-right:0.1em;" class="iconify" data-icon="gridicons:pages" data-inline="false"></span>
-			${page_name}
-			</label>
-		EOM
-
-		n=$((n+1))
-
-		PAGES_LIST_HTML="${PAGES_LIST_HTML}${PAGE_HTML}"
-
-	done
-
-	contents=$(<"$html")
-	new_contents=${contents//"<!-- FILL_PAGES_HERE -->"/${PAGES_LIST_HTML}}
-	printf '%s' "$new_contents" > "$html"
-}
-
 insert_commits()
 {
 	html="$1"
@@ -269,6 +226,141 @@ insert_commits()
 	printf '%s' "$new_contents" > "$html"
 }
 
+insert_pages()
+{
+	html="$1"
+	pages="$2"
+
+	# FORMAT
+	# pagename|pagepath.sch
+
+	n=0
+
+	PAGES_LIST_HTML=""
+
+	IFS=$'\n'
+	for page in $pages; do
+
+		page_name=$(echo "$page" | cut -d'|' -f1 | sed_ "s/[ \t]\+//g")
+		page_filename=$(  echo "$page" | cut -d'|' -f2 | sed_ "s/[ \t]\+//g" | sed_ "s/.sch//g")
+
+		if [[ $n == 0 ]]; then
+			checked="checked='checked'"
+		else
+			checked=""
+		fi
+
+		read -r -d '' PAGE_HTML <<-EOM
+			<input type="radio" id="${page_filename}" value="${page_filename}" name="pages" ${checked} onchange="change_page()"/>
+			<label class="rounded text-sm-left list-group-item radio-box" for="${page_filename}">
+			<span style="margin-left:0.5em; margin-right:0.1em;" class="iconify" data-icon="gridicons:pages" data-inline="false"></span>
+			${page_name}
+			</label>
+		EOM
+
+		n=$((n+1))
+
+		PAGES_LIST_HTML="${PAGES_LIST_HTML}${PAGE_HTML}"
+
+	done
+
+	contents=$(<"$html")
+	new_contents=${contents//"<!-- FILL_PAGES_HERE -->"/${PAGES_LIST_HTML}}
+	printf '%s' "$new_contents" > "$html"
+}
+
+insert_layers()
+{
+	html="$1"
+
+	# Hardcoded list of layers now
+	# layers="$2"
+	read -r -d '' layers <<-EOM
+	F_Cu
+	In1_Cu
+	In2_Cu
+	In3_Cu
+	In4_Cu
+	B_Cu
+	F_Adhes
+	B_Adhes
+	F_Paste
+	B_Paste
+	F_SilkS
+	B_SilkS
+	F_Mask
+	B_Mask
+	Dwgs_User
+	Cmts_User
+	Eco1_User
+	Eco2_User
+	Edge_Cuts
+	Margin
+	F_CrtYd
+	B_CrtYd
+	F_Fab
+	B_Fab
+	EOM
+
+	n=0
+
+	LAYERS_LIST_HTML=""
+
+	IFS=$'\n'
+	for layer in $layers; do
+
+		# Replace "." with "_"
+		# layer=$(sed_ "s/\./_/g" <<< "${layer}")
+
+		case $layer in
+			F*Cu*)      layer_color="#952927" ;;
+			B*Cu*)      layer_color="#359632" ;;
+			In1*Cu*)    layer_color="#C2C200" ;;
+			In2*Cu*)    layer_color="#C200C2" ;;
+			In3*Cu*)    layer_color="#C20000" ;;
+			In4*Cu*)    layer_color="#0000C2" ;;
+			F*Mask*)    layer_color="#943197" ;;
+			B*Mask*)    layer_color="#943197" ;;
+			F*SilkS*)   layer_color="#339697" ;;
+			B*SilkS*)   layer_color="#481649" ;;
+			Edge_Cuts*) layer_color="#C9C83B" ;;
+			Margin*)    layer_color="#D357D2" ;;
+			Dwgs*User*) layer_color="#0364D3" ;;
+			Cmts*User*) layer_color="#7AC0F4" ;;
+			Eco1*User*) layer_color="#008500" ;;
+			F*Fab*)     layer_color="#C2C200" ;;
+			B*Fab*)     layer_color="#858585" ;;
+			F*Adhes*)   layer_color="#A74AA8" ;;
+			B*Adhes*)   layer_color="#3545A8" ;;
+			F*CrtYd*)   layer_color="#A7A7A7" ;;
+			B*CrtYd*)   layer_color="#D3D04B" ;;
+			*)          layer_color="" ;;
+		esac
+
+		if [[ "$n" == "0" ]]; then
+			checked="checked='checked'"
+		else
+			checked=""
+		fi
+
+		read -r -d '' LAYER_HTML <<-EOM
+			<input type="radio" id="${layer}" name="layers" value="${layer}" ${checked}  onchange="change_layer()"/>
+			<label class="rounded text-sm-left list-group-item radio-box" for="${layer}">
+				<span style="margin-left:0.5em; margin-right:0.1em; color: ${layer_color}" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+				${layer}
+			</label>
+		EOM
+
+		n=$((n+1))
+
+		LAYERS_LIST_HTML="${LAYERS_LIST_HTML}${LAYER_HTML}"
+
+	done
+
+	contents=$(<"$html")
+	new_contents=${contents//"<!-- FILL_LAYERS_HERE -->"/${LAYERS_LIST_HTML}}
+	printf '%s' "$new_contents" > "$html"
+}
 
 show_commits()
 {
@@ -387,7 +479,7 @@ generate_comparisons()
 				# Create blank images by default
 				# IFS=$'\n'
 				# for sch in $sch_files; do
-				# 	sch_board_name=$(sed "s/.sch//g" <<< "${sch}" | sed "s|./||g")
+				# 	sch_board_name=$(sed_ "s/.sch//g" <<< "${sch}" | sed_ "s|./||g")
 				# 	cp -f "${script_path}/blank.svg" "sch-${sch_board_name}.svg"
 				# 	cp -f "${script_path}/blank.svg" "sch-${sch_board_name}.svg"
 				# done
@@ -443,8 +535,10 @@ generate_comparisons()
 	cp -f "${script_path}/kdiff.css" "${output_folder}/web/"
 	cp -f "${script_path}/blank.svg" "${output_folder}/web/"
 
+	# Insert commits list
 	insert_commits "${output_folder}/web/main.html" "$commits" "$project_path"
 
+	# Insert pages list
 	pages=$(get_pages "${board_name}" "${board_name}.sch")
 	insert_pages "${output_folder}/web/main.html" "$pages"
 
@@ -455,11 +549,11 @@ generate_comparisons()
 	fi
 	sed_ -i "s|\[PROJECT_TITLE\]|${title}|g" "${output_folder}/web/main.html"
 
-	commit1=$(echo "$commits" | head -n1 | tail -n1 | cut -d" " -f1)
-	commit2=$(echo "$commits" | head -n2 | tail -n1 | cut -d" " -f1)
-
 	# Update board name
 	sed_ -i "s|var board_name =.*|var board_name = \"${board_name}\"; // generated by kdiff script |g" "${output_folder}/web/kdiff.js"
+
+	commit1=$(echo "$commits" | head -n1 | tail -n1 | cut -d" " -f1)
+	commit2=$(echo "$commits" | head -n2 | tail -n1 | cut -d" " -f1)
 
 	# Update initial schematic images
 	sed_ -i "s|\[INITIAL_COMMIT_1_SCH\]|../${commit1}/sch-${board_name}.svg|g" "${output_folder}/web/main.html"
@@ -472,6 +566,10 @@ generate_comparisons()
 	# Update initial commit legend
 	sed_ -i "s|\[COMMIT_1_HASH\]|${commit1}|g" "${output_folder}/web/main.html"
 	sed_ -i "s|\[COMMIT_2_HASH\]|${commit2}|g" "${output_folder}/web/main.html"
+
+	# Insert layers list
+	board_layers=$(sed_ -n '/^  (layers/,/  )$/{/^  (layers/!{/  )$/!p}}' "${kicad_pcb}" | sed_ "s/^[ \t]\+//g" | sed_ "s/[()]//g" | cut -d" " -f2)
+	insert_layers "${output_folder}/web/main.html" "$board_layers"
 }
 
 

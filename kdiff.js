@@ -361,7 +361,7 @@ function change_page()
 	var current_src1 = document.getElementById("diff-xlink-1-sch").href.baseVal;
 	var current_src2 = document.getElementById("diff-xlink-2-sch").href.baseVal;
 
-	console.log("selected_page", pages[selected_page].value)
+	console.log("selected_page:", pages[selected_page].value)
 
 	commit1 = current_src1.split("/")[1]
 	commit2 = current_src2.split("/")[1]
@@ -381,7 +381,7 @@ function change_layer()
 {
 	var layers = $("#layers_list input:radio[name='layers']");
 	var selected_layer = layers.index(layers.filter(':checked'));
-	console.log("selected_layer", layers[selected_layer].value)
+	console.log("selected_layer:", layers[selected_layer].value)
 
 	var timestamp = new Date().getTime();
 
