@@ -1,7 +1,7 @@
 #!/bin/bash
 
-#set -x
-#set -e
+# set -x
+# set -e
 
 show_help()
 {
@@ -9,15 +9,24 @@ show_help()
 
 	USAGE :
 
-	    kdiff [OPTIONS] kicad_pcb
+	    kdiff [OPTIONS] KICAD_PCB
 
 	OPTIONS:
 
 	    -a          Track all commits (slower). By default it looks only commits related with *.kicad_pcb and *.sch files
-	    -r          Remove kidiff folder before run
+	    -c [c1 c2]  Limit scope of commits between commit c1 and c2. It can be used with -a
 	    -p [path]   Set nested project path
+	    -r          Remove kidiff folder before run
 	    -v          Verbose
 	    -h          This help
+
+	EXAMPLES:
+
+	    # Kicad project on the root of the repo
+	    kdiff board.kicad_pcb
+
+	    # Nested Kicad projects
+		cd power-panel; kdiff board.kicad_pcb -p power-panel -r -v
 
 	EOM
 
@@ -148,7 +157,7 @@ insert_pages()
 	pages="$2"
 
 	# FORMAT
-	# pagename|pageId
+	# pagename|pagepath.sch
 
 	n=0
 
@@ -189,6 +198,7 @@ insert_commits()
 {
 	html="$1"
 	commits="$2"
+	project="$3"
 
 	# GIT COMMITS FORMAT
 	#
@@ -208,17 +218,17 @@ insert_commits()
 		 msg=$(echo "$commit" | cut -d'|' -f4 | sed_ "s/^ //g" )
 
 		# check for changes in .sch files
-		if git log --name-only --pretty='format:' -1 -U "${hash}" -- | cat | grep -s ".sch" &> /dev/null; then
+		if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${project}" | cat | grep -s ".sch" &> /dev/null; then
 			sch_icon='<span class="iconify" style="width: 14px; height: 14px; color: #A6E22E;" data-icon="carbon:schematics" data-inline="false"></span>'
 		fi
 
 		# check for changes in .kicad_pcb files
-		if git log --name-only --pretty='format:' -1 -U "${hash}" -- | cat | grep -s ".kicad_pcb" &> /dev/null; then
+		if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${project}" | cat | grep -s ".kicad_pcb" &> /dev/null; then
 			layout_icon='<span class="iconify" style="width: 14px; height: 14px; color: #F92672;" data-icon="codicon:circuit-board" data-inline="false"></span>'
 		fi
 
-		# check for changes in textual files
-		if git log --name-only --pretty='format:' -1 -U "${hash}" -- | cat | grep -s -vE ".sch|.kicad_pcb" &> /dev/null; then
+		# Check for changes in textual files only
+		if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${project}" | cat | grep -s -vE ".sch|.kicad_pcb" &> /dev/null; then
 			text_icon='<span class="iconify" style="width: 14px; height: 14px; color: #888888;" data-icon="bi:file-earmark-text" data-inline="false"></span>'
 		fi
 
@@ -289,28 +299,36 @@ generate_comparisons()
 
 	if [[ "$project_path" == "" ]]; then
 		project_path="./"
-		output_folder="kidiff"
+		output_folder="./kidiff"
 	else
 		output_folder="../kidiff/$project_path"
 	fi
 
 	if [[ "$REMOVE_KDIFF_FOLDER" == "1" ]]; then
 		rm -rf "${output_folder}"
+		rm -rf kidiff
 	fi
 
 	mkdir -p "${output_folder}/web/"
 	mkdir -p "${output_folder}/diff/"
 
-	if [[ "$ALL_COMMITS" == "0" ]]; then
-		commits=$(git log --date=local '--pretty=format:%h | %ai | %an | %s' "$kicad_pcb" "*.sch")
+	# echo "=============================="
+	# echo "project_path  = ${project_path}"
+	# echo "output_folder = ${output_folder}"
+	# echo "board_name    = ${board_name}"
+	# echo "=============================="
+	# exit
+
+	sch_files=$(find_ -name "*.sch")
+
+	if [[ "$ALL_COMMITS" == "1" ]]; then
+		commits=$(git log --date=local '--pretty=format:%h | %ai | %an | %s' -- "${project_path}")
 	else
-		commits=$(git log --date=local '--pretty=format:%h | %ai | %an | %s' "$project_path")
+		commits=$(git log --date=local '--pretty=format:%h | %ai | %an | %s' -- "${project_path}/${kicad_pcb}" "${sch_files}")
 	fi
 
 	a=$(echo "$commits" | tac_ | cut -d' '  -f1);
 	b=$a
-
-	IFS=$'\n'
 
 	na=$(echo "$a" | wc -w)
 	nb=$(echo "$b" | wc -w)
@@ -321,6 +339,8 @@ generate_comparisons()
 	echo
 
 	n=0
+
+	IFS=$'\n'
 	for i in $a; do
 
 		k=0
@@ -349,6 +369,9 @@ generate_comparisons()
 				if [[ -d "${output_folder}/$j" ]]; then
 					continue
 				fi
+
+				mkdir -p "${output_folder}/$i/"
+				mkdir -p "${output_folder}/$j/"
 
 				# ====
 
@@ -392,9 +415,6 @@ generate_comparisons()
 					cp -f "${script_path}/blank.svg" sch2.svg
 				fi
 
-				mkdir -p "${output_folder}/$i/"
-				mkdir -p "${output_folder}/$j/"
-
 				rm -rf sch-diff.svg
 
 				for sch_page_svg in *.svg; do
@@ -433,17 +453,20 @@ generate_comparisons()
 
 	# Copy assets
 	cp -f "${script_path}/main.html" "${output_folder}/web/main.html"
-	cp -f "${script_path}/kdiff.css" "${output_folder}/web/"
 	cp -f "${script_path}/kdiff.js"  "${output_folder}/web/"
-	cp -f "${script_path}/blank.svg" "${output_folder}/"
+	cp -f "${script_path}/kdiff.css" "${output_folder}/web/"
+	cp -f "${script_path}/blank.svg" "${output_folder}/web/"
 
-	insert_commits "${output_folder}/web/main.html" "$commits"
+	insert_commits "${output_folder}/web/main.html" "$commits" "$project_path"
 
-	pages=$(get_pages ${board_name}.sch)
+	pages=$(get_pages {board_name}.sch)
 	insert_pages "${output_folder}/web/main.html" "$pages"
 
 	# Update board title
 	title=$(grep -i "(title " -R "${kicad_pcb}" | cut -d"\"" -f 2)
+	if [[ $title == "" ]]; then
+		title="~ Missing Title ~";
+	fi
 	sed_ -i "s|\[PROJECT_TITLE\]|${title}|g" "${output_folder}/web/main.html"
 
 	commit1=$(echo "$commits" | head -n1 | tail -n1 | cut -d" " -f1)
@@ -483,6 +506,9 @@ REMOVE_KDIFF_FOLDER=0
 VERBOSE=0
 DRY_RUN=0
 
+COMMIT_A=
+COMMIT_B=
+
 while [[ $# -gt 0 ]]
 do
 	key="$1"
@@ -512,6 +538,17 @@ do
 	    -d)
 	        VERBOSE=1
 	        DRY_RUN=1
+	        shift
+	        ;;
+
+	    -c)
+	        echo "-c flag is not implemented yet"
+	        exit
+
+	        COMMIT_A=$2
+	        COMMIT_B=$3
+	        shift
+	        shift
 	        shift
 	        ;;
 
