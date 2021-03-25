@@ -535,5 +535,6 @@ else
 fi
 
 if [[ "$DRY_RUN" == "0" ]]; then
+	echo
 	xdg-open_ "${output_folder}/web/main.html"
 fi

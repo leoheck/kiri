@@ -31,7 +31,6 @@ window.onkeydown = function(e)
 		console.log("==========================")
 
 		var view_mode = $('#view_mode input[name="view_mode"]:checked').val();
-		console.log("view_mode:", view_mode)
 
 		var next_view_mode = ""
 
@@ -57,6 +56,8 @@ window.onkeydown = function(e)
 			document.getElementById("show_pcb_lbl").classList.remove('active');
 			document.getElementById("show_pcb").checked = false;
 		}
+
+		console.log("current_view_mode:", next_view_mode)
 	}
 
 	// =======================================
@@ -178,45 +179,75 @@ window.onkeydown = function(e)
 	}
 
 	// =======================================
-	// Next Layer
+	// Next Schematic Page / Layout
 	// =======================================
 
 	if (keysDown["l"] || keysDown["L"] || keysDown.ArrowRight)
 	{
-		keysDown = {};
+		if (document.getElementById("show_sch").checked)
+		{
+			var pages = $("#pages_list input:radio[name='pages']");
+			var selected_layer = pages.index(pages.filter(':checked'));
 
-		var layers = $("#layers_list input:radio[name='layers']");
-		var selected_layer = layers.index(layers.filter(':checked'));
+			var new_index = selected_layer + 1;
+			if (new_index >= pages.length) {
+				new_index = 0;
+			}
 
-		var new_index = selected_layer + 1;
-		if (new_index >= layers.length) {
-			new_index = 0;
+			pages[new_index].checked = true;
+
+			change_page()
 		}
+		else
+		{
+			var layers = $("#layers_list input:radio[name='layers']");
+			var selected_layer = layers.index(layers.filter(':checked'));
 
-		layers[new_index].checked = true;
-		change_page()
-		change_layer()
+			var new_index = selected_layer + 1;
+			if (new_index >= layers.length) {
+				new_index = 0;
+			}
+
+			layers[new_index].checked = true;
+
+			change_layer()
+		}
 	}
 
 	// =======================================
-	// Previows Layer
+	// Previews Schematic Page / Layer
 	// =======================================
 
 	if (keysDown["k"] || keysDown["K"] || keysDown.ArrowLeft)
 	{
-		keysDown = {};
+		if (document.getElementById("show_sch").checked)
+		{
+			var pages = $("#pages_list input:radio[name='pages']");
+			var selected_page = pages.index(pages.filter(':checked'));
 
-		var layers = $("#layers_list input:radio[name='layers']");
-		var selected_layer = layers.index(layers.filter(':checked'));
+			var new_index = selected_page - 1;
+			if (new_index < 0) {
+				new_index = pages.length - 1;
+			}
 
-		var new_index = selected_layer - 1;
-		if (new_index < 0) {
-			new_index = layers.length - 1;
+			pages[new_index].checked = true;
+
+			change_page()
 		}
+		else
+		{
+			var layers = $("#layers_list input:radio[name='layers']");
+			var selected_layer = layers.index(layers.filter(':checked'));
 
-		layers[new_index].checked = true;
-		change_page()
-		change_layer()
+			var new_index = selected_layer - 1;
+			if (new_index < 0) {
+				new_index = layers.length - 1;
+			}
+
+			layers[new_index].checked = true;
+
+			change_layer()
+		}
 	}
 
 	keysDown = {};
@@ -303,14 +334,17 @@ function change_page()
 
 	var board_name = "board"
 
-	console.log("sch:", current_src1)
-	console.log("sch:", current_src2)
+	console.log("selected_page", pages[selected_page].value)
 
-	commit1= current_src1.split("/")[1]
+	commit1 = current_src1.split("/")[1]
 	commit2 = current_src2.split("/")[1]
 
-	// var ref1 = "../" + commit1 + "/" + board_name + "-" + layers[selected_layer].value + ".svg"
-	// var ref2 = "../" + commit2 + "/" + board_name + "-" + layers[selected_layer].value + ".svg"
+	// TODO: FIX THESE PATHS (HARD)
+	var ref1 = "../" + commit1 + "/" + pages[selected_page].value + ".svg"
+	var ref2 = "../" + commit2 + "/" + pages[selected_page].value + ".svg"
+
+	console.log("page1:", ref1)
+	console.log("page2:", ref2)
 
 	// document.getElementById("diff-xlink-1-pcb").href.baseVal = ref1 + "?t=" + timestamp;
 	// document.getElementById("diff-xlink-2-pcb").href.baseVal = ref2 + "?t=" + timestamp;
@@ -320,6 +354,7 @@ function change_layer()
 {
 	var layers = $("#layers_list input:radio[name='layers']");
 	var selected_layer = layers.index(layers.filter(':checked'));
+	console.log("selected_layer", layers[selected_layer].value)
 
 	var timestamp = new Date().getTime();
 
@@ -336,6 +371,7 @@ function change_layer()
 
 	document.getElementById("diff-xlink-1-pcb").href.baseVal = ref1 + "?t=" + timestamp;
 	document.getElementById("diff-xlink-2-pcb").href.baseVal = ref2 + "?t=" + timestamp;
+
 }
 
 // =======================================
@@ -351,7 +387,7 @@ window.onload = function()
 			center: true,
 			minZoom: 1,
 			maxZoom: 20,
-			fit: false, // Workaround: this needs to be here
+			fit: false, // cannot be used, bug? (this one must be here to change the default)
 			viewportSelector: '.svg-pan-zoom_viewport-sch',
 			eventsListenerElement: document.querySelector('#svg-id-sch .svg-pan-zoom_viewport-sch')
 		}
@@ -364,7 +400,7 @@ window.onload = function()
 			center: true,
 			minZoom: 1,
 			maxZoom: 20,
-			fit: false, // Workaround: this needs to be here
+			fit: false, // cannot be used, bug? (this one must be here to change the default)
 			viewportSelector: '.svg-pan-zoom_viewport-pcb',
 			eventsListenerElement: document.querySelector('#svg-id-pcb .svg-pan-zoom_viewport-pcb')
 		}

@@ -42,7 +42,7 @@ html, body {
 	font-family: monospace;
 	padding: 1px;
 	margin: 4px;
-	border-radius: 4px;
+	border-radius: 5px;
 }
 
 .list-group input[type="checkbox"] + .list-group-item:before {
@@ -51,9 +51,9 @@ html, body {
 }
 
 .list-group input[type="checkbox"]:checked + .list-group-item {
-	background-color: #111111;
-	color: #FFF;
-	border-radius: 4px;
+	background-color: #111;
+	color: #fff;
+	border-radius: 5px;
 }
 
 .list-group input[type="checkbox"]:checked + .list-group-item:before {
@@ -172,7 +172,7 @@ html, body {
 
 #svg-id-sch {
 	border: 1px solid #333;
-	border-radius: 4px;
+	border-radius: 5px;
 	margin-top: 15px;
 	background-color: #222;
 }
@@ -181,5 +181,5 @@ html, body {
 	margin-top: 15px;
 	border: 1px solid #333;
 	background-color: #222;
-	border-radius: 4px;
+	border-radius: 5px;
 }
