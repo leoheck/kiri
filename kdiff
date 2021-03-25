@@ -274,33 +274,33 @@ insert_layers()
 	html="$1"
 
 	# Hardcoded list of layers now
-	# layers="$2"
-	read -r -d '' layers <<-EOM
-	F_Cu
-	In1_Cu
-	In2_Cu
-	In3_Cu
-	In4_Cu
-	B_Cu
-	F_Adhes
-	B_Adhes
-	F_Paste
-	B_Paste
-	F_SilkS
-	B_SilkS
-	F_Mask
-	B_Mask
-	Dwgs_User
-	Cmts_User
-	Eco1_User
-	Eco2_User
-	Edge_Cuts
-	Margin
-	F_CrtYd
-	B_CrtYd
-	F_Fab
-	B_Fab
-	EOM
+	layers="$2"
+	# read -r -d '' layers <<-EOM
+	# F_Cu
+	# In1_Cu
+	# In2_Cu
+	# In3_Cu
+	# In4_Cu
+	# B_Cu
+	# F_Adhes
+	# B_Adhes
+	# F_Paste
+	# B_Paste
+	# F_SilkS
+	# B_SilkS
+	# F_Mask
+	# B_Mask
+	# Dwgs_User
+	# Cmts_User
+	# Eco1_User
+	# Eco2_User
+	# Edge_Cuts
+	# Margin
+	# F_CrtYd
+	# B_CrtYd
+	# F_Fab
+	# B_Fab
+	# EOM
 
 	n=0
 
@@ -310,7 +310,7 @@ insert_layers()
 	for layer in $layers; do
 
 		# Replace "." with "_"
-		# layer=$(sed_ "s/\./_/g" <<< "${layer}")
+		layer=$(sed_ "s/\./_/g" <<< "${layer}")
 
 		case $layer in
 			F*Cu*)      layer_color="#952927" ;;
@@ -334,6 +334,8 @@ insert_layers()
 			B*Adhes*)   layer_color="#3545A8" ;;
 			F*CrtYd*)   layer_color="#A7A7A7" ;;
 			B*CrtYd*)   layer_color="#D3D04B" ;;
+			F*Paste*)   layer_color="#3DC9C9" ;;
+			B*Paste*)   layer_color="#969696" ;;
 			*)          layer_color="" ;;
 		esac
 
