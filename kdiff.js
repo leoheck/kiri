@@ -15,7 +15,10 @@ $(document).ready(function () {
 // HANDLE KEY PRESSES
 // =======================================
 
-let keysDown = {};
+var panZoom_sch;
+var panZoom_pcb;
+
+var keysDown = {};
 
 window.onkeydown = function(e)
 {
@@ -250,6 +253,29 @@ window.onkeydown = function(e)
 		}
 	}
 
+	// =======================================
+	// Zoom Reset
+	// =======================================
+
+	if (keysDown["f"] || keysDown["F"])
+	{
+		console.log("Reset View")
+
+		if (document.getElementById('diff-sch').style.display === "inline") {
+			panZoom_sch.resetZoom()
+			panZoom_sch.center();
+			// panZoom_sch.fit() // cannot be used, bug?
+		}
+		else
+		{
+			panZoom_pcb.resetZoom()
+			panZoom_pcb.center();
+			// panZoom_pcb.fit() // cannot be used, bug?
+		}
+
+		keysDown = {};
+	}
+
 	keysDown = {};
 }
 
@@ -304,8 +330,11 @@ function update_commits()
 	// =======================================
 	// Update Schematic
 
-	var sch_image_path_1 = "../" + commit1 + "/" + "sch" + ".svg"
-	var sch_image_path_2 = "../" + commit2 + "/" + "sch" + ".svg"
+	var pages = $("#pages_list input:radio[name='pages']");
+	var selected_page = pages.index(pages.filter(':checked'));
+
+	var sch_image_path_1 = "../" + commit1 + "/" + "sch-" + pages[selected_page].value + ".svg"
+	var sch_image_path_2 = "../" + commit2 + "/" + "sch-" + pages[selected_page].value + ".svg"
 
 	console.log("sch_1:", sch_image_path_1)
 	console.log("sch_2:", sch_image_path_2)
@@ -344,8 +373,8 @@ function change_page()
 	console.log("page1:", ref1)
 	console.log("page2:", ref2)
 
-	// document.getElementById("diff-xlink-1-pcb").href.baseVal = ref1 + "?t=" + timestamp;
-	// document.getElementById("diff-xlink-2-pcb").href.baseVal = ref2 + "?t=" + timestamp;
+	document.getElementById("diff-xlink-1-pcb").href.baseVal = ref1 + "?t=" + timestamp;
+	document.getElementById("diff-xlink-2-pcb").href.baseVal = ref2 + "?t=" + timestamp;
 }
 
 function change_layer()
@@ -378,7 +407,7 @@ function change_layer()
 
 window.onload = function()
 {
-	var panZoom_sch = svgPanZoom(
+	panZoom_sch = svgPanZoom(
 		'#svg-id-sch', {
 			zoomEnabled: true,
 			controlIconsEnabled: false,
@@ -391,7 +420,7 @@ window.onload = function()
 		}
 	);
 
-	var panZoom_pcb = svgPanZoom(
+	panZoom_pcb = svgPanZoom(
 		'#svg-id-pcb', {
 			zoomEnabled: true,
 			controlIconsEnabled: false,
