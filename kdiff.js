@@ -484,7 +484,7 @@ function reload(id)
 {
 	var container = document.getElementById(id);
 	var content = container.innerHTML;
-	// container.innerHTML= content;
+	container.innerHTML= content;
 	console.log(content);
 	console.log(id, "refreshed");
 }
@@ -494,8 +494,8 @@ function show_sch()
 	// Show schematic image
 	var sch_view = document.getElementById("diff-sch");
 	sch_view.style.display = "inline";
-	// reload("diff-sch")
-	// reload("svg-id-sch")
+	reload("diff-sch")
+	reload("svg-id-sch")
 
 	// Show pages list
 	var layers_list = document.getElementById("pages_list");
@@ -523,21 +523,10 @@ function show_pcb()
 	// Show layout image
 	var pcb_view = document.getElementById("diff-pcb");
 	pcb_view.style.display = "inline";
-	// reload("diff-pcb")
-	// reload("svg-id-pcb")
+	reload("diff-pcb")
+	reload("svg-id-pcb")
 
 	// Show layers list
 	var layers_list = document.getElementById("layers_list");
 	layers_list.style.display = "inline";
-}
-
-// =======================================
-// =======================================
-
-function imgError(image)
-{
-	console.log(image)
-	// image.onerror = "../blank.svg";
-	// image.src = "../blank.svg";
-	return true;
 }
