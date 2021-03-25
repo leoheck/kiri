@@ -272,35 +272,7 @@ insert_pages()
 insert_layers()
 {
 	html="$1"
-
-	# Hardcoded list of layers now
 	layers="$2"
-	# read -r -d '' layers <<-EOM
-	# F_Cu
-	# In1_Cu
-	# In2_Cu
-	# In3_Cu
-	# In4_Cu
-	# B_Cu
-	# F_Adhes
-	# B_Adhes
-	# F_Paste
-	# B_Paste
-	# F_SilkS
-	# B_SilkS
-	# F_Mask
-	# B_Mask
-	# Dwgs_User
-	# Cmts_User
-	# Eco1_User
-	# Eco2_User
-	# Edge_Cuts
-	# Margin
-	# F_CrtYd
-	# B_CrtYd
-	# F_Fab
-	# B_Fab
-	# EOM
 
 	n=0
 
@@ -309,34 +281,34 @@ insert_layers()
 	IFS=$'\n'
 	for layer in $layers; do
 
-		# Replace "." with "_"
+		# Fix layer name by replacing "." with "_"
 		layer=$(sed_ "s/\./_/g" <<< "${layer}")
 
 		case $layer in
-			F*Cu*)      layer_color="#952927" ;;
-			B*Cu*)      layer_color="#359632" ;;
-			In1*Cu*)    layer_color="#C2C200" ;;
-			In2*Cu*)    layer_color="#C200C2" ;;
-			In3*Cu*)    layer_color="#C20000" ;;
-			In4*Cu*)    layer_color="#0000C2" ;;
-			F*Mask*)    layer_color="#943197" ;;
-			B*Mask*)    layer_color="#943197" ;;
-			F*SilkS*)   layer_color="#339697" ;;
-			B*SilkS*)   layer_color="#481649" ;;
-			Edge_Cuts*) layer_color="#C9C83B" ;;
-			Margin*)    layer_color="#D357D2" ;;
-			Dwgs*User*) layer_color="#0364D3" ;;
-			Cmts*User*) layer_color="#7AC0F4" ;;
-			Eco1*User*) layer_color="#008500" ;;
-			F*Fab*)     layer_color="#C2C200" ;;
-			B*Fab*)     layer_color="#858585" ;;
-			F*Adhes*)   layer_color="#A74AA8" ;;
-			B*Adhes*)   layer_color="#3545A8" ;;
-			F*CrtYd*)   layer_color="#A7A7A7" ;;
-			B*CrtYd*)   layer_color="#D3D04B" ;;
-			F*Paste*)   layer_color="#3DC9C9" ;;
-			B*Paste*)   layer_color="#969696" ;;
-			*)          layer_color="" ;;
+			B*Adhes)   layer_color="#3545A8" ;;
+			B*CrtYd)   layer_color="#D3D04B" ;;
+			B*Cu)      layer_color="#359632" ;;
+			B*Fab)     layer_color="#858585" ;;
+			B*Mask)    layer_color="#943197" ;;
+			B*Paste)   layer_color="#969696" ;;
+			B*SilkS)   layer_color="#481649" ;;
+			Cmts*User) layer_color="#7AC0F4" ;;
+			Dwgs*User) layer_color="#0364D3" ;;
+			Eco1*User) layer_color="#008500" ;;
+			Edge_Cuts) layer_color="#C9C83B" ;;
+			F*Adhes)   layer_color="#A74AA8" ;;
+			F*CrtYd)   layer_color="#A7A7A7" ;;
+			F*Cu)      layer_color="#952927" ;;
+			F*Fab)     layer_color="#C2C200" ;;
+			F*Mask)    layer_color="#943197" ;;
+			F*Paste)   layer_color="#3DC9C9" ;;
+			F*SilkS)   layer_color="#339697" ;;
+			In1*Cu)    layer_color="#C2C200" ;;
+			In2*Cu)    layer_color="#C200C2" ;;
+			In3*Cu)    layer_color="#C20000" ;;
+			In4*Cu)    layer_color="#0000C2" ;;
+			Margin)    layer_color="#D357D2" ;;
+			*)         layer_color="" ;;
 		esac
 
 		if [[ "$n" == "0" ]]; then
@@ -477,14 +449,6 @@ generate_comparisons()
 				fi
 
 				# ====
-
-				# Create blank images by default
-				# IFS=$'\n'
-				# for sch in $sch_files; do
-				# 	sch_board_name=$(sed_ "s/.sch//g" <<< "${sch}" | sed_ "s|./||g")
-				# 	cp -f "${script_path}/blank.svg" "sch-${sch_board_name}.svg"
-				# 	cp -f "${script_path}/blank.svg" "sch-${sch_board_name}.svg"
-				# done
 
 				REMOVED="FF0000"
 				ADDED="008FFF"
