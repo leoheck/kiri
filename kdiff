@@ -115,6 +115,33 @@ ctrl_c()
 	exit 1
 }
 
+get_pages()
+{
+	main_schematic=$1
+
+	# First page is this one, name is Root on Kicad
+	pages="Root|${main_schematic}"
+
+	pagenames=$(grep "^F0 " ${main_schematic} | cut -d" " -f2 | tr "\n" "|" | sed_ "s/\"//g" | sed_ "s/|$//g" | tr "|" "\n")
+	pagepaths=$(grep "^F1 " ${main_schematic} | cut -d" " -f2 | tr "\n" "|" | sed_ "s/\"//g" | sed_ "s/|$//g" | tr "|" "\n")
+
+	IFS=$'\n'
+	n=0
+	for pagename in $pagenames; do
+
+		n=$((n+1))
+
+		pagename=$(echo "$pagename" | sed_ "s/^ //g" | sed_ "s/ $//g")
+		pagepath=$(echo "$pagepaths" | sed_ -n ${n}p)
+
+		page="${pagename}|${pagepath}"
+		pages="${pages}\n${page}"
+
+	done
+
+	echo -e "$pages"
+}
+
 insert_pages()
 {
 	html="$1"
@@ -130,7 +157,7 @@ insert_pages()
 	IFS=$'\n'
 	for page in $pages; do
 
-		page_name=$(echo "$page" | cut -d'|' -f1 | sed_ "s/[ t]\+//g")
+		page_name=$(echo "$page" | cut -d'|' -f1 | sed_ "s/[ \t]\+//g")
 		page_id=$(  echo "$page" | cut -d'|' -f2 | sed_ "s/[ \t]\+//g")
 
 		if [[ $n == 0 ]]; then
@@ -181,17 +208,17 @@ insert_commits()
 		 msg=$(echo "$commit" | cut -d'|' -f4 | sed_ "s/^ //g" )
 
 		# check for changes in .sch files
-		if git log --name-only --pretty='format:' -1 -U "${hash}" | cat | grep -s ".sch" &> /dev/null; then
+		if git log --name-only --pretty='format:' -1 -U "${hash}" -- | cat | grep -s ".sch" &> /dev/null; then
 			sch_icon='<span class="iconify" style="width: 14px; height: 14px; color: #A6E22E;" data-icon="carbon:schematics" data-inline="false"></span>'
 		fi
 
 		# check for changes in .kicad_pcb files
-		if git log --name-only --pretty='format:' -1 -U "${hash}" | cat | grep -s ".kicad_pcb" &> /dev/null; then
+		if git log --name-only --pretty='format:' -1 -U "${hash}" -- | cat | grep -s ".kicad_pcb" &> /dev/null; then
 			layout_icon='<span class="iconify" style="width: 14px; height: 14px; color: #F92672;" data-icon="codicon:circuit-board" data-inline="false"></span>'
 		fi
 
 		# check for changes in textual files
-		if git log --name-only --pretty='format:' -1 -U "${hash}" | cat | grep -s -vE ".sch|.kicad_pcb" &> /dev/null; then
+		if git log --name-only --pretty='format:' -1 -U "${hash}" -- | cat | grep -s -vE ".sch|.kicad_pcb" &> /dev/null; then
 			text_icon='<span class="iconify" style="width: 14px; height: 14px; color: #888888;" data-icon="bi:file-earmark-text" data-inline="false"></span>'
 		fi
 
@@ -261,6 +288,7 @@ generate_comparisons()
 	board_name="${filename%.*}"
 
 	if [[ "$project_path" == "" ]]; then
+		project_path="./"
 		output_folder="kidiff"
 	else
 		output_folder="../kidiff/$project_path"
@@ -276,7 +304,7 @@ generate_comparisons()
 	if [[ "$ALL_COMMITS" == "0" ]]; then
 		commits=$(git log --date=local '--pretty=format:%h | %ai | %an | %s' "$kicad_pcb" "*.sch")
 	else
-		commits=$(git log --date=local '--pretty=format:%h | %ai | %an | %s')
+		commits=$(git log --date=local '--pretty=format:%h | %ai | %an | %s' "$project_path")
 	fi
 
 	a=$(echo "$commits" | tac_ | cut -d' '  -f1);
@@ -411,8 +439,8 @@ generate_comparisons()
 
 	insert_commits "${output_folder}/web/main.html" "$commits"
 
-	# TODO: How to get pages of the Kicad project here?
-	pages=$(find_ -name "*.sch" -printf "%f\n" | sed_ "s/\(.*\)\.sch/\1|\1_id/g")
+	pages=$(get_pages ${board_name}.sch)
+	echo "$pages"
 	insert_pages "${output_folder}/web/main.html" "$pages"
 
 	# Update board title
@@ -432,6 +460,10 @@ generate_comparisons()
 	# Update initial layout images
 	sed_ -i "s|\[INITIAL_COMMIT_1_PCB\]|../${commit1}/${board_name}-F_Cu.svg|g" "${output_folder}/web/main.html"
 	sed_ -i "s|\[INITIAL_COMMIT_2_PCB\]|../${commit2}/${board_name}-F_Cu.svg|g" "${output_folder}/web/main.html"
+
+	# Update initial commit legend
+	sed_ -i "s|\[COMMIT_1_HASH\]|${commit1}|g" "${output_folder}/web/main.html"
+	sed_ -i "s|\[COMMIT_2_HASH\]|${commit2}|g" "${output_folder}/web/main.html"
 }
 
 

@@ -286,8 +286,8 @@ function update_commits()
 	// Update Legend
 
 	// # Update legend hash (where is the best place to put this?)
-	document.getElementById("commit1_legend_hash").innerHTML = commit1;
-	document.getElementById("commit2_legend_hash").innerHTML = commit2;
+	document.getElementById("commit1_legend_hash").innerHTML = commit1.toUpperCase();
+	document.getElementById("commit2_legend_hash").innerHTML = commit2.toUpperCase();
 }
 
 // NOT working yet

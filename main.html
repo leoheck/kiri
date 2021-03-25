@@ -19,7 +19,7 @@
 					<div class="list-group" style="padding: 0px 0px 15px 0px; margin-left:10px; height: 100vh;">
 						<span style="margin-top: 1em"></span>
 						<h3 class="text-light">Kicad Revision Inspector</h3>
-						<h4 class="text-light text-bold">ASSoC Project</h4>
+						<h4 class="text-info text-bold">[PROJECT_TITLE]</h4>
 						<p class="text-light">Review ABC123</p>
 						<p class="text-light" >
 							<span style="margin-right:0.5em" class="iconify" data-icon="fa-solid:code-branch" data-inline="false"></span>
@@ -105,10 +105,13 @@
 								<div id="legend_">
 									<form class="rounded form-inline" style="background-color: #222; padding: 10px 5px 10px 5px">
 										<span id=commit1_legend style="margin-left:0.5em; margin-right:0.5em; color: #00FFFF" style="width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
-										<small class="text-sm text-light"> <span class="text-monospace" id=commit1_legend_hash>XYX1234</span> - Newer Commit </small>
+										<small class="text-sm text-light"> Newer - <span class="text-monospace" id=commit1_legend_hash>[COMMIT_1_HASH]</span></small>
 										<span style="width: 2em;"></span>
 										<span id="commit2_legend" style="margin-left:0.5em; margin-right:0.5em; color: #880808" style="width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
-										<small class="text-sm text-light"> <span class="text-monospace" id=commit2_legend_hash>XYX1234</span> - Older Commit </small>
+										<small class="text-sm text-light"> Older - <span class="text-monospace" id=commit2_legend_hash>[COMMIT_2_HASH]</span></small>
+										<span style="width: 2em;"></span>
+										<span id="commit2_legend" style="margin-left:0.5em; margin-right:0.5em; color: #807F7F" style="width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
+										<small class="text-sm text-light"> Unchanged </small>
 									</form>
 								</div>
 								<div id="diff-sch" style="width: 100%; height: 70vh; display: inline;">
