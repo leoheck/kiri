@@ -332,16 +332,14 @@ function change_page()
 	var current_src1 = document.getElementById("diff-xlink-1-sch").href.baseVal;
 	var current_src2 = document.getElementById("diff-xlink-2-sch").href.baseVal;
 
-	var board_name = "board"
-
 	console.log("selected_page", pages[selected_page].value)
 
 	commit1 = current_src1.split("/")[1]
 	commit2 = current_src2.split("/")[1]
 
 	// TODO: FIX THESE PATHS (HARD)
-	var ref1 = "../" + commit1 + "/" + pages[selected_page].value + ".svg"
-	var ref2 = "../" + commit2 + "/" + pages[selected_page].value + ".svg"
+	var ref1 = "../" + commit1 + "/" + "sch-" + pages[selected_page].value + ".svg"
+	var ref2 = "../" + commit2 + "/" + "sch-" + pages[selected_page].value + ".svg"
 
 	console.log("page1:", ref1)
 	console.log("page2:", ref2)

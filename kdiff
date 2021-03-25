@@ -126,13 +126,14 @@ ctrl_c()
 
 get_pages()
 {
-	main_schematic=$1
+	board_name=$1
+	main_schematic=$2
 
-	# First page is this one, name is Root on Kicad
-	pages="Root|${main_schematic}"
+	# First page is this one, name is Root on Kicad, here is the $board_name
+	pages="${board_name}|${main_schematic}"
 
-	pagenames=$(grep "^F0 " ${main_schematic} | cut -d" " -f2 | tr "\n" "|" | sed_ "s/\"//g" | sed_ "s/|$//g" | tr "|" "\n")
-	pagepaths=$(grep "^F1 " ${main_schematic} | cut -d" " -f2 | tr "\n" "|" | sed_ "s/\"//g" | sed_ "s/|$//g" | tr "|" "\n")
+	pagenames=$(grep "^F0 " "${main_schematic}" | cut -d" " -f2 | tr "\n" "|" | sed_ "s/\"//g" | sed_ "s/|$//g" | tr "|" "\n")
+	pagepaths=$(grep "^F1 " "${main_schematic}" | cut -d" " -f2 | tr "\n" "|" | sed_ "s/\"//g" | sed_ "s/|$//g" | tr "|" "\n")
 
 	IFS=$'\n'
 	n=0
@@ -167,7 +168,7 @@ insert_pages()
 	for page in $pages; do
 
 		page_name=$(echo "$page" | cut -d'|' -f1 | sed_ "s/[ \t]\+//g")
-		page_id=$(  echo "$page" | cut -d'|' -f2 | sed_ "s/[ \t]\+//g")
+		page_filename=$(  echo "$page" | cut -d'|' -f2 | sed_ "s/[ \t]\+//g" | sed_ "s/.sch//g")
 
 		if [[ $n == 0 ]]; then
 			checked="checked='checked'"
@@ -176,8 +177,8 @@ insert_pages()
 		fi
 
 		read -r -d '' PAGE_HTML <<-EOM
-			<input type="radio" id="${page_id}" value="${page_id}" name="pages" ${checked} onchange="change_page()"/>
-			<label class="rounded text-sm-left list-group-item radio-box" for="${page_id}">
+			<input type="radio" id="${page_filename}" value="${page_filename}" name="pages" ${checked} onchange="change_page()"/>
+			<label class="rounded text-sm-left list-group-item radio-box" for="${page_filename}">
 			<span style="margin-left:0.5em; margin-right:0.1em;" class="iconify" data-icon="gridicons:pages" data-inline="false"></span>
 			${page_name}
 			</label>
@@ -312,13 +313,6 @@ generate_comparisons()
 	mkdir -p "${output_folder}/web/"
 	mkdir -p "${output_folder}/diff/"
 
-	# echo "=============================="
-	# echo "project_path  = ${project_path}"
-	# echo "output_folder = ${output_folder}"
-	# echo "board_name    = ${board_name}"
-	# echo "=============================="
-	# exit
-
 	sch_files=$(find_ -name "*.sch")
 
 	if [[ "$ALL_COMMITS" == "1" ]]; then
@@ -390,6 +384,14 @@ generate_comparisons()
 
 				# ====
 
+				# Create blank images by default
+				# IFS=$'\n'
+				# for sch in $sch_files; do
+				# 	sch_board_name=$(sed "s/.sch//g" <<< "${sch}" | sed "s|./||g")
+				# 	cp -f "${script_path}/blank.svg" "sch-${sch_board_name}.svg"
+				# 	cp -f "${script_path}/blank.svg" "sch-${sch_board_name}.svg"
+				# done
+
 				REMOVED="FF0000"
 				ADDED="008FFF"
 				UNCHANGED="FFFFFF"
@@ -403,16 +405,6 @@ generate_comparisons()
 				fi
 				if [[ "$DRY_RUN" == "0" ]]; then
 					eval "$cmd"
-				fi
-
-				# Add image if missing
-				if [[ ! -f svg1.svg ]]; then
-					cp -f "${script_path}/blank.svg" sch1.svg
-				fi
-
-				# Add image if missing
-				if [[ ! -f sch2.svg ]]; then
-					cp -f "${script_path}/blank.svg" sch2.svg
 				fi
 
 				rm -rf sch-diff.svg
@@ -431,19 +423,23 @@ generate_comparisons()
 					case "$sch_page_svg" in
 
 						sch1.svg)
-							mv -f "$sch_page_svg" "${output_folder}/$i/sch.svg" 2> /dev/null
-							;;
-
-						sch2.svg)
+							# mv -f "$sch_page_svg" "${output_folder}/$i/sch-${board_name}.svg" 2> /dev/null
 							mv -f "$sch_page_svg" "${output_folder}/$j/sch.svg" 2> /dev/null
 							;;
 
-						sch-1*)
-							mv -f "$sch_page_svg" "${output_folder}/$i/" 2> /dev/null
+						sch2.svg)
+							# mv -f "$sch_page_svg" "${output_folder}/$j/sch-${board_name}.svg" 2> /dev/null
+							mv -f "$sch_page_svg" "${output_folder}/$j/sch.svg" 2> /dev/null
 							;;
 
-						sch-2*)
-							mv -f "$sch_page_svg" "${output_folder}/$j/" 2> /dev/null
+						sch1-*)
+							new_sch_name=$(sed_ "s/sch1/sch/g" <<< "$sch_page_svg")
+							mv -f "$sch_page_svg" "${output_folder}/$i/${new_sch_name}" 2> /dev/null
+							;;
+
+						sch2-*)
+							new_sch_name=$(sed_ "s/sch2/sch/g" <<< "$sch_page_svg")
+							mv -f "$sch_page_svg" "${output_folder}/$j/${new_sch_name}" 2> /dev/null
 							;;
 					esac
 				done
@@ -459,7 +455,7 @@ generate_comparisons()
 
 	insert_commits "${output_folder}/web/main.html" "$commits" "$project_path"
 
-	pages=$(get_pages ${board_name}.sch)
+	pages=$(get_pages "${board_name}" "${board_name}.sch")
 	insert_pages "${output_folder}/web/main.html" "$pages"
 
 	# Update board title
