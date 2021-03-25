@@ -459,7 +459,7 @@ generate_comparisons()
 
 	insert_commits "${output_folder}/web/main.html" "$commits" "$project_path"
 
-	pages=$(get_pages {board_name}.sch)
+	pages=$(get_pages ${board_name}.sch)
 	insert_pages "${output_folder}/web/main.html" "$pages"
 
 	# Update board title
