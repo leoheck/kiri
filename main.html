@@ -101,8 +101,8 @@
 					</div>
 					<div class="container no-gutters" style="flex: 1;">
 						<div class="row no-gutters" style="flex: 1;">
-							<div class="col col-11" style="flex: 1;">
-								<div id="legend_">
+							<div class="col col-11 no-gutters" style="flex: 1;">
+								<div id="legend" class="no-gutters">
 									<form class="rounded form-inline" style="background-color: #222; padding: 10px 5px 10px 5px">
 										<span id=commit1_legend style="margin-left:0.5em; margin-right:0.5em; color: #00FFFF" style="width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
 										<small class="text-sm text-light"> Newer - <span class="text-monospace" id=commit1_legend_hash>[COMMIT_1_HASH]</span></small>
@@ -180,20 +180,16 @@
 						</div>
 					</div>
 				</div>
-				<div class="col col-3" >
-					<div class="col col-5">
-						<!-- <p class="text-light"></p> -->
-						<p></p>
-					</div>
-					<div class="list-group" id="pages_list" style="display: inline;">
-						<div class="form-check">
-							<span style="margin-top: 3em"></span>
+				<div class="col col no-gutters" >
+					<div class="list-group no-gutters" id="pages_list" style="display: inline;">
+						<div class="form-check no-gutters" style="width: 180px; padding-top: 1em">
 							<p class="text-light">
 								<span style="margin-right:0.5em" style="width: 20px; height: 20px;" class="iconify" data-icon="gridicons:next-page" data-inline="false"></span>
-								Pages <small class="text-sm text-muted">
-								: Cycle using
+								Pages <small class="text-sm text-muted"></br>
+								Cycle using
 								<kbd><span class="iconify" data-icon="typcn-arrow-left" data-inline="false"></span></kbd>/
-								<kbd><span class="iconify" data-icon="typcn-arrow-right" data-inline="false"></span></kbd>.
+								<kbd><span class="iconify" data-icon="typcn-arrow-right" data-inline="false"></span></kbd>
+								</small>
 							</p>
 							<div class="row">
 								<div class="col col">
@@ -204,15 +200,15 @@
 							</div>
 						</div>
 					</div>
-					<div class="list-group" id="layers_list" style="display: none;">
-						<div class="form-check">
-							<span style="margin-top: 3em"></span>
+					<div class="list-group no-gutters" id="layers_list" style="display: none;">
+						<div class="form-check" style="width: 180px; padding-top: 1em">
 							<p class="text-light">
 								<span style="margin-right:0.5em" style="width: 20px; height: 20px;" class="iconify" data-icon="teenyicons:layers-solid" data-inline="false"></span>
-								Layers <small class="text-sm text-muted">
-								: Cycle using
+								Layers <small class="text-sm text-muted"></br>
+								Cycle using
 								<kbd><span class="iconify" data-icon="typcn-arrow-left" data-inline="false"></span></kbd>/
-								<kbd><span class="iconify" data-icon="typcn-arrow-right" data-inline="false"></span></kbd>.
+								<kbd><span class="iconify" data-icon="typcn-arrow-right" data-inline="false"></span></kbd>
+								</small>
 							</p>
 							<div class="row">
 								<div class="col col">
