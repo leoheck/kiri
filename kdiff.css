@@ -3,6 +3,10 @@ html, body {
 	height: 100%;
 	margin: 0px;
 	padding: : 0px;
+
+	/*Normalize view on firefox*/
+	font-size: 1em;
+	line-height: 1.5em;
 }
 
 .fill {

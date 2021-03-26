@@ -17,6 +17,7 @@ show_help()
 	    -c [c1 c2]  [TOOD] Limit scope of commits between commit c1 and c2. It can be used with -a
 	    -r          Remove kidiff folder before run
 	    -l          Do not launch browser at the end
+	    -w [viewr]  Change default page viewer
 	    -v          Verbose
 	    -h          This help
 
@@ -134,6 +135,8 @@ get_pages()
 
 	pagenames=$(grep "^F0 " "${main_schematic}" | cut -d" " -f2 | tr "\n" "|" | sed_ "s/\"//g" | sed_ "s/|$//g" | tr "|" "\n")
 	pagepaths=$(grep "^F1 " "${main_schematic}" | cut -d" " -f2 | tr "\n" "|" | sed_ "s/\"//g" | sed_ "s/|$//g" | tr "|" "\n")
+
+	# how to remove duplicated pages having 2 lists?
 
 	IFS=$'\n'
 	n=0
@@ -579,9 +582,10 @@ REMOVE_KDIFF_FOLDER=0
 VERBOSE=0
 DRY_RUN=0
 LAUNCH_PAGE=1
+PAGE_VIEWER=""
 
-COMMIT_A=
-COMMIT_B=
+COMMIT_A=""
+COMMIT_B=""
 
 while [[ $# -gt 0 ]]
 do
@@ -616,11 +620,11 @@ do
 	        ;;
 
 	    -c)
-	        echo "-c flag is not implemented yet"
+	        echo "'-c' flag is not implemented yet"
 	        exit
 
-	        COMMIT_A=$2
-	        COMMIT_B=$3
+	        COMMIT_A="$2"
+	        COMMIT_B="$3"
 	        shift
 	        shift
 	        shift
@@ -628,6 +632,13 @@ do
 
 	      -l)
 			LAUNCH_PAGE=0
+			shift
+			;;
+
+		# -v) - This flag does not work, what a heck?
+		-w)
+			PAGE_VIEWER="$2"
+			shift
 			shift
 			;;
 
@@ -647,10 +658,6 @@ repo_root=$(git rev-parse --show-toplevel)
 kicad_pcb_path=$(readlink_ "$kicad_pcb" | sed_ "s|${repo_root}/||g")
 project_folder=$(dirname "$kicad_pcb_path" | sed_ "s|${repo_root}/||g")
 
-# echo $repo_root
-# echo $kicad_pcb_path
-# echo $project_folder
-
 if [[ -f "$kicad_pcb" ]]; then
 	generate_comparisons "$script_path" "$kicad_pcb" "$project_folder"
 else
@@ -661,6 +668,10 @@ fi
 if [[ "$LAUNCH_PAGE" == "1" ]]; then
 	if [[ "$DRY_RUN" == "0" ]]; then
 		echo
-		xdg-open_ "${output_folder}/web/main.html"
+		if [[ "$PAGE_VIEWER" != "" ]]; then
+			$PAGE_VIEWER "${output_folder}/web/main.html"
+		else
+			xdg-open_ "${output_folder}/web/main.html"
+		fi
 	fi
 fi
