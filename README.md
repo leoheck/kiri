@@ -37,3 +37,17 @@ source env.sh
 cd [kicad_git_repo]
 kdiff board.kicad_pcb
 ```
+
+## Screenshots
+
+Schematic view, assets generated using Plotkicadsch
+
+<p align="center">
+	<img src="misc/sch.png" width="820" alt="sch">
+</p>
+
+Layout view, assets generated using Kicad-Diff
+
+<p align="center">
+	<img src="misc/pcb.png" width="820" alt="pcb">
+</p>
