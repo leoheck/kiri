@@ -26,17 +26,16 @@ window.onkeydown = function(e) {
     // Toggle Schematic/Layout View
     // =======================================
 
-    if (keysDown["s"]) {
-        console.log("==========================")
+    if (keysDown.s) {
+        console.log("==========================");
 
         var view_mode = $('#view_mode input[name="view_mode"]:checked').val();
 
-        var next_view_mode = ""
+        var next_view_mode = "";
 
         if (view_mode == "show_sch") {
-            next_view_mode = "show_pcb"
-
-            show_pcb()
+            next_view_mode = "show_pcb";
+            show_pcb();
 
             document.getElementById("show_sch_lbl").classList.remove('active');
             document.getElementById("show_sch").checked = false;
@@ -44,9 +43,8 @@ window.onkeydown = function(e) {
             document.getElementById("show_pcb_lbl").classList.add('active');
             document.getElementById("show_pcb").checked = true;
         } else {
-            next_view_mode = "show_sch"
-
-            show_sch()
+            next_view_mode = "show_sch";
+            show_sch();
 
             document.getElementById("show_sch_lbl").classList.add('active');
             document.getElementById("show_sch").checked = true;
@@ -55,7 +53,7 @@ window.onkeydown = function(e) {
             document.getElementById("show_pcb").checked = false;
         }
 
-        console.log("current_view_mode:", next_view_mode)
+        console.log("current_view_mode:", next_view_mode);
     }
 
     // =======================================
@@ -87,7 +85,7 @@ window.onkeydown = function(e) {
             }
         }
 
-        update_commits()
+        update_commits();
     }
 
     if (keysDown.ArrowDown) {
@@ -112,7 +110,7 @@ window.onkeydown = function(e) {
             }
         }
 
-        update_commits()
+        update_commits();
     }
 
     // =======================================
@@ -122,8 +120,8 @@ window.onkeydown = function(e) {
     if (keysDown["["]) {
         var commits = $("#commits_form input:checkbox[name='commit']");
 
-        var selected_commits = []
-        var next_selected_commits = []
+        var selected_commits = [];
+        var next_selected_commits = [];
 
         for (var i = 0; i < commits.length; i++) {
             if ($("#commits_form input:checkbox[name='commit']")[i].checked) {
@@ -143,15 +141,15 @@ window.onkeydown = function(e) {
             }
         }
 
-        update_commits()
+        update_commits();
     }
 
     if (keysDown.ArrowUp) {
 
         var commits = $("#commits_form input:checkbox[name='commit']");
 
-        var selected_commits = []
-        var next_selected_commits = []
+        var selected_commits = [];
+        var next_selected_commits = [];
 
         for (var i = 0; i < commits.length; i++) {
             if ($("#commits_form input:checkbox[name='commit']")[i].checked) {
@@ -169,14 +167,14 @@ window.onkeydown = function(e) {
             }
         }
 
-        update_commits()
+        update_commits();
     }
 
     // =======================================
     // Next Schematic Page / Layout
     // =======================================
 
-    if (keysDown["l"] || keysDown["L"] || keysDown.ArrowRight) {
+    if (keysDown.l || keysDown.L || keysDown.ArrowRight) {
         if (document.getElementById("show_sch").checked) {
             var pages = $("#pages_list input:radio[name='pages']");
             var selected_layer = pages.index(pages.filter(':checked'));
@@ -188,7 +186,7 @@ window.onkeydown = function(e) {
 
             pages[new_index].checked = true;
 
-            change_page()
+            change_page();
         } else {
             var layers = $("#layers_list input:radio[name='layers']");
             var selected_layer = layers.index(layers.filter(':checked'));
@@ -200,7 +198,7 @@ window.onkeydown = function(e) {
 
             layers[new_index].checked = true;
 
-            change_layer()
+            change_layer();
         }
     }
 
@@ -208,7 +206,7 @@ window.onkeydown = function(e) {
     // Previews Schematic Page / Layer
     // =======================================
 
-    if (keysDown["k"] || keysDown["K"] || keysDown.ArrowLeft) {
+    if (keysDown.k || keysDown.K || keysDown.ArrowLeft) {
         if (document.getElementById("show_sch").checked) {
             var pages = $("#pages_list input:radio[name='pages']");
             var selected_page = pages.index(pages.filter(':checked'));
@@ -220,7 +218,7 @@ window.onkeydown = function(e) {
 
             pages[new_index].checked = true;
 
-            change_page()
+            change_page();
         } else {
             var layers = $("#layers_list input:radio[name='layers']");
             var selected_layer = layers.index(layers.filter(':checked'));
@@ -232,7 +230,7 @@ window.onkeydown = function(e) {
 
             layers[new_index].checked = true;
 
-            change_layer()
+            change_layer();
         }
     }
 
@@ -240,15 +238,15 @@ window.onkeydown = function(e) {
     // Zoom Reset
     // =======================================
 
-    if (keysDown["f"] || keysDown["F"]) {
-        console.log("Reset View")
+    if (keysDown.f || keysDown.F) {
+        console.log("Reset View");
 
         if (document.getElementById('diff-sch').style.display === "inline") {
-            panZoom_sch.resetZoom()
+            panZoom_sch.resetZoom();
             panZoom_sch.center();
             // panZoom_sch.fit() // cannot be used, bug?
         } else {
-            panZoom_pcb.resetZoom()
+            panZoom_pcb.resetZoom();
             panZoom_pcb.center();
             // panZoom_pcb.fit() // cannot be used, bug?
         }
@@ -264,64 +262,64 @@ window.onkeydown = function(e) {
 
 function update_commits() {
     var commits = $("#commits_form input:checkbox[name='commit']");
-    var values = []
+    var values = [];
 
     for (var i = 0; i < commits.length; i++) {
         if ($("#commits_form input:checkbox[name='commit']")[i].checked) {
-            var value = $("#commits_form input:checkbox[name='commit']")[i].value
+            var value = $("#commits_form input:checkbox[name='commit']")[i].value;
             values.push(value);
         }
     }
 
-    var commit1 = values[0].replace(/\s+/g, '')
-    var commit2 = values[1].replace(/\s+/g, '')
+    var commit1 = values[0].replace(/\s+/g, '');
+    var commit2 = values[1].replace(/\s+/g, '');
     var timestamp = new Date().getTime();
 
-    console.log("==========================")
+    console.log("==========================");
 
     // =======================================
     // Update Schematic
 
     var pages = $("#pages_list input:radio[name='pages']");
     var selected_page = pages.index(pages.filter(':checked'));
-    console.log("selected_page:", pages[selected_page].value)
+    console.log("selected_page:", pages[selected_page].value);
 
 
-    var sch_image_path_1 = "../" + commit1 + "/" + "sch-" + pages[selected_page].value + ".svg"
-    var sch_image_path_2 = "../" + commit2 + "/" + "sch-" + pages[selected_page].value + ".svg"
+    var sch_image_path_1 = "../" + commit1 + "/" + "sch-" + pages[selected_page].value + ".svg";
+    var sch_image_path_2 = "../" + commit2 + "/" + "sch-" + pages[selected_page].value + ".svg";
 
-    console.log("sch_1:", sch_image_path_1)
-    console.log("sch_2:", sch_image_path_2)
+    console.log("sch_1:", sch_image_path_1);
+    console.log("sch_2:", sch_image_path_2);
 
-    document.getElementById("diff-xlink-1-sch").href.baseVal = sch_image_path_1 + "?t=" + timestamp
-    document.getElementById("diff-xlink-2-sch").href.baseVal = sch_image_path_2 + "?t=" + timestamp
+    document.getElementById("diff-xlink-1-sch").href.baseVal = sch_image_path_1 + "?t=" + timestamp;
+    document.getElementById("diff-xlink-2-sch").href.baseVal = sch_image_path_2 + "?t=" + timestamp;
 
     // =======================================
     // Update Layout
 
-    var board_name = "board"
+    var board_name = "board";
 
     var layers = document.getElementsByName('layers');
     for (var layer of layers) {
         if (layer.checked) {
-            selected_layer = layer.value
+            selected_layer = layer.value;
         }
     }
 
-    console.log("layer:", selected_layer)
+    console.log("layer:", selected_layer);
 
     if (!selected_layer) {
-        selected_layer = "F_Cu"
+        selected_layer = "F_Cu";
     }
 
-    var pcb_image_path_1 = "../" + commit1 + "/" + board_name + "-" + selected_layer + ".svg"
-    var pcb_image_path_2 = "../" + commit2 + "/" + board_name + "-" + selected_layer + ".svg"
+    var pcb_image_path_1 = "../" + commit1 + "/" + board_name + "-" + selected_layer + ".svg";
+    var pcb_image_path_2 = "../" + commit2 + "/" + board_name + "-" + selected_layer + ".svg";
 
-    console.log("pcb_1:", pcb_image_path_1)
-    console.log("pcb_2:", pcb_image_path_2)
+    console.log("pcb_1:", pcb_image_path_1);
+    console.log("pcb_2:", pcb_image_path_2);
 
-    document.getElementById("diff-xlink-1-pcb").href.baseVal = pcb_image_path_1 + "?t=" + timestamp
-    document.getElementById("diff-xlink-2-pcb").href.baseVal = pcb_image_path_2 + "?t=" + timestamp
+    document.getElementById("diff-xlink-1-pcb").href.baseVal = pcb_image_path_1 + "?t=" + timestamp;
+    document.getElementById("diff-xlink-2-pcb").href.baseVal = pcb_image_path_2 + "?t=" + timestamp;
 
     // =======================================
     // Update Legend
@@ -333,21 +331,21 @@ function update_commits() {
 function change_page() {
     var pages = $("#pages_list input:radio[name='pages']");
     var selected_page = pages.index(pages.filter(':checked'));
-    console.log("selected_page:", pages[selected_page].value)
+    console.log("selected_page:", pages[selected_page].value);
 
     var timestamp = new Date().getTime();
 
     var current_href1 = document.getElementById("diff-xlink-1-sch").href.baseVal;
     var current_href2 = document.getElementById("diff-xlink-2-sch").href.baseVal;
 
-    commit1 = current_href1.split("/")[1]
-    commit2 = current_href2.split("/")[1]
+    commit1 = current_href1.split("/")[1];
+    commit2 = current_href2.split("/")[1];
 
-    var ref1 = "../" + commit1 + "/" + "sch-" + pages[selected_page].value + ".svg"
-    var ref2 = "../" + commit2 + "/" + "sch-" + pages[selected_page].value + ".svg"
+    var ref1 = "../" + commit1 + "/" + "sch-" + pages[selected_page].value + ".svg";
+    var ref2 = "../" + commit2 + "/" + "sch-" + pages[selected_page].value + ".svg";
 
-    console.log("page1:", ref1)
-    console.log("page2:", ref2)
+    console.log("page1:", ref1);
+    console.log("page2:", ref2);
 
     document.getElementById("diff-xlink-1-pcb").href.baseVal = ref1 + "?t=" + timestamp;
     document.getElementById("diff-xlink-2-pcb").href.baseVal = ref2 + "?t=" + timestamp;
@@ -356,20 +354,20 @@ function change_page() {
 function change_layer() {
     var layers = $("#layers_list input:radio[name='layers']");
     var selected_layer = layers.index(layers.filter(':checked'));
-    console.log("selected_layer:", layers[selected_layer].value)
+    console.log("selected_layer:", layers[selected_layer].value);
 
     var timestamp = new Date().getTime();
 
     var current_href1 = document.getElementById("diff-xlink-1-pcb").href.baseVal;
     var current_href2 = document.getElementById("diff-xlink-2-pcb").href.baseVal;
 
-    commit1 = current_href1.split("/")[1]
-    commit2 = current_href2.split("/")[1]
+    commit1 = current_href1.split("/")[1];
+    commit2 = current_href2.split("/")[1];
 
-    var board_name = "board"
+    var board_name = "board";
 
-    var ref1 = "../" + commit1 + "/" + board_name + "-" + layers[selected_layer].value + ".svg"
-    var ref2 = "../" + commit2 + "/" + board_name + "-" + layers[selected_layer].value + ".svg"
+    var ref1 = "../" + commit1 + "/" + board_name + "-" + layers[selected_layer].value + ".svg";
+    var ref2 = "../" + commit2 + "/" + board_name + "-" + layers[selected_layer].value + ".svg";
 
     document.getElementById("diff-xlink-1-pcb").href.baseVal = ref1 + "?t=" + timestamp;
     document.getElementById("diff-xlink-2-pcb").href.baseVal = ref2 + "?t=" + timestamp;
@@ -408,34 +406,34 @@ window.onload = function() {
     );
 
     document.getElementById('zoom-in').addEventListener('click', function(ev) {
-        ev.preventDefault()
+        ev.preventDefault();
 
         if (document.getElementById('diff-sch').style.display === "inline") {
-            panZoom_sch.zoomIn()
+            panZoom_sch.zoomIn();
         } else {
-            panZoom_pcb.zoomIn()
+            panZoom_pcb.zoomIn();
         }
     });
 
     document.getElementById('zoom-out').addEventListener('click', function(ev) {
-        ev.preventDefault()
+        ev.preventDefault();
 
         if (document.getElementById('diff-sch').style.display === "inline") {
-            panZoom_sch.zoomOut()
+            panZoom_sch.zoomOut();
         } else {
-            panZoom_pcb.zoomOut()
+            panZoom_pcb.zoomOut();
         }
     });
 
     document.getElementById('reset').addEventListener('click', function(ev) {
-        ev.preventDefault()
+        ev.preventDefault();
 
         if (document.getElementById('diff-sch').style.display === "inline") {
-            panZoom_sch.resetZoom()
+            panZoom_sch.resetZoom();
             panZoom_sch.center();
             // panZoom_sch.fit() // cannot be used, bug?
         } else {
-            panZoom_pcb.resetZoom()
+            panZoom_pcb.resetZoom();
             panZoom_pcb.center();
             // panZoom_pcb.fit() // cannot be used, bug?
         }
