@@ -182,19 +182,27 @@ insert_commits()
 		user=$(echo "$commit" | cut -d'|' -f3 | sed_ "s/^ //g" )
 		 msg=$(echo "$commit" | cut -d'|' -f4 | sed_ "s/^ //g" )
 
+		empty_icon='<span class="iconify" style="width: 14px; height: 14px; color: rgba(255, 0, 0, 0);" data-icon="bx:bx-square-rounded" data-inline="false"></span>'
+
 		# check for changes in .sch files
 		if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${project}" | cat | grep -s ".sch" &> /dev/null; then
 			sch_icon='<span class="iconify" style="width: 14px; height: 14px; color: #A6E22E;" data-icon="carbon:schematics" data-inline="false"></span>'
+		else
+			sch_icon="${empty_icon}"
 		fi
 
 		# check for changes in .kicad_pcb files
 		if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${project}" | cat | grep -s ".kicad_pcb" &> /dev/null; then
 			layout_icon='<span class="iconify" style="width: 14px; height: 14px; color: #F92672;" data-icon="codicon:circuit-board" data-inline="false"></span>'
+		else
+			layout_icon="${empty_icon}"
 		fi
 
 		# Check for changes in textual files only
 		if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${project}" | cat | grep -s -vE ".sch|.kicad_pcb" &> /dev/null; then
 			text_icon='<span class="iconify" style="width: 14px; height: 14px; color: #888888;" data-icon="bi:file-earmark-text" data-inline="false"></span>'
+		else
+			text_icon="${empty_icon}"
 		fi
 
 		if [[ $n == 0 ]] || [[ $n == 1 ]]; then
@@ -373,15 +381,11 @@ generate_comparisons()
 	output_folder="kidiff/$project_path"
 
 	if [[ "$REMOVE_KDIFF_FOLDER" == "1" ]]; then
-		rm -rf "${output_folder}"
+		rm -rf "kidiff"
 	fi
-
-	rm -rf "${output_folder}/svgs.diff"
-	# rm -rf "${output_folder}/diff2/"
 
 	mkdir -p "${output_folder}/web/"
 	mkdir -p "${output_folder}/diff/"
-	# mkdir -p "${output_folder}/diff2/"
 
 	sch_files=$(find_ "${project_path}" -name "*.sch" -printf "%f ")
 
@@ -399,7 +403,8 @@ generate_comparisons()
 	nab=$(echo "${na} * (${nb} - 1) " | bc)
 
 	echo
-	echo "Generating artifacts for ${na} commits, (total ${nab} comparisons)"
+	echo "Generating artifacts for ${na} commits."
+	echo "Totaling ${nab} possible comparisons."
 	echo
 
 	n=0
@@ -416,6 +421,11 @@ generate_comparisons()
 				k=$((k+1))
 				n=$((n+1))
 
+				# Check if diff file exists
+				if [[ -d "${output_folder}/$j" ]]; then
+					continue
+				fi
+
 				if [[ -d "${output_folder}/$j" ]]; then
 					skipping=", skipping..."
 				else
@@ -426,12 +436,6 @@ generate_comparisons()
 					printf "%4d. %s - %s%s\n" "$n" "$i" "$j" "$skipping"
 				else
 					printf "%4d. %s - %s%s \n" "$n" "       " "$j" "$skipping"
-				fi
-
-
-				# Check if diff file exists
-				if [[ -d "${output_folder}/$j" ]]; then
-					continue
 				fi
 
 				mkdir -p "${output_folder}/$i/"
@@ -471,13 +475,13 @@ generate_comparisons()
 				for sch_page_svg in *.svg; do
 
 					# Background transparent
-					sed_ -i 's/fill="#222222"/fill="#22222200"/g' "$sch_page_svg"
-					sed_ -i 's/fill="#FFFFFF"/fill="#FFFFFF00"/g' "$sch_page_svg"
+					sed_ -i 's/fill="#222222"/fill="#22222200"/g' "$sch_page_svg" &> /dev/null
+					sed_ -i 's/fill="#FFFFFF"/fill="#FFFFFF00"/g' "$sch_page_svg" &> /dev/null
 
 					# Elements in black
-					sed_ -i 's/fill="#FF0000"/fill="#000000FF"/g' "$sch_page_svg"
-					sed_ -i 's/fill="#00FF00"/fill="#000000FF"/g' "$sch_page_svg"
-					sed_ -i 's/stroke="#800000"/stroke="#000000FF"/g' "$sch_page_svg"
+					sed_ -i 's/fill="#FF0000"/fill="#000000FF"/g' "$sch_page_svg" &> /dev/null
+					sed_ -i 's/fill="#00FF00"/fill="#000000FF"/g' "$sch_page_svg" &> /dev/null
+					sed_ -i 's/stroke="#800000"/stroke="#000000FF"/g' "$sch_page_svg" &> /dev/null
 
 					case "$sch_page_svg" in
 						sch1-*)
@@ -581,15 +585,14 @@ eval "$(opam config env)"
 
 trap ctrl_c INT
 
-ALL_COMMITS=0
-REMOVE_KDIFF_FOLDER=0
-VERBOSE=0
-DRY_RUN=0
-LAUNCH_PAGE=1
-PAGE_VIEWER=""
-
-COMMIT_A=""
-COMMIT_B=""
+export ALL_COMMITS=0
+export REMOVE_KDIFF_FOLDER=0
+export VERBOSE=0
+export DRY_RUN=0
+export LAUNCH_PAGE=1
+export PAGE_VIEWER=""
+export COMMIT_A=""
+export COMMIT_B=""
 
 while [[ $# -gt 0 ]]
 do
