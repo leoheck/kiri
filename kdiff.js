@@ -298,10 +298,28 @@ function update_commits()
 	var commit2 = values[1].replace(/\s+/g, '')
 	var timestamp = new Date().getTime();
 
+	console.log("==========================")
+
+	// =======================================
+	// Update Schematic
+
+	var pages = $("#pages_list input:radio[name='pages']");
+	var selected_page = pages.index(pages.filter(':checked'));
+	console.log("selected_page:", pages[selected_page].value)
+
+
+	var sch_image_path_1 = "../" + commit1 + "/" + "sch-" + pages[selected_page].value + ".svg"
+	var sch_image_path_2 = "../" + commit2 + "/" + "sch-" + pages[selected_page].value + ".svg"
+
+	console.log("sch_1:", sch_image_path_1)
+	console.log("sch_2:", sch_image_path_2)
+
+	document.getElementById("diff-xlink-1-sch").href.baseVal = sch_image_path_1 + "?t=" + timestamp
+	document.getElementById("diff-xlink-2-sch").href.baseVal = sch_image_path_2 + "?t=" + timestamp
+
 	// =======================================
 	// Update Layout
 
-	var current_src1 = document.getElementById("diff-xlink-1-sch").href.baseVal;
 	var board_name = "board"
 
 	var layers = document.getElementsByName('layers');
@@ -311,7 +329,6 @@ function update_commits()
 		}
 	}
 
-	console.log("==========================")
 	console.log("layer:", selected_layer)
 
 	if(! selected_layer) {
@@ -328,45 +345,26 @@ function update_commits()
 	document.getElementById("diff-xlink-2-pcb").href.baseVal = pcb_image_path_2 + "?t=" + timestamp
 
 	// =======================================
-	// Update Schematic
-
-	var pages = $("#pages_list input:radio[name='pages']");
-	var selected_page = pages.index(pages.filter(':checked'));
-
-	var sch_image_path_1 = "../" + commit1 + "/" + "sch-" + pages[selected_page].value + ".svg"
-	var sch_image_path_2 = "../" + commit2 + "/" + "sch-" + pages[selected_page].value + ".svg"
-
-	console.log("sch_1:", sch_image_path_1)
-	console.log("sch_2:", sch_image_path_2)
-
-	document.getElementById("diff-xlink-1-sch").href.baseVal = sch_image_path_1 + "?t=" + timestamp
-	document.getElementById("diff-xlink-2-sch").href.baseVal = sch_image_path_2 + "?t=" + timestamp
-
-	// =======================================
 	// Update Legend
 
-	// # Update legend hash (where is the best place to put this?)
 	document.getElementById("commit1_legend_hash").innerHTML = commit1.toUpperCase();
 	document.getElementById("commit2_legend_hash").innerHTML = commit2.toUpperCase();
 }
 
-// NOT working yet
 function change_page()
 {
 	var pages = $("#pages_list input:radio[name='pages']");
 	var selected_page = pages.index(pages.filter(':checked'));
+	console.log("selected_page:", pages[selected_page].value)
 
 	var timestamp = new Date().getTime();
 
-	var current_src1 = document.getElementById("diff-xlink-1-sch").href.baseVal;
-	var current_src2 = document.getElementById("diff-xlink-2-sch").href.baseVal;
+	var current_href1 = document.getElementById("diff-xlink-1-sch").href.baseVal;
+	var current_href2 = document.getElementById("diff-xlink-2-sch").href.baseVal;
 
-	console.log("selected_page:", pages[selected_page].value)
+	commit1 = current_href1.split("/")[1]
+	commit2 = current_href2.split("/")[1]
 
-	commit1 = current_src1.split("/")[1]
-	commit2 = current_src2.split("/")[1]
-
-	// TODO: FIX THESE PATHS (HARD)
 	var ref1 = "../" + commit1 + "/" + "sch-" + pages[selected_page].value + ".svg"
 	var ref2 = "../" + commit2 + "/" + "sch-" + pages[selected_page].value + ".svg"
 
@@ -385,11 +383,11 @@ function change_layer()
 
 	var timestamp = new Date().getTime();
 
-	var current_src1 = document.getElementById("diff-xlink-1-pcb").href.baseVal;
-	var current_src2 = document.getElementById("diff-xlink-2-pcb").href.baseVal;
+	var current_href1 = document.getElementById("diff-xlink-1-pcb").href.baseVal;
+	var current_href2 = document.getElementById("diff-xlink-2-pcb").href.baseVal;
 
-	commit1 = current_src1.split("/")[1]
-	commit2 = current_src2.split("/")[1]
+	commit1 = current_href1.split("/")[1]
+	commit2 = current_href2.split("/")[1]
 
 	var board_name = "board"
 
@@ -494,8 +492,8 @@ function show_sch()
 	// Show schematic image
 	var sch_view = document.getElementById("diff-sch");
 	sch_view.style.display = "inline";
-	reload("diff-sch")
-	reload("svg-id-sch")
+	// reload("diff-sch")
+	// reload("svg-id-sch")
 
 	// Show pages list
 	var layers_list = document.getElementById("pages_list");
@@ -523,8 +521,8 @@ function show_pcb()
 	// Show layout image
 	var pcb_view = document.getElementById("diff-pcb");
 	pcb_view.style.display = "inline";
-	reload("diff-pcb")
-	reload("svg-id-pcb")
+	// reload("diff-pcb")
+	// reload("svg-id-pcb")
 
 	// Show layers list
 	var layers_list = document.getElementById("layers_list");

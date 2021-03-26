@@ -14,9 +14,9 @@ show_help()
 	OPTIONS:
 
 	    -a          Track all commits (slower). By default it looks only commits related with *.kicad_pcb and *.sch files
-	    -c [c1 c2]  Limit scope of commits between commit c1 and c2. It can be used with -a
-	    -p [path]   Set nested project path
+	    -c [c1 c2]  [TOOD] Limit scope of commits between commit c1 and c2. It can be used with -a
 	    -r          Remove kidiff folder before run
+	    -l          Do not launch browser at the end
 	    -v          Verbose
 	    -h          This help
 
@@ -26,7 +26,7 @@ show_help()
 	    kdiff board.kicad_pcb
 
 	    # Nested Kicad projects
-	    cd power-panel; kdiff board.kicad_pcb -p power-panel -r -v
+	    kdiff power-panel/board.kicad_pcb -r -v
 
 	EOM
 
@@ -130,7 +130,7 @@ get_pages()
 	main_schematic=$2
 
 	# First page is this one, name is Root on Kicad, here is the $board_name
-	pages="${board_name}|${main_schematic}"
+	pages="${board_name}|${board_name}"
 
 	pagenames=$(grep "^F0 " "${main_schematic}" | cut -d" " -f2 | tr "\n" "|" | sed_ "s/\"//g" | sed_ "s/|$//g" | tr "|" "\n")
 	pagepaths=$(grep "^F1 " "${main_schematic}" | cut -d" " -f2 | tr "\n" "|" | sed_ "s/\"//g" | sed_ "s/|$//g" | tr "|" "\n")
@@ -254,7 +254,7 @@ insert_pages()
 			<input type="radio" id="${page_filename}" value="${page_filename}" name="pages" ${checked} onchange="change_page()"/>
 			<label class="rounded text-sm-left list-group-item radio-box" for="${page_filename}">
 			<span style="margin-left:0.5em; margin-right:0.1em;" class="iconify" data-icon="gridicons:pages" data-inline="false"></span>
-			${page_name}
+			${page_filename}
 			</label>
 		EOM
 
@@ -361,19 +361,12 @@ generate_comparisons()
 	project_path=$3
 
 	filename=$(basename -- "$kicad_pcb")
-	# extension="${filename##*.}"
 	board_name="${filename%.*}"
 
-	if [[ "$project_path" == "" ]]; then
-		project_path="./"
-		output_folder="./kidiff"
-	else
-		output_folder="../kidiff/$project_path"
-	fi
+	output_folder="kidiff/$project_path"
 
 	if [[ "$REMOVE_KDIFF_FOLDER" == "1" ]]; then
 		rm -rf "${output_folder}"
-		rm -rf kidiff
 	fi
 
 	rm -rf ${output_folder}/svgs.diff
@@ -381,17 +374,17 @@ generate_comparisons()
 
 	mkdir -p "${output_folder}/web/"
 	mkdir -p "${output_folder}/diff/"
-	mkdir -p "${output_folder}/diff2/"
+	# mkdir -p "${output_folder}/diff2/"
 
-	sch_files=$(find_ -name "*.sch")
+	sch_files=$(find_ "${project_path}" -name "*.sch" -printf "%f ")
 
 	if [[ "$ALL_COMMITS" == "1" ]]; then
 		commits=$(git log --date=local '--pretty=format:%h | %ai | %an | %s' -- "${project_path}")
 	else
-		commits=$(git log --date=local '--pretty=format:%h | %ai | %an | %s' -- "${project_path}/${kicad_pcb}" "${sch_files}")
+		commits=$(git log --date=local '--pretty=format:%h | %ai | %an | %s' -- "${kicad_pcb}" "${sch_files}")
 	fi
 
-	a=$(echo "$commits" | tac_ | cut -d' '  -f1);
+		a=$(echo "$commits" | tac_ | cut -d' '  -f1);
 	b=$a
 
 	na=$(echo "$a" | wc -w)
@@ -459,8 +452,7 @@ generate_comparisons()
 				UNCHANGED="FFFFFF"
 				BACKGROUND="222222"
 
-				# Custom version does not use -kidiff
-				cmd="plotgitsch -l ${board_name}-cache.lib -c ${REMOVED}:${ADDED}:${UNCHANGED}:${BACKGROUND} ${i} ${j} > /dev/null"
+				cmd="plotgitsch -l ${project_path}/${board_name}-cache.lib -c ${REMOVED}:${ADDED}:${UNCHANGED}:${BACKGROUND} ${i} ${j} > /dev/null"
 				if [[ "$VERBOSE" == "1" ]]; then
 					echo "$cmd"
 					echo
@@ -522,7 +514,7 @@ generate_comparisons()
 	insert_commits "${output_folder}/web/main.html" "$commits" "$project_path"
 
 	# Insert pages list
-	pages=$(get_pages "${board_name}" "${board_name}.sch")
+	pages=$(get_pages "${board_name}" "${project_path}/${board_name}.sch")
 	insert_pages "${output_folder}/web/main.html" "$pages"
 
 	# Update board title
@@ -650,6 +642,14 @@ do
 	        ;;
 	esac
 done
+
+repo_root=$(git rev-parse --show-toplevel)
+kicad_pcb_path=$(readlink_ "$kicad_pcb" | sed_ "s|${repo_root}/||g")
+project_folder=$(dirname "$kicad_pcb_path" | sed_ "s|${repo_root}/||g")
+
+# echo $repo_root
+# echo $kicad_pcb_path
+# echo $project_folder
 
 if [[ -f "$kicad_pcb" ]]; then
 	generate_comparisons "$script_path" "$kicad_pcb" "$project_folder"
