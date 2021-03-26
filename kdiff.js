@@ -20,17 +20,29 @@ var keysDown = {};
 
 window.onkeydown = function(e) {
     keysDown[e.key] = true;
-    console.log(keysDown);
+    console.log("keysDown:", keysDown);
 
     // =======================================
     // Toggle Schematic/Layout View
     // =======================================
 
+    var commits = "";
+    var selected_commits = [];
+    var next_selected_commits = [];
+
+    var pages = "";
+    var layers = "";
+
+    var selected_layer = "";
+    var selected_page = "";
+
+    var i = 0;
+    var new_index = 0;
+
     if (keysDown.s) {
+
         console.log("==========================");
-
         var view_mode = $('#view_mode input[name="view_mode"]:checked').val();
-
         var next_view_mode = "";
 
         if (view_mode == "show_sch") {
@@ -61,12 +73,13 @@ window.onkeydown = function(e) {
     // =======================================
 
     if (keysDown["]"]) {
-        var commits = $("#commits_form input:checkbox[name='commit']");
 
-        var selected_commits = [];
-        var next_selected_commits = [];
+        commits = $("#commits_form input:checkbox[name='commit']");
 
-        for (var i = 0; i < commits.length; i++) {
+        selected_commits = [];
+        next_selected_commits = [];
+
+        for (i = 0; i < commits.length; i++) {
             if ($("#commits_form input:checkbox[name='commit']")[i].checked) {
                 selected_commits.push(i);
                 next_selected_commits.push(i + 1);
@@ -77,10 +90,10 @@ window.onkeydown = function(e) {
         next_selected_commits[0] = selected_commits[0];
 
         if (selected_commits[1] < commits.length - 1) {
-            for (var i = 0; i < selected_commits.length; i++) {
+            for (i = 0; i < selected_commits.length; i++) {
                 commits[selected_commits[i]].checked = false;
             }
-            for (var i = 0; i < selected_commits.length; i++) {
+            for (i = 0; i < selected_commits.length; i++) {
                 commits[next_selected_commits[i]].checked = true;
             }
         }
@@ -89,12 +102,13 @@ window.onkeydown = function(e) {
     }
 
     if (keysDown.ArrowDown) {
-        var commits = $("#commits_form input:checkbox[name='commit']");
 
-        var selected_commits = [];
-        var next_selected_commits = [];
+        commits = $("#commits_form input:checkbox[name='commit']");
 
-        for (var i = 0; i < commits.length; i++) {
+        selected_commits = [];
+        next_selected_commits = [];
+
+        for (i = 0; i < commits.length; i++) {
             if ($("#commits_form input:checkbox[name='commit']")[i].checked) {
                 selected_commits.push(i);
                 next_selected_commits.push(i + 1);
@@ -102,10 +116,10 @@ window.onkeydown = function(e) {
         }
 
         if (selected_commits[1] < commits.length - 1) {
-            for (var i = 0; i < selected_commits.length; i++) {
+            for (i = 0; i < selected_commits.length; i++) {
                 commits[selected_commits[i]].checked = false;
             }
-            for (var i = 0; i < selected_commits.length; i++) {
+            for (i = 0; i < selected_commits.length; i++) {
                 commits[next_selected_commits[i]].checked = true;
             }
         }
@@ -118,12 +132,13 @@ window.onkeydown = function(e) {
     // =======================================
 
     if (keysDown["["]) {
-        var commits = $("#commits_form input:checkbox[name='commit']");
 
-        var selected_commits = [];
-        var next_selected_commits = [];
+        commits = $("#commits_form input:checkbox[name='commit']");
 
-        for (var i = 0; i < commits.length; i++) {
+        selected_commits = [];
+        next_selected_commits = [];
+
+        for (i = 0; i < commits.length; i++) {
             if ($("#commits_form input:checkbox[name='commit']")[i].checked) {
                 selected_commits.push(i);
                 next_selected_commits.push(i - 1);
@@ -133,10 +148,10 @@ window.onkeydown = function(e) {
         next_selected_commits[0] = selected_commits[0];
 
         if (next_selected_commits[1] > next_selected_commits[0]) {
-            for (var i = 0; i < selected_commits.length; i++) {
+            for (i = 0; i < selected_commits.length; i++) {
                 commits[selected_commits[i]].checked = false;
             }
-            for (var i = 0; i < selected_commits.length; i++) {
+            for (i = 0; i < selected_commits.length; i++) {
                 commits[next_selected_commits[i]].checked = true;
             }
         }
@@ -146,12 +161,12 @@ window.onkeydown = function(e) {
 
     if (keysDown.ArrowUp) {
 
-        var commits = $("#commits_form input:checkbox[name='commit']");
+        commits = $("#commits_form input:checkbox[name='commit']");
 
-        var selected_commits = [];
-        var next_selected_commits = [];
+        selected_commits = [];
+        next_selected_commits = [];
 
-        for (var i = 0; i < commits.length; i++) {
+        for (i = 0; i < commits.length; i++) {
             if ($("#commits_form input:checkbox[name='commit']")[i].checked) {
                 selected_commits.push(i);
                 next_selected_commits.push(i - 1);
@@ -159,10 +174,10 @@ window.onkeydown = function(e) {
         }
 
         if (next_selected_commits[0] >= 0) {
-            for (var i = 0; i < selected_commits.length; i++) {
+            for (i = 0; i < selected_commits.length; i++) {
                 commits[selected_commits[i]].checked = false;
             }
-            for (var i = 0; i < selected_commits.length; i++) {
+            for (i = 0; i < selected_commits.length; i++) {
                 commits[next_selected_commits[i]].checked = true;
             }
         }
@@ -176,10 +191,10 @@ window.onkeydown = function(e) {
 
     if (keysDown.l || keysDown.L || keysDown.ArrowRight) {
         if (document.getElementById("show_sch").checked) {
-            var pages = $("#pages_list input:radio[name='pages']");
-            var selected_layer = pages.index(pages.filter(':checked'));
+            pages = $("#pages_list input:radio[name='pages']");
+            selected_page = pages.index(pages.filter(':checked'));
 
-            var new_index = selected_layer + 1;
+            new_index = selected_page + 1;
             if (new_index >= pages.length) {
                 new_index = 0;
             }
@@ -188,10 +203,10 @@ window.onkeydown = function(e) {
 
             change_page();
         } else {
-            var layers = $("#layers_list input:radio[name='layers']");
-            var selected_layer = layers.index(layers.filter(':checked'));
+            layers = $("#layers_list input:radio[name='layers']");
+            selected_layer = layers.index(layers.filter(':checked'));
 
-            var new_index = selected_layer + 1;
+            new_index = selected_layer + 1;
             if (new_index >= layers.length) {
                 new_index = 0;
             }
@@ -208,10 +223,10 @@ window.onkeydown = function(e) {
 
     if (keysDown.k || keysDown.K || keysDown.ArrowLeft) {
         if (document.getElementById("show_sch").checked) {
-            var pages = $("#pages_list input:radio[name='pages']");
-            var selected_page = pages.index(pages.filter(':checked'));
+            pages = $("#pages_list input:radio[name='pages']");
+            selected_page = pages.index(pages.filter(':checked'));
 
-            var new_index = selected_page - 1;
+            new_index = selected_page - 1;
             if (new_index < 0) {
                 new_index = pages.length - 1;
             }
@@ -220,10 +235,10 @@ window.onkeydown = function(e) {
 
             change_page();
         } else {
-            var layers = $("#layers_list input:radio[name='layers']");
-            var selected_layer = layers.index(layers.filter(':checked'));
+            layers = $("#layers_list input:radio[name='layers']");
+            selected_layer = layers.index(layers.filter(':checked'));
 
-            var new_index = selected_layer - 1;
+            new_index = selected_layer - 1;
             if (new_index < 0) {
                 new_index = layers.length - 1;
             }
@@ -255,7 +270,7 @@ window.onkeydown = function(e) {
     }
 
     keysDown = {};
-}
+};
 
 // =======================================
 // =======================================
@@ -448,46 +463,57 @@ function reload(id) {
     var container = document.getElementById(id);
     var content = container.innerHTML;
     container.innerHTML = content;
-    console.log(content);
-    console.log(id, "refreshed");
+    console.log("refreshing:", id);
 }
 
 function show_sch() {
+
+    var sch_view;
+    var pcb_view;
+    var pages_list;
+    var layers_list;
+
     // Show schematic image
-    var sch_view = document.getElementById("diff-sch");
+    sch_view = document.getElementById("diff-sch");
     sch_view.style.display = "inline";
     // reload("diff-sch")
     // reload("svg-id-sch")
 
     // Show pages list
-    var layers_list = document.getElementById("pages_list");
+    pages_list = document.getElementById("pages_list");
     pages_list.style.display = "inline";
 
     // Hide layout image
-    var pcb_view = document.getElementById("diff-pcb");
+    pcb_view = document.getElementById("diff-pcb");
     pcb_view.style.display = "none";
 
     // Hide layers list
-    var layers_list = document.getElementById("layers_list");
+    layers_list = document.getElementById("layers_list");
     layers_list.style.display = "none";
 }
 
 function show_pcb() {
+
+    var sch_view;
+    var pcb_view;
+    var pages_list;
+    var layers_list;
+
     // Hide layers list
-    var sch_view = document.getElementById("diff-sch");
+    sch_view = document.getElementById("diff-sch");
     sch_view.style.display = "none";
 
     // Hide pages list
-    var layers_list = document.getElementById("pages_list");
+    pages_list = document.getElementById("pages_list");
     pages_list.style.display = "none";
 
     // Show layout image
-    var pcb_view = document.getElementById("diff-pcb");
+    pcb_view = document.getElementById("diff-pcb");
     pcb_view.style.display = "inline";
     // reload("diff-pcb")
     // reload("svg-id-pcb")
 
     // Show layers list
-    var layers_list = document.getElementById("layers_list");
+    layers_list = document.getElementById("layers_list");
     layers_list.style.display = "inline";
 }
