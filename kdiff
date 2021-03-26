@@ -37,8 +37,9 @@ show_help()
 readlink_osx()
 {
 	target_file="$1"
+	dir_name=$(dirname "$target_file")
 
-	cd $(dirname "$target_file") || exit
+	cd "${dir_name}" || exit
 	target_file=$(basename "$target_file")
 
 	# Iterate down a (possible) chain of symlinks
@@ -131,12 +132,10 @@ get_pages()
 	main_schematic=$2
 
 	# First page is this one, name is Root on Kicad, here is the $board_name
-	pages="${board_name}|${board_name}"
+	pages="Root|${board_name}"
 
 	pagenames=$(grep "^F0 " "${main_schematic}" | cut -d" " -f2 | tr "\n" "|" | sed_ "s/\"//g" | sed_ "s/|$//g" | tr "|" "\n")
 	pagepaths=$(grep "^F1 " "${main_schematic}" | cut -d" " -f2 | tr "\n" "|" | sed_ "s/\"//g" | sed_ "s/|$//g" | tr "|" "\n")
-
-	# how to remove duplicated pages having 2 lists?
 
 	IFS=$'\n'
 	n=0
@@ -146,11 +145,16 @@ get_pages()
 
 		pagename=$(echo "$pagename" | sed_ "s/^ //g" | sed_ "s/ $//g")
 		pagepath=$(echo "$pagepaths" | sed_ -n ${n}p)
+		filename=$(basename "$pagepath" | sed_ "s/.sch//g")
 
-		page="${pagename}|${pagepath}"
+		page="${pagename}|${filename}"
 		pages="${pages}\n${page}"
 
 	done
+
+	# How to remove duplicated pages easily?
+	# echo -e "$pages" > pages
+	# sort -u -t"|" -k2,2  <<< $pages
 
 	echo -e "$pages"
 }
@@ -257,7 +261,7 @@ insert_pages()
 			<input type="radio" id="${page_filename}" value="${page_filename}" name="pages" ${checked} onchange="change_page()"/>
 			<label class="rounded text-sm-left list-group-item radio-box" for="${page_filename}">
 			<span style="margin-left:0.5em; margin-right:0.1em;" class="iconify" data-icon="gridicons:pages" data-inline="false"></span>
-			${page_filename}
+			${page_name}
 			</label>
 		EOM
 
@@ -372,8 +376,8 @@ generate_comparisons()
 		rm -rf "${output_folder}"
 	fi
 
-	rm -rf ${output_folder}/svgs.diff
-	rm -rf ${output_folder}/diff2/
+	rm -rf "${output_folder}/svgs.diff"
+	# rm -rf "${output_folder}/diff2/"
 
 	mkdir -p "${output_folder}/web/"
 	mkdir -p "${output_folder}/diff/"
@@ -528,7 +532,7 @@ generate_comparisons()
 	sed_ -i "s|\[PROJECT_TITLE\]|${title}|g" "${output_folder}/web/main.html"
 
 	# Update board revision
-	revision=$(grep "(rev " "${kicad_pcb}" | sed_ "s/^[ \t]\+//g" | sed_ "s/[()]//g" | cut -d" " -f2)
+	revision=$(grep "(rev " "${kicad_pcb}" | sed_ "s/^[ \t]\+//g" | sed_ "s/[()]//g" | cut -d" " -f2- | sed_ "s/\"//g")
 	if [[ $revision == "" ]]; then
 		revision="{Rev}";
 	fi
@@ -669,7 +673,7 @@ if [[ "$LAUNCH_PAGE" == "1" ]]; then
 	if [[ "$DRY_RUN" == "0" ]]; then
 		echo
 		if [[ "$PAGE_VIEWER" != "" ]]; then
-			$PAGE_VIEWER "${output_folder}/web/main.html"
+			$PAGE_VIEWER "${output_folder}/web/main.html" &
 		else
 			xdg-open_ "${output_folder}/web/main.html"
 		fi

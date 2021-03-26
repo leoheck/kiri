@@ -20,7 +20,7 @@
 						<span style="margin-top: 1em"></span>
 						<h3 class="text-light">Kicad Revision Inspector</h3>
 						<h4 class="text-info text-bold">[PROJECT_TITLE]</h4>
-						<p class="text-light">Revision [PROJECT_REVISION] - [PROJECT_DATE]</p>
+						<p class="text-light">Rev. [PROJECT_REVISION] - [PROJECT_DATE]</p>
 						<p class="text-light" >
 							<span style="margin-right:0.5em" class="iconify" data-icon="fa-solid:code-branch" data-inline="false"></span>
 							Commits
@@ -31,7 +31,7 @@
 							or <kbd>[</kbd>/<kbd>]</kbd>
 							</small>
 						</p>
-						<div class="form-check scrollbox" style="padding: 0px 0px 10px 0px ; margin-left:0px; overflow-y: scroll">
+						<div class="form-check scrollbox" style="padding: 0px 0px 8px 0px ; margin-left:0px; overflow-y: scroll">
 							<form id="commits_form" class="overflow-auto scrollbox-content">
 								<!-- FILL_COMMITS_HERE -->
 							</form>
@@ -40,7 +40,7 @@
 				</div>
 				<div class="col col-6 no-gutters" style="background-color: #333;">
 					<div class="row no-gutters" style="width : 100%; margin: 0px;">
-						<div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons" style="padding: 10px;">
+						<div class="btn-group btn-group-toggle btn-group-sm no-gutters" data-toggle="buttons" style="padding: 10px;">
 							<div id="view_mode" class="btn-toolbar" role="toolbar" aria-label="View Mode">
 								<div class="btn-group me-2" role="group" aria-label="First group">
 									<label id="show_sch_lbl" title="Schematic" class="btn btn-secondary active">
@@ -100,21 +100,21 @@
 						</div>
 					</div>
 					<div class="container no-gutters" style="flex: 1;">
-						<div class="row no-gutters" style="flex: 1;">
+						<div class="row no-gutters" style="flex: 1;" >
 							<div class="col col-12 no-gutters" style="flex: 1;">
 								<div id="legend" class="no-gutters">
 									<form class="rounded form-inline" style="background-color: #222; padding: 10px 5px 10px 5px">
 										<span id=commit1_legend style="margin-left:0.5em; margin-right:0.5em; color: #00FFFF" style="width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
-										<small class="text-sm text-light"> Newer - <span class="text-monospace" id=commit1_legend_hash>[COMMIT_1_HASH]</span></small>
+										<small class="text-sm text-muted"> New - <span class="text-monospace" id=commit1_legend_hash>[COMMIT_1_HASH]</span></small>
 										<span style="width: 2em;"></span>
 										<span id="commit2_legend" style="margin-left:0.5em; margin-right:0.5em; color: #880808" style="width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
-										<small class="text-sm text-light"> Older - <span class="text-monospace" id=commit2_legend_hash>[COMMIT_2_HASH]</span></small>
+										<small class="text-sm text-muted"> Old - <span class="text-monospace" id=commit2_legend_hash>[COMMIT_2_HASH]</span></small>
 										<span style="width: 2em;"></span>
 										<span id="commit2_legend" style="margin-left:0.5em; margin-right:0.5em; color: #807F7F" style="width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
-										<small class="text-sm text-light"> Unchanged </small>
+										<small class="text-sm text-muted"> Unchanged </small>
 									</form>
 								</div>
-								<div id="diff-sch" style="width: 100%; height: 70vh; display: inline;">
+								<div id="diff-sch" style="width: 100%; height: 75vh; display: inline;">
 									<svg id="svg-id-sch" xmlns="http://www.w3.org/2000/svg"
 										style="display: inline; width: inherit; min-width: inherit; max-width: inherit; height: inherit; min-height: inherit; max-height: inherit;" version="1.1">
 										<g>

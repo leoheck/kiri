@@ -186,6 +186,23 @@ window.onkeydown = function(e) {
     }
 
     // =======================================
+    // Reset commit selection (select the ones on top)
+    // =======================================
+
+    if (keysDown.r || keysDown.R) {
+        commits = $("#commits_form input:checkbox[name='commit']");
+        selected_commits = [];
+        for (i = 0; i < commits.length; i++) {
+            $("#commits_form input:checkbox[name='commit']")[i].checked = false;
+        }
+        for (i = 0; i < 2; i++) {
+            $("#commits_form input:checkbox[name='commit']")[i].checked = true;
+        }
+
+        update_commits();
+    }
+
+    // =======================================
     // Next Schematic Page / Layout
     // =======================================
 
@@ -275,6 +292,10 @@ window.onkeydown = function(e) {
 // =======================================
 // =======================================
 
+function img_timestamp() {
+    return "?t=" + new Date().getTime() + "-" + Math.floor(Math.random() * Math.floor(1000));
+}
+
 function update_commits() {
     var commits = $("#commits_form input:checkbox[name='commit']");
     var values = [];
@@ -288,7 +309,6 @@ function update_commits() {
 
     var commit1 = values[0].replace(/\s+/g, '');
     var commit2 = values[1].replace(/\s+/g, '');
-    var timestamp = new Date().getTime();
 
     console.log("==========================");
 
@@ -297,17 +317,19 @@ function update_commits() {
 
     var pages = $("#pages_list input:radio[name='pages']");
     var selected_page = pages.index(pages.filter(':checked'));
+
+    var page_name = pages[selected_page].id;
+
     console.log("selected_page:", pages[selected_page].value);
 
-
-    var sch_image_path_1 = "../" + commit1 + "/" + "sch-" + pages[selected_page].value + ".svg";
-    var sch_image_path_2 = "../" + commit2 + "/" + "sch-" + pages[selected_page].value + ".svg";
+    var sch_image_path_1 = "../" + commit1 + "/" + "sch-" + page_name + ".svg" + img_timestamp();
+    var sch_image_path_2 = "../" + commit2 + "/" + "sch-" + page_name + ".svg" + img_timestamp();
 
     console.log("sch_1:", sch_image_path_1);
     console.log("sch_2:", sch_image_path_2);
 
-    document.getElementById("diff-xlink-1-sch").href.baseVal = sch_image_path_1 + "?t=" + timestamp;
-    document.getElementById("diff-xlink-2-sch").href.baseVal = sch_image_path_2 + "?t=" + timestamp;
+    document.getElementById("diff-xlink-1-sch").href.baseVal = sch_image_path_1;
+    document.getElementById("diff-xlink-2-sch").href.baseVal = sch_image_path_2;
 
     // =======================================
     // Update Layout
@@ -327,14 +349,14 @@ function update_commits() {
         selected_layer = "F_Cu";
     }
 
-    var pcb_image_path_1 = "../" + commit1 + "/" + board_name + "-" + selected_layer + ".svg";
-    var pcb_image_path_2 = "../" + commit2 + "/" + board_name + "-" + selected_layer + ".svg";
+    var image_path_1 = "../" + commit1 + "/" + board_name + "-" + selected_layer + ".svg" + img_timestamp();
+    var image_path_2 = "../" + commit2 + "/" + board_name + "-" + selected_layer + ".svg" + img_timestamp();
 
-    console.log("pcb_1:", pcb_image_path_1);
-    console.log("pcb_2:", pcb_image_path_2);
+    console.log("pcb_1:", image_path_1);
+    console.log("pcb_2:", image_path_2);
 
-    document.getElementById("diff-xlink-1-pcb").href.baseVal = pcb_image_path_1 + "?t=" + timestamp;
-    document.getElementById("diff-xlink-2-pcb").href.baseVal = pcb_image_path_2 + "?t=" + timestamp;
+    document.getElementById("diff-xlink-1-pcb").href.baseVal = image_path_1;
+    document.getElementById("diff-xlink-2-pcb").href.baseVal = image_path_2;
 
     // =======================================
     // Update Legend
@@ -346,9 +368,9 @@ function update_commits() {
 function change_page() {
     var pages = $("#pages_list input:radio[name='pages']");
     var selected_page = pages.index(pages.filter(':checked'));
-    console.log("selected_page:", pages[selected_page].value);
+    var page_name = pages[selected_page].id;
 
-    var timestamp = new Date().getTime();
+    console.log("selected_page:", page_name);
 
     var current_href1 = document.getElementById("diff-xlink-1-sch").href.baseVal;
     var current_href2 = document.getElementById("diff-xlink-2-sch").href.baseVal;
@@ -356,22 +378,25 @@ function change_page() {
     commit1 = current_href1.split("/")[1];
     commit2 = current_href2.split("/")[1];
 
-    var ref1 = "../" + commit1 + "/" + "sch-" + pages[selected_page].value + ".svg";
-    var ref2 = "../" + commit2 + "/" + "sch-" + pages[selected_page].value + ".svg";
+    var image_path_1 = "../" + commit1 + "/" + "sch-" + page_name + ".svg" + img_timestamp();
+    var image_path_2 = "../" + commit2 + "/" + "sch-" + page_name + ".svg" + img_timestamp();
 
-    console.log("page1:", ref1);
-    console.log("page2:", ref2);
+    console.log("page_1:", image_path_1);
+    console.log("page_2:", image_path_2);
 
-    document.getElementById("diff-xlink-1-pcb").href.baseVal = ref1 + "?t=" + timestamp;
-    document.getElementById("diff-xlink-2-pcb").href.baseVal = ref2 + "?t=" + timestamp;
+    document.getElementById("diff-xlink-1-pcb").href.baseVal = image_path_1;
+    document.getElementById("diff-xlink-2-pcb").href.baseVal = image_path_2;
+
+    // Refreshing view somehow. How this works?
+    update_commits();
 }
 
 function change_layer() {
     var layers = $("#layers_list input:radio[name='layers']");
     var selected_layer = layers.index(layers.filter(':checked'));
-    console.log("selected_layer:", layers[selected_layer].value);
+    var layer_name = layers[selected_layer].value;
 
-    var timestamp = new Date().getTime();
+    console.log("selected_layer:", layer_name);
 
     var current_href1 = document.getElementById("diff-xlink-1-pcb").href.baseVal;
     var current_href2 = document.getElementById("diff-xlink-2-pcb").href.baseVal;
@@ -381,12 +406,17 @@ function change_layer() {
 
     var board_name = "board";
 
-    var ref1 = "../" + commit1 + "/" + board_name + "-" + layers[selected_layer].value + ".svg";
-    var ref2 = "../" + commit2 + "/" + board_name + "-" + layers[selected_layer].value + ".svg";
+    var image_path_1 = "../" + commit1 + "/" + board_name + "-" + layer_name + ".svg" + img_timestamp();
+    var image_path_2 = "../" + commit2 + "/" + board_name + "-" + layer_name + ".svg" + img_timestamp();
 
-    document.getElementById("diff-xlink-1-pcb").href.baseVal = ref1 + "?t=" + timestamp;
-    document.getElementById("diff-xlink-2-pcb").href.baseVal = ref2 + "?t=" + timestamp;
+    document.getElementById("diff-xlink-1-pcb").href.baseVal = image_path_1;
+    document.getElementById("diff-xlink-2-pcb").href.baseVal = image_path_2;
 
+    console.log("image_path_1:", image_path_1);
+    console.log("image_path_2:", image_path_2);
+
+    // Refreshing view somehow. How this works?
+    update_commits();
 }
 
 // =======================================
@@ -401,6 +431,7 @@ window.onload = function() {
             center: true,
             minZoom: 1,
             maxZoom: 20,
+            zoomScaleSensitivity: 0.1,
             fit: false, // cannot be used, bug? (this one must be here to change the default)
             viewportSelector: '.svg-pan-zoom_viewport-sch',
             eventsListenerElement: document.querySelector('#svg-id-sch .svg-pan-zoom_viewport-sch')
@@ -414,6 +445,7 @@ window.onload = function() {
             center: true,
             minZoom: 1,
             maxZoom: 20,
+            zoomScaleSensitivity: 0.1,
             fit: false, // cannot be used, bug? (this one must be here to change the default)
             viewportSelector: '.svg-pan-zoom_viewport-pcb',
             eventsListenerElement: document.querySelector('#svg-id-pcb .svg-pan-zoom_viewport-pcb')
@@ -459,13 +491,6 @@ window.onload = function() {
 // Toggle Schematic/Layout
 // =======================================
 
-function reload(id) {
-    var container = document.getElementById(id);
-    var content = container.innerHTML;
-    container.innerHTML = content;
-    console.log("refreshing:", id);
-}
-
 function show_sch() {
 
     var sch_view;
@@ -476,8 +501,6 @@ function show_sch() {
     // Show schematic image
     sch_view = document.getElementById("diff-sch");
     sch_view.style.display = "inline";
-    // reload("diff-sch")
-    // reload("svg-id-sch")
 
     // Show pages list
     pages_list = document.getElementById("pages_list");
@@ -510,8 +533,6 @@ function show_pcb() {
     // Show layout image
     pcb_view = document.getElementById("diff-pcb");
     pcb_view.style.display = "inline";
-    // reload("diff-pcb")
-    // reload("svg-id-pcb")
 
     // Show layers list
     layers_list = document.getElementById("layers_list");
