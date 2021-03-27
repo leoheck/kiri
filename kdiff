@@ -182,25 +182,25 @@ insert_commits()
 		user=$(echo "$commit" | cut -d'|' -f3 | sed_ "s/^ //g" )
 		 msg=$(echo "$commit" | cut -d'|' -f4 | sed_ "s/^ //g" )
 
-		empty_icon='<span class="iconify" style="width: 14px; height: 14px; color: rgba(255, 0, 0, 0);" data-icon="bx:bx-square-rounded" data-inline="false"></span>'
+		empty_icon='<span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: rgba(255, 0, 0, 0);" data-icon="bx:bx-square-rounded" data-inline="false"></span>'
 
 		# check for changes in .sch files
 		if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${project}" | cat | grep -s ".sch" &> /dev/null; then
-			sch_icon='<span class="iconify" style="width: 14px; height: 14px; color: #A6E22E;" data-icon="carbon:schematics" data-inline="false"></span>'
+			sch_icon='<span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: #A6E22E;" data-icon="carbon:schematics" data-inline="false"></span>'
 		else
 			sch_icon="${empty_icon}"
 		fi
 
 		# check for changes in .kicad_pcb files
 		if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${project}" | cat | grep -s ".kicad_pcb" &> /dev/null; then
-			layout_icon='<span class="iconify" style="width: 14px; height: 14px; color: #F92672;" data-icon="codicon:circuit-board" data-inline="false"></span>'
+			layout_icon='<span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: #F92672;" data-icon="codicon:circuit-board" data-inline="false"></span>'
 		else
 			layout_icon="${empty_icon}"
 		fi
 
 		# Check for changes in textual files only
 		if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${project}" | cat | grep -s -vE ".sch|.kicad_pcb" &> /dev/null; then
-			text_icon='<span class="iconify" style="width: 14px; height: 14px; color: #888888;" data-icon="bi:file-earmark-text" data-inline="false"></span>'
+			text_icon='<span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: #888888;" data-icon="bi:file-earmark-text" data-inline="false"></span>'
 		else
 			text_icon="${empty_icon}"
 		fi
@@ -221,7 +221,7 @@ insert_commits()
 		                  <path d="M7.5 10.5a3 3 0 010-6m0 6a3 3 0 000-6m0 6V15m0-10.5V0" stroke="currentColor"></path>
 		              </svg>
 		            </td>
-		          <td><em class="text-info"style="">${msg}</em></td>
+		          <td><em class="text-info" style="  line-height: 0.7;">${msg}</em></td>
 		        </tr>
 		        <tr>
 		          <td><span class="text-success text-uppercase font-weight-normal">${hash}</span> <span class="text-muted"> | ${date} | ${user} | </span> ${sch_icon} ${layout_icon} ${text_icon}</td>
@@ -387,15 +387,16 @@ generate_comparisons()
 	mkdir -p "${output_folder}/web/"
 	mkdir -p "${output_folder}/diff/"
 
+	git_branch=$(git rev-parse --abbrev-ref HEAD)
 	sch_files=$(find_ "${project_path}" -name "*.sch" -printf "%f ")
 
 	if [[ "$ALL_COMMITS" == "1" ]]; then
-		commits=$(git log --date=local '--pretty=format:%h | %ai | %an | %s' -- "${project_path}")
+		commits=$(${script_path}/git_log ${git_branch} -- "${project_path}")
 	else
-		commits=$(git log --date=local '--pretty=format:%h | %ai | %an | %s' -- "${kicad_pcb}" "${sch_files}")
+		commits=$(${script_path}/git_log ${git_branch} -- ${kicad_pcb} ${sch_files})
 	fi
 
-		a=$(echo "$commits" | tac_ | cut -d' '  -f1);
+	a=$(echo "$commits" | tac_ | cut -d' '  -f1);
 	b=$a
 
 	na=$(echo "$a" | wc -w)
@@ -408,6 +409,9 @@ generate_comparisons()
 	echo
 
 	n=0
+
+	sch_page_names=$(get_pages "${board_name}" "${project_path}/${board_name}.sch" | cut -d"|" -f2)
+	board_layers=$(sed_ -n '/^  (layers/,/  )$/{/^  (layers/!{/  )$/!p}}' "${kicad_pcb}" | sed_ "s/^[ \t]\+//g" | sed_ "s/[()]//g" | cut -d" " -f2 | tr "." "_")
 
 	IFS=$'\n'
 	for i in $a; do
@@ -450,7 +454,21 @@ generate_comparisons()
 				fi
 				if [[ "$DRY_RUN" == "0" ]]; then
 					eval "$cmd"
+					ret=$?
 				fi
+
+				IFS=$'\n'
+				for layer in board_layers; do
+					if [[ ! "${output_folder}/$i/${board_name}-${layer}.svg" ]]; then
+						echo "Generating fake $i images"
+						cp "${script_path}/blank.svg" "${output_folder}/$i/${board_name}-${layer}.svg"
+					fi
+					if [[ ! "${output_folder}/$j/${board_name}-${layer}.svg" ]]; then
+						echo "Generating fake $j images"
+						cp "${script_path}/blank.svg" "${output_folder}/$j/${board_name}-${layer}.svg"
+					fi
+				done
+
 
 				if [ -f "${output_folder}/diff.txt" ]; then
 					mv -f "${output_folder}/diff.txt" "${output_folder}/diff/$i-$j.txt"
@@ -469,9 +487,26 @@ generate_comparisons()
 					echo
 				fi
 				if [[ "$DRY_RUN" == "0" ]]; then
+					# Workaround for a known bug. Backup working branch
+					cp -f .git/HEAD .git/HEAD.bkp
 					eval "$cmd"
+					ret=$?
+					# Restore working branch
+					mv -f .git/HEAD.bkp .git/HEAD
 				fi
 
+				IFS=$'\n'
+				for sch_page_name in $sch_page_names; do
+					# Create blank svg when it is missing
+					if [[ ! -f "sch1-${sch_page_name}.svg" ]]; then
+						cp "${script_path}/blank.svg" "sch1-${sch_page_name}.svg"
+					fi
+					if [[ ! -f "sch2-${sch_page_name}.svg" ]]; then
+						cp "${script_path}/blank.svg" "sch2-${sch_page_name}.svg"
+					fi
+				done
+
+				IFS=$'\n'
 				for sch_page_svg in *.svg; do
 
 					# Background transparent
@@ -500,7 +535,6 @@ generate_comparisons()
 			fi
 		done
 
-		# # Check if images differ
 		# THIS CAN BE USED TO DISABLE PAGES AND LAYERS THAT DONT HAVE DIFFERENCES
 
 		# IFS=$'\n'
@@ -664,6 +698,12 @@ done
 repo_root=$(git rev-parse --show-toplevel)
 kicad_pcb_path=$(readlink_ "$kicad_pcb" | sed_ "s|${repo_root}/||g")
 project_folder=$(dirname "$kicad_pcb_path" | sed_ "s|${repo_root}/||g")
+
+if [[ "$repo_root" != "$(pwd)" ]]; then
+	echo "You must be in repo root path"
+	echo "Here: $repo_root"
+	exit
+fi
 
 if [[ -f "$kicad_pcb" ]]; then
 	generate_comparisons "$script_path" "$kicad_pcb" "$project_folder"
