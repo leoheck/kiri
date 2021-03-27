@@ -98,8 +98,21 @@ window.onkeydown = function(e) {
             }
         }
 
-        update_commits();
+        // Restore boundary
+        if (next_selected_commits[1] == commits.length) {
+            next_selected_commits[1] = commits.length - 1;
+        }
+
+        console.log("curr[1]:", selected_commits[1]);
+        console.log("next[1]:", next_selected_commits[1]);
+
+        if (selected_commits[1] != next_selected_commits[1]) {
+            update_commits();
+        }
     }
+
+    // =======================================
+    // =======================================
 
     if (keysDown.ArrowDown) {
 
@@ -124,7 +137,15 @@ window.onkeydown = function(e) {
             }
         }
 
-        update_commits();
+        // Restore boundary
+        if ((next_selected_commits[0] == commits.length - 1) && (next_selected_commits[1] == commits.length)) {
+            next_selected_commits[0] = selected_commits[0];
+            next_selected_commits[1] = selected_commits[1];
+        }
+
+        if ((selected_commits[1] != next_selected_commits[1])) {
+            update_commits();
+        }
     }
 
     // =======================================
@@ -156,8 +177,18 @@ window.onkeydown = function(e) {
             }
         }
 
-        update_commits();
+        // Restore boundary
+        if (next_selected_commits[1] == 0) {
+            next_selected_commits[1] = 1;
+        }
+
+        if (selected_commits[0] != next_selected_commits[0]) {
+            update_commits();
+        }
     }
+
+    // =======================================
+    // =======================================
 
     if (keysDown.ArrowUp) {
 
@@ -173,6 +204,7 @@ window.onkeydown = function(e) {
             }
         }
 
+        // Update selection only
         if (next_selected_commits[0] >= 0) {
             for (i = 0; i < selected_commits.length; i++) {
                 commits[selected_commits[i]].checked = false;
@@ -182,7 +214,15 @@ window.onkeydown = function(e) {
             }
         }
 
-        update_commits();
+        // Restore boundary
+        if ((next_selected_commits[0] == -1) && (next_selected_commits[1] == 0)) {
+            next_selected_commits[0] = 0;
+            next_selected_commits[1] = 1;
+        }
+
+        if ((selected_commits[0] != next_selected_commits[0])) {
+            update_commits();
+        }
     }
 
     // =======================================
@@ -190,6 +230,7 @@ window.onkeydown = function(e) {
     // =======================================
 
     if (keysDown.r || keysDown.R) {
+
         commits = $("#commits_form input:checkbox[name='commit']");
         selected_commits = [];
         for (i = 0; i < commits.length; i++) {
@@ -307,6 +348,11 @@ function update_commits() {
         }
     }
 
+    // It needs 2 items selected to continue
+    if (values.length < 2) {
+        return;
+    }
+
     var commit1 = values[0].replace(/\s+/g, '');
     var commit2 = values[1].replace(/\s+/g, '');
 
@@ -334,6 +380,7 @@ function update_commits() {
     // =======================================
     // Update Layout
 
+    var selected_layer = "";
     var board_name = "board";
 
     var layers = document.getElementsByName('layers');
@@ -343,7 +390,7 @@ function update_commits() {
         }
     }
 
-    console.log("layer:", selected_layer);
+    console.log("selected_layer:", selected_layer);
 
     if (!selected_layer) {
         selected_layer = "F_Cu";
@@ -375,8 +422,8 @@ function change_page() {
     var current_href1 = document.getElementById("diff-xlink-1-sch").href.baseVal;
     var current_href2 = document.getElementById("diff-xlink-2-sch").href.baseVal;
 
-    commit1 = current_href1.split("/")[1];
-    commit2 = current_href2.split("/")[1];
+    var commit1 = current_href1.split("/")[1];
+    var commit2 = current_href2.split("/")[1];
 
     var image_path_1 = "../" + commit1 + "/" + "sch-" + page_name + ".svg" + img_timestamp();
     var image_path_2 = "../" + commit2 + "/" + "sch-" + page_name + ".svg" + img_timestamp();
@@ -401,8 +448,8 @@ function change_layer() {
     var current_href1 = document.getElementById("diff-xlink-1-pcb").href.baseVal;
     var current_href2 = document.getElementById("diff-xlink-2-pcb").href.baseVal;
 
-    commit1 = current_href1.split("/")[1];
-    commit2 = current_href2.split("/")[1];
+    var commit1 = current_href1.split("/")[1];
+    var commit2 = current_href2.split("/")[1];
 
     var board_name = "board";
 
@@ -424,7 +471,7 @@ function change_layer() {
 // =======================================
 
 window.onload = function() {
-    panZoom_sch = svgPanZoom(
+    var panZoom_sch = svgPanZoom(
         '#svg-id-sch', {
             zoomEnabled: true,
             controlIconsEnabled: false,
@@ -438,7 +485,7 @@ window.onload = function() {
         }
     );
 
-    panZoom_pcb = svgPanZoom(
+    var panZoom_pcb = svgPanZoom(
         '#svg-id-pcb', {
             zoomEnabled: true,
             controlIconsEnabled: false,
