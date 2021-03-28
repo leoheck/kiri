@@ -14,10 +14,11 @@ show_help()
 	OPTIONS:
 
 	    -a          Track all commits (slower). By default it looks only commits related with *.kicad_pcb and *.sch files
-	    -c [c1 c2]  [TOOD] Limit scope of commits between commit c1 and c2. It can be used with -a
+	    -o HASH     Show commits starting from this one - This HASH is the short version
+	    -n HASH     Show commits until this one delimited by this one - This HASH is the short version
 	    -r          Remove kidiff folder before run
 	    -l          Do not launch browser at the end
-	    -w [viewr]  Change default page viewer
+	    -w VIEWER   Change default page viewer
 	    -v          Verbose
 	    -h          This help
 
@@ -381,6 +382,8 @@ generate_comparisons()
 	output_folder="kidiff/$project_path"
 
 	if [[ "$REMOVE_KDIFF_FOLDER" == "1" ]]; then
+		echo
+		echo "Removing kidiff folder ..."
 		rm -rf "kidiff"
 	fi
 
@@ -391,10 +394,24 @@ generate_comparisons()
 	sch_files=$(find_ "${project_path}" -name "*.sch" -printf "%f ")
 
 	if [[ "$ALL_COMMITS" == "1" ]]; then
-		commits=$(${script_path}/git_log ${git_branch} -- "${project_path}")
+		commits=$("${script_path}/git_log" "${git_branch}" -- "${project_path}")
 	else
-		commits=$(${script_path}/git_log ${git_branch} -- ${kicad_pcb} ${sch_files})
+		commits=$("${script_path}/git_log" "${git_branch}" -- "${kicad_pcb}" "${sch_files}")
 	fi
+
+	if [[ "$OLDER_COMMIT" == "" ]]; then
+		OLDER_COMMIT=$(echo "${commits}"| tail -1 | cut -d " " -f1)
+	fi
+
+	if [[ "$NEWER_COMMIT" == "" ]]; then
+		NEWER_COMMIT=$(echo "${commits}"| head -1 | cut -d " " -f1)
+	fi
+
+	commits=$(echo "${commits}" | sed "/^${OLDER_COMMIT}/q")
+	commits=$(echo "${commits}" | sed -n "/^${NEWER_COMMIT}/,\$p")
+
+	# echo "$commits"
+	# exit
 
 	a=$(echo "$commits" | tac_ | cut -d' '  -f1);
 	b=$a
@@ -454,16 +471,16 @@ generate_comparisons()
 				fi
 				if [[ "$DRY_RUN" == "0" ]]; then
 					eval "$cmd"
-					ret=$?
+					# ret=$?
 				fi
 
 				IFS=$'\n'
-				for layer in board_layers; do
-					if [[ ! "${output_folder}/$i/${board_name}-${layer}.svg" ]]; then
+				for layer in $board_layers; do
+					if [[ ! -f "${output_folder}/$i/${board_name}-${layer}.svg" ]]; then
 						echo "Generating fake $i images"
 						cp "${script_path}/blank.svg" "${output_folder}/$i/${board_name}-${layer}.svg"
 					fi
-					if [[ ! "${output_folder}/$j/${board_name}-${layer}.svg" ]]; then
+					if [[ ! -f "${output_folder}/$j/${board_name}-${layer}.svg" ]]; then
 						echo "Generating fake $j images"
 						cp "${script_path}/blank.svg" "${output_folder}/$j/${board_name}-${layer}.svg"
 					fi
@@ -490,7 +507,7 @@ generate_comparisons()
 					# Workaround for a known bug. Backup working branch
 					cp -f .git/HEAD .git/HEAD.bkp
 					eval "$cmd"
-					ret=$?
+					# ret=$?
 					# Restore working branch
 					mv -f .git/HEAD.bkp .git/HEAD
 				fi
@@ -623,10 +640,10 @@ export ALL_COMMITS=0
 export REMOVE_KDIFF_FOLDER=0
 export VERBOSE=0
 export DRY_RUN=0
+export NEWER_COMMIT=""
+export OLDER_COMMIT=""
 export LAUNCH_PAGE=1
 export PAGE_VIEWER=""
-export COMMIT_A=""
-export COMMIT_B=""
 
 while [[ $# -gt 0 ]]
 do
@@ -660,13 +677,14 @@ do
 	        shift
 	        ;;
 
-	    -c)
-	        echo "'-c' flag is not implemented yet"
-	        exit
-
-	        COMMIT_A="$2"
-	        COMMIT_B="$3"
+	    -n)
+	        NEWER_COMMIT="$2"
 	        shift
+	        shift
+	        ;;
+
+	    -o)
+	        OLDER_COMMIT="$2"
 	        shift
 	        shift
 	        ;;
