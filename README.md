@@ -39,6 +39,37 @@ cd [kicad_git_repo]
 kdiff board.kicad_pcb
 ```
 
+## Help
+
+How to access tool help, this may change, so prefer to use `kdiff -h` instead.
+
+```
+➜ kdiff -h                
+
+USAGE :
+
+    kdiff [OPTIONS] KICAD_PCB
+
+OPTIONS:
+
+    -a          Track all commits (slower). By default it looks only commits related with *.kicad_pcb and *.sch files
+    -o HASH     Show commits starting from this one - This HASH is the short version
+    -n HASH     Show commits until this one delimited by this one - This HASH is the short version
+    -r          Remove kidiff folder before run
+    -l          Do not launch browser at the end
+    -w VIEWER   Change default page viewer
+    -v          Verbose
+    -h          This help
+
+EXAMPLES:
+
+    # Kicad project on the root of the repo
+    kdiff board.kicad_pcb
+
+    # Nested Kicad projects
+    kdiff my_kicad_project/board.kicad_pcb -r -v
+```
+
 ## Screenshots
 
 Schematic view, assets generated using Plotkicadsch
