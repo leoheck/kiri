@@ -39,7 +39,7 @@ cd [kicad_git_repo]
 kdiff board.kicad_pcb
 ```
 
-## Help
+## Command line flags (Help)
 
 How to access tool help, this may change, so prefer to use `kdiff -h` instead.
 
