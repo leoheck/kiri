@@ -165,6 +165,8 @@ insert_commits()
 	html="$1"
 	commits="$2"
 	project="$3"
+	kicad_pcb="$4"
+	sch_files=$(echo "$5" | sed "s/^[ \t]\+//g" | sed "s/[ \t]$\+//g")
 
 	# GIT COMMITS FORMAT
 	#
@@ -186,21 +188,21 @@ insert_commits()
 		empty_icon='<span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: rgba(255, 0, 0, 0);" data-icon="bx:bx-square-rounded" data-inline="false"></span>'
 
 		# check for changes in .sch files
-		if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${project}" | cat | grep -s ".sch" &> /dev/null; then
+		if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${project}" | cat | grep -s -E "${sch_files// /|}" &> /dev/null; then
 			sch_icon='<span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: #A6E22E;" data-icon="carbon:schematics" data-inline="false"></span>'
 		else
 			sch_icon="${empty_icon}"
 		fi
 
 		# check for changes in .kicad_pcb files
-		if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${project}" | cat | grep -s ".kicad_pcb" &> /dev/null; then
+		if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${project}" | cat | grep -s "${kicad_pcb}" &> /dev/null; then
 			layout_icon='<span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: #F92672;" data-icon="codicon:circuit-board" data-inline="false"></span>'
 		else
 			layout_icon="${empty_icon}"
 		fi
 
 		# Check for changes in textual files only
-		if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${project}" | cat | grep -s -vE ".sch|.kicad_pcb" &> /dev/null; then
+		if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${project}" | cat | grep -s -vE "${sch_files// /|}${kicad_pcb}" &> /dev/null; then
 			text_icon='<span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: #888888;" data-icon="bi:file-earmark-text" data-inline="false"></span>'
 		else
 			text_icon="${empty_icon}"
@@ -464,7 +466,7 @@ generate_comparisons()
 
 				# ====
 
-				cmd="kidiff $kicad_pcb --webserver-disable -a $i -b $j > /dev/null"
+				cmd="kidiff ${kicad_pcb} --webserver-disable -a $i -b $j > /dev/null"
 				if [[ "$VERBOSE" == "1" ]]; then
 					echo
 					echo "$cmd"
@@ -477,15 +479,12 @@ generate_comparisons()
 				IFS=$'\n'
 				for layer in $board_layers; do
 					if [[ ! -f "${output_folder}/$i/${board_name}-${layer}.svg" ]]; then
-						echo "Generating fake $i images"
 						cp "${script_path}/blank.svg" "${output_folder}/$i/${board_name}-${layer}.svg"
 					fi
 					if [[ ! -f "${output_folder}/$j/${board_name}-${layer}.svg" ]]; then
-						echo "Generating fake $j images"
 						cp "${script_path}/blank.svg" "${output_folder}/$j/${board_name}-${layer}.svg"
 					fi
 				done
-
 
 				if [ -f "${output_folder}/diff.txt" ]; then
 					mv -f "${output_folder}/diff.txt" "${output_folder}/diff/$i-$j.txt"
@@ -525,7 +524,6 @@ generate_comparisons()
 
 				IFS=$'\n'
 				for sch_page_svg in *.svg; do
-
 					# Background transparent
 					sed_ -i 's/fill="#222222"/fill="#22222200"/g' "$sch_page_svg" &> /dev/null
 					sed_ -i 's/fill="#FFFFFF"/fill="#FFFFFF00"/g' "$sch_page_svg" &> /dev/null
@@ -573,7 +571,7 @@ generate_comparisons()
 	cp -f "${script_path}/blank.svg" "${output_folder}/web/"
 
 	# Insert commits list
-	insert_commits "${output_folder}/web/main.html" "$commits" "$project_path"
+	insert_commits "${output_folder}/web/main.html" "$commits" "$project_path" "${kicad_pcb}" "${sch_files}"
 
 	# Insert pages list
 	pages=$(get_pages "${board_name}" "${project_path}/${board_name}.sch")
