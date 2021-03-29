@@ -1,0 +1,261 @@
+body {
+    background-color: #2c3031;
+    margin: 0 auto;
+    max-width: 45cm;
+    border: 1pt solid #586e75;
+    padding: 0.5em;
+}
+
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+    border-color: #e2e3e3;
+    width: 100%;
+    height: 2px;
+    border: 2px
+}
+
+html {
+    background-color: #222222;
+    color: #e2e3e3;
+    margin: 1em;
+}
+
+.tabbed {
+    float: left;
+    width: 100%;
+    padding: 0 6px;
+}
+
+.tabbed>input {
+    display: none;
+}
+
+.tabbed>section>h1 {
+    font: 14px arial, sans-serif;
+    float: left;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0.5em 0.1em 0;
+    overflow: hidden;
+    font-size: 1em;
+    font-weight: normal;
+}
+
+.tabbed>input:first-child+section>h1 {
+    padding-left: 1em;
+}
+
+.tabbed>section>h1>label {
+    font: 14px arial, sans-serif;
+    display: block;
+    padding: 0.25em 0.75em;
+    border: 1px solid #ddd;
+    border-bottom: none;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    box-shadow: 0 0 0.5em rgba(0, 0, 0, 0.0625);
+    background: rgb(50, 50, 50);
+    cursor: pointer;
+}
+
+.tabbed>section>div {
+    position: relative;
+    z-index: 1;
+    float: right;
+    box-sizing: border-box;
+    width: 100%;
+    margin: 1.95em 0 0 -100%;
+    padding: 0.25em 0.75em;
+    border: 1px solid #ddd;
+
+    box-shadow: 0 0 1em rgb(245, 245, 245);
+    background: rgba(70, 67, 67, 0.185);
+}
+
+.tabbed>input:checked+section>h1 {
+    position: relative;
+    z-index: 2;
+    border-bottom: none;
+}
+
+.tabbed>input:not(:checked)+section>div {
+    display: none;
+}
+
+a:active,
+a:hover {
+    outline: 0;
+}
+
+.gallery {
+    border: 1px solid #ccc;
+    background-color: #222;
+    padding: 5px;
+    align: middle;
+    vertical-align: middle;
+}
+
+.gallery:hover {
+    border: 1px solid #777;
+}
+
+.gallery img {
+    width: 100%;
+    height: auto;
+}
+
+.desc,
+.title {
+    padding: 10px;
+    text-align: center;
+    font: 12px arial, sans-serif;
+}
+
+.title,
+.subtitle,
+.details {
+    padding-left: 10px;
+    text-align: left;
+    font: 20px arial, sans-serif;
+    color: #dddddd;
+}
+
+.subtitle {
+    font: 14px arial, sans-serif;
+}
+
+.details,
+.versions {
+    padding: 5px;
+    font: 12px arial, sans-serif;
+    padding-bottom: 5px;
+}
+
+
+.differences {
+    font: 12px courier, monospace;
+    padding: 5px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+.responsive {
+    padding: 0 6px;
+    float: left;
+    width: 19.99999%;
+    margin: 6px 0;
+}
+
+@media only screen and (max-width:700px) {
+    .responsive {
+        width: 49.98%;
+        margin: 6px 0;
+    }
+}
+
+@media only screen and (max-width:500px) {
+    .responsive {
+        width: 100%;
+        margin: 6px 0;
+    }
+}
+
+.responsivefull {
+    padding: 0 6px;
+    width: 100%;
+    margin: 3px 0;
+}
+
+.clearfix:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.box {
+    float: left;
+    width: 20px;
+    height: 20px;
+    margin: 5px;
+    border: 1px solid rgba(0, 0, 0, .2);
+}
+
+.red {
+    background: #832320;
+}
+
+.green {
+    background: #44808aa8;
+}
+
+
+.added {
+    color: #5eb6c4;
+    text-align: left;
+}
+
+.removed {
+    color: #ba312d;
+    text-align: right;
+}
+
+.tbr td {
+    color:#ba312d;
+    padding: 10px;
+    font: 12px arial,sans-serif;
+    padding-bottom: 5px;
+}
+
+.tbl td {
+    color: #5eb6c4;
+    padding: 10px;
+    font: 12px arial, sans-serif;
+    padding-bottom: 5px;
+}
+
+.tbr th {
+    text-align: left;
+    background: #832320;
+    padding: 10px;
+    font: 12px arial, sans-serif;
+    font-weight: bold;
+    padding-bottom: 5px;
+}
+
+.tbl th {
+    text-align: left;
+    background: #44808aa8;
+    padding: 10px;
+    font: 12px arial, sans-serif;
+    font-weight: bold;
+    padding-bottom: 5px;
+}
+
+.F_Cu      { filter: invert(28%) sepia(50%) saturate(2065%) hue-rotate(334deg) brightness(73%)  contrast(97%);  }
+.In1_Cu    { filter: invert(69%) sepia(39%) saturate(1246%) hue-rotate(17deg)  brightness(97%)  contrast(104%); }
+.In2_Cu    { filter: invert(14%) sepia(79%) saturate(5231%) hue-rotate(293deg) brightness(91%)  contrast(119%); }
+.In3_Cu    { filter: invert(14%) sepia(79%) saturate(5231%) hue-rotate(293deg) brightness(91%)  contrast(119%); }
+.In4_Cu    { filter: invert(14%) sepia(79%) saturate(5231%) hue-rotate(293deg) brightness(91%)  contrast(119%); }
+.B_Cu      { filter: invert(44%) sepia(14%) saturate(2359%) hue-rotate(70deg)  brightness(103%) contrast(82%);  }
+.F_Mask    { filter: invert(27%) sepia(51%) saturate(1920%) hue-rotate(269deg) brightness(89%)  contrast(96%);  }
+.B_Mask    { filter: invert(22%) sepia(56%) saturate(2652%) hue-rotate(277deg) brightness(94%)  contrast(87%);  }
+.F_Paste   { filter: invert(57%) sepia(60%) saturate(6%)    hue-rotate(314deg) brightness(92%)  contrast(99%);  }
+.B_Paste   { filter: invert(91%) sepia(47%) saturate(4033%) hue-rotate(139deg) brightness(82%)  contrast(91%);  }
+.F_SilkS   { filter: invert(46%) sepia(44%) saturate(587%)  hue-rotate(132deg) brightness(101%) contrast(85%);  }
+.B_SilkS   { filter: invert(14%) sepia(27%) saturate(2741%) hue-rotate(264deg) brightness(95%)  contrast(102%); }
+.Edge_Cuts { filter: invert(79%) sepia(79%) saturate(401%)  hue-rotate(6deg)   brightness(88%)  contrast(88%);  }
+.Margin    { filter: invert(74%) sepia(71%) saturate(5700%) hue-rotate(268deg) brightness(89%)  contrast(84%);  }
+.Dwgs_User { filter: invert(40%) sepia(68%) saturate(7431%) hue-rotate(203deg) brightness(89%)  contrast(98%);  }
+.Cmts_User { filter: invert(73%) sepia(10%) saturate(1901%) hue-rotate(171deg) brightness(95%)  contrast(102%); }
+.Eco1_User { filter: invert(25%) sepia(98%) saturate(2882%) hue-rotate(109deg) brightness(90%)  contrast(104%); }
+.Eco2_User { filter: invert(85%) sepia(21%) saturate(5099%) hue-rotate(12deg)  brightness(91%)  contrast(102%); }
+.F_Fab     { filter: invert(71%) sepia(21%) saturate(4662%) hue-rotate(21deg)  brightness(103%) contrast(100%); }
+.B_Fab     { filter: invert(60%) sepia(0%)  saturate(0%)    hue-rotate(253deg) brightness(87%)  contrast(90%);  }
+.F_Adhes   { filter: invert(38%) sepia(49%) saturate(1009%) hue-rotate(254deg) brightness(88%)  contrast(86%);  }
+.B_Adhes   { filter: invert(24%) sepia(48%) saturate(2586%) hue-rotate(218deg) brightness(88%)  contrast(92%);  }
+.F_CrtYd   { filter: invert(73%) sepia(1%)  saturate(0%)    hue-rotate(116deg) brightness(92%)  contrast(91%);  }
+.B_CrtYd   { filter: invert(79%) sepia(92%) saturate(322%)  hue-rotate(3deg)   brightness(89%)  contrast(92%);  }
+

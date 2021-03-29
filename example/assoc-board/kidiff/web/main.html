@@ -1,0 +1,477 @@
+<!DOCTYPE HTML>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+		<script integrity="" src="https://code.iconify.design/1/1.0.7/iconify.min.js"></script>
+		<script integrity="" src="https://code.jquery.com/jquery-3.5.0.js"></script>
+		<script integrity="" src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.0/dist/svg-pan-zoom.min.js"></script>
+		<link integrity="" rel="stylesheet" href="kdiff.css">
+		<script integrity="" src="kdiff.js"></script>
+		<title>ASSoC Eval Board</title>
+	</head>
+	<body>
+		<div class="container fill no-gutters" style="background-color: #333;">
+			<div class="row fill no-gutters">
+				<div class="col col-3 no-gutters" style="overflow: hidden">
+					<div class="list-group 3 no-gutters" style="padding: 0px 0px 15px 0px; margin-left:10px; height: 100vh;">
+						<span style="margin-top: 1em"></span>
+						<h3 class="text-light">Kicad Revision Inspector</h3>
+						<h4 class="text-info text-bold">ASSoC Eval Board</h4>
+						<p class="text-light">Rev. 0.1 - 2021-01-22</p>
+						<p class="text-light" >
+							<span style="margin-right:0.5em" class="iconify" data-icon="fa-solid:code-branch" data-inline="false"></span>
+							Commits
+							<small class="text-sm text-muted">
+							: Walk through using
+							<kbd><span class="iconify" data-icon="typcn-arrow-up" data-inline="false"></span></i></kbd>/
+							<kbd><span class="iconify" data-icon="typcn-arrow-down" data-inline="false"></span></i></kbd>
+							or <kbd>[</kbd>/<kbd>]</kbd>
+							</small>
+						</p>
+						<div class="form-check scrollbox" style="padding: 0px 0px 8px 0px ; margin-left:0px; overflow-y: scroll">
+							<form id="commits_form" class="overflow-auto scrollbox-content">
+								    <input class="chkGroup" type="checkbox" id="8ca8cf8" name="commit" value="8ca8cf8" checked='checked' onchange="update_commits()"/>
+    <label class="text-sm-left list-group-item" for="8ca8cf8">
+      <table style="width:100%">
+        <tr>
+          <td rowspan=2 style="vertical-align: top; width: 1.8em;">
+              <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" width="15" height="15">
+                  <path d="M7.5 10.5a3 3 0 010-6m0 6a3 3 0 000-6m0 6V15m0-10.5V0" stroke="currentColor"></path>
+              </svg>
+            </td>
+          <td><em class="text-info" style="  line-height: 0.7;">Update</em></td>
+        </tr>
+        <tr>
+          <td><span class="text-success text-uppercase font-weight-normal">8ca8cf8</span> <span class="text-muted"> | 2021-03-25 | Leandro Heck  | </span> <span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: #A6E22E;" data-icon="carbon:schematics" data-inline="false"></span> <span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: rgba(255, 0, 0, 0);" data-icon="bx:bx-square-rounded" data-inline="false"></span> <span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: #888888;" data-icon="bi:file-earmark-text" data-inline="false"></span></td>
+        </tr>
+      </table>
+    </label>    <input class="chkGroup" type="checkbox" id="cfbb0bd" name="commit" value="cfbb0bd" checked='checked' onchange="update_commits()"/>
+    <label class="text-sm-left list-group-item" for="cfbb0bd">
+      <table style="width:100%">
+        <tr>
+          <td rowspan=2 style="vertical-align: top; width: 1.8em;">
+              <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" width="15" height="15">
+                  <path d="M7.5 10.5a3 3 0 010-6m0 6a3 3 0 000-6m0 6V15m0-10.5V0" stroke="currentColor"></path>
+              </svg>
+            </td>
+          <td><em class="text-info" style="  line-height: 0.7;">add new page</em></td>
+        </tr>
+        <tr>
+          <td><span class="text-success text-uppercase font-weight-normal">cfbb0bd</span> <span class="text-muted"> | 2021-03-24 | Leandro Heck  | </span> <span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: #A6E22E;" data-icon="carbon:schematics" data-inline="false"></span> <span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: rgba(255, 0, 0, 0);" data-icon="bx:bx-square-rounded" data-inline="false"></span> <span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: #888888;" data-icon="bi:file-earmark-text" data-inline="false"></span></td>
+        </tr>
+      </table>
+    </label>    <input class="chkGroup" type="checkbox" id="06b1fc3" name="commit" value="06b1fc3"  onchange="update_commits()"/>
+    <label class="text-sm-left list-group-item" for="06b1fc3">
+      <table style="width:100%">
+        <tr>
+          <td rowspan=2 style="vertical-align: top; width: 1.8em;">
+              <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" width="15" height="15">
+                  <path d="M7.5 10.5a3 3 0 010-6m0 6a3 3 0 000-6m0 6V15m0-10.5V0" stroke="currentColor"></path>
+              </svg>
+            </td>
+          <td><em class="text-info" style="  line-height: 0.7;">Remove 3Ds, fix 3V3 and 1V8 switched labels</em></td>
+        </tr>
+        <tr>
+          <td><span class="text-success text-uppercase font-weight-normal">06b1fc3</span> <span class="text-muted"> | 2021-02-09 | Leandro Heck  | </span> <span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: rgba(255, 0, 0, 0);" data-icon="bx:bx-square-rounded" data-inline="false"></span> <span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: #F92672;" data-icon="codicon:circuit-board" data-inline="false"></span> <span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: rgba(255, 0, 0, 0);" data-icon="bx:bx-square-rounded" data-inline="false"></span></td>
+        </tr>
+      </table>
+    </label>    <input class="chkGroup" type="checkbox" id="d62849d" name="commit" value="d62849d"  onchange="update_commits()"/>
+    <label class="text-sm-left list-group-item" for="d62849d">
+      <table style="width:100%">
+        <tr>
+          <td rowspan=2 style="vertical-align: top; width: 1.8em;">
+              <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" width="15" height="15">
+                  <path d="M7.5 10.5a3 3 0 010-6m0 6a3 3 0 000-6m0 6V15m0-10.5V0" stroke="currentColor"></path>
+              </svg>
+            </td>
+          <td><em class="text-info" style="  line-height: 0.7;">Fix crystal's capacitor value, voltage regulator value. Improve overall placement.</em></td>
+        </tr>
+        <tr>
+          <td><span class="text-success text-uppercase font-weight-normal">d62849d</span> <span class="text-muted"> | 2021-02-09 | Leandro Heck  | </span> <span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: #A6E22E;" data-icon="carbon:schematics" data-inline="false"></span> <span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: rgba(255, 0, 0, 0);" data-icon="bx:bx-square-rounded" data-inline="false"></span> <span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: rgba(255, 0, 0, 0);" data-icon="bx:bx-square-rounded" data-inline="false"></span></td>
+        </tr>
+      </table>
+    </label>    <input class="chkGroup" type="checkbox" id="6526efe" name="commit" value="6526efe"  onchange="update_commits()"/>
+    <label class="text-sm-left list-group-item" for="6526efe">
+      <table style="width:100%">
+        <tr>
+          <td rowspan=2 style="vertical-align: top; width: 1.8em;">
+              <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" width="15" height="15">
+                  <path d="M7.5 10.5a3 3 0 010-6m0 6a3 3 0 000-6m0 6V15m0-10.5V0" stroke="currentColor"></path>
+              </svg>
+            </td>
+          <td><em class="text-info" style="  line-height: 0.7;">Align filled zones on 0.5 mm grid</em></td>
+        </tr>
+        <tr>
+          <td><span class="text-success text-uppercase font-weight-normal">6526efe</span> <span class="text-muted"> | 2021-01-23 | Leandro Heck  | </span> <span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: rgba(255, 0, 0, 0);" data-icon="bx:bx-square-rounded" data-inline="false"></span> <span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: #F92672;" data-icon="codicon:circuit-board" data-inline="false"></span> <span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: #888888;" data-icon="bi:file-earmark-text" data-inline="false"></span></td>
+        </tr>
+      </table>
+    </label>    <input class="chkGroup" type="checkbox" id="8438a57" name="commit" value="8438a57"  onchange="update_commits()"/>
+    <label class="text-sm-left list-group-item" for="8438a57">
+      <table style="width:100%">
+        <tr>
+          <td rowspan=2 style="vertical-align: top; width: 1.8em;">
+              <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" width="15" height="15">
+                  <path d="M7.5 10.5a3 3 0 010-6m0 6a3 3 0 000-6m0 6V15m0-10.5V0" stroke="currentColor"></path>
+              </svg>
+            </td>
+          <td><em class="text-info" style="  line-height: 0.7;">Update copper areas</em></td>
+        </tr>
+        <tr>
+          <td><span class="text-success text-uppercase font-weight-normal">8438a57</span> <span class="text-muted"> | 2021-01-23 | Leandro Heck  | </span> <span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: rgba(255, 0, 0, 0);" data-icon="bx:bx-square-rounded" data-inline="false"></span> <span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: #F92672;" data-icon="codicon:circuit-board" data-inline="false"></span> <span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: rgba(255, 0, 0, 0);" data-icon="bx:bx-square-rounded" data-inline="false"></span></td>
+        </tr>
+      </table>
+    </label>    <input class="chkGroup" type="checkbox" id="b281985" name="commit" value="b281985"  onchange="update_commits()"/>
+    <label class="text-sm-left list-group-item" for="b281985">
+      <table style="width:100%">
+        <tr>
+          <td rowspan=2 style="vertical-align: top; width: 1.8em;">
+              <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" width="15" height="15">
+                  <path d="M7.5 10.5a3 3 0 010-6m0 6a3 3 0 000-6m0 6V15m0-10.5V0" stroke="currentColor"></path>
+              </svg>
+            </td>
+          <td><em class="text-info" style="  line-height: 0.7;">Final touches with the labels</em></td>
+        </tr>
+        <tr>
+          <td><span class="text-success text-uppercase font-weight-normal">b281985</span> <span class="text-muted"> | 2021-01-22 | Leandro Heck  | </span> <span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: rgba(255, 0, 0, 0);" data-icon="bx:bx-square-rounded" data-inline="false"></span> <span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: #F92672;" data-icon="codicon:circuit-board" data-inline="false"></span> <span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: rgba(255, 0, 0, 0);" data-icon="bx:bx-square-rounded" data-inline="false"></span></td>
+        </tr>
+      </table>
+    </label>    <input class="chkGroup" type="checkbox" id="c704b76" name="commit" value="c704b76"  onchange="update_commits()"/>
+    <label class="text-sm-left list-group-item" for="c704b76">
+      <table style="width:100%">
+        <tr>
+          <td rowspan=2 style="vertical-align: top; width: 1.8em;">
+              <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" width="15" height="15">
+                  <path d="M7.5 10.5a3 3 0 010-6m0 6a3 3 0 000-6m0 6V15m0-10.5V0" stroke="currentColor"></path>
+              </svg>
+            </td>
+          <td><em class="text-info" style="  line-height: 0.7;">Update layout file</em></td>
+        </tr>
+        <tr>
+          <td><span class="text-success text-uppercase font-weight-normal">c704b76</span> <span class="text-muted"> | 2021-01-22 | Leandro Heck  | </span> <span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: rgba(255, 0, 0, 0);" data-icon="bx:bx-square-rounded" data-inline="false"></span> <span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: #F92672;" data-icon="codicon:circuit-board" data-inline="false"></span> <span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: rgba(255, 0, 0, 0);" data-icon="bx:bx-square-rounded" data-inline="false"></span></td>
+        </tr>
+      </table>
+    </label>    <input class="chkGroup" type="checkbox" id="0f299ec" name="commit" value="0f299ec"  onchange="update_commits()"/>
+    <label class="text-sm-left list-group-item" for="0f299ec">
+      <table style="width:100%">
+        <tr>
+          <td rowspan=2 style="vertical-align: top; width: 1.8em;">
+              <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" width="15" height="15">
+                  <path d="M7.5 10.5a3 3 0 010-6m0 6a3 3 0 000-6m0 6V15m0-10.5V0" stroke="currentColor"></path>
+              </svg>
+            </td>
+          <td><em class="text-info" style="  line-height: 0.7;">Update</em></td>
+        </tr>
+        <tr>
+          <td><span class="text-success text-uppercase font-weight-normal">0f299ec</span> <span class="text-muted"> | 2021-01-22 | Leandro Heck  | </span> <span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: rgba(255, 0, 0, 0);" data-icon="bx:bx-square-rounded" data-inline="false"></span> <span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: #F92672;" data-icon="codicon:circuit-board" data-inline="false"></span> <span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: #888888;" data-icon="bi:file-earmark-text" data-inline="false"></span></td>
+        </tr>
+      </table>
+    </label>    <input class="chkGroup" type="checkbox" id="fcd81ef" name="commit" value="fcd81ef"  onchange="update_commits()"/>
+    <label class="text-sm-left list-group-item" for="fcd81ef">
+      <table style="width:100%">
+        <tr>
+          <td rowspan=2 style="vertical-align: top; width: 1.8em;">
+              <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" width="15" height="15">
+                  <path d="M7.5 10.5a3 3 0 010-6m0 6a3 3 0 000-6m0 6V15m0-10.5V0" stroke="currentColor"></path>
+              </svg>
+            </td>
+          <td><em class="text-info" style="  line-height: 0.7;">Initial version</em></td>
+        </tr>
+        <tr>
+          <td><span class="text-success text-uppercase font-weight-normal">fcd81ef</span> <span class="text-muted"> | 2021-01-22 | Leandro Heck  | </span> <span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: #A6E22E;" data-icon="carbon:schematics" data-inline="false"></span> <span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: #F92672;" data-icon="codicon:circuit-board" data-inline="false"></span> <span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: #888888;" data-icon="bi:file-earmark-text" data-inline="false"></span></td>
+        </tr>
+      </table>
+    </label>
+							</form>
+						</div>
+					</div>
+				</div>
+				<div class="col col-6 no-gutters" style="background-color: #333;">
+					<div class="row no-gutters" style="width : 100%; margin: 0px;">
+						<div class="btn-group btn-group-toggle btn-group-sm no-gutters" data-toggle="buttons" style="padding: 10px;">
+							<div id="view_mode" class="btn-toolbar" role="toolbar" aria-label="View Mode">
+								<div class="btn-group me-2" role="group" aria-label="First group">
+									<label id="show_sch_lbl" title="Schematic" class="btn btn-secondary active">
+										<input id="show_sch" type="radio" name="view_mode" value="show_sch" data="show_sch" checked autocomplete="off">
+										<span class="iconify" style="width: 20px; height: 20px;" data-icon="carbon:schematics" data-inline="false" onclick="show_sch()"></span>
+									</label>
+									<label id="show_pcb_lbl" title="Layout" class="btn btn-secondary">
+										<input id="show_pcb" type="radio" name="view_mode" value="show_pcb" data="show_pcb" autocomplete="off">
+										<span class="iconify" style="width: 20px; height: 20px;" data-icon="codicon:circuit-board" data-inline="false" onclick="show_pcb()"></span>
+									</label>
+								</div>
+								<span style="width: 0.5em"></span>
+								<p class="text-light" style="padding-top: 5px">
+									<small class="text-sm">
+									Toggle view mode with <kbd>s</kbd>
+									</small>
+								</p>
+								<span style="width: 2em"></span>
+								<div id="view_type" class="btn-toolbar btn-group me-2" role="toolbar" aria-label="View Type">
+									<label class="btn btn-secondary disabled">
+										<input type="radio" title="Onion Mode" name="view_type" id="Onion" autocomplete="off">
+										Onion
+									</label>
+									<label class="btn btn-secondary disabled">
+										<input type="radio" title="Swipe Mode" name="view_type" id="Swipe" autocomplete="off">
+										Swipe
+									</label>
+									<label class="btn btn-secondary disabled">
+										<input type="radio" title="2-Up Mode" name="view_type" id="2-Up" autocomplete="off">
+										2-Up
+									</label>
+								</div>
+								<span style="width: 0.5em"></span>
+								<p class="text-light" style="padding-top: 5px">
+									<small class="text-sm">
+									View type is not working yet.
+									</small>
+								</p>
+								<span style="width: 2em"></span>
+								<div id="svg_controls" class="controls btn-toolbar btn-group me-2" role="toolbar" aria-label="Zoom Level">
+									<label class="">
+										<button id="zoom-in" title="Zoom In" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary btn-sm" autocomplete="off">
+										<span class="iconify" style="width: 20px; height: 20px;" data-icon="akar-icons:zoom-in" data-inline="false"></span>
+									</label>
+									<span style="width: 1em;"></span>
+									<label class="" >
+										<button id="zoom-out" title="Zoom Out" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary btn-sm" autocomplete="off" style="margin: 0 0.2em 0 0.2em;">
+										<span class="iconify" style="width: 20px; height: 20px;" data-icon="akar-icons:zoom-out" data-inline="false"></span>
+									</label>
+									<span style="width: 1em;"></span>
+									<label class="" >
+										<button id="reset" title="Reset View" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary btn-sm" autocomplete="off">
+										<span class="iconify" style="width: 20px; height: 20px;" data-icon="bytesize:zoom-reset" data-inline="false"></span>
+									</label>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="container no-gutters" style="flex: 1;">
+						<div class="row no-gutters" style="flex: 1;" >
+							<div class="col col-12 no-gutters" style="flex: 1;">
+								<div id="legend" class="no-gutters">
+									<form class="rounded form-inline" style="background-color: #222; padding: 10px 5px 10px 5px">
+										<span id=commit1_legend style="margin-left:0.5em; margin-right:0.5em; color: #00FFFF" style="width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
+										<small class="text-sm text-muted"> New - <span class="text-monospace" id=commit1_legend_hash>8ca8cf8</span></small>
+										<span style="width: 2em;"></span>
+										<span id="commit2_legend" style="margin-left:0.5em; margin-right:0.5em; color: #880808" style="width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
+										<small class="text-sm text-muted"> Old - <span class="text-monospace" id=commit2_legend_hash>cfbb0bd</span></small>
+										<span style="width: 2em;"></span>
+										<span id="commit2_legend" style="margin-left:0.5em; margin-right:0.5em; color: #807F7F" style="width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
+										<small class="text-sm text-muted"> Unchanged </small>
+									</form>
+								</div>
+								<div id="diff-sch" style="width: 100%; height: 75vh; display: inline;">
+									<svg id="svg-id-sch" xmlns="http://www.w3.org/2000/svg"
+										style="display: inline; width: inherit; min-width: inherit; max-width: inherit; height: inherit; min-height: inherit; max-height: inherit;" version="1.1">
+										<g>
+											<svg id="img-1-sch">
+												<defs>
+												<filter id="f1_sch">
+												<feColorMatrix id="c1-sch" type="matrix" values="
+												1   0   0   0   0
+												0   1   0   1   0
+												0   0   1   1   0
+												0   0   0   1   0 " />
+												</filter>
+												</defs>
+												<image id="diff-xlink-1-sch" x="0" y="0" height="100%" width="100%" filter="url(#f1_sch)" href="../8ca8cf8/sch-board.svg"/>
+											</svg>
+											<svg id="img-2-sch-sch">
+												<defs>
+												<filter id="f2_sch">
+												<feColorMatrix id="c2-sch" type="matrix" values="
+												1   0   0   1   0
+												0   1   0   0   0
+												0   0   1   0   0
+												0   0   0  .5   0" />
+												</filter>
+												</defs>
+												<image id="diff-xlink-2-sch" x="0" y="0" height="100%" width="100%" filter="url(#f2_sch)" href="../cfbb0bd/sch-board.svg"/>
+											</svg>
+										</g>
+									</svg>
+								</div>
+								<div id="diff-pcb" style="width: 100%; height: 75vh; display: none;">
+									<svg id="svg-id-pcb" xmlns="http://www.w3.org/2000/svg"
+										style="display: inline; width: inherit; min-width: inherit; max-width: inherit; height: inherit; min-height: inherit; max-height: inherit;" version="1.1">
+										<g>
+											<svg id="img-1-pcb">
+												<defs>
+												<filter id="f1_pcb">
+												<feColorMatrix id="c3-pcb" type="matrix" values="
+												1   0   0   0   0
+												0   1   0   1   0
+												0   0   1   1   0
+												0   0   0   1   0 " />
+												</filter>
+												</defs>
+												<image id="diff-xlink-1-pcb" x="0" y="0" height="100%" width="100%" filter="url(#f1_pcb)" href="../8ca8cf8/board-F_Cu.svg"/>
+											</svg>
+											<svg id="img-2-pcb-pcb">
+												<defs>
+												<filter id="f2_pcb">
+												<feColorMatrix id="c4-pcb" type="matrix" values="
+												1   0   0   1   0
+												0   1   0   0   0
+												0   0   1   0   0
+												0   0   0  .5   0" />
+												</filter>
+												</defs>
+												<image id="diff-xlink-2-pcb" x="0" y="0" height="100%" width="100%" filter="url(#f2_pcb)" href="../cfbb0bd/board-F_Cu.svg"/>
+											</svg>
+										</g>
+									</svg>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="col col no-gutters" >
+					<div class="list-group no-gutters" id="pages_list" style="display: inline;">
+						<div class="form-check no-gutters" style="width: 220px; padding-top: 1em">
+							<p class="text-light">
+								<span style="margin-right:0.5em" style="width: 20px; height: 20px;" class="iconify" data-icon="gridicons:next-page" data-inline="false"></span>
+								Pages <small class="text-sm text-muted"></br>
+								Cycle using
+								<kbd><span class="iconify" data-icon="typcn-arrow-left" data-inline="false"></span></kbd>/
+								<kbd><span class="iconify" data-icon="typcn-arrow-right" data-inline="false"></span></kbd>
+								</small>
+							</p>
+							<div class="row">
+								<div class="col col">
+									<form>
+										<input type="radio" id="board" value="board" name="pages" checked='checked' onchange="change_page()"/>
+<label class="rounded text-sm-left list-group-item radio-box" for="board">
+<span style="margin-left:0.5em; margin-right:0.1em;" class="iconify" data-icon="gridicons:pages" data-inline="false"></span>
+Root
+</label><input type="radio" id="new_page" value="new_page" name="pages"  onchange="change_page()"/>
+<label class="rounded text-sm-left list-group-item radio-box" for="new_page">
+<span style="margin-left:0.5em; margin-right:0.1em;" class="iconify" data-icon="gridicons:pages" data-inline="false"></span>
+new_page
+</label>
+									</form>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="list-group no-gutters" id="layers_list" style="display: none;">
+						<div class="form-check no-gutters" style="width: 180px; padding-top: 1em">
+							<p class="text-light">
+								<span style="margin-right:0.5em" style="width: 20px; height: 20px;" class="iconify" data-icon="teenyicons:layers-solid" data-inline="false"></span>
+								Layers <small class="text-sm text-muted"></br>
+								Cycle using
+								<kbd><span class="iconify" data-icon="typcn-arrow-left" data-inline="false"></span></kbd>/
+								<kbd><span class="iconify" data-icon="typcn-arrow-right" data-inline="false"></span></kbd>
+								</small>
+							</p>
+							<div class="row">
+								<div class="col col">
+									<form>
+										<input type="radio" id="F_Cu" name="layers" value="F_Cu" checked='checked'  onchange="change_layer()"/>
+<label class="rounded text-sm-left list-group-item radio-box" for="F_Cu">
+<span style="margin-left:0.5em; margin-right:0.1em; color: #952927" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+F_Cu
+</label><input type="radio" id="Gnd" name="layers" value="Gnd"   onchange="change_layer()"/>
+<label class="rounded text-sm-left list-group-item radio-box" for="Gnd">
+<span style="margin-left:0.5em; margin-right:0.1em; color: " class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+Gnd
+</label><input type="radio" id="Pwr" name="layers" value="Pwr"   onchange="change_layer()"/>
+<label class="rounded text-sm-left list-group-item radio-box" for="Pwr">
+<span style="margin-left:0.5em; margin-right:0.1em; color: " class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+Pwr
+</label><input type="radio" id="B_Cu" name="layers" value="B_Cu"   onchange="change_layer()"/>
+<label class="rounded text-sm-left list-group-item radio-box" for="B_Cu">
+<span style="margin-left:0.5em; margin-right:0.1em; color: #359632" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+B_Cu
+</label><input type="radio" id="B_Adhes" name="layers" value="B_Adhes"   onchange="change_layer()"/>
+<label class="rounded text-sm-left list-group-item radio-box" for="B_Adhes">
+<span style="margin-left:0.5em; margin-right:0.1em; color: #3545A8" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+B_Adhes
+</label><input type="radio" id="F_Adhes" name="layers" value="F_Adhes"   onchange="change_layer()"/>
+<label class="rounded text-sm-left list-group-item radio-box" for="F_Adhes">
+<span style="margin-left:0.5em; margin-right:0.1em; color: #A74AA8" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+F_Adhes
+</label><input type="radio" id="B_Paste" name="layers" value="B_Paste"   onchange="change_layer()"/>
+<label class="rounded text-sm-left list-group-item radio-box" for="B_Paste">
+<span style="margin-left:0.5em; margin-right:0.1em; color: #969696" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+B_Paste
+</label><input type="radio" id="F_Paste" name="layers" value="F_Paste"   onchange="change_layer()"/>
+<label class="rounded text-sm-left list-group-item radio-box" for="F_Paste">
+<span style="margin-left:0.5em; margin-right:0.1em; color: #3DC9C9" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+F_Paste
+</label><input type="radio" id="B_SilkS" name="layers" value="B_SilkS"   onchange="change_layer()"/>
+<label class="rounded text-sm-left list-group-item radio-box" for="B_SilkS">
+<span style="margin-left:0.5em; margin-right:0.1em; color: #481649" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+B_SilkS
+</label><input type="radio" id="F_SilkS" name="layers" value="F_SilkS"   onchange="change_layer()"/>
+<label class="rounded text-sm-left list-group-item radio-box" for="F_SilkS">
+<span style="margin-left:0.5em; margin-right:0.1em; color: #339697" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+F_SilkS
+</label><input type="radio" id="B_Mask" name="layers" value="B_Mask"   onchange="change_layer()"/>
+<label class="rounded text-sm-left list-group-item radio-box" for="B_Mask">
+<span style="margin-left:0.5em; margin-right:0.1em; color: #943197" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+B_Mask
+</label><input type="radio" id="F_Mask" name="layers" value="F_Mask"   onchange="change_layer()"/>
+<label class="rounded text-sm-left list-group-item radio-box" for="F_Mask">
+<span style="margin-left:0.5em; margin-right:0.1em; color: #943197" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+F_Mask
+</label><input type="radio" id="Dwgs_User" name="layers" value="Dwgs_User"   onchange="change_layer()"/>
+<label class="rounded text-sm-left list-group-item radio-box" for="Dwgs_User">
+<span style="margin-left:0.5em; margin-right:0.1em; color: #0364D3" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+Dwgs_User
+</label><input type="radio" id="Cmts_User" name="layers" value="Cmts_User"   onchange="change_layer()"/>
+<label class="rounded text-sm-left list-group-item radio-box" for="Cmts_User">
+<span style="margin-left:0.5em; margin-right:0.1em; color: #7AC0F4" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+Cmts_User
+</label><input type="radio" id="Eco1_User" name="layers" value="Eco1_User"   onchange="change_layer()"/>
+<label class="rounded text-sm-left list-group-item radio-box" for="Eco1_User">
+<span style="margin-left:0.5em; margin-right:0.1em; color: #008500" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+Eco1_User
+</label><input type="radio" id="Eco2_User" name="layers" value="Eco2_User"   onchange="change_layer()"/>
+<label class="rounded text-sm-left list-group-item radio-box" for="Eco2_User">
+<span style="margin-left:0.5em; margin-right:0.1em; color: " class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+Eco2_User
+</label><input type="radio" id="Edge_Cuts" name="layers" value="Edge_Cuts"   onchange="change_layer()"/>
+<label class="rounded text-sm-left list-group-item radio-box" for="Edge_Cuts">
+<span style="margin-left:0.5em; margin-right:0.1em; color: #C9C83B" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+Edge_Cuts
+</label><input type="radio" id="Margin" name="layers" value="Margin"   onchange="change_layer()"/>
+<label class="rounded text-sm-left list-group-item radio-box" for="Margin">
+<span style="margin-left:0.5em; margin-right:0.1em; color: #D357D2" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+Margin
+</label><input type="radio" id="B_CrtYd" name="layers" value="B_CrtYd"   onchange="change_layer()"/>
+<label class="rounded text-sm-left list-group-item radio-box" for="B_CrtYd">
+<span style="margin-left:0.5em; margin-right:0.1em; color: #D3D04B" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+B_CrtYd
+</label><input type="radio" id="F_CrtYd" name="layers" value="F_CrtYd"   onchange="change_layer()"/>
+<label class="rounded text-sm-left list-group-item radio-box" for="F_CrtYd">
+<span style="margin-left:0.5em; margin-right:0.1em; color: #A7A7A7" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+F_CrtYd
+</label><input type="radio" id="B_Fab" name="layers" value="B_Fab"   onchange="change_layer()"/>
+<label class="rounded text-sm-left list-group-item radio-box" for="B_Fab">
+<span style="margin-left:0.5em; margin-right:0.1em; color: #858585" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+B_Fab
+</label><input type="radio" id="F_Fab" name="layers" value="F_Fab"   onchange="change_layer()"/>
+<label class="rounded text-sm-left list-group-item radio-box" for="F_Fab">
+<span style="margin-left:0.5em; margin-right:0.1em; color: #C2C200" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+F_Fab
+</label>
+									</form>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+</body>
+</html>
