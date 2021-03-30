@@ -2,4 +2,4 @@
 
 # For some reason redirect commits to a variable do not move latest commits. This solves this.
 
-git log --date=local '--pretty=format:%h | %ai | %an | %s' $@ | cat
+git log --date=local '--pretty=format:%h | %ai | %an | %s' "$@" | cat
