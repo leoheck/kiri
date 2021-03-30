@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# New files (multiple schematic pages)
+# Remove 6 unknown digits/hashs from the filename
+new1=$(echo $1 | sed "s|/tmp/from_\(.*\)\([0-9a-f]\{6\}\).svg|sch1-\1.svg|g")
+new2=$(echo $2 | sed   "s|/tmp/to_\(.*\)\([0-9a-f]\{6\}\).svg|sch2-\1.svg|g")
+
+hash1=$(echo $1 | sed "s|/tmp/from_.*\([0-9a-f]\{6\}\).svg|\1|g")
+hash2=$(echo $2 | sed   "s|/tmp/to_.*\([0-9a-f]\{6\}\).svg|\1|g")
+
+# almost original, remove /tmp string and keep the random number
+orig1=$(echo $1 | sed "s|/tmp/from_\(.*\)\([0-9a-f]\{6\}\).svg|sch1-\1-\2.svg|g")
+orig2=$(echo $2 | sed   "s|/tmp/to_\(.*\)\([0-9a-f]\{6\}\).svg|sch2-\1-\2.svg|g")
+
+echo "Schematic Page: $orig1 -> $new1 (${hash1})"
+echo "Schematic Page: $orig2 -> $new2 (${hash2})"
+
+cp -f "$1" "$new1"
+cp -f "$2" "$new2"
+
+# Keep originals
+mv -f "$1" "$orig1"
+mv -f "$2" "$orig2"
+
+echo
