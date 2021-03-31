@@ -22,10 +22,6 @@ window.onkeydown = function(e) {
     keysDown[e.key] = true;
     console.log("keysDown:", keysDown);
 
-    // =======================================
-    // Toggle Schematic/Layout View
-    // =======================================
-
     var commits = "";
     var selected_commits = [];
     var next_selected_commits = [];
@@ -39,7 +35,11 @@ window.onkeydown = function(e) {
     var i = 0;
     var new_index = 0;
 
-    if (keysDown.s) {
+    // =======================================
+    // Toggle View Mode (Schematic/Layout)
+    // =======================================
+
+    if (keysDown.s || keysDown.S) {
 
         console.log("==========================");
         var view_mode = $('#view_mode input[name="view_mode"]:checked').val();
@@ -66,6 +66,13 @@ window.onkeydown = function(e) {
         }
 
         console.log("current_view_mode:", next_view_mode);
+    }
+
+    // =======================================
+    // Toggle View Type (Onion/Swipe)
+    // =======================================
+
+    if (keysDown.d || keysDown.D) {
     }
 
     // =======================================
