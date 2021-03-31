@@ -662,9 +662,8 @@ generate_comparisons()
 	sed_ -i "s|\[INITIAL_COMMIT_1_SCH\]|../${commit1}/sch-${board_name}.svg|g" "${web_dir}/main.html"
 	sed_ -i "s|\[INITIAL_COMMIT_2_SCH\]|../${commit2}/sch-${board_name}.svg|g" "${web_dir}/main.html"
 
-	initial_layer=$(echo "$layers" | cut -d" " -f1)
-
 	# Update initial layout images
+	initial_layer=$(echo "$board_layers" | head -1)
 	sed_ -i "s|\[INITIAL_COMMIT_1_PCB\]|../${commit1}/${board_name}-${initial_layer}.svg|g" "${web_dir}/main.html"
 	sed_ -i "s|\[INITIAL_COMMIT_2_PCB\]|../${commit2}/${board_name}-${initial_layer}.svg|g" "${web_dir}/main.html"
 
