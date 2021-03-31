@@ -177,7 +177,7 @@ insert_commits()
 	commits="$2"
 	project="$3"
 	kicad_pcb="$4"
-	sch_files=$(echo "$5" | sed "s/^[ \t]\+//g" | sed "s/[ \t]$\+//g")
+	sch_files=$(echo "$5" | sed_ "s/^[ \t]\+//g" | sed_ "s/[ \t]$\+//g")
 
 	# GIT COMMITS FORMAT
 	#
@@ -436,11 +436,11 @@ generate_comparisons()
 	fi
 
 	if [[ "$OLDER_COMMIT" != "" ]]; then
-		commits=$(echo "${commits}" | sed "/^${OLDER_COMMIT}/q")
+		commits=$(echo "${commits}" | sed_ "/^${OLDER_COMMIT}/q")
 	fi
 
 	if [[ "$NEWER_COMMIT" != "" ]]; then
-		commits=$(echo "${commits}" | sed -n "/^${NEWER_COMMIT}/,\$p")
+		commits=$(echo "${commits}" | sed_ -n "/^${NEWER_COMMIT}/,\$p")
 	fi
 
 	if [[ "${VERBOSE}" == "1" ]]; then
