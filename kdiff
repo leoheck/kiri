@@ -552,7 +552,7 @@ generate_comparisons()
 				background_color="222222"
 
 				cmd="plotgitsch -l ${current_path_fix}/${board_name}-cache.lib -c ${removed_color}:${added_color}:${unchanged_color}:${background_color} ${i} ${j} > /dev/null"
-				if [[ "$VERBOSE" == "1" ]]; then
+				if [[ "${VERBOSE}" == "1" ]]; then
 					echo "$cmd"
 					echo
 				fi
