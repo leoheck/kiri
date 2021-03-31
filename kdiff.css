@@ -1,12 +1,9 @@
 
 html, body {
-	height: 100%;
-	margin: 0px;
-	padding: : 0px;
-
-	/*Normalize view on firefox*/
-	font-size: 1em;
-	line-height: 1.5em;
+	height : 100%;
+	margin : 0px;
+	font-size : 1em; /* Normalize view on firefox */
+	line-height : 1.5em; /* Normalize view on firefox */
 }
 
 .fill {
@@ -17,12 +14,12 @@ html, body {
 }
 
 .no-gutters {
-	margin-right: 0;
-	margin-left: 0;
+	margin-right: 0px;
+	margin-left: 0px;
 	> .col,
 	> [class*="col-"] {
-		padding-right: 0;
-		padding-left: 0;
+		padding-right: 0px;
+		padding-left: 0px;
 	}
 }
 
@@ -142,37 +139,9 @@ html, body {
 	color: inherit;
 }
 
-
 /* ==============================
-   Layers colors
    ==============================
 */
-
-.F_Cu      { filter: invert(28%) sepia(50%) saturate(2065%) hue-rotate(334deg) brightness(73%)  contrast(97%);  }
-.In1_Cu    { filter: invert(69%) sepia(39%) saturate(1246%) hue-rotate(17deg)  brightness(97%)  contrast(104%); }
-.In2_Cu    { filter: invert(14%) sepia(79%) saturate(5231%) hue-rotate(293deg) brightness(91%)  contrast(119%); }
-.In3_Cu    { filter: invert(14%) sepia(79%) saturate(5231%) hue-rotate(293deg) brightness(91%)  contrast(119%); }
-.In4_Cu    { filter: invert(14%) sepia(79%) saturate(5231%) hue-rotate(293deg) brightness(91%)  contrast(119%); }
-.B_Cu      { filter: invert(44%) sepia(14%) saturate(2359%) hue-rotate(70deg)  brightness(103%) contrast(82%);  }
-.F_Mask    { filter: invert(27%) sepia(51%) saturate(1920%) hue-rotate(269deg) brightness(89%)  contrast(96%);  }
-.B_Mask    { filter: invert(22%) sepia(56%) saturate(2652%) hue-rotate(277deg) brightness(94%)  contrast(87%);  }
-.F_Paste   { filter: invert(57%) sepia(60%) saturate(6%)    hue-rotate(314deg) brightness(92%)  contrast(99%);  }
-.B_Paste   { filter: invert(91%) sepia(47%) saturate(4033%) hue-rotate(139deg) brightness(82%)  contrast(91%);  }
-.F_SilkS   { filter: invert(46%) sepia(44%) saturate(587%)  hue-rotate(132deg) brightness(101%) contrast(85%);  }
-.B_SilkS   { filter: invert(14%) sepia(27%) saturate(2741%) hue-rotate(264deg) brightness(95%)  contrast(102%); }
-.Edge_Cuts { filter: invert(79%) sepia(79%) saturate(401%)  hue-rotate(6deg)   brightness(88%)  contrast(88%);  }
-.Margin    { filter: invert(74%) sepia(71%) saturate(5700%) hue-rotate(268deg) brightness(89%)  contrast(84%);  }
-.Dwgs_User { filter: invert(40%) sepia(68%) saturate(7431%) hue-rotate(203deg) brightness(89%)  contrast(98%);  }
-.Cmts_User { filter: invert(73%) sepia(10%) saturate(1901%) hue-rotate(171deg) brightness(95%)  contrast(102%); }
-.Eco1_User { filter: invert(25%) sepia(98%) saturate(2882%) hue-rotate(109deg) brightness(90%)  contrast(104%); }
-.Eco2_User { filter: invert(85%) sepia(21%) saturate(5099%) hue-rotate(12deg)  brightness(91%)  contrast(102%); }
-.F_Fab     { filter: invert(71%) sepia(21%) saturate(4662%) hue-rotate(21deg)  brightness(103%) contrast(100%); }
-.B_Fab     { filter: invert(60%) sepia(0%)  saturate(0%)    hue-rotate(253deg) brightness(87%)  contrast(90%);  }
-.F_Adhes   { filter: invert(38%) sepia(49%) saturate(1009%) hue-rotate(254deg) brightness(88%)  contrast(86%);  }
-.B_Adhes   { filter: invert(24%) sepia(48%) saturate(2586%) hue-rotate(218deg) brightness(88%)  contrast(92%);  }
-.F_CrtYd   { filter: invert(73%) sepia(1%)  saturate(0%)    hue-rotate(116deg) brightness(92%)  contrast(91%);  }
-.B_CrtYd   { filter: invert(79%) sepia(92%) saturate(322%)  hue-rotate(3deg)   brightness(89%)  contrast(92%);  }
-
 
 #svg-id-sch {
 	border: 1px solid #111;
@@ -186,4 +155,105 @@ html, body {
 	border: 1px solid #111;
 	background-color: #222;
 	border-radius: 5px;
+}
+
+/* ==============================
+   Layers colors
+   ==============================
+*/
+
+.F_Cu {
+	filter : invert(28%) sepia(50%) saturate(2065%) hue-rotate(334deg) brightness(73%) contrast(97%);
+}
+
+.In1_Cu {
+	filter : invert(69%) sepia(39%) saturate(1246%) hue-rotate(17deg) brightness(97%) contrast(104%);
+}
+
+.In2_Cu {
+	filter : invert(14%) sepia(79%) saturate(5231%) hue-rotate(293deg) brightness(91%) contrast(119%);
+}
+
+.In3_Cu {
+	filter : invert(14%) sepia(79%) saturate(5231%) hue-rotate(293deg) brightness(91%) contrast(119%);
+}
+
+.In4_Cu {
+	filter : invert(14%) sepia(79%) saturate(5231%) hue-rotate(293deg) brightness(91%) contrast(119%);
+}
+
+.B_Cu {
+	filter : invert(44%) sepia(14%) saturate(2359%) hue-rotate(70deg) brightness(103%) contrast(82%);
+}
+
+.F_Mask {
+	filter : invert(27%) sepia(51%) saturate(1920%) hue-rotate(269deg) brightness(89%) contrast(96%);
+}
+
+.B_Mask {
+	filter : invert(22%) sepia(56%) saturate(2652%) hue-rotate(277deg) brightness(94%) contrast(87%);
+}
+
+.F_Paste {
+	filter : invert(57%) sepia(60%) saturate(6%) hue-rotate(314deg) brightness(92%) contrast(99%);
+}
+
+.B_Paste {
+	filter : invert(91%) sepia(47%) saturate(4033%) hue-rotate(139deg) brightness(82%) contrast(91%);
+}
+
+.F_SilkS {
+	filter : invert(46%) sepia(44%) saturate(587%) hue-rotate(132deg) brightness(101%) contrast(85%);
+}
+
+.B_SilkS {
+	filter : invert(14%) sepia(27%) saturate(2741%) hue-rotate(264deg) brightness(95%) contrast(102%);
+}
+
+.Edge_Cuts {
+	filter : invert(79%) sepia(79%) saturate(401%) hue-rotate(6deg) brightness(88%) contrast(88%);
+}
+
+.Margin {
+	filter : invert(74%) sepia(71%) saturate(5700%) hue-rotate(268deg) brightness(89%) contrast(84%);
+}
+
+.Dwgs_User {
+	filter : invert(40%) sepia(68%) saturate(7431%) hue-rotate(203deg) brightness(89%) contrast(98%);
+}
+
+.Cmts_User {
+	filter : invert(73%) sepia(10%) saturate(1901%) hue-rotate(171deg) brightness(95%) contrast(102%);
+}
+
+.Eco1_User {
+	filter : invert(25%) sepia(98%) saturate(2882%) hue-rotate(109deg) brightness(90%) contrast(104%);
+}
+
+.Eco2_User {
+	filter : invert(85%) sepia(21%) saturate(5099%) hue-rotate(12deg) brightness(91%) contrast(102%);
+}
+
+.F_Fab {
+	filter : invert(71%) sepia(21%) saturate(4662%) hue-rotate(21deg) brightness(103%) contrast(100%);
+}
+
+.B_Fab {
+	filter : invert(60%) sepia(0%) saturate(0%) hue-rotate(253deg) brightness(87%) contrast(90%);
+}
+
+.F_Adhes {
+	filter : invert(38%) sepia(49%) saturate(1009%) hue-rotate(254deg) brightness(88%) contrast(86%);
+}
+
+.B_Adhes {
+	filter : invert(24%) sepia(48%) saturate(2586%) hue-rotate(218deg) brightness(88%) contrast(92%);
+}
+
+.F_CrtYd {
+	filter : invert(73%) sepia(1%) saturate(0%) hue-rotate(116deg) brightness(92%) contrast(91%);
+}
+
+.B_CrtYd {
+	filter : invert(79%) sepia(92%) saturate(322%) hue-rotate(3deg) brightness(89%) contrast(92%);
 }
