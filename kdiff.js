@@ -369,7 +369,7 @@ window.onkeydown = function(e) {
 // =======================================
 
 function img_timestamp() {
-    return "?t=" + new Date().getTime() + "-" + Math.floor(Math.random() * Math.floor(1000));
+    return "?t=" + new Date().getTime();
 }
 
 function update_commits() {
@@ -587,6 +587,11 @@ function show_sch() {
     // Show pages list
     pages_list = document.getElementById("pages_list");
     pages_list.style.display = "inline";
+    // pages_list.style.display = "none";
+
+    // New pages list
+    pages_dropdown = document.getElementById("pages_dropdown");
+    pages_dropdown.style.display = "inline";
 
     // Hide layout image
     pcb_view = document.getElementById("diff-pcb");
@@ -595,6 +600,10 @@ function show_sch() {
     // Hide layers list
     layers_list = document.getElementById("layers_list");
     layers_list.style.display = "none";
+
+    // New layers list
+    layers_dropdown = document.getElementById("layers_dropdown");
+    layers_dropdown.style.display = "none";
 }
 
 function show_pcb() {
@@ -612,6 +621,10 @@ function show_pcb() {
     pages_list = document.getElementById("pages_list");
     pages_list.style.display = "none";
 
+    // New pages list
+    pages_dropdown = document.getElementById("pages_dropdown");
+    pages_dropdown.style.display = "none";
+
     // Show layout image
     pcb_view = document.getElementById("diff-pcb");
     pcb_view.style.display = "inline";
@@ -619,7 +632,16 @@ function show_pcb() {
     // Show layers list
     layers_list = document.getElementById("layers_list");
     layers_list.style.display = "inline";
+    //layers_list.style.display = "none";
+
+    // New layers list
+    layers_dropdown = document.getElementById("layers_dropdown");
+    layers_dropdown.style.display = "inline";
 }
+
+// =======================================
+// Toggle Onion/Slide
+// =======================================
 
 function show_onion() {
     console.log("Function:", "show_onion");
@@ -628,3 +650,6 @@ function show_onion() {
 function show_slide() {
     console.log("Function:", "show_slide");
 }
+
+// =======================================
+// =======================================
