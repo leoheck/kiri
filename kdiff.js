@@ -73,6 +73,34 @@ window.onkeydown = function(e) {
     // =======================================
 
     if (keysDown.d || keysDown.D) {
+
+        console.log("==========================");
+        var view_type = $('#view_type input[name="view_type"]:checked').val();
+        var next_view_type = "";
+
+        if (view_type == "show_onion") {
+            next_view_type = "show_slide";
+
+            show_slide();
+
+            document.getElementById("show_onion_lbl").classList.remove('active');
+            document.getElementById("show_onion").checked = false;
+
+            document.getElementById("show_slide_lbl").classList.add('active');
+            document.getElementById("show_slide").checked = true;
+        } else {
+            next_view_type = "show_onion";
+
+            show_onion();
+
+            document.getElementById("show_onion_lbl").classList.add('active');
+            document.getElementById("show_onion").checked = true;
+
+            document.getElementById("show_slide_lbl").classList.remove('active');
+            document.getElementById("show_slide").checked = false;
+        }
+
+        console.log("current_view_type:", next_view_type);
     }
 
     // =======================================
@@ -591,4 +619,12 @@ function show_pcb() {
     // Show layers list
     layers_list = document.getElementById("layers_list");
     layers_list.style.display = "inline";
+}
+
+function show_onion() {
+    console.log("Function:", "show_onion");
+}
+
+function show_slide() {
+    console.log("Function:", "show_slide");
 }

@@ -53,7 +53,6 @@
 											<span class="iconify" style="width: 20px; height: 20px;" data-icon="codicon:circuit-board" data-inline="false"></span>
 										</label>
 									</div>
-
 								</form>
 								<span style="width: 1.5em"></span>
 								<p class="text-light" style="padding-top: 5px">
@@ -64,12 +63,12 @@
 								<span style="width: 2em"></span>
 								<form class="inline">
 									<div id="view_type" class="form-group btn-group btn-group-toggle" data-toggle="buttons" role="group2" aria-label="View Type">
-										<label class="btn btn-secondary active">
-											<input type="radio" title="Onion Mode" name="view_type" id="Onion" autocomplete="off">
+										<label id="show_onion_lbl" title="Onion View" class="btn btn-secondary active" onclick="show_onion()">
+											<input id="show_onion" type="radio" value="show_onion" name="view_type" autocomplete="off">
 											<span class="iconify" style="width: 20px; height: 20px;" data-icon="carbon:overlay" data-inline="false"></span>
 										</label>
-										<label class="btn btn-secondary">
-											<input type="radio" title="Swipe Mode" name="view_type" id="Swipe" autocomplete="off">
+										<label id="show_slide_lbl" title="Slide View" class="btn btn-secondary" onclick="show_slide()">
+											<input id="show_slide" type="radio" value="show_slide" name="view_type" autocomplete="off">
 											<span class="iconify" style="width: 20px; height: 20px;" data-icon="ic:baseline-compare" data-inline="false"></span>
 										</label>
 									</div>
