@@ -196,7 +196,7 @@ insert_commits()
 		user=$(echo "$commit" | cut -d'|' -f3 | sed_ "s/^ //g" )
 		 msg=$(echo "$commit" | cut -d'|' -f4 | sed_ "s/^ //g" )
 
-		empty_icon='<span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: rgba(255, 0, 0, 0);" data-icon="bx:bx-square-rounded" data-inline="false"></span>'
+		empty_icon='<span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: rgba(255, 0, 0, 0.5);" data-icon="bx:bx-x" data-inline="false"></span>'
 
 		# check for changes in .sch files
 		if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${project}" | cat | grep -s -E "${sch_files// /|}" &> /dev/null; then
@@ -238,7 +238,7 @@ insert_commits()
 		          <td><em class="text-info" style="  line-height: 0.7;">${msg}</em></td>
 		        </tr>
 		        <tr>
-		          <td><span class="text-success text-uppercase font-weight-normal">${hash}</span> <span class="text-muted"> | ${date} | ${user} | </span> ${sch_icon} ${layout_icon} ${text_icon}</td>
+		          <td white-space:nowrap;overflow: hidden;><span class="text-success text-uppercase font-weight-normal">${hash}</span> <span class="text-muted"> | </span> ${sch_icon} ${layout_icon} ${text_icon} <span class="text-muted font-weight-normal"> | ${date} | ${user}</td>
 		        </tr>
 		      </table>
 		    </label>
