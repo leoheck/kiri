@@ -26,9 +26,10 @@
 							Commits
 							<small class="text-sm text-muted">
 							: Walk through using
-							<kbd><span class="iconify" data-icon="typcn-arrow-up" data-inline="false"></span></i></kbd>/
-							<kbd><span class="iconify" data-icon="typcn-arrow-down" data-inline="false"></span></i></kbd>
+							<kbd><span class="iconify" data-icon="typcn-arrow-up" data-inline="false"></span></kbd>
+							<kbd><span class="iconify" data-icon="typcn-arrow-down" data-inline="false"></span></kbd>
 							or <kbd>[</kbd>/<kbd>]</kbd>
+							and reset with <kbd>r</kbd>
 							</small>
 						</p>
 						<div class="form-check scrollbox" style="padding: 0px 0px 8px 0px ; margin-left:0px; overflow-y: scroll">
@@ -43,13 +44,13 @@
 						<div class="container no-gutters" style="flex: 1;">
 							<div class="row no-gutters" style="padding: 15px;">
 								<form class="inline">
-									<div id="view_mode" class="form-group row btn-group btn-group-toggle" data-toggle="buttons" role="group1" aria-label="View Mode">
+									<div id="view_mode" class="form-group row btn-group btn-group-toggle" data-toggle="buttons" role="group" aria-label="View Mode">
 										<label id="show_sch_lbl" title="Schematic" class="btn btn-secondary active" onclick="show_sch()">
-											<input id="show_sch" type="radio" name="view_mode" value="show_sch" data="show_sch" checked autocomplete="off">
+											<input id="show_sch" type="radio" name="view_mode" value="show_sch" data="show_sch" checked>
 											<span class="iconify" style="width: 20px; height: 20px;" data-icon="carbon:schematics" data-inline="false"></span>
 										</label>
 										<label id="show_pcb_lbl" title="Layout" class="btn btn-secondary" onclick="show_pcb()">
-											<input id="show_pcb" type="radio" name="view_mode" value="show_pcb" data="show_pcb" autocomplete="off">
+											<input id="show_pcb" type="radio" name="view_mode" value="show_pcb" data="show_pcb">
 											<span class="iconify" style="width: 20px; height: 20px;" data-icon="codicon:circuit-board" data-inline="false"></span>
 										</label>
 									</div>
@@ -62,13 +63,13 @@
 								</p>
 								<span style="width: 2em"></span>
 								<form class="inline">
-									<div id="view_type" class="form-group btn-group btn-group-toggle" data-toggle="buttons" role="group2" aria-label="View Type">
+									<div id="view_type" class="form-group btn-group btn-group-toggle" data-toggle="buttons" role="group" aria-label="View Type">
 										<label id="show_onion_lbl" title="Onion View" class="btn btn-secondary active" onclick="show_onion()">
-											<input id="show_onion" type="radio" value="show_onion" name="view_type" autocomplete="off">
+											<input id="show_onion" type="radio" value="show_onion" name="view_type">
 											<span class="iconify" style="width: 20px; height: 20px;" data-icon="carbon:overlay" data-inline="false"></span>
 										</label>
 										<label id="show_slide_lbl" title="Slide View" class="btn btn-secondary" onclick="show_slide()">
-											<input id="show_slide" type="radio" value="show_slide" name="view_type" autocomplete="off">
+											<input id="show_slide" type="radio" value="show_slide" name="view_type">
 											<span class="iconify" style="width: 20px; height: 20px;" data-icon="ic:baseline-compare" data-inline="false"></span>
 										</label>
 									</div>
@@ -81,16 +82,15 @@
 								</p>
 								<span style="width: 2em"></span>
 								<form class="inline">
-									<div id="svg_controls" class="form-group btn-group btn-group-toggle" role="group3" aria-label="Zoom Level">
-										<button id="zoom-in" title="Zoom In" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary" autocomplete="off" onclick="this.blur();">
+									<div id="svg_controls" class="form-group btn-group btn-group-toggle" role="group" aria-label="Zoom Level">
+										<button id="zoom-in" title="Zoom In" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary" onclick="this.blur();">
 										<span class="iconify" style="width: 20px; height: 20px;" data-icon="akar-icons:zoom-in" data-inline="false"></span>
 										</button>
-										<button id="zoom-out" title="Zoom Out" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary" autocomplete="off" onclick="this.blur();" >
+										<button id="zoom-out" title="Zoom Out" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary" onclick="this.blur();" >
 										<span class="iconify" style="width: 20px; height: 20px;" data-icon="akar-icons:zoom-out" data-inline="false"></span>
 										</button>
-										<button id="reset" title="Reset View" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary" autocomplete="off" onclick="this.blur();" >
+										<button id="reset" title="Reset View" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary" onclick="this.blur();" >
 										<span class="iconify" style="width: 20px; height: 20px;" data-icon="carbon:center-to-fit" data-inline="false"></span>
-										<!-- <span class="iconify" style="width: 20px; height: 20px;" data-icon="bytesize:zoom-reset" data-inline="false"></span> -->
 										</button>
 									</div>
 								</form>
@@ -102,14 +102,116 @@
 							<div class="col col-12 no-gutters" style="flex: 1;">
 								<div id="legend" class="no-gutters">
 									<form class="rounded form-inline" style="background-color: #222; padding: 10px 5px 10px 5px">
-										<span id=commit1_legend style="margin-left:0.5em; margin-right:0.5em; color: #00FFFF" style="width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
+										<span id=commit1_legend style="margin-left:0.5em; margin-right:0.5em; color: #00FFFF; width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
 										<small class="text-sm text-muted"> New - <span class="text-monospace" id=commit1_legend_hash>[COMMIT_1_HASH]</span></small>
 										<span style="width: 2em;"></span>
-										<span id="commit2_legend" style="margin-left:0.5em; margin-right:0.5em; color: #880808" style="width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
+										<span id="commit2_legend" style="margin-left:0.5em; margin-right:0.5em; color: #880808; width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
 										<small class="text-sm text-muted"> Old - <span class="text-monospace" id=commit2_legend_hash>[COMMIT_2_HASH]</span></small>
 										<span style="width: 2em;"></span>
-										<span id="commit2_legend" style="margin-left:0.5em; margin-right:0.5em; color: #807F7F" style="width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
+										<span id="commit3_legend" style="margin-left:0.5em; margin-right:0.5em; color: #807F7F; width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
 										<small class="text-sm text-muted"> Unchanged </small>
+										<span style="width: 2em"></span>
+										<div id="pages_dropdown" class="dropdown" style="display: inline;">
+											<a class="btn btn-secondary dropdown-toggle" href="#" title="Cyle pages with &#8592; and &#8594;" name="pages_new" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"/>
+												<span style="margin-left:0px; margin-right:0.1em;" class="iconify" data-icon="gridicons:pages" data-inline="false"></span>
+												Root
+											</a>
+											<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+												<a class="dropdown-item" href="#" id="board" name="layers_new" value="board"/>
+													<span style="margin-left:0px; margin-right:0.1em;" class="iconify" data-icon="gridicons:pages" data-inline="false"></span>
+													Root
+												</a>
+											</div>
+										</div>
+										<div id="layers_dropdown" class="dropdown" style="display: none">
+											<a class="btn btn-secondary dropdown-toggle" title="Cyle layers with &#8592; and &#8594;" href="#" id="layers_header" name="layers_new" value="F_Cu" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"/>
+												<span style="margin-left:0px; margin-right:0.1em; color: #952927" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+												F_Cu
+											</a>
+											<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+												<a class="dropdown-item" href="#" id="F_Cu" name="layers_new" value="F_Cu"/>
+													<span style="margin-left:0px; margin-right:0.1em; color: #952927" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+													F_Cu
+												</a>
+												<a class="dropdown-item" href="#" id="B_Cu" name="layers_new" value="B_Cu"/>
+													<span style="margin-left:0px; margin-right:0.1em; color: #359632" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+													B_Cu
+												</a>
+												<a class="dropdown-item" href="#" id="B_Adhes" name="layers_new" value="B_Adhes"/>
+													<span style="margin-left:0px; margin-right:0.1em; color: #3545A8" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+													B_Adhes
+												</a>
+												<a class="dropdown-item" href="#" id="F_Adhes" name="layers_new" value="F_Adhes"/>
+													<span style="margin-left:0px; margin-right:0.1em; color: #A74AA8" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+													F_Adhes
+												</a>
+												<a class="dropdown-item" href="#" id="B_Paste" name="layers_new" value="B_Paste"/>
+													<span style="margin-left:0px; margin-right:0.1em; color: #969696" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+													B_Paste
+												</a>
+												<a class="dropdown-item" href="#" id="F_Paste" name="layers_new" value="F_Paste"/>
+													<span style="margin-left:0px; margin-right:0.1em; color: #3DC9C9" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+													F_Paste
+												</a>
+												<a class="dropdown-item" href="#" id="B_SilkS" name="layers_new" value="B_SilkS"/>
+													<span style="margin-left:0px; margin-right:0.1em; color: #481649" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+													B_SilkS
+												</a>
+												<a class="dropdown-item" href="#" id="F_SilkS" name="layers_new" value="F_SilkS"/>
+													<span style="margin-left:0px; margin-right:0.1em; color: #339697" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+													F_SilkS
+												</a>
+												<a class="dropdown-item" href="#" id="B_Mask" name="layers_new" value="B_Mask"/>
+													<span style="margin-left:0px; margin-right:0.1em; color: #943197" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+													B_Mask
+												</a>
+												<a class="dropdown-item" href="#" id="F_Mask" name="layers_new" value="F_Mask"/>
+													<span style="margin-left:0px; margin-right:0.1em; color: #943197" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+													F_Mask
+												</a>
+												<a class="dropdown-item" href="#" id="Dwgs_User" name="layers_new" value="Dwgs_User"/>
+													<span style="margin-left:0px; margin-right:0.1em; color: #0364D3" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+													Dwgs_User
+												</a>
+												<a class="dropdown-item" href="#" id="Cmts_User" name="layers_new" value="Cmts_User"/>
+													<span style="margin-left:0px; margin-right:0.1em; color: #7AC0F4" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+													Cmts_User
+												</a>
+												<a class="dropdown-item" href="#" id="Eco1_User" name="layers_new" value="Eco1_User"/>
+													<span style="margin-left:0px; margin-right:0.1em; color: #008500" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+													Eco1_User
+												</a>
+												<a class="dropdown-item" href="#" id="Eco2_User" name="layers_new" value="Eco2_User"/>
+													<span style="margin-left:0px; margin-right:0.1em; color: " class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+													Eco2_User
+												</a>
+												<a class="dropdown-item" href="#" id="Edge_Cuts" name="layers_new" value="Edge_Cuts"/>
+													<span style="margin-left:0px; margin-right:0.1em; color: #C9C83B" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+													Edge_Cuts
+												</a>
+												<a class="dropdown-item" href="#" id="Margin" name="layers_new" value="Margin"/>
+													<span style="margin-left:0px; margin-right:0.1em; color: #D357D2" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+													Margin
+												</a>
+												<a class="dropdown-item" href="#" id="B_CrtYd" name="layers_new" value="B_CrtYd"/>
+													<span style="margin-left:0px; margin-right:0.1em; color: #D3D04B" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+													B_CrtYd
+												</a>
+												<a class="dropdown-item" href="#" id="F_CrtYd" name="layers_new" value="F_CrtYd"/>
+													<span style="margin-left:0px; margin-right:0.1em; color: #A7A7A7" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+													F_CrtYd
+												</a>
+												<a class="dropdown-item" href="#" id="B_Fab" name="layers_new" value="B_Fab"/>
+													<span style="margin-left:0px; margin-right:0.1em; color: #858585" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+													B_Fab
+												</a>
+												<a class="dropdown-item" href="#" id="F_Fab" name="layers_new" value="F_Fab"/>
+													<span style="margin-left:0px; margin-right:0.1em; color: #C2C200" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+													F_Fab
+												</a>
+												<!-- </div> -->
+											</ul>
+										</div>
 									</form>
 								</div>
 								<div id="diff-sch" style="width: 100%; height: 75vh; display: inline;">
@@ -178,42 +280,42 @@
 						</div>
 					</div>
 				</div>
-				<div class="col col no-gutters" >
-					<div class="list-group no-gutters" id="pages_list" style="display: inline;">
-						<div class="form-check no-gutters" style="width: 220px; padding-top: 1em">
-							<p class="text-light">
-								<span style="margin-right:0.5em" style="width: 20px; height: 20px;" class="iconify" data-icon="gridicons:next-page" data-inline="false"></span>
-								Pages <small class="text-sm text-muted"></br>
-								Cycle using
-								<kbd><span class="iconify" data-icon="typcn-arrow-left" data-inline="false"></span></kbd>/
-								<kbd><span class="iconify" data-icon="typcn-arrow-right" data-inline="false"></span></kbd>
-								</small>
-							</p>
-							<div class="row">
-								<div class="col col">
-									<form>
-										<!-- FILL_PAGES_HERE -->
-									</form>
-								</div>
+			</div>
+			<div class="col col no-gutters" >
+				<div class="list-group no-gutters" id="pages_list" style="display: inline;">
+					<div class="form-check no-gutters" style="width: 220px; padding-top: 1em">
+						<p class="text-light">
+							<span style="margin-right:0.5em" style="width: 20px; height: 20px;" class="iconify" data-icon="gridicons:next-page" data-inline="false"></span>
+							Pages <small class="text-sm text-muted"></br>
+							Cycle using
+							<kbd><span class="iconify" data-icon="typcn-arrow-left" data-inline="false"></span></kbd>/
+							<kbd><span class="iconify" data-icon="typcn-arrow-right" data-inline="false"></span></kbd>
+							</small>
+						</p>
+						<div class="row">
+							<div class="col col">
+								<form>
+									<!-- FILL_PAGES_HERE -->
+								</form>
 							</div>
 						</div>
 					</div>
-					<div class="list-group no-gutters" id="layers_list" style="display: none;">
-						<div class="form-check no-gutters" style="width: 180px; padding-top: 1em">
-							<p class="text-light">
-								<span style="margin-right:0.5em" style="width: 20px; height: 20px;" class="iconify" data-icon="teenyicons:layers-solid" data-inline="false"></span>
-								Layers <small class="text-sm text-muted"></br>
-								Cycle using
-								<kbd><span class="iconify" data-icon="typcn-arrow-left" data-inline="false"></span></kbd>/
-								<kbd><span class="iconify" data-icon="typcn-arrow-right" data-inline="false"></span></kbd>
-								</small>
-							</p>
-							<div class="row">
-								<div class="col col">
-									<form>
-										<!-- FILL_LAYERS_HERE -->
-									</form>
-								</div>
+				</div>
+				<div class="list-group no-gutters" id="layers_list" style="display: none;">
+					<div class="form-check no-gutters" style="width: 180px; padding-top: 1em">
+						<p class="text-light">
+							<span style="margin-right:0.5em" style="width: 20px; height: 20px;" class="iconify" data-icon="teenyicons:layers-solid" data-inline="false"></span>
+							Layers <small class="text-sm text-muted"></br>
+							Cycle using
+							<kbd><span class="iconify" data-icon="typcn-arrow-left" data-inline="false"></span></kbd>/
+							<kbd><span class="iconify" data-icon="typcn-arrow-right" data-inline="false"></span></kbd>
+							</small>
+						</p>
+						<div class="row">
+							<div class="col col">
+								<form>
+									<!-- FILL_LAYERS_HERE -->
+								</form>
 							</div>
 						</div>
 					</div>
@@ -221,9 +323,10 @@
 			</div>
 		</div>
 	</div>
-	<!-- jQuery first, then Popper.js, then Bootstrap JS -->
-	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+</div>
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 </body>
 </html>
