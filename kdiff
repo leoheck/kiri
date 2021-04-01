@@ -378,7 +378,6 @@ generate_comparisons()
 	output_dir="${repo_root_path}/kidiff/${project_path}"
 
 	web_dir="${output_dir}/web/"
-	diff_dir="${output_dir}/diff"
 
 	if [[ "$REMOVE_KDIFF_FOLDER" == "1" ]]; then
 		echo
@@ -410,7 +409,6 @@ generate_comparisons()
 		echo
 		echo "    output_dir: ${output_dir}"
 		echo "       web_dir: ${web_dir}"
-		echo "      diff_dir: ${diff_dir}"
 		echo
 	fi
 
@@ -541,7 +539,8 @@ generate_comparisons()
 				done
 
 				if [ -f "${output_dir}/diff.txt" ]; then
-					mv -f "${output_dir}/diff.txt" "${output_dir}/diff/$i-$j.txt"
+					cp -f "${output_dir}/diff.txt" "${output_dir}/diff-pcb-$i-$j.txt"
+					cp -f "${output_dir}/diff.txt" "${output_dir}/diff-pcb-$j-$i.txt"
 				fi
 
 				# ====
@@ -760,8 +759,10 @@ do
 done
 
 # Check required tools
-check_tool kdiff
-check_tool plotgitsch
+if [[ "${DRY_RUN}" == 0 ]];
+	check_tool kdiff
+	check_tool plotgitsch
+fi
 
 case $OSTYPE in
 	darwin*)
