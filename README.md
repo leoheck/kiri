@@ -84,4 +84,6 @@ Layout view, assets generated using Kicad-Diff
 	<img src="misc/pcb.png" width="820" alt="pcb">
 </p>
 
-[![Demo](misc/sch.png)](https://youtu.be/PMC0USSsbDE)
+Demo on Youtube
+
+[![Demo](http://img.youtube.com/vi/PMC0USSsbDE/0.jpg)](http://www.youtube.com/watch?v=PMC0USSsbDE "")
