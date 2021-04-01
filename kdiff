@@ -686,9 +686,6 @@ generate_comparisons()
 script_path=$(readlink_ "$0")
 script_dir=$(dirname "$script_path")
 
-# Make sure gitplotsch is in the PATH
-eval "$(opam config env)"
-
 trap ctrl_c INT
 
 export ALL_COMMITS=0
@@ -763,6 +760,8 @@ done
 
 # Check required tools
 if [[ "${DRY_RUN}" == 0 ]]; then
+	check_tool opam
+	eval "$(opam config env)"
 	check_tool kdiff
 	check_tool plotgitsch
 fi
