@@ -628,10 +628,11 @@ generate_comparisons()
 	done
 
 	# Copy assets
-	cp -f "${script_path}/main.html" "${web_dir}/"
-	cp -f "${script_path}/kdiff.js"  "${web_dir}/"
-	cp -f "${script_path}/kdiff.css" "${web_dir}/"
-	cp -f "${script_path}/blank.svg" "${web_dir}/"
+	cp -f "${script_path}/main.html"   "${web_dir}/"
+	cp -f "${script_path}/kdiff.js"    "${web_dir}/"
+	cp -f "${script_path}/kdiff.css"   "${web_dir}/"
+	cp -f "${script_path}/blank.svg"   "${web_dir}/"
+	cp -f "${script_path}/favicon.ico" "${web_dir}/"
 
 	# Insert commits list
 	insert_commits "${web_dir}/main.html" "${commits}" "${current_path_fix}" "${kicad_pcb}" "${sch_files}"
