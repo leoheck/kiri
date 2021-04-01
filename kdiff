@@ -437,10 +437,6 @@ generate_comparisons()
 		commits=$(eval "${cmd}")
 	fi
 
-	if [[ "${VERBOSE}" == "1" ]]; then
-		echo "Current Branch: ${git_branch}"
-	fi
-
 	if [[ "$OLDER_COMMIT" != "" ]]; then
 		if [[ "${VERBOSE}" == "1" ]]; then
 			echo "  Older commit: ${OLDER_COMMIT}"
