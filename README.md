@@ -70,7 +70,7 @@ EXAMPLES:
     kdiff my_kicad_project/board.kicad_pcb -r -v
 ```
 
-## Screenshots
+## Examples
 
 Schematic view, assets generated using Plotkicadsch
 
@@ -83,3 +83,5 @@ Layout view, assets generated using Kicad-Diff
 <p align="center">
 	<img src="misc/pcb.png" width="820" alt="pcb">
 </p>
+
+[![Demo](misc/sch.png)](https://youtu.be/PMC0USSsbDE)
