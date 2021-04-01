@@ -462,7 +462,7 @@ generate_comparisons()
 	fi
 
 	# Commits list has to have 2 commits at least
-	if [[ $(echo "$commits" | wc -l) -lt "2" ]]; then
+	if [[ $(echo "$commits" | wc -l | sed_ "s/^[ \t]\+//g") -lt "2" ]]; then
 		echo "Leaving, less than 2 commits found"
 		exit 0
 	fi
