@@ -437,19 +437,23 @@ generate_comparisons()
 		commits=$(eval "${cmd}")
 	fi
 
+	if [[ "${VERBOSE}" == "1" ]]; then
+		echo "Current Branch: ${git_branch}"
+	fi
+
 	if [[ "$OLDER_COMMIT" != "" ]]; then
+		if [[ "${VERBOSE}" == "1" ]]; then
+			echo "  Older commit: ${OLDER_COMMIT}"
+		fi
 		commits=$(echo "${commits}" | sed_ "/^${OLDER_COMMIT}/q")
 	fi
 
 	if [[ "$NEWER_COMMIT" != "" ]]; then
+		if [[ "${VERBOSE}" == "1" ]]; then
+			echo "  Newer commit: ${NEWER_COMMIT}"
+			echo
+		fi
 		commits=$(echo "${commits}" | sed_ -n "/^${NEWER_COMMIT}/,\$p")
-	fi
-
-	if [[ "${VERBOSE}" == "1" ]]; then
-		echo "Current Branch: ${git_branch}"
-		echo "  Newer commit: ${NEWER_COMMIT}"
-		echo "  Older commit: ${OLDER_COMMIT}"
-		echo
 	fi
 
 	if [[ "${VERBOSE}" == "1" ]]; then
