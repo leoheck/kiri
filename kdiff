@@ -470,8 +470,8 @@ generate_comparisons()
 	a=$(echo "$commits" | tac_ | cut -d' '  -f1);
 	b=$a
 
-	na=$(echo "$a" | wc -w | gsed_ "s/^[ \t]\+//g")
-	nb=$(echo "$b" | wc -w | gsed_ "s/^[ \t]\+//g")
+	na=$(echo "$a" | wc -w | sed_ "s/^[ \t]\+//g")
+	nb=$(echo "$b" | wc -w | sed_ "s/^[ \t]\+//g")
 	nab=$(echo "${na} * (${nb} - 1) " | bc)
 
 	echo
