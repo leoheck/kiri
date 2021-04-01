@@ -2,7 +2,7 @@
 
 show_help()
 {
-	read -r -d '' HELP_MESSAGE <<-EOM
+	read -r HELP_MESSAGE <<-EOM
 
 	USAGE :
 
@@ -225,7 +225,7 @@ insert_commits()
 			checked=""
 		fi
 
-		read -r -d '' COMMIT_HTML <<-EOM
+		read -r COMMIT_HTML <<-EOM
 		    <input class="chkGroup" type="checkbox" id="${hash}" name="commit" value="${hash}" ${checked} onchange="update_commits()"/>
 		    <label class="text-sm-left list-group-item" for="${hash}">
 		      <table style="width:100%">
@@ -279,7 +279,7 @@ insert_pages()
 			checked=""
 		fi
 
-		read -r -d '' PAGE_HTML <<-EOM
+		read -r PAGE_HTML <<-EOM
 		    <input type="radio" id="${page_filename}" value="${page_filename}" name="pages" ${checked} onchange="change_page()"/>
 		    <label class="rounded text-sm-left list-group-item radio-box" for="${page_filename}">
 		    <span style="margin-left:0.5em; margin-right:0.1em;" class="iconify" data-icon="gridicons:pages" data-inline="false"></span>
@@ -346,7 +346,7 @@ insert_layers()
 			checked=""
 		fi
 
-		read -r -d '' LAYER_HTML <<-EOM
+		read -r LAYER_HTML <<-EOM
 		    <input type="radio" id="${layer}" name="layers" value="${layer}" ${checked}  onchange="change_layer()"/>
 		    <label class="rounded text-sm-left list-group-item radio-box" for="${layer}">
 		        <span style="margin-left:0.5em; margin-right:0.1em; color: ${layer_color}" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
