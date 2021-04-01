@@ -375,15 +375,19 @@ generate_comparisons()
 	filename=$(basename -- "$kicad_pcb")
 	board_name="${filename%.*}"
 
-	output_dir="${repo_root_path}/kidiff/${project_path}"
+	if [[ "${project_path}" != "." ]]; then
+		output_dir="${repo_root_path}/kidiff/${project_path}"
+	else
+		output_dir="${repo_root_path}/kidiff/"
+	fi
 
 	web_dir="${output_dir}/web/"
 
 	if [[ "$REMOVE_KDIFF_FOLDER" == "1" ]]; then
 		echo
 		echo "Removing ${output_dir} folder ..."
-		if rm -rf "${output_dir}" &> /dev/null; then
-			echo "Warning: folder ${output_dir} was not removed"
+		if ! rm -rf "${output_dir}" &> /dev/null; then
+			echo "Warning: folder was not removed"
 		fi
 	fi
 
@@ -759,7 +763,7 @@ do
 done
 
 # Check required tools
-if [[ "${DRY_RUN}" == 0 ]];
+if [[ "${DRY_RUN}" == 0 ]]; then
 	check_tool kdiff
 	check_tool plotgitsch
 fi
