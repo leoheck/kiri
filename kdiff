@@ -164,10 +164,6 @@ get_pages()
 
 	done
 
-	# How to remove duplicated pages easily?
-	# echo -e "$pages" > pages
-	# sort -u -t"|" -k2,2  <<< $pages
-
 	echo -e "$pages"
 }
 
@@ -522,7 +518,7 @@ generate_comparisons()
 
 				# ====
 
-				cmd="kidiff ${kicad_pcb} --webserver-disable -a $i -b $j > /dev/null"
+				cmd="kidiff ${kicad_pcb} --webserver-disable -a $i -b $j &> /dev/null"
 				if [[ "$VERBOSE" == "1" ]]; then
 					echo
 					echo "$cmd"
@@ -531,7 +527,6 @@ generate_comparisons()
 					eval "$cmd"
 					ret=$?
 					if [[ "$VERBOSE" == "1" ]]; then
-						echo
 						echo "Status: ${ret}"
 					fi
 				fi
@@ -558,10 +553,10 @@ generate_comparisons()
 				unchanged_color="FFFFFF"
 				background_color="222222"
 
-				cmd="plotgitsch -l ${current_path_fix}/${board_name}-cache.lib -c ${removed_color}:${added_color}:${unchanged_color}:${background_color} ${i} ${j} > /dev/null"
+				cmd="plotgitsch -l ${current_path_fix}/${board_name}-cache.lib -c ${removed_color}:${added_color}:${unchanged_color}:${background_color} ${i} ${j} &> /dev/null"
 				if [[ "${VERBOSE}" == "1" ]]; then
-					echo "$cmd"
 					echo
+					echo "$cmd"
 				fi
 				if [[ "$DRY_RUN" == "0" ]]; then
 					# Workaround for a known bug. Backup working branch
@@ -572,6 +567,7 @@ generate_comparisons()
 					mv -f "${repo_root_path}/.git/HEAD.bkp" "${repo_root_path}/.git/HEAD"
 					if [[ "$VERBOSE" == "1" ]]; then
 						echo "Status: ${ret}"
+						echo
 					fi
 				fi
 
