@@ -559,12 +559,8 @@ generate_comparisons()
 					echo "$cmd"
 				fi
 				if [[ "$DRY_RUN" == "0" ]]; then
-					# Workaround for a known bug. Backup working branch
-					cp -f "${repo_root_path}/.git/HEAD" "${repo_root_path}/.git/HEAD.bkp"
 					eval "$cmd"
 					ret=$?
-					# Restore working branch
-					mv -f "${repo_root_path}/.git/HEAD.bkp" "${repo_root_path}/.git/HEAD"
 					if [[ "$VERBOSE" == "1" ]]; then
 						echo "Status: ${ret}"
 						echo
