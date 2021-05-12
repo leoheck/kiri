@@ -11,22 +11,37 @@ These tools have to be in the `$PATH`
 - [Plotgitsh](https://github.com/leoheck/plotkicadsch)
 - [Kicad-Diff](https://github.com/Gasman2014/KiCad-Diff)
 
-## Installing dependecies
+
+## Installing dependencies on Windows
+``` 
+# Install WSL
+# Install Ubuntu 20.04 (Market Store)
+# Then in the Ubuntu 20.04 terminal
+sudo apt upgrade
+sudo apt install firefox
+sudo apt install python3-pip
+sudo apt install opam
 ```
-# Custom plotgitsch
+
+## Installing dependencies on Linux
+```
+# Install custom plotgitsch
 hg clone leoheck/plotkicadsch
 cd plotkicadsch
 ./install.sh
 
-# Kicad Diff
+# Install Kicad-Diff
 hg clone Gasman2014/KiCad-Diff
+```
 
-# On OSX
+## Installing dependencies on OSX
+Install dependencies that are on "Installing dependencies on Linux" section and then
+```
 brew install gsed
 brew install findutils
 ```
 
-## Setup
+## Environment Setup (before using it)
 ```
 gh repo clone leoheck/kdiff
 cd kdiff
