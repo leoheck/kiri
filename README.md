@@ -41,7 +41,7 @@ opam switch 4.09.1
 eval $(opam config env)
 
 # Install custom plotgitsch
-https://github.com/leoheck/plotkicadsch.git
+git clone https://github.com/leoheck/plotkicadsch.git
 cd plotkicadsch
 ./install.sh
 
@@ -50,7 +50,7 @@ pip install pygubu
 pip install python_dateutil
 
 # Install Kicad-Diff
-https://github.com/Gasman2014/KiCad-Diff.git
+git clone https://github.com/Gasman2014/KiCad-Diff.git
 ```
 
 ## Installing dependencies on OSX
@@ -62,9 +62,16 @@ brew install findutils
 
 ## Environment Setup (before using it)
 ```
-gh repo clone leoheck/kdiff
+# Load KiCad-Diff environment
+cd KiCad-Diff
+source ./env.sh
+
+# Install kdiff environment
+git clone https://github.com/leoheck/kdiff
 cd kdiff
-source env.sh
+
+# Load kdiff environment
+source ./env.sh
 ```
 
 ## Using
