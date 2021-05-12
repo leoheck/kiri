@@ -41,7 +41,7 @@ opam switch 4.09.1
 eval $(opam config env)
 
 # Install custom plotgitsch
-hg clone leoheck/plotkicadsch
+https://github.com/leoheck/plotkicadsch.git
 cd plotkicadsch
 ./install.sh
 
@@ -50,7 +50,7 @@ pip install pygubu
 pip install python_dateutil
 
 # Install Kicad-Diff
-hg clone Gasman2014/KiCad-Diff
+https://github.com/Gasman2014/KiCad-Diff.git
 ```
 
 ## Installing dependencies on OSX
