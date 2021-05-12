@@ -35,10 +35,9 @@ sudo apt install opam
 sudo apt install python3-pip
 
 # Opam (helps installing plotgitsch)
-opam switch 4.09.1
 opam switch create 4.09.1
 opam switch 4.09.1
-eval `opam config env`
+eval $(opam config env)
 
 # Install custom plotgitsch
 hg clone leoheck/plotkicadsch
