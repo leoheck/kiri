@@ -31,7 +31,8 @@ Set-Location C:\ubuntu-2004
 ## Installing dependencies on Linux
 
 ```
-# Basic dependencis
+# Basic dependencies
+sudo apt install libgmp-dev pkg-config
 sudo apt install opam
 sudo apt install python3-pip
 
