@@ -16,17 +16,18 @@ These tools have to be in the `$PATH`
 ``` 
 # Install WSL
 # Install Ubuntu 20.04 (Market Store)
-# Then in the Ubuntu 20.04 terminal
-sudo apt upgrade
-sudo apt install firefox
-sudo apt install python3-pip
-sudo apt install opam
+# Then in the Ubuntu 20.04 terminal, continue following instructions in "Installing dependencies on Linux" 
 ```
 
 ## Installing dependencies on Linux
 
 ```
+# Basic dependencis
+sudo apt install opam
+sudo apt install python3-pip
+
 # Opam (helps installing plotgitsch)
+opam switch 4.09.1
 opam switch create 4.09.1
 opam switch 4.09.1
 eval `opam config env`
