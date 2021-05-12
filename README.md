@@ -13,10 +13,18 @@ These tools have to be in the `$PATH`
 
 
 ## Installing dependencies on Windows
-``` 
-# Install WSL
-# Install Ubuntu 20.04 (Market Store)
-# Then in the Ubuntu 20.04 terminal, continue following instructions in "Installing dependencies on Linux" 
+```
+# Install WSL (using Power Shell)
+Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux
+#Install-WindowsFeature -Name Microsoft-Windows-Subsystem-Linux
+ 
+Invoke-WebRequest -Uri https://aka.ms/wsl-ubuntu-2004 -OutFile ~/Downloads/ubuntu-2004.zip
+New-Item -Path C:\ubuntu-2004 -ItemType Directory
+Expand-Archive -Path ~/Downloads/ubuntu-2004.zip C:\ubuntu-2004
+Set-Location C:\ubuntu-2004
+& .\ubuntu1804.exe
+
+# Continue with the instructions in "Installing dependencies on Linux" 
 ```
 
 ## Installing dependencies on Linux
@@ -46,7 +54,7 @@ hg clone Gasman2014/KiCad-Diff
 ```
 
 ## Installing dependencies on OSX
-Install dependencies that are on "Installing dependencies on Linux" section and then
+Install dependencies from "Installing dependencies on Linux" section and then
 ```
 brew install gsed
 brew install findutils
