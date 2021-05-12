@@ -24,11 +24,21 @@ sudo apt install opam
 ```
 
 ## Installing dependencies on Linux
+
 ```
+# Opam (helps installing plotgitsch)
+opam switch create 4.09.1
+opam switch 4.09.1
+eval `opam config env`
+
 # Install custom plotgitsch
 hg clone leoheck/plotkicadsch
 cd plotkicadsch
 ./install.sh
+
+# Kicad-Diff dependencies
+pip install pygubu
+pip install python_dateutil
 
 # Install Kicad-Diff
 hg clone Gasman2014/KiCad-Diff
