@@ -12,9 +12,10 @@ These tools have to be in the `$PATH`
 - [Kicad-Diff](https://github.com/Gasman2014/KiCad-Diff)
 
 
-## Installing dependencies on Windows
+## [Installing dependencies on Windows](https://www.tenforums.com/tutorials/46769-enable-disable-windows-subsystem-linux-wsl-windows-10-a.html)
 ```
-# Install WSL (using Power Shell)
+# Enalbe Windows Sybsystem for Linux (using Power Shell)
+dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart
 Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux
 #Install-WindowsFeature -Name Microsoft-Windows-Subsystem-Linux
  
