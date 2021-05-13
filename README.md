@@ -33,8 +33,10 @@ Set-Location C:\ubuntu-2004
 ```
 # Basic dependencies
 sudo apt install libgmp-dev pkg-config
-sudo apt install opam
-sudo apt install python3-pip
+sudo apt install -y opam
+sudo apt install -y python3-pip
+sudo apt install -y python3-tk
+sudo apt install -y kicad
 
 # Opam (helps installing plotgitsch)
 opam switch create 4.09.1
@@ -47,8 +49,8 @@ cd plotkicadsch
 ./install.sh
 
 # Kicad-Diff dependencies
-pip install pygubu
-pip install python_dateutil
+pip3 install pygubu
+pip3 install python_dateutil
 
 # Install Kicad-Diff
 git clone https://github.com/Gasman2014/KiCad-Diff.git
