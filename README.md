@@ -25,7 +25,7 @@ Expand-Archive -Path ~/Downloads/ubuntu-2004.zip C:\ubuntu-2004
 Set-Location C:\ubuntu-2004
 & .\ubuntu1804.exe
 
-# Continue with the instructions in "Installing dependencies on Linux" 
+# Continue with the instructions in "Installing dependencies on Linux"
 ```
 
 ## Installing dependencies on Linux
