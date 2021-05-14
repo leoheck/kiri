@@ -823,8 +823,8 @@ fi
 output_dir="${repo_root}/kidiff/${project_dir}"
 web_dir="${output_dir}/web/"
 
-mv -f "${web_dir}/index.html" "${web_dir}/main_kidiff.html"
-mv -f "${web_dir}/main.html" "${web_dir}/index.html"
+mv -f "${web_dir}/index.html" "${web_dir}/main_kidiff.html" > /dev/null
+mv -f "${web_dir}/main.html" "${web_dir}/index.html" > /dev/null
 
 webserver.py ${kicad_pcb}
 pid=$?
