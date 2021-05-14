@@ -8,9 +8,12 @@ import sys
 import signal
 
 import webbrowser
-import http.server
 import socketserver
-from http.server import BaseHTTPRequestHandler, HTTPServer
+
+# import http.server
+#from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import SimpleHTTPRequestHandler
+
 
 from subprocess import PIPE, Popen
 from typing import List, Tuple
@@ -19,10 +22,10 @@ socketserver.TCPServer.allow_reuse_address = True
 script_path = os.path.dirname(os.path.realpath(__file__))
 assets_folder = os.path.join(script_path, "assets")
 
-Handler = http.server.SimpleHTTPRequestHandler
+Handler = SimpleHTTPRequestHandler
 
 
-class WebServerHandler(http.server.SimpleHTTPRequestHandler):
+class WebServerHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         pass
         super().__init__(
