@@ -11,26 +11,70 @@ These tools have to be in the `$PATH`
 - [Plotgitsh](https://github.com/leoheck/plotkicadsch)
 - [Kicad-Diff](https://github.com/Gasman2014/KiCad-Diff)
 
-## Installing dependecies
+
+## [Installing dependencies on Windows](https://www.tenforums.com/tutorials/46769-enable-disable-windows-subsystem-linux-wsl-windows-10-a.html)
 ```
-# Custom plotgitsch
-hg clone leoheck/plotkicadsch
+# Enalbe Windows Sybsystem for Linux (using Power Shell)
+dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart
+Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux
+#Install-WindowsFeature -Name Microsoft-Windows-Subsystem-Linux
+ 
+Invoke-WebRequest -Uri https://aka.ms/wsl-ubuntu-2004 -OutFile ~/Downloads/ubuntu-2004.zip
+New-Item -Path C:\ubuntu-2004 -ItemType Directory
+Expand-Archive -Path ~/Downloads/ubuntu-2004.zip C:\ubuntu-2004
+Set-Location C:\ubuntu-2004
+& .\ubuntu1804.exe
+
+# Continue with the instructions in "Installing dependencies on Linux"
+```
+
+## Installing dependencies on Linux
+
+```
+# Basic dependencies
+sudo apt install libgmp-dev pkg-config
+sudo apt install -y opam
+sudo apt install -y python3-pip
+sudo apt install -y python3-tk
+sudo apt install -y kicad
+
+# Opam (helps installing plotgitsch)
+opam switch create 4.09.1
+opam switch 4.09.1
+eval $(opam config env)
+
+# Install custom plotgitsch
+git clone https://github.com/leoheck/plotkicadsch.git
 cd plotkicadsch
 ./install.sh
 
-# Kicad Diff
-hg clone Gasman2014/KiCad-Diff
+# Kicad-Diff dependencies
+pip3 install pygubu
+pip3 install python_dateutil
 
-# On OSX
+# Install Kicad-Diff
+git clone https://github.com/Gasman2014/KiCad-Diff.git
+```
+
+## Installing dependencies on OSX
+Install dependencies from "Installing dependencies on Linux" section and then
+```
 brew install gsed
 brew install findutils
 ```
 
-## Setup
+## Environment Setup (before using it)
 ```
-gh repo clone leoheck/kdiff
+# Load KiCad-Diff environment
+cd KiCad-Diff
+source ./env.sh
+
+# Install kdiff environment
+git clone https://github.com/leoheck/kdiff
 cd kdiff
-source env.sh
+
+# Load kdiff environment
+source ./env.sh
 ```
 
 ## Using
