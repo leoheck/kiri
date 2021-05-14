@@ -482,6 +482,7 @@ generate_comparisons()
 		echo
 		echo "Layers"
 		echo "${board_layers}" | nl
+		echo
 	fi
 
 	IFS=$'\n'
@@ -520,14 +521,17 @@ generate_comparisons()
 
 				cmd="kidiff ${kicad_pcb} --webserver-disable -a $i -b $j &> /dev/null"
 				if [[ "$VERBOSE" == "1" ]]; then
-					echo
+					# echo
 					echo "$cmd"
 				fi
 				if [[ "$DRY_RUN" == "0" ]]; then
 					eval "$cmd"
 					ret=$?
 					if [[ "$VERBOSE" == "1" ]]; then
-						echo "Status: ${ret}"
+						if [[ "${ret}" -gt "0" ]]; then
+							echo "Status: ${ret}"
+							echo
+						fi
 					fi
 				fi
 
@@ -555,17 +559,21 @@ generate_comparisons()
 
 				cmd="plotgitsch -l ${current_path_fix}/${board_name}-cache.lib -c ${removed_color}:${added_color}:${unchanged_color}:${background_color} ${i} ${j} &> /dev/null"
 				if [[ "${VERBOSE}" == "1" ]]; then
-					echo
+					# echo
 					echo "$cmd"
 				fi
 				if [[ "$DRY_RUN" == "0" ]]; then
 					eval "$cmd"
 					ret=$?
 					if [[ "$VERBOSE" == "1" ]]; then
-						echo "Status: ${ret}"
-						echo
+						if [[ "${ret}" -gt "0" ]]; then
+							echo "Status: ${ret}"
+							echo
+						fi
 					fi
 				fi
+
+				echo
 
 				IFS=$'\n'
 				for sch_page_name in $sch_page_names; do
@@ -778,7 +786,7 @@ kicad_pcb_path=$(readlink_ "${kicad_pcb}" | sed_ "s|${repo_root}/||g")
 project_dir=$(dirname "$kicad_pcb_path" | sed_ "s|${repo_root}/||g")
 
 # if [[ "$repo_root" != "$(pwd)" ]]; then
-	# echo "You must be inside a rein repo root path"
+	# echo "You must be inside a main repo root path"
 	# echo "Here: $repo_root"
 	# exit
 # fi
@@ -793,13 +801,20 @@ fi
 output_dir="${repo_root}/kidiff/${project_dir}"
 web_dir="${output_dir}/web/"
 
-if [[ "$LAUNCH_PAGE" == "1" ]]; then
-	if [[ "$DRY_RUN" == "0" ]]; then
-		echo
-		if [[ "$PAGE_VIEWER" != "" ]]; then
-			$PAGE_VIEWER "${web_dir}/main.html" &
-		else
-			xdg-open_ "${web_dir}/main.html"
-		fi
-	fi
-fi
+mv -f "${web_dir}/index.html" "${web_dir}/main_kidiff.html"
+mv -f "${web_dir}/main.html" "${web_dir}/index.html"
+
+webserver.py
+pid=$?
+kill -9 $pid
+
+# if [[ "$LAUNCH_PAGE" == "1" ]]; then
+# 	if [[ "$DRY_RUN" == "0" ]]; then
+# 		echo
+# 		if [[ "$PAGE_VIEWER" != "" ]]; then
+# 			# $PAGE_VIEWER "${web_dir}/index.html" &
+# 		else
+# 			xdg-open_ "${web_dir}/index.html"
+# 		fi
+# 	fi
+# fi
