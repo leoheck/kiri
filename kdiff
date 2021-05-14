@@ -133,8 +133,13 @@ ctrl_c()
 check_tool() {
 	tool=$1
 	if ! command -v "${tool}" &> /dev/null; then
-		echo "${tool} could not be found"
-		exit
+		# echo "${tool} could not be found"
+		#exit
+		echo 1
+		return 1
+	else
+		echo 0
+		return 0
 	fi
 }
 
@@ -519,20 +524,30 @@ generate_comparisons()
 
 				# ====
 
-				cmd="kidiff ${kicad_pcb} --webserver-disable -a $i -b $j &> /dev/null"
-				if [[ "$VERBOSE" == "1" ]]; then
-					# echo
-					echo "$cmd"
-				fi
-				if [[ "$DRY_RUN" == "0" ]]; then
-					eval "$cmd"
-					ret=$?
+				if [[ ! "${KIDIFF_MISSING}" == 1 ]]; then
+
+					cmd="kidiff ${kicad_pcb} --webserver-disable -a $i -b $j &> /dev/null"
 					if [[ "$VERBOSE" == "1" ]]; then
-						if [[ "${ret}" -gt "0" ]]; then
-							echo "Status: ${ret}"
-							echo
+						# echo
+						echo "$cmd"
+					fi
+					if [[ "$DRY_RUN" == "0" ]]; then
+						eval "$cmd"
+						ret=$?
+						if [[ "$VERBOSE" == "1" ]]; then
+							if [[ "${ret}" -gt "0" ]]; then
+								echo "Status: ${ret}"
+								echo
+							fi
 						fi
 					fi
+
+
+					if [ -f "${output_dir}/diff.txt" ]; then
+						cp -f "${output_dir}/diff.txt" "${output_dir}/diff-pcb-$i-$j.txt"
+						cp -f "${output_dir}/diff.txt" "${output_dir}/diff-pcb-$j-$i.txt"
+					fi
+
 				fi
 
 				IFS=$'\n'
@@ -545,10 +560,6 @@ generate_comparisons()
 					fi
 				done
 
-				if [ -f "${output_dir}/diff.txt" ]; then
-					cp -f "${output_dir}/diff.txt" "${output_dir}/diff-pcb-$i-$j.txt"
-					cp -f "${output_dir}/diff.txt" "${output_dir}/diff-pcb-$j-$i.txt"
-				fi
 
 				# ====
 
@@ -557,18 +568,21 @@ generate_comparisons()
 				unchanged_color="FFFFFF"
 				background_color="222222"
 
-				cmd="plotgitsch -l ${current_path_fix}/${board_name}-cache.lib -c ${removed_color}:${added_color}:${unchanged_color}:${background_color} ${i} ${j} &> /dev/null"
-				if [[ "${VERBOSE}" == "1" ]]; then
-					# echo
-					echo "$cmd"
-				fi
-				if [[ "$DRY_RUN" == "0" ]]; then
-					eval "$cmd"
-					ret=$?
-					if [[ "$VERBOSE" == "1" ]]; then
-						if [[ "${ret}" -gt "0" ]]; then
-							echo "Status: ${ret}"
-							echo
+				if [[ ! "$PLOTGITSCH_MISSING" == 1 ]]; then
+
+					cmd="plotgitsch -l ${current_path_fix}/${board_name}-cache.lib -c ${removed_color}:${added_color}:${unchanged_color}:${background_color} ${i} ${j} &> /dev/null"
+					if [[ "${VERBOSE}" == "1" ]]; then
+						# echo
+						echo "$cmd"
+					fi
+					if [[ "$DRY_RUN" == "0" ]]; then
+						eval "$cmd"
+						ret=$?
+						if [[ "$VERBOSE" == "1" ]]; then
+							if [[ "${ret}" -gt "0" ]]; then
+								echo "Status: ${ret}"
+								echo
+							fi
 						fi
 					fi
 				fi
@@ -768,16 +782,24 @@ done
 
 # Check required tools
 if [[ "${DRY_RUN}" == 0 ]]; then
-	check_tool opam
+	check_tool opam > /dev/null
 	eval "$(opam config env)"
-	check_tool kdiff
-	check_tool plotgitsch
+	export PLOTGITSCH_MISSING=$(check_tool plotgitsch)
+	export KIDIFF_MISSING=$(check_tool kidiff)
+fi
+
+if [[ ! "${PLOTGITSCH_MISSING}" = 0 ]]; then
+	echo "INFO: plotgitsch is missing, schematic diff won't be generated"
+fi
+
+if [[ ! "${KIDIFF_MISSING}" = 0 ]]; then
+	echo "INFO: kidiff is missing, layout diff won't be generated"
 fi
 
 case $OSTYPE in
 	darwin*)
-		check_tool gsed
-		check_tool gfind
+		if check_tool gsed > /dev/null; then exit; fi
+		if check_tool gfind > /dev/null; then exit; fi
 		;;
 esac
 
