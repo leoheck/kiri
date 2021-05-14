@@ -13,20 +13,25 @@ These tools have to be in the `$PATH`
 
 
 ## [Installing dependencies on Windows](https://www.tenforums.com/tutorials/46769-enable-disable-windows-subsystem-linux-wsl-windows-10-a.html)
-```
-# Enalbe Windows Sybsystem for Linux (using Power Shell)
+
+Configure WSL
+
+```batch
+:: Enalbe Windows Sybsystem for Linux (using Power Shell)
 dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart
 Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux
 #Install-WindowsFeature -Name Microsoft-Windows-Subsystem-Linux
- 
+
+:: Install Ubuntu 20.04
 Invoke-WebRequest -Uri https://aka.ms/wsl-ubuntu-2004 -OutFile ~/Downloads/ubuntu-2004.zip
 New-Item -Path C:\ubuntu-2004 -ItemType Directory
 Expand-Archive -Path ~/Downloads/ubuntu-2004.zip C:\ubuntu-2004
 Set-Location C:\ubuntu-2004
 & .\ubuntu1804.exe
-
-# Continue with the instructions in "Installing dependencies on Linux"
 ```
+
+And then continue with the instructions in "Installing dependencies on Linux" inside the WSL (Ubuntu terminal).
+
 
 ## Installing dependencies on Linux
 
@@ -57,7 +62,9 @@ git clone https://github.com/Gasman2014/KiCad-Diff.git
 ```
 
 ## Installing dependencies on OSX
+
 Install dependencies from "Installing dependencies on Linux" section and then
+
 ```
 brew install gsed
 brew install findutils
