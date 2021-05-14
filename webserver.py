@@ -10,6 +10,9 @@ import webbrowser
 import http.server
 import socketserver
 
+from subprocess import PIPE, Popen
+from typing import List, Tuple
+
 socketserver.TCPServer.allow_reuse_address = True
 script_path = os.path.dirname(os.path.realpath(__file__))
 assets_folder = os.path.join(script_path, "assets")
@@ -23,9 +26,8 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
         super().__init__(
             *args,
             directory=os.path.realpath(
-                os.path.join("/home/lheck/Dropbox/Documents/assoc-board", "kidiff")
-            ),
-            **kwargs
+                os.path.realpath(os.path.join(prjctPath, "kidiff")), **kwargs
+            )
         )
 
     def log_message(self, format, *args):
@@ -34,8 +36,7 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
 
 def startWebServer(port, project_path):
     with socketserver.TCPServer(("", port), WebServerHandler) as httpd:
-        # url = 'http://127.0.0.1:' + str(port) + "/" + project_path + '/web/index.html'
-        url = "http://127.0.0.1:" + str(port) + "/web/index.html"
+        url = "http://127.0.0.1:" + str(port) + "/" + project_path + "/web/index.html"
         print("")
         print("Starting webserver at {}".format(url))
         print("(Hit Ctrl+C to exit)")
@@ -69,6 +70,9 @@ def parse_cli_args():
     parser.add_argument(
         "-v", "--verbose", action="count", default=0, help="Increase verbosity (-vvv)"
     )
+    parser.add_argument(
+        "kicad_pcb", metavar="PCB_PATH", nargs="?", help="Kicad PCB path"
+    )
 
     args = parser.parse_args()
 
@@ -80,14 +84,63 @@ def parse_cli_args():
     return args
 
 
+def escape_string(val):
+
+    if sys.version_info[0] >= 3:
+        unicode = str
+
+    val = unicode(val)
+    val = val.replace(u"\\", u"\\\\")
+    val = val.replace(u" ", u"\\ ")
+
+    return "".join(val.splitlines())
+
+
+def run_cmd(path: str, cmd: List[str]) -> Tuple[str, str]:
+
+    p = Popen(
+        cmd,
+        stdin=PIPE,
+        stdout=PIPE,
+        stderr=PIPE,
+        close_fds=True,
+        encoding="utf-8",
+        cwd=path,
+    )
+
+    stdout, stderr = p.communicate()
+    p.wait()
+
+    return stdout.strip("\n "), stderr
+
+
+def get_kicad_project_path(prjctPath):
+    """Returns the root folder of the repository"""
+
+    cmd = ["git", "rev-parse", "--show-toplevel"]
+
+    stdout, _ = run_cmd(prjctPath, cmd)
+    repo_root_path = stdout.strip()
+
+    kicad_project_path = os.path.relpath(prjctPath, repo_root_path)
+
+    return repo_root_path, kicad_project_path
+
+
 if __name__ == "__main__":
 
     signal.signal(signal.SIGINT, signal_handler)
     args = parse_cli_args()
 
-    project_path = "kidiff"
-    if args.dir:
-        project_path = args.dir
+    kicad_project_path = os.path.dirname(os.path.realpath(args.kicad_pcb))
+    board_file = os.path.basename(os.path.realpath(args.kicad_pcb))
+
+    prjctPath, kicad_project = get_kicad_project_path(escape_string(kicad_project_path))
+
+    print("")
+    print("  Project PATH:", prjctPath)
+    print(" Kicad Project:", kicad_project)
+    print("    Board Name:", board_file)
 
     if not args.webserver_disable:
-        startWebServer(args.port, project_path)
+        startWebServer(args.port, kicad_project)

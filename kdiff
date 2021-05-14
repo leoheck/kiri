@@ -804,7 +804,7 @@ web_dir="${output_dir}/web/"
 mv -f "${web_dir}/index.html" "${web_dir}/main_kidiff.html"
 mv -f "${web_dir}/main.html" "${web_dir}/index.html"
 
-webserver.py
+webserver.py ${kicad_pcb}
 pid=$?
 kill -9 $pid
 
