@@ -372,6 +372,7 @@ generate_comparisons()
 	repo_root_path=$2
 	project_path=$3
 	kicad_pcb=$4
+	main_html=$5
 
 	filename=$(basename -- "$kicad_pcb")
 	board_name="${filename%.*}"
@@ -814,7 +815,7 @@ project_dir=$(dirname "$kicad_pcb_path" | sed_ "s|${repo_root}/||g")
 # fi
 
 if [[ -f "${kicad_pcb}" ]]; then
-	generate_comparisons "${script_dir}" "${repo_root}" "${project_dir}" "${kicad_pcb}"
+	generate_comparisons "${script_dir}" "${repo_root}" "${project_dir}" "${kicad_pcb}" "${main_html}"
 else
 	echo "The board ${kicad_pcb} does not exit"
 	exit 1
