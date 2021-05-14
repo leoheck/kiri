@@ -27,7 +27,6 @@ Handler = SimpleHTTPRequestHandler
 
 class WebServerHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
-        pass
         super().__init__(
             *args,
             directory=os.path.realpath(
