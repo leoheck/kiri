@@ -7,23 +7,15 @@ import re
 import sys
 import signal
 
+# import http.server
+# from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import SimpleHTTPRequestHandler
+
 import webbrowser
 import socketserver
 
-# import http.server
-#from http.server import BaseHTTPRequestHandler, HTTPServer
-from http.server import SimpleHTTPRequestHandler
-
-
 from subprocess import PIPE, Popen
 from typing import List, Tuple
-
-socketserver.TCPServer.allow_reuse_address = True
-script_path = os.path.dirname(os.path.realpath(__file__))
-assets_folder = os.path.join(script_path, "assets")
-
-Handler = SimpleHTTPRequestHandler
-
 
 class WebServerHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
@@ -37,9 +29,12 @@ class WebServerHandler(SimpleHTTPRequestHandler):
     def log_message(self, format, *args):
         return
 
+socketserver.TCPServer.allow_reuse_address = True
+Handler = WebServerHandler
+# SimpleHTTPRequestHandler
 
 def startWebServer(port, project_path):
-    with socketserver.TCPServer(("", port), WebServerHandler) as httpd:
+    with socketserver.TCPServer(("", port), Handler) as httpd:
         url = "http://127.0.0.1:" + str(port) + "/" + project_path + "/web/index.html"
         print("")
         print("Starting webserver at {}".format(url))
