@@ -642,10 +642,11 @@ generate_comparisons()
 
 	# Copy assets
 	cp -f "${script_path}/${main_html}" "${web_dir}/"
-	cp -f "${script_path}/kdiff.js"    "${web_dir}/"
-	cp -f "${script_path}/kdiff.css"   "${web_dir}/"
-	cp -f "${script_path}/blank.svg"   "${web_dir}/"
-	cp -f "${script_path}/favicon.ico" "${web_dir}/"
+	cp -f "${script_path}/kdiff.js"     "${web_dir}/"
+	cp -f "${script_path}/kdiff.css"    "${web_dir}/"
+	cp -f "${script_path}/blank.svg"    "${web_dir}/"
+	cp -f "${script_path}/favicon.ico"  "${web_dir}/"
+	cp -f "${script_path}/redirect.html" "${web_dir}/../"
 
 	# Insert commits list
 	insert_commits "${web_dir}/${main_html}" "${commits}" "${current_path_fix}" "${kicad_pcb}" "${sch_files}"
@@ -786,7 +787,7 @@ if [[ "${DRY_RUN}" == 0 ]]; then
 	PLOTGITSCH_MISSING=$(check_tool plotgitsch)
 	KIDIFF_MISSING=$(check_tool kidiff)
 	export PLOTGITSCH_MISSING
-	export KIDIFF_MISSING  
+	export KIDIFF_MISSING
 fi
 
 if [[ ! "${PLOTGITSCH_MISSING}" = 0 ]]; then
@@ -826,9 +827,16 @@ fi
 output_dir="${repo_root}/kidiff/${project_dir}"
 web_dir="${output_dir}/web/"
 
-webserver.py "${kicad_pcb}"
-pid=$?
-kill -9 $pid > /dev/null
+if grep -q Microsoft /proc/version > /dev/null; then
+	# Working alternative for Windows WSL
+	echo "Launching webserver in http://127.0.0.1:9092"
+	cmd.exe /C start http://127.0.0.1:9092 &> /dev/null &
+	python3 -m http.server -d ./kidiff -b 127.0.0.1 9092 &> /dev/null
+else
+	webserver.py "${kicad_pcb}"
+	pid=$?
+	kill -9 $pid > /dev/null
+fi
 
 # if [[ "$LAUNCH_PAGE" == "1" ]]; then
 # 	if [[ "$DRY_RUN" == "0" ]]; then
