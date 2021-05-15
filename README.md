@@ -43,7 +43,8 @@ sudo apt install -y python3-pip
 sudo apt install -y python3-tk
 sudo apt install -y kicad
 
-# Opam (helps installing plotgitsch)
+# Initialize opam
+init --disable-sandboxing --reinit
 opam switch create 4.09.1
 opam switch 4.09.1
 eval $(opam config env)
