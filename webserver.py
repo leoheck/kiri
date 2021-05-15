@@ -18,6 +18,7 @@ from typing import List, Tuple
 prjctPath = None
 httpd = None
 
+
 class WebServerHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(
