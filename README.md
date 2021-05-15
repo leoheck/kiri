@@ -48,7 +48,7 @@ sudo apt install -y kicad
 opam init --disable-sandboxing --reinit
 opam switch create 4.09.1
 opam switch 4.09.1
-eval $(opam config env)
+eval $(opam env)
 
 # Install custom plotgitsch
 git clone https://github.com/leoheck/plotkicadsch.git
