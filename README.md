@@ -37,14 +37,15 @@ And then continue with the instructions in "Installing dependencies on Linux" in
 
 ```
 # Basic dependencies
-sudo apt install libgmp-dev pkg-config
+sudo apt install -y libgmp-dev
+sudo apt install -y pkg-config
 sudo apt install -y opam
 sudo apt install -y python3-pip
 sudo apt install -y python3-tk
 sudo apt install -y kicad
 
 # Initialize opam
-init --disable-sandboxing --reinit
+opam init --disable-sandboxing --reinit
 opam switch create 4.09.1
 opam switch 4.09.1
 eval $(opam config env)
