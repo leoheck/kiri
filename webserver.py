@@ -7,8 +7,6 @@ import re
 import sys
 import signal
 
-# import http.server
-# from http.server import BaseHTTPRequestHandler, HTTPServer
 from http.server import SimpleHTTPRequestHandler
 
 import webbrowser
@@ -17,33 +15,22 @@ import socketserver
 from subprocess import PIPE, Popen
 from typing import List, Tuple
 
+prjctPath = None
+httpd = None
+
 class WebServerHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(
             *args,
-            directory=os.path.realpath(
-                os.path.realpath(os.path.join(prjctPath, "kidiff")), **kwargs
-            )
+            directory=os.path.realpath(os.path.join(prjctPath, "kidiff"), **kwargs)
         )
 
     def log_message(self, format, *args):
         return
 
-socketserver.TCPServer.allow_reuse_address = True
-Handler = WebServerHandler
-# SimpleHTTPRequestHandler
-
-def startWebServer(port, project_path):
-    with socketserver.TCPServer(("", port), Handler) as httpd:
-        url = "http://127.0.0.1:" + str(port) + "/" + project_path + "/web/index.html"
-        print("")
-        print("Starting webserver at {}".format(url))
-        print("(Hit Ctrl+C to exit)")
-        webbrowser.open(url)
-        httpd.serve_forever()
-
 
 def signal_handler(sig, frame):
+    httpd.server_close()
     sys.exit(0)
 
 
@@ -142,4 +129,24 @@ if __name__ == "__main__":
     print("    Board Name:", board_file)
 
     if not args.webserver_disable:
-        startWebServer(args.port, kicad_project)
+
+        socketserver.TCPServer.allow_reuse_address = True
+        request_handler = WebServerHandler
+        httpd = socketserver.TCPServer(("", args.port), request_handler)
+
+        if kicad_project != ".":
+            path = "/kidiff/"
+
+        with httpd:
+            url = (
+                "http://127.0.0.1:"
+                + str(args.port)
+                + "/"
+                + kicad_project
+                + "/web/index.html"
+            )
+            print("")
+            print("Starting webserver at {}".format(url))
+            print("(Hit Ctrl+C to exit)")
+            webbrowser.open(url)
+            httpd.serve_forever()

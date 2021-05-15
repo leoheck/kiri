@@ -783,8 +783,10 @@ done
 if [[ "${DRY_RUN}" == 0 ]]; then
 	check_tool opam > /dev/null
 	eval "$(opam config env)"
-	export PLOTGITSCH_MISSING=$(check_tool plotgitsch)
-	export KIDIFF_MISSING=$(check_tool kidiff)
+	PLOTGITSCH_MISSING=$(check_tool plotgitsch)
+	KIDIFF_MISSING=$(check_tool kidiff)
+	export PLOTGITSCH_MISSING
+	export KIDIFF_MISSING  
 fi
 
 if [[ ! "${PLOTGITSCH_MISSING}" = 0 ]]; then
@@ -824,9 +826,9 @@ fi
 output_dir="${repo_root}/kidiff/${project_dir}"
 web_dir="${output_dir}/web/"
 
-webserver.py ${kicad_pcb}
+webserver.py "${kicad_pcb}"
 pid=$?
-kill -9 $pid
+kill -9 $pid > /dev/null
 
 # if [[ "$LAUNCH_PAGE" == "1" ]]; then
 # 	if [[ "$DRY_RUN" == "0" ]]; then
