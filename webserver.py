@@ -139,10 +139,6 @@ if __name__ == "__main__":
             url = (
                 "http://127.0.0.1:"
                 + str(args.port)
-                + "/"
-                + kicad_project
-                + "/"
-                + "web/index.html"
             )
             print("")
             print("Starting webserver at {}".format(url))
