@@ -135,16 +135,14 @@ if __name__ == "__main__":
         request_handler = WebServerHandler
         httpd = socketserver.TCPServer(("", args.port), request_handler)
 
-        if kicad_project != ".":
-            path = "/kidiff/"
-
         with httpd:
             url = (
                 "http://127.0.0.1:"
                 + str(args.port)
                 + "/"
                 + kicad_project
-                + "/web/index.html"
+                + "/"
+                + "web/index.html"
             )
             print("")
             print("Starting webserver at {}".format(url))
