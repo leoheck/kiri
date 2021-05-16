@@ -827,11 +827,13 @@ fi
 output_dir="${repo_root}/kidiff/${project_dir}"
 web_dir="${output_dir}/web/"
 
-if grep -q Microsoft /proc/version > /dev/null; then
+if grep -q "Microsoft" /proc/version > /dev/null; then
 	# Working alternative for Windows WSL
-	echo "Launching webserver in http://127.0.0.1:9092"
-	cmd.exe /C start http://127.0.0.1:9092 &> /dev/null &
-	python3 -m http.server -d ./kidiff -b 127.0.0.1 9092 &> /dev/null
+	host=127.0.0.1
+	port=9092
+	echo "Launching webserver in http://${host}:${port}"
+	cmd.exe /C start "http://${host}:${port}" &> /dev/null &
+	python3 -m http.server -d "$web_dir" -b "$host" $port &> /dev/null
 else
 	webserver.py "${kicad_pcb}"
 	pid=$?
