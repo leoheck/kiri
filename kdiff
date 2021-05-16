@@ -834,7 +834,7 @@ if grep -q "Microsoft" /proc/version > /dev/null; then
 	echo "Starting webserver at http://${host}:${port}"
 	cmd.exe /C start "http://${host}:${port}" &> /dev/null &
 	python3 -m http.server -d "${web_dir}/../" -b "$host" $port &> /dev/null
-	print("(Hit Ctrl+C to exit)")
+	echo "(Hit Ctrl+C to exit)"
 else
 	webserver.py "${kicad_pcb}"
 	pid=$?
