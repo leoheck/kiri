@@ -10,9 +10,9 @@ show_help()
 
 	OPTIONS:
 
-	    -a          Track all commits (slower). By default it looks only commits related with *.kicad_pcb and *.sch files
-	    -o HASH     Show commits starting from this one - This HASH is the short version
-	    -n HASH     Show commits until this one delimited by this one - This HASH is the short version
+	    -a          Track all commits (slower).
+	    -o HASH     Show commits starting from this one.
+	    -n HASH     Show commits until this one delimited by this one.
 	    -r          Remove kidiff folder before run
 	    -l          Do not launch browser at the end
 	    -v VIEWER   Change default page viewer
@@ -25,11 +25,10 @@ show_help()
 	    kdiff board.kicad_pcb
 
 	    # Nested Kicad projects
-	    kdiff power-panel/board.kicad_pcb -r -v
-
+	    kdiff nested-project/board.kicad_pcb -r -v
 	EOM
 
-	echo -e "\n$HELP_MESSAGE\n"
+	echo -e "$HELP_MESSAGE"
 }
 
 # ======================
@@ -536,30 +535,43 @@ generate_comparisons()
 						ret=$?
 						if [[ "$VERBOSE" == "1" ]]; then
 							if [[ "${ret}" -gt "0" ]]; then
-								echo "Status: ${ret}"
-								echo
+								echo "   Status: ${ret}"
+								# echo
 							fi
 						fi
 					fi
-
 
 					if [ -f "${output_dir}/diff.txt" ]; then
 						cp -f "${output_dir}/diff.txt" "${output_dir}/diff-pcb-$i-$j.txt"
 						cp -f "${output_dir}/diff.txt" "${output_dir}/diff-pcb-$j-$i.txt"
 					fi
 
+					if [[ "$ret" == "1" ]]; then
+						if [[ ! $(du -s "${output_dir}/$i/${board_name}.kicad_pcb" | cut -d$'\t' -f1) = 0 ]]; then
+							cmd="plotpcb -o \"${output_dir}/$i/\" -q \"${output_dir}/$i/${board_name}.kicad_pcb\""
+							echo "   ${cmd}"
+							eval "$cmd"
+						fi
+						if [[ ! $(du -s "${output_dir}/$j/${board_name}.kicad_pcb" | cut -d$'\t' -f1) = 0 ]]; then
+							cmd="plotpcb -o \"${output_dir}/$j/\" -q \"${output_dir}/$j/${board_name}.kicad_pcb\""
+							echo "   ${cmd}"
+							eval "$cmd"
+						fi
+					fi
 				fi
 
 				IFS=$'\n'
 				for layer in $board_layers; do
+					# Create blank svg when it is missing
 					if [[ ! -f "${output_dir}/$i/${board_name}-${layer}.svg" ]]; then
 						cp "${script_path}/blank.svg" "${output_dir}/$i/${board_name}-${layer}.svg"
+						# ln -sf "${web_dir}/blank.svg" "${output_dir}/$i/${board_name}-${layer}.svg"
 					fi
 					if [[ ! -f "${output_dir}/$j/${board_name}-${layer}.svg" ]]; then
 						cp "${script_path}/blank.svg" "${output_dir}/$j/${board_name}-${layer}.svg"
+						# ln -sf "${web_dir}/blank.svg" "${output_dir}/$j/${board_name}-${layer}.svg"
 					fi
 				done
-
 
 				# ====
 
@@ -579,23 +591,24 @@ generate_comparisons()
 						ret=$?
 						if [[ "$VERBOSE" == "1" ]]; then
 							if [[ "${ret}" -gt "0" ]]; then
-								echo "Status: ${ret}"
+								echo "   Status: ${ret}"
 								echo
 							fi
 						fi
 					fi
+					if [[ "${VERBOSE}" == "1" ]]; then
+						echo
+					fi
 				fi
-
-				echo
 
 				IFS=$'\n'
 				for sch_page_name in $sch_page_names; do
 					# Create blank svg when it is missing
 					if [[ ! -f "sch1-${sch_page_name}.svg" ]]; then
-						cp "${script_path}/blank.svg" "sch1-${sch_page_name}.svg"
+						ln -sf "${web_dir}/blank.svg" "sch1-${sch_page_name}.svg"
 					fi
 					if [[ ! -f "sch2-${sch_page_name}.svg" ]]; then
-						cp "${script_path}/blank.svg" "sch2-${sch_page_name}.svg"
+						ln -sf "${web_dir}/blank.svg" "sch2-${sch_page_name}.svg"
 					fi
 				done
 
