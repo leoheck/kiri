@@ -646,7 +646,7 @@ generate_comparisons()
 	cp -f "${script_path}/kdiff.css"    "${web_dir}/"
 	cp -f "${script_path}/blank.svg"    "${web_dir}/"
 	cp -f "${script_path}/favicon.ico"  "${web_dir}/"
-	cp -f "${script_path}/redirect.html" "${web_dir}/../"
+	cp -f "${script_path}/redirect.html" "${web_dir}/../index.html"
 
 	# Insert commits list
 	insert_commits "${web_dir}/${main_html}" "${commits}" "${current_path_fix}" "${kicad_pcb}" "${sch_files}"
@@ -833,7 +833,7 @@ if grep -q "Microsoft" /proc/version > /dev/null; then
 	port=9092
 	echo "Launching webserver in http://${host}:${port}"
 	cmd.exe /C start "http://${host}:${port}" &> /dev/null &
-	python3 -m http.server -d "$web_dir" -b "$host" $port &> /dev/null
+	python3 -m http.server -d "${web_dir}/../" -b "$host" $port &> /dev/null
 else
 	webserver.py "${kicad_pcb}"
 	pid=$?
