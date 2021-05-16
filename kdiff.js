@@ -516,7 +516,7 @@ window.onload = function() {
             minZoom: 1,
             maxZoom: 20,
             zoomScaleSensitivity: 0.1,
-            fit: true, // cannot be used, bug? (this one must be here to change the default)
+            fit: false, // cannot be used, bug? (this one must be here to change the default)
             viewportSelector: '.svg-pan-zoom_viewport-sch',
             eventsListenerElement: document.querySelector('#svg-id-sch .svg-pan-zoom_viewport-sch')
         }
@@ -530,7 +530,7 @@ window.onload = function() {
             minZoom: 1,
             maxZoom: 20,
             zoomScaleSensitivity: 0.1,
-            fit: true, // cannot be used, bug? (this one must be here to change the default)
+            fit: false, // cannot be used, bug? (this one must be here to change the default)
             viewportSelector: '.svg-pan-zoom_viewport-pcb',
             eventsListenerElement: document.querySelector('#svg-id-pcb .svg-pan-zoom_viewport-pcb')
         }
