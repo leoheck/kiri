@@ -596,7 +596,7 @@ function show_sch() {
 
     // New pages list
     pages_dropdown = document.getElementById("pages_dropdown");
-    pages_dropdown.style.display = "inline";
+    pages_dropdown.style.display = "none";
 
     // Hide layout image
     pcb_view = document.getElementById("diff-pcb");
@@ -641,7 +641,7 @@ function show_pcb() {
 
     // New layers list
     layers_dropdown = document.getElementById("layers_dropdown");
-    layers_dropdown.style.display = "inline";
+    layers_dropdown.style.display = "none";
 }
 
 // =======================================

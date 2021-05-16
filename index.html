@@ -64,7 +64,7 @@
 									</small>
 								</p>
 								<span style="width: 2em"></span>
-								<form class="inline">
+								<form class="inline" style="display: none">
 									<div id="view_type" class="form-group btn-group btn-group-toggle" data-toggle="buttons" role="group" aria-label="View Type">
 										<label id="show_onion_lbl" title="Onion View" class="btn btn-secondary active" onclick="show_onion()">
 											<input id="show_onion" type="radio" value="show_onion" name="view_type">
@@ -78,7 +78,7 @@
 								</form>
 								<span style="width: 0.5em"></span>
 								<p class="text-light" style="padding-top: 5px">
-									<small class="text-sm">
+									<small class="text-sm" style="display: none">
 									Toggle view type with <kbd>d</kbd>
 									</small>
 								</p>
@@ -105,15 +105,15 @@
 								<div id="legend" class="no-gutters">
 									<form class="rounded form-inline" style="background-color: #222; padding: 10px 5px 10px 5px">
 										<span id=commit1_legend style="margin-left:0.5em; margin-right:0.5em; color: #00FFFF; width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
-										<small class="text-sm text-muted"> New - <span class="text-monospace" id=commit1_legend_hash>[COMMIT_1_HASH]</span></small>
+										<small class="text-sm text-muted"> New <span class="text-monospace" id=commit1_legend_hash>([COMMIT_1_HASH])</span></small>
 										<span style="width: 2em;"></span>
 										<span id="commit2_legend" style="margin-left:0.5em; margin-right:0.5em; color: #880808; width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
-										<small class="text-sm text-muted"> Old - <span class="text-monospace" id=commit2_legend_hash>[COMMIT_2_HASH]</span></small>
+										<small class="text-sm text-muted"> Old <span class="text-monospace" id=commit2_legend_hash>([COMMIT_2_HASH])</span></small>
 										<span style="width: 2em;"></span>
 										<span id="commit3_legend" style="margin-left:0.5em; margin-right:0.5em; color: #807F7F; width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
 										<small class="text-sm text-muted"> Unchanged </small>
 										<span style="width: 2em"></span>
-										<div id="pages_dropdown" class="dropdown" style="display: inline;">
+										<div id="pages_dropdown" class="dropdown" style="display: none;">
 											<a class="btn btn-secondary dropdown-toggle" href="#" title="Cyle pages with &#8592; and &#8594;" name="pages_new" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"/>
 												<span style="margin-left:0px; margin-right:0.1em;" class="iconify" data-icon="gridicons:pages" data-inline="false"></span>
 												Root
