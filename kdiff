@@ -387,7 +387,7 @@ generate_comparisons()
 
 		# WORKAROUND FOR NESTED PROJECTS SINCE PLOTGITSCH DOES NOT FILTER IT WELL YET
 		# ====================
-		if [[ ! "$current_path_fix" = "./" ]]; then
+		# if [[ ! "$current_path_fix" = "./" ]]; then
 			echo
 			repo_root_path_="/tmp/$(basename -- "$repo_root_path")"
 			rm -rf "$repo_root_path_"
@@ -398,7 +398,7 @@ generate_comparisons()
 			output_dir="${repo_root_path}/kidiff/${project_path}"
 			web_dir="${output_dir}/web/"
 			echo
-		fi
+		# fi
 		# ====================
 
 
@@ -852,13 +852,13 @@ web_dir="${output_dir}/web/"
 		current_path_fix="${project_path}"
 	fi
 
-	if [[ ! "$current_path_fix" = "./" ]]; then
+	# if [[ ! "$current_path_fix" = "./" ]]; then
 		echo
 		repo_root_path="/tmp/$(basename -- "$repo_root_path")"
 		output_dir="${repo_root_path}/kidiff/${project_path}"
 		web_dir="${output_dir}/web/"
 		echo
-	fi
+	# fi
 	# ====================
 
 echo "output_di  = $output_dir"
