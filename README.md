@@ -7,10 +7,6 @@ It is currently supporting Kicad projects that use GIT.
 
 # Dependencies
 
-These tools have to be in the `$PATH`
-- [Plotgitsh](https://github.com/leoheck/plotkicadsch)
-- [Kicad-Diff](https://github.com/Gasman2014/KiCad-Diff)
-
 
 ## [Installing dependencies on Windows](https://www.tenforums.com/tutorials/46769-enable-disable-windows-subsystem-linux-wsl-windows-10-a.html)
 
