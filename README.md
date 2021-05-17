@@ -93,21 +93,19 @@ kdiff board.kicad_pcb
 How to access tool help, this may change, so prefer to use `kdiff -h` instead.
 
 ```
-➜ kdiff -h                
-
 USAGE :
 
     kdiff [OPTIONS] KICAD_PCB
 
 OPTIONS:
 
-    -a          Track all commits (slower). By default it looks only commits related with *.kicad_pcb and *.sch files
-    -o HASH     Show commits starting from this one - This HASH is the short version
-    -n HASH     Show commits until this one delimited by this one - This HASH is the short version
+    -a          Track all commits (slower).
+    -o HASH     Show commits starting from this one.
+    -n HASH     Show commits until this one delimited by this one.
     -r          Remove kidiff folder before run
     -l          Do not launch browser at the end
-    -w VIEWER   Change default page viewer
-    -v          Verbose
+    -p PORT     Set webserver port
+    -V          Verbose
     -h          This help
 
 EXAMPLES:
@@ -116,7 +114,7 @@ EXAMPLES:
     kdiff board.kicad_pcb
 
     # Nested Kicad projects
-    kdiff my_kicad_project/board.kicad_pcb -r -v
+    kdiff nested-project/board.kicad_pcb -r -v
 ```
 
 ## Examples
