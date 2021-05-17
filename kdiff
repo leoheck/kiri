@@ -15,7 +15,7 @@ show_help()
 	    -n HASH     Show commits until this one delimited by this one.
 	    -r          Remove kidiff folder before run
 	    -l          Do not launch browser at the end
-	    -v VIEWER   Change default page viewer
+	    -p PORT     Set webserver port
 	    -V          Verbose
 	    -h          This help
 
@@ -105,19 +105,6 @@ find_()
 		*)
 			find "$@"
 			;;
-	esac
-}
-
-xdg-open_()
-{
-	echo "Launching $1"
-	case $OSTYPE in
-		darwin*)
-			open "$1" &
-		;;
-		*)
-			xdg-open "$1" 2> /dev/null &
-		;;
 	esac
 }
 
@@ -398,6 +385,23 @@ generate_comparisons()
 		current_path_fix="${project_path}"
 	fi
 
+		# WORKAROUND FOR NESTED PROJECTS SINCE PLOTGITSCH DOES NOT FILTER IT WELL YET
+		# ====================
+		if [[ ! "$current_path_fix" = "./" ]]; then
+			echo
+			repo_root_path_="/tmp/$(basename -- $repo_root_path)"
+			rm -rf $repo_root_path_
+			cp -rf "${repo_root_path}" /tmp
+			repo_root_path=$repo_root_path_
+			cd "$repo_root_path"
+			git-filter-repo --path "$current_path_fix" --force
+			output_dir="${repo_root_path}/kidiff/${project_path}"
+			web_dir="${output_dir}/web/"
+			echo
+		fi
+		# ====================
+
+
 	sch_files=$(find_ "${current_path_fix}" -name "*.sch" -printf "%p ")
 
 
@@ -564,12 +568,12 @@ generate_comparisons()
 				for layer in $board_layers; do
 					# Create blank svg when it is missing
 					if [[ ! -f "${output_dir}/$i/${board_name}-${layer}.svg" ]]; then
-						cp "${script_path}/blank.svg" "${output_dir}/$i/${board_name}-${layer}.svg"
-						# ln -sf "${web_dir}/blank.svg" "${output_dir}/$i/${board_name}-${layer}.svg"
+						# cp "${script_path}/blank.svg" "${output_dir}/$i/${board_name}-${layer}.svg"
+						ln -sf "${web_dir}/blank.svg" "${output_dir}/$i/${board_name}-${layer}.svg"
 					fi
 					if [[ ! -f "${output_dir}/$j/${board_name}-${layer}.svg" ]]; then
-						cp "${script_path}/blank.svg" "${output_dir}/$j/${board_name}-${layer}.svg"
-						# ln -sf "${web_dir}/blank.svg" "${output_dir}/$j/${board_name}-${layer}.svg"
+						# cp "${script_path}/blank.svg" "${output_dir}/$j/${board_name}-${layer}.svg"
+						ln -sf "${web_dir}/blank.svg" "${output_dir}/$j/${board_name}-${layer}.svg"
 					fi
 				done
 
@@ -730,7 +734,7 @@ export DRY_RUN=0
 export NEWER_COMMIT=""
 export OLDER_COMMIT=""
 export LAUNCH_PAGE=1
-export PAGE_VIEWER=""
+export WEBSERVER_PORT=8000
 
 while [[ $# -gt 0 ]]
 do
@@ -775,8 +779,8 @@ do
 		shift
 		;;
 
-	-v)
-		PAGE_VIEWER="$2"
+	-p)
+		WEBSERVER_PORT="$2"
 		shift
 		shift
 		;;
@@ -840,27 +844,35 @@ fi
 output_dir="${repo_root}/kidiff/${project_dir}"
 web_dir="${output_dir}/web/"
 
+	# WORKAROUND FOR NESTED PROJECTS SINCE PLOTGITSCH DOES NOT FILTER IT WELL YET
+	# ====================
+	if [[ "$project_path" == $(basename "$(pwd)") ]]; then
+		current_path_fix="./"
+	else
+		current_path_fix="${project_path}"
+	fi
+
+	if [[ ! "$current_path_fix" = "./" ]]; then
+		echo
+		repo_root_path="/tmp/$(basename -- $repo_root_path)"
+		output_dir="${repo_root_path}/kidiff/${project_path}"
+		web_dir="${output_dir}/web/"
+		echo
+	fi
+	# ====================
+
+echo "output_di  = $output_dir"
+echo "web_dir  = $web_dir"
+
 if grep -q "Microsoft" /proc/version > /dev/null; then
-	# Working alternative for Windows WSL
+	# Webserver alternative for Windows with WSL
 	host=127.0.0.1
-	port=9092
-	echo "Starting webserver at http://${host}:${port}"
-	cmd.exe /C start "http://${host}:${port}" &> /dev/null &
-	python3 -m http.server -d "${web_dir}/../" -b "$host" $port &> /dev/null
+	echo "Starting webserver at http://${host}:${WEBSERVER_PORT}"
+	cmd.exe /C start "http://${host}:${WEBSERVER_PORT}" &> /dev/null &
+	python3 -m http.server -d "${web_dir}/../" -b "$host" $WEBSERVER_PORT &> /dev/null
 	echo "(Hit Ctrl+C to exit)"
 else
-	webserver.py "${kicad_pcb}"
+	webserver.py -p $WEBSERVER_PORT "${kicad_pcb}"
 	pid=$?
 	kill -9 $pid > /dev/null
 fi
-
-# if [[ "$LAUNCH_PAGE" == "1" ]]; then
-# 	if [[ "$DRY_RUN" == "0" ]]; then
-# 		echo
-# 		if [[ "$PAGE_VIEWER" != "" ]]; then
-# 			# $PAGE_VIEWER "${web_dir}/index.html" &
-# 		else
-# 			xdg-open_ "${web_dir}/index.html"
-# 		fi
-# 	fi
-# fi
