@@ -389,11 +389,11 @@ generate_comparisons()
 		# ====================
 		if [[ ! "$current_path_fix" = "./" ]]; then
 			echo
-			repo_root_path_="/tmp/$(basename -- $repo_root_path)"
-			rm -rf $repo_root_path_
+			repo_root_path_="/tmp/$(basename -- "$repo_root_path")"
+			rm -rf "$repo_root_path_"
 			cp -rf "${repo_root_path}" /tmp
-			repo_root_path=$repo_root_path_
-			cd "$repo_root_path"
+			repo_root_path="$repo_root_path_"
+			cd "$repo_root_path" || exit
 			git-filter-repo --path "$current_path_fix" --force
 			output_dir="${repo_root_path}/kidiff/${project_path}"
 			web_dir="${output_dir}/web/"
@@ -854,7 +854,7 @@ web_dir="${output_dir}/web/"
 
 	if [[ ! "$current_path_fix" = "./" ]]; then
 		echo
-		repo_root_path="/tmp/$(basename -- $repo_root_path)"
+		repo_root_path="/tmp/$(basename -- "$repo_root_path")"
 		output_dir="${repo_root_path}/kidiff/${project_path}"
 		web_dir="${output_dir}/web/"
 		echo
@@ -869,10 +869,10 @@ if grep -q "Microsoft" /proc/version > /dev/null; then
 	host=127.0.0.1
 	echo "Starting webserver at http://${host}:${WEBSERVER_PORT}"
 	cmd.exe /C start "http://${host}:${WEBSERVER_PORT}" &> /dev/null &
-	python3 -m http.server -d "${web_dir}/../" -b "$host" $WEBSERVER_PORT &> /dev/null
+	python3 -m http.server -d "${web_dir}/../" -b "$host" "$WEBSERVER_PORT" &> /dev/null
 	echo "(Hit Ctrl+C to exit)"
 else
-	webserver.py -p $WEBSERVER_PORT "${kicad_pcb}"
+	webserver.py -p "$WEBSERVER_PORT" "${kicad_pcb}"
 	pid=$?
 	kill -9 $pid > /dev/null
 fi
