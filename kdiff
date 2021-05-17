@@ -358,7 +358,8 @@ generate_comparisons()
 	repo_root_path=$2
 	project_path=$3
 	kicad_pcb=$4
-	main_html=$5
+
+	main_html=index.html
 
 	filename=$(basename -- "$kicad_pcb")
 	board_name="${filename%.*}"
@@ -388,19 +389,18 @@ generate_comparisons()
 		# WORKAROUND FOR NESTED PROJECTS SINCE PLOTGITSCH DOES NOT FILTER IT WELL YET
 		# ====================
 		# if [[ ! "$current_path_fix" = "./" ]]; then
-			echo
-			repo_root_path_="/tmp/$(basename -- "$repo_root_path")"
-			rm -rf "$repo_root_path_"
-			cp -rf "${repo_root_path}" /tmp
-			repo_root_path="$repo_root_path_"
-			cd "$repo_root_path" || exit
-			git-filter-repo --path "$current_path_fix" --force
-			output_dir="${repo_root_path}/kidiff/${project_path}"
-			web_dir="${output_dir}/web/"
-			echo
+			# echo
+			# repo_root_path_="/tmp/$(basename -- "$repo_root_path")"
+			# rm -rf "$repo_root_path_"
+			# cp -rf "${repo_root_path}" /tmp
+			# repo_root_path="$repo_root_path_"
+			# cd "$repo_root_path" || exit
+			# git-filter-repo --path "$current_path_fix" --force
+			# output_dir="${repo_root_path}/kidiff/${project_path}"
+			# web_dir="${output_dir}/web/"
+			# echo
 		# fi
 		# ====================
-
 
 	sch_files=$(find_ "${current_path_fix}" -name "*.sch" -printf "%p ")
 
@@ -540,7 +540,6 @@ generate_comparisons()
 						if [[ "$VERBOSE" == "1" ]]; then
 							if [[ "${ret}" -gt "0" ]]; then
 								echo "   Status: ${ret}"
-								# echo
 							fi
 						fi
 					fi
@@ -568,11 +567,9 @@ generate_comparisons()
 				for layer in $board_layers; do
 					# Create blank svg when it is missing
 					if [[ ! -f "${output_dir}/$i/${board_name}-${layer}.svg" ]]; then
-						# cp "${script_path}/blank.svg" "${output_dir}/$i/${board_name}-${layer}.svg"
 						ln -sf "${web_dir}/blank.svg" "${output_dir}/$i/${board_name}-${layer}.svg"
 					fi
 					if [[ ! -f "${output_dir}/$j/${board_name}-${layer}.svg" ]]; then
-						# cp "${script_path}/blank.svg" "${output_dir}/$j/${board_name}-${layer}.svg"
 						ln -sf "${web_dir}/blank.svg" "${output_dir}/$j/${board_name}-${layer}.svg"
 					fi
 				done
@@ -586,7 +583,15 @@ generate_comparisons()
 
 				if [[ ! "$PLOTGITSCH_MISSING" == 1 ]]; then
 
-					cmd="plotgitsch -l ${current_path_fix}/${board_name}-cache.lib -c ${removed_color}:${added_color}:${unchanged_color}:${background_color} ${i} ${j} &> /dev/null"
+					# WORKAROUND FOR PLOTGITSH WHICH CANNOT SET RUNNING PATH
+					if [[ ! "$current_path_fix" = "./" ]]; then
+						cd "$current_path_fix"
+						cache_dir=""
+					else
+						cache_dir="$current_path_fix"
+					fi
+
+					cmd="plotgitsch -l ${cache_dir}/${board_name}-cache.lib -c ${removed_color}:${added_color}:${unchanged_color}:${background_color} ${i} ${j} &> /dev/null"
 					if [[ "${VERBOSE}" == "1" ]]; then
 						echo "   $cmd"
 					fi
@@ -639,6 +644,12 @@ generate_comparisons()
 							;;
 					esac
 				done
+
+				# WORKAROUND FOR PLOTGITSH WHICH CANNOT SET RUNNING PATH
+				# Restore original path
+				if [[ ! "$current_path_fix" = "./" ]]; then
+					cd - > /dev/null
+				fi
 
 			fi
 		done
@@ -822,20 +833,12 @@ case $OSTYPE in
 		;;
 esac
 
-main_html=index.html
-
 repo_root=$(git rev-parse --show-toplevel)
 kicad_pcb_path=$(readlink_ "${kicad_pcb}" | sed_ "s|${repo_root}/||g")
 project_dir=$(dirname "$kicad_pcb_path" | sed_ "s|${repo_root}/||g")
 
-# if [[ "$repo_root" != "$(pwd)" ]]; then
-	# echo "You must be inside a main repo root path"
-	# echo "Here: $repo_root"
-	# exit
-# fi
-
 if [[ -f "${kicad_pcb}" ]]; then
-	generate_comparisons "${script_dir}" "${repo_root}" "${project_dir}" "${kicad_pcb}" "${main_html}"
+	generate_comparisons "${script_dir}" "${repo_root}" "${project_dir}" "${kicad_pcb}"
 else
 	echo "The board ${kicad_pcb} does not exit"
 	exit 1
@@ -843,26 +846,6 @@ fi
 
 output_dir="${repo_root}/kidiff/${project_dir}"
 web_dir="${output_dir}/web/"
-
-	# WORKAROUND FOR NESTED PROJECTS SINCE PLOTGITSCH DOES NOT FILTER IT WELL YET
-	# ====================
-	if [[ "$project_path" == $(basename "$(pwd)") ]]; then
-		current_path_fix="./"
-	else
-		current_path_fix="${project_path}"
-	fi
-
-	# if [[ ! "$current_path_fix" = "./" ]]; then
-		echo
-		repo_root_path="/tmp/$(basename -- "$repo_root_path")"
-		output_dir="${repo_root_path}/kidiff/${project_path}"
-		web_dir="${output_dir}/web/"
-		echo
-	# fi
-	# ====================
-
-echo "output_di  = $output_dir"
-echo "web_dir  = $web_dir"
 
 if grep -q "Microsoft" /proc/version > /dev/null; then
 	# Webserver alternative for Windows with WSL
