@@ -651,21 +651,21 @@ generate_comparisons()
 	insert_pages "${web_dir}/${main_html}" "$pages"
 
 	# Update board title
-	title=$(grep -i "(title .*)" "${kicad_pcb}" | sed_ "s/^[ \t]\+//g" | cut -d" " -f 2- | sed_ "s/[)\"]//g")
+	title=$(grep -i "(title .*)" "${kicad_pcb}" 2> /dev/null | sed_ "s/^[ \t]\+//g" | cut -d" " -f 2- | sed_ "s/[)\"]//g")
 	if [[ $title == "" ]]; then
 		title="{Title}";
 	fi
 	sed_ -i "s|\[PROJECT_TITLE\]|${title}|g" "${web_dir}/${main_html}"
 
 	# Update board revision
-	revision=$(grep "(rev " "${kicad_pcb}" | sed_ "s/^[ \t]\+//g" | sed_ "s/[()]//g" | cut -d" " -f2- | sed_ "s/\"//g")
+	revision=$(grep "(rev " "${kicad_pcb}" 2> /dev/null | sed_ "s/^[ \t]\+//g" | sed_ "s/[()]//g" | cut -d" " -f2- | sed_ "s/\"//g")
 	if [[ $revision == "" ]]; then
 		revision="{Rev}";
 	fi
 	sed_ -i "s|\[PROJECT_REVISION\]|${revision}|g" "${web_dir}/${main_html}"
 
 	# Update board date
-	date=$(grep "(date " "${kicad_pcb}" | sed_ "s/^[ \t]\+//g" | sed_ "s/[()]//g" | cut -d" " -f2)
+	date=$(grep "(date " "${kicad_pcb}" 2> /dev/null | sed_ "s/^[ \t]\+//g" | sed_ "s/[()]//g" | cut -d" " -f2)
 	if [[ $date == "" ]]; then
 		date="{Date}";
 	fi
