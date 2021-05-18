@@ -31,7 +31,7 @@ do
 	esac
 done
 
-if [[ ! "$DIRECTORY" = "." ]]; then
+if [[ ! "$DIRECTORY" = "." ]] && [[ ! "$DIRECTORY" = "./" ]]; then
 	cd "$DIRECTORY" || exit
 	LIBRARY=$(basename "$LIBRARY")
 fi
@@ -40,7 +40,7 @@ cmd="plotgitsch -l $LIBRARY $ARGS"
 # echo $cmd
 eval "$cmd"
 
-if [[ ! "$DIRECTORY" = "." ]]; then
+if [[ ! "$DIRECTORY" = "." ]] && [[ ! "$DIRECTORY" = "./" ]]; then
 	mv *.svg ../
 	cd - > /dev/null || exit
 fi
