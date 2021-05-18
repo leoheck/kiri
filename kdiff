@@ -6,7 +6,7 @@ show_help()
 
 	USAGE :
 
-	    kdiff [OPTIONS] KICAD_PCB
+	    kdiff [OPTIONS] KICAD_PROJECT_FILE
 
 	OPTIONS:
 
@@ -22,10 +22,10 @@ show_help()
 	EXAMPLES:
 
 	    # Kicad project on the root of the repo
-	    kdiff board.kicad_pcb
+	    kdiff board.pro
 
 	    # Nested Kicad projects
-	    kdiff nested-project/board.kicad_pcb -r -v
+	    kdiff nested-project/board.pro -r -v
 	EOM
 
 	echo -e "$HELP_MESSAGE"
@@ -769,11 +769,13 @@ do
 		;;
 
 	*)
-		kicad_pcb="$1"
+		kicad_pro="$1"
 		shift # past argument
 		;;
 	esac
 done
+
+kicad_pcb=${kicad_pro//.pro/.kicad_pcb}
 
 # Check required tools
 if [[ "${DRY_RUN}" == 0 ]]; then
@@ -804,7 +806,7 @@ repo_root=$(git rev-parse --show-toplevel)
 kicad_pcb_path=$(readlink_ "${kicad_pcb}" | sed_ "s|${repo_root}/||g")
 project_dir=$(dirname "$kicad_pcb_path" | sed_ "s|${repo_root}/||g")
 
-if [[ -f "${kicad_pcb}" ]]; then
+if [[ -f "${kicad_pro}" ]]; then
 	generate_comparisons "${script_dir}" "${repo_root}" "${project_dir}" "${kicad_pcb}"
 else
 	echo "The board ${kicad_pcb} does not exit"
