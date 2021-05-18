@@ -134,8 +134,8 @@ get_pages()
 	board_name=$1
 	main_schematic=$2
 
-	# First page is this one, name is Root on Kicad, here is the $board_name
-	pages="Root|${board_name}"
+	# First page is this one
+	pages="${board_name}|${board_name}"
 
 	pagenames=$(grep "^F0 " "${main_schematic}" | cut -d" " -f2 | tr "\n" "|" | sed_ "s/\"//g" | sed_ "s/|$//g" | tr "|" "\n")
 	pagepaths=$(grep "^F1 " "${main_schematic}" | cut -d" " -f2 | tr "\n" "|" | sed_ "s/\"//g" | sed_ "s/|$//g" | tr "|" "\n")
@@ -585,8 +585,8 @@ generate_comparisons()
 
 					# WORKAROUND FOR PLOTGITSH WHICH CANNOT SET RUNNING PATH
 					if [[ ! "$current_path_fix" = "./" ]]; then
-						cd "$current_path_fix"
-						cache_dir=""
+						cd "$current_path_fix" || exit
+						cache_dir="./"
 					else
 						cache_dir="$current_path_fix"
 					fi
@@ -648,7 +648,7 @@ generate_comparisons()
 				# WORKAROUND FOR PLOTGITSH WHICH CANNOT SET RUNNING PATH
 				# Restore original path
 				if [[ ! "$current_path_fix" = "./" ]]; then
-					cd - > /dev/null
+					cd - > /dev/null || exit
 				fi
 
 			fi
@@ -684,7 +684,7 @@ generate_comparisons()
 	insert_pages "${web_dir}/${main_html}" "$pages"
 
 	# Update board title
-	title=$(grep -i "(title " "${kicad_pcb}" | cut -d"\"" -f 2)
+	title=$(grep -i "(title .*)" "${kicad_pcb}" | sed_ "s/^[ \t]\+//g" | cut -d" " -f 2- | sed_ "s/[)\"]//g")
 	if [[ $title == "" ]]; then
 		title="{Title}";
 	fi
