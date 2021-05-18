@@ -114,7 +114,7 @@ EXAMPLES:
     kdiff board.kicad_pcb
 
     # Nested Kicad projects
-    kdiff nested-project/board.kicad_pcb -r -v
+    kdiff nested-project/board.kicad_pcb -r -V
 ```
 
 ## Examples

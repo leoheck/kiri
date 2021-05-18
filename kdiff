@@ -24,8 +24,8 @@ show_help()
 	    # Kicad project on the root of the repo
 	    kdiff board.pro
 
-	    # Nested Kicad projects
-	    kdiff nested-project/board.pro -r -v
+	    # Nested Kicad projects 
+	    kdiff nested-project/board.pro -r -V
 	EOM
 
 	echo -e "$HELP_MESSAGE"
