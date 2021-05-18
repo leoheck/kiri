@@ -144,15 +144,15 @@ html, body {
 */
 
 #svg-id-sch {
-	border: 1px solid #111;
+	/*border: 1px solid #111;*/
 	border-radius: 5px;
 	margin-top: 15px;
 	background-color: #222;
 }
 
 #svg-id-pcb {
+	/*border: 1px solid #111;*/
 	margin-top: 15px;
-	border: 1px solid #111;
 	background-color: #222;
 	border-radius: 5px;
 }
