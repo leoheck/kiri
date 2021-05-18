@@ -386,24 +386,7 @@ generate_comparisons()
 		current_path_fix="${project_path}"
 	fi
 
-		# WORKAROUND FOR NESTED PROJECTS SINCE PLOTGITSCH DOES NOT FILTER IT WELL YET
-		# ====================
-		# if [[ ! "$current_path_fix" = "./" ]]; then
-			# echo
-			# repo_root_path_="/tmp/$(basename -- "$repo_root_path")"
-			# rm -rf "$repo_root_path_"
-			# cp -rf "${repo_root_path}" /tmp
-			# repo_root_path="$repo_root_path_"
-			# cd "$repo_root_path" || exit
-			# git-filter-repo --path "$current_path_fix" --force
-			# output_dir="${repo_root_path}/kidiff/${project_path}"
-			# web_dir="${output_dir}/web/"
-			# echo
-		# fi
-		# ====================
-
 	sch_files=$(find_ "${current_path_fix}" -name "*.sch" -printf "%p ")
-
 
 	if [[ "${VERBOSE}" == "1" ]]; then
 		echo
@@ -582,16 +565,7 @@ generate_comparisons()
 				background_color="222222"
 
 				if [[ ! "$PLOTGITSCH_MISSING" == 1 ]]; then
-
-					# WORKAROUND FOR PLOTGITSH WHICH CANNOT SET RUNNING PATH
-					if [[ ! "$current_path_fix" = "./" ]]; then
-						cd "$current_path_fix" || exit
-						cache_dir="./"
-					else
-						cache_dir="$current_path_fix"
-					fi
-
-					cmd="plotgitsch -l ${cache_dir}/${board_name}-cache.lib -c ${removed_color}:${added_color}:${unchanged_color}:${background_color} ${i} ${j} &> /dev/null"
+					cmd="plotgitsch-dir -d ${current_path_fix} -l ${current_path_fix}/${board_name}-cache.lib -c ${removed_color}:${added_color}:${unchanged_color}:${background_color} ${i} ${j} &> /dev/null"
 					if [[ "${VERBOSE}" == "1" ]]; then
 						echo "   $cmd"
 					fi
@@ -644,13 +618,6 @@ generate_comparisons()
 							;;
 					esac
 				done
-
-				# WORKAROUND FOR PLOTGITSH WHICH CANNOT SET RUNNING PATH
-				# Restore original path
-				if [[ ! "$current_path_fix" = "./" ]]; then
-					cd - > /dev/null || exit
-				fi
-
 			fi
 		done
 
