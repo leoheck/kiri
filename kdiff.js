@@ -217,7 +217,10 @@ window.onkeydown = function(e) {
             next_selected_commits[1] = 1;
         }
 
-        if (selected_commits[0] != next_selected_commits[0]) {
+        console.log("curr[1]:", selected_commits[1]);
+        console.log("next[1]:", next_selected_commits[1]);
+
+        if ((selected_commits[0] != next_selected_commits[1]) && (selected_commits[1] != next_selected_commits[1]))  {
             update_commits();
         }
     }
@@ -255,7 +258,10 @@ window.onkeydown = function(e) {
             next_selected_commits[1] = 1;
         }
 
-        if ((selected_commits[0] != next_selected_commits[0])) {
+        console.log("curr[1]:", selected_commits[1]);
+        console.log("next[1]:", next_selected_commits[1]);
+
+        if ((selected_commits[0] != next_selected_commits[0]) || (selected_commits[0] > 0)) {
             update_commits();
         }
     }
