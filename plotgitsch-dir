@@ -19,7 +19,7 @@ do
 		;;
 
 	-l)
-		LIBRARY="$2"
+		LIBRARY="$1 $2"
 		shift
 		shift
 		;;
@@ -36,8 +36,8 @@ if [[ ! "$DIRECTORY" = "." ]] && [[ ! "$DIRECTORY" = "./" ]]; then
 	LIBRARY=$(basename "$LIBRARY")
 fi
 
-cmd="plotgitsch -l $LIBRARY $ARGS"
-# echo $cmd
+cmd="plotgitsch $LIBRARY $ARGS"
+echo $cmd
 eval "$cmd"
 
 if [[ ! "$DIRECTORY" = "." ]] && [[ ! "$DIRECTORY" = "./" ]]; then
