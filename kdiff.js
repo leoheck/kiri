@@ -353,7 +353,7 @@ window.onkeydown = function(e) {
     // =======================================
 
     if (keysDown.f || keysDown.F) {
-        console.log("Reset View");
+        console.log("Reset Zoom");
 
         if (document.getElementById('diff-sch').style.display === "inline") {
             panZoom_sch.resetZoom();
@@ -514,7 +514,7 @@ function change_layer() {
 
 window.onload = function() {
 
-    var panZoom_sch = svgPanZoom(
+    panZoom_sch = svgPanZoom(
         '#svg-id-sch', {
             zoomEnabled: true,
             controlIconsEnabled: false,
@@ -528,7 +528,7 @@ window.onload = function() {
         }
     );
 
-    var panZoom_pcb = svgPanZoom(
+    panZoom_pcb = svgPanZoom(
         '#svg-id-pcb', {
             zoomEnabled: true,
             controlIconsEnabled: false,
