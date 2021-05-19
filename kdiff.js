@@ -1,35 +1,46 @@
-
 // Atempt to fix the:
 // [Violation] Added non-passive event listener to a scroll-blocking
 
 jQuery.event.special.touchstart = {
-  setup: function( _, ns, handle ){
-    if ( ns.includes("noPreventDefault") ) {
-      this.addEventListener("touchstart", handle, { passive: false });
-    } else {
-      this.addEventListener("touchstart", handle, { passive: true });
+    setup: function(_, ns, handle) {
+        if (ns.includes("noPreventDefault")) {
+            this.addEventListener("touchstart", handle, {
+                passive: false
+            });
+        } else {
+            this.addEventListener("touchstart", handle, {
+                passive: true
+            });
+        }
     }
-  }
 };
 
 jQuery.event.special.touchmove = {
-  setup: function( _, ns, handle ){
-    if ( ns.includes("noPreventDefault") ) {
-      this.addEventListener("touchmove", handle, { passive: false });
-    } else {
-      this.addEventListener("touchmove", handle, { passive: true });
+    setup: function(_, ns, handle) {
+        if (ns.includes("noPreventDefault")) {
+            this.addEventListener("touchmove", handle, {
+                passive: false
+            });
+        } else {
+            this.addEventListener("touchmove", handle, {
+                passive: true
+            });
+        }
     }
-  }
 };
 
 jQuery.event.special.mousewheel = {
-  setup: function( _, ns, handle ){
-    if ( ns.includes("noPreventDefault") ) {
-      this.addEventListener("mousewheel", handle, { passive: false });
-    } else {
-      this.addEventListener("mousewheel", handle, { passive: true });
+    setup: function(_, ns, handle) {
+        if (ns.includes("noPreventDefault")) {
+            this.addEventListener("mousewheel", handle, {
+                passive: false
+            });
+        } else {
+            this.addEventListener("mousewheel", handle, {
+                passive: true
+            });
+        }
     }
-  }
 };
 
 // =======================================
@@ -256,7 +267,7 @@ window.onkeydown = function(e) {
         console.log("curr[1]:", selected_commits[1]);
         console.log("next[1]:", next_selected_commits[1]);
 
-        if ((selected_commits[0] != next_selected_commits[1]) && (selected_commits[1] != next_selected_commits[1]))  {
+        if ((selected_commits[0] != next_selected_commits[1]) && (selected_commits[1] != next_selected_commits[1])) {
             update_commits();
         }
     }
