@@ -1,3 +1,39 @@
+
+// Atempt to fix the:
+// [Violation] Added non-passive event listener to a scroll-blocking
+
+jQuery.event.special.touchstart = {
+  setup: function( _, ns, handle ){
+    if ( ns.includes("noPreventDefault") ) {
+      this.addEventListener("touchstart", handle, { passive: false });
+    } else {
+      this.addEventListener("touchstart", handle, { passive: true });
+    }
+  }
+};
+
+jQuery.event.special.touchmove = {
+  setup: function( _, ns, handle ){
+    if ( ns.includes("noPreventDefault") ) {
+      this.addEventListener("touchmove", handle, { passive: false });
+    } else {
+      this.addEventListener("touchmove", handle, { passive: true });
+    }
+  }
+};
+
+jQuery.event.special.mousewheel = {
+  setup: function( _, ns, handle ){
+    if ( ns.includes("noPreventDefault") ) {
+      this.addEventListener("mousewheel", handle, { passive: false });
+    } else {
+      this.addEventListener("mousewheel", handle, { passive: true });
+    }
+  }
+};
+
+// =======================================
+
 // Limit commits list with 2 checked at most
 $(document).ready(function() {
     $("input[name='commit']").change(function() {
