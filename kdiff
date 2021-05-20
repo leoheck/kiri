@@ -565,7 +565,7 @@ generate_comparisons()
 				background_color="222222"
 
 				if [[ ! "$PLOTGITSCH_MISSING" == 1 ]]; then
-					cmd="plotgitsch-dir -d ${current_path_fix} -l ${current_path_fix}/${board_name}-cache.lib -c ${removed_color}:${added_color}:${unchanged_color}:${background_color} ${i} ${j} &> /dev/null"
+					cmd="plotgitsch-dir -d ${current_path_fix} -m -l ${current_path_fix}/${board_name}-cache.lib -c ${removed_color}:${added_color}:${unchanged_color}:${background_color} ${i} ${j} &> /dev/null"
 					if [[ "${VERBOSE}" == "1" ]]; then
 						echo "   $cmd"
 					fi
