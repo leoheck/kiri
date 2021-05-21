@@ -93,9 +93,11 @@ kdiff board.kicad_pcb
 How to access tool help, this may change, so prefer to use `kdiff -h` instead.
 
 ```
+➜ kdiff -h
+
 USAGE :
 
-    kdiff [OPTIONS] KICAD_PCB
+    kdiff [OPTIONS] KICAD_PROJECT_FILE
 
 OPTIONS:
 
@@ -111,10 +113,10 @@ OPTIONS:
 EXAMPLES:
 
     # Kicad project on the root of the repo
-    kdiff board.kicad_pcb
+    kdiff board.pro
 
-    # Nested Kicad projects
-    kdiff nested-project/board.kicad_pcb -r -V
+    # Nested Kicad projects 
+    kdiff nested-project/board.pro -r -V
 ```
 
 ## Examples
