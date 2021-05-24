@@ -1,16 +1,16 @@
 #!/bin/bash
 
 # Remove random number from the filename
-svg_new_1=$(echo "$1" | sed "s|/tmp/from_\(.*\)\([0-9a-f]\{6\}\).svg|sch1-\1.svg|g")
-svg_new_2=$(echo "$2" | sed   "s|/tmp/to_\(.*\)\([0-9a-f]\{6\}\).svg|sch2-\1.svg|g")
+svg_new_1=$(basename "$1" | sed "s|from_\(.*\)\([0-9a-f]\{6\}\).svg|sch1-\1.svg|g")
+svg_new_2=$(basename "$2" | sed   "s|to_\(.*\)\([0-9a-f]\{6\}\).svg|sch2-\1.svg|g")
 
 # Extract random number from the filename
-hash_1=$(echo "$1" | sed "s|/tmp/from_.*\([0-9a-f]\{6\}\).svg|\1|g")
-hash_2=$(echo "$2" | sed   "s|/tmp/to_.*\([0-9a-f]\{6\}\).svg|\1|g")
+hash_1=$(basename "$1" | sed "s|from_.*\([0-9a-f]\{6\}\).svg|\1|g")
+hash_2=$(basename "$2" | sed   "s|to_.*\([0-9a-f]\{6\}\).svg|\1|g")
 
 # Rename originals filename: remove /tmp and keep the random number
-orig_1=$(echo "$1" | sed "s|/tmp/from_\(.*\)\([0-9a-f]\{6\}\).svg|sch1-\1-\2.svg|g")
-orig_2=$(echo "$2" | sed   "s|/tmp/to_\(.*\)\([0-9a-f]\{6\}\).svg|sch2-\1-\2.svg|g")
+orig_1=$(basename "$1" | sed "s|from_\(.*\)\([0-9a-f]\{6\}\).svg|sch1-\1-\2.svg|g")
+orig_2=$(basename "$2" | sed   "s|to_\(.*\)\([0-9a-f]\{6\}\).svg|sch2-\1-\2.svg|g")
 
 # Keep originals
 if [[ "$PLOTGITSH_KEEP_ORIGINALS" == "1" ]]; then
