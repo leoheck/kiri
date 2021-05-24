@@ -802,8 +802,8 @@ fi
 
 case $OSTYPE in
 	darwin*)
-		if check_tool gsed > /dev/null; then exit; fi
-		if check_tool gfind > /dev/null; then exit; fi
+		if ! check_tool gsed > /dev/null; then "gsed is missing"; exit; fi
+		if ! check_tool gfind > /dev/null; then "gfind is missing"; exit; fi
 		;;
 esac
 
@@ -821,7 +821,7 @@ fi
 output_dir="${repo_root}/kidiff/${project_dir}"
 web_dir="${output_dir}/web/"
 
-if grep -q "Microsoft" /proc/version > /dev/null; then
+if grep -q "Microsoft" "/proc/version" 2> /dev/null; then
 	# Webserver alternative for Windows with WSL
 	host=127.0.0.1
 	echo "Starting webserver at http://${host}:${WEBSERVER_PORT}"
