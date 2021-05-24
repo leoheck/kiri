@@ -466,6 +466,9 @@ function update_commits() {
     document.getElementById("diff-xlink-1-sch").href.baseVal = sch_image_path_1;
     document.getElementById("diff-xlink-2-sch").href.baseVal = sch_image_path_2;
 
+    document.getElementById("diff-xlink-1-sch").setAttributeNS('http://www.w3.org/1999/xlink', 'href', sch_image_path_1);
+    document.getElementById("diff-xlink-2-sch").setAttributeNS('http://www.w3.org/1999/xlink', 'href', sch_image_path_2);
+
     // =======================================
     // Update Layout
 
@@ -493,6 +496,9 @@ function update_commits() {
 
     document.getElementById("diff-xlink-1-pcb").href.baseVal = image_path_1;
     document.getElementById("diff-xlink-2-pcb").href.baseVal = image_path_2;
+
+    document.getElementById("diff-xlink-1-pcb").setAttributeNS('http://www.w3.org/1999/xlink', 'href', image_path_1);
+    document.getElementById("diff-xlink-2-pcb").setAttributeNS('http://www.w3.org/1999/xlink', 'href', image_path_2);
 
     // =======================================
     // Update Legend
@@ -523,6 +529,9 @@ function change_page() {
     document.getElementById("diff-xlink-1-pcb").href.baseVal = image_path_1;
     document.getElementById("diff-xlink-2-pcb").href.baseVal = image_path_2;
 
+    document.getElementById("diff-xlink-1-pcb").setAttributeNS('http://www.w3.org/1999/xlink', 'href', image_path_1);
+    document.getElementById("diff-xlink-2-pcb").setAttributeNS('http://www.w3.org/1999/xlink', 'href', image_path_2);
+
     // Refreshing view somehow. How this works?
     update_commits();
 }
@@ -547,6 +556,9 @@ function change_layer() {
 
     document.getElementById("diff-xlink-1-pcb").href.baseVal = image_path_1;
     document.getElementById("diff-xlink-2-pcb").href.baseVal = image_path_2;
+
+    document.getElementById("diff-xlink-1-pcb").setAttributeNS('http://www.w3.org/1999/xlink', 'href', image_path_1);
+    document.getElementById("diff-xlink-2-pcb").setAttributeNS('http://www.w3.org/1999/xlink', 'href', image_path_2);
 
     console.log("image_path_1:", image_path_1);
     console.log("image_path_2:", image_path_2);
