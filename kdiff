@@ -137,8 +137,8 @@ get_pages()
 	# First page is this one
 	pages="${board_name}|${board_name}"
 
-	pagenames=$(grep "^F0 " "${main_schematic}" | cut -d" " -f2 | tr "\n" "|" | sed_ "s/\"//g" | sed_ "s/|$//g" | tr "|" "\n")
-	pagepaths=$(grep "^F1 " "${main_schematic}" | cut -d" " -f2 | tr "\n" "|" | sed_ "s/\"//g" | sed_ "s/|$//g" | tr "|" "\n")
+	pagenames=$(sed_ "s/\r$//g" "${main_schematic}" | grep "^F0 " | cut -d" " -f2 | tr "\n" "|" | sed_ "s/\"//g" | sed_ "s/|$//g" | tr "|" "\n")
+	pagepaths=$(sed_ "s/\r$//g" "${main_schematic}" | grep "^F1 " | cut -d" " -f2 | tr "\n" "|" | sed_ "s/\"//g" | sed_ "s/|$//g" | tr "|" "\n")
 
 	IFS=$'\n'
 	n=0
@@ -477,6 +477,7 @@ generate_comparisons()
 	board_layers=$(sed_ -n '/^  (layers/,/  )$/{/^  (layers/!{/  )$/!p}}' "${kicad_pcb}" | sed_ "s/^[ \t]\+//g" | sed_ "s/[()]//g" | cut -d" " -f2 | tr "." "_")
 
 	# Remove windows line endings
+	sch_page_names=$(echo "$sch_page_names" | sed_ "s/\r$//g")
 	board_layers=$(echo "$board_layers" | sed_ "s/\r$//g")
 
 	if [[ "${VERBOSE}" == "1" ]]; then
@@ -584,10 +585,10 @@ generate_comparisons()
 				background_color="222222"
 
 				if [[ ! "$PLOTGITSCH_MISSING" == 1 ]]; then
-					if [[ "$current_path_fix" = "." ]] || [[ "$current_path_fix" = "./" ]]; then
+					if [[ "$current_path_fix" == "." ]] || [[ "$current_path_fix" == "./" ]]; then
 						plotgitsch_path=""
 					else
-						plotgitsch_path="-r ${current_path_fix}"
+						plotgitsch_path="-r ${project_path}"
 					fi
 					cmd="plotgitsch ${plotgitsch_path} -m -l ${current_path_fix}/${board_name}-cache.lib -c ${removed_color}:${added_color}:${unchanged_color}:${background_color} ${i} ${j} ${HASHTAG} &> /dev/null"
 					if [[ "${VERBOSE}" == "1" ]]; then
