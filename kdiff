@@ -361,6 +361,12 @@ generate_comparisons()
 	project_path=$3
 	kicad_pcb=$4
 
+	# Workaround for windows line endings.
+	if [[ -f "${kicad_pcb}.bkp" ]]; then
+		cp "${kicad_pcb}" "${kicad_pcb}.bkp" 2> /dev/null
+	fi
+	dos2unix "${kicad_pcb}"
+
 	main_html=index.html
 
 	filename=$(basename -- "$kicad_pcb")
@@ -469,6 +475,9 @@ generate_comparisons()
 
 	sch_page_names=$(get_pages "${board_name}" "${current_path_fix}/${board_name}.sch" | cut -d"|" -f2)
 	board_layers=$(sed_ -n '/^  (layers/,/  )$/{/^  (layers/!{/  )$/!p}}' "${kicad_pcb}" | sed_ "s/^[ \t]\+//g" | sed_ "s/[()]//g" | cut -d" " -f2 | tr "." "_")
+
+	# Remove windows line endings
+	board_layers=$(echo "$board_layers" | sed_ "s/\r$//g")
 
 	if [[ "${VERBOSE}" == "1" ]]; then
 		echo "Schematic Pages"
@@ -720,6 +729,11 @@ generate_comparisons()
 	echo "    Insert layers list"
 	board_layers=$(sed_ -n '/^  (layers/,/  )$/{/^  (layers/!{/  )$/!p}}' "${kicad_pcb}" | sed_ "s/^[ \t]\+//g" | sed_ "s/[()]//g" | cut -d" " -f2)
 	insert_layers "${web_dir}/${main_html}" "$board_layers"
+
+	# Restore board
+	if [[ -f "${kicad_pcb}.bkp" ]]; then
+		cp "${kicad_pcb}.bkp" "${kicad_pcb}" &> /dev/null
+	fi
 }
 
 
@@ -828,10 +842,12 @@ if [[ ! "${KIDIFF_MISSING}" = 0 ]]; then
 	echo "INFO: kidiff is missing, layout diff won't be generated"
 fi
 
+if ! check_tool "dos2unix" &> /dev/null; then "dos2unix is missing"; exit; fi
+
 case $OSTYPE in
 	darwin*)
-		if ! check_tool gsed > /dev/null; then "gsed is missing"; exit; fi
-		if ! check_tool gfind > /dev/null; then "gfind is missing"; exit; fi
+		if ! check_tool "gsed" &> /dev/null; then "gsed is missing"; exit; fi
+		if ! check_tool "gfind" &> /dev/null; then "gfind is missing"; exit; fi
 		;;
 esac
 
@@ -849,7 +865,9 @@ fi
 output_dir="${repo_root}/kidiff/${project_dir}"
 web_dir="${output_dir}/web/"
 
-if grep -q "Microsoft" "/proc/version" 2> /dev/null; then
+echo
+
+if grep -q "Microsoft" "/proc/version" &> /dev/null; then
 	# Webserver alternative for Windows with WSL
 	host=127.0.0.1
 	echo "Starting webserver at http://${host}:${WEBSERVER_PORT}"
