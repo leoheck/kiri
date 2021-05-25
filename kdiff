@@ -513,9 +513,17 @@ generate_comparisons()
 
 				# ====
 
+				if [[ "$DEBUG" == 0 ]]; then
+					HASHTAG=""
+				else
+					HASHTAG="#"
+				fi
+
+				# ====
+
 				if [[ ! "${KIDIFF_MISSING}" == 1 ]]; then
 
-					cmd="kidiff ${kicad_pcb} --webserver-disable -a $i -b $j &> /dev/null"
+					cmd="kidiff ${kicad_pcb} --webserver-disable -a $i -b $j ${HASHTAG} &> /dev/null"
 					if [[ "$VERBOSE" == "1" ]]; then
 						echo "   $cmd"
 					fi
@@ -536,12 +544,12 @@ generate_comparisons()
 
 					if [[ "$ret" == "1" ]]; then
 						if [[ ! $(du -s "${output_dir}/$i/${board_name}.kicad_pcb" | cut -d$'\t' -f1) = 0 ]]; then
-							cmd="plotpcb -o \"${output_dir}/$i/\" -q \"${output_dir}/$i/${board_name}.kicad_pcb\""
+							cmd="plotpcb -o \"${output_dir}/$i/\" -q \"${output_dir}/$i/${board_name}.kicad_pcb\" ${HASHTAG} &> /dev/null"
 							echo "   ${cmd}"
 							eval "$cmd"
 						fi
 						if [[ ! $(du -s "${output_dir}/$j/${board_name}.kicad_pcb" | cut -d$'\t' -f1) = 0 ]]; then
-							cmd="plotpcb -o \"${output_dir}/$j/\" -q \"${output_dir}/$j/${board_name}.kicad_pcb\""
+							cmd="plotpcb -o \"${output_dir}/$j/\" -q \"${output_dir}/$j/${board_name}.kicad_pcb\" ${HASHTAG} &> /dev/null"
 							echo "   ${cmd}"
 							eval "$cmd"
 						fi
@@ -572,7 +580,7 @@ generate_comparisons()
 					else
 						plotgitsch_path="-r ${current_path_fix}"
 					fi
-					cmd="plotgitsch ${plotgitsch_path} -m -l ${current_path_fix}/${board_name}-cache.lib -c ${removed_color}:${added_color}:${unchanged_color}:${background_color} ${i} ${j} &> /dev/null"
+					cmd="plotgitsch ${plotgitsch_path} -m -l ${current_path_fix}/${board_name}-cache.lib -c ${removed_color}:${added_color}:${unchanged_color}:${background_color} ${i} ${j} ${HASHTAG} &> /dev/null"
 					if [[ "${VERBOSE}" == "1" ]]; then
 						echo "   $cmd"
 					fi
@@ -725,12 +733,13 @@ script_dir=$(dirname "$script_path")
 trap ctrl_c INT
 
 export ALL_COMMITS=0
-export REMOVE_KDIFF_FOLDER=0
-export VERBOSE=0
+export DEBUG=0
 export DRY_RUN=0
+export LAUNCH_PAGE=1
 export NEWER_COMMIT=""
 export OLDER_COMMIT=""
-export LAUNCH_PAGE=1
+export REMOVE_KDIFF_FOLDER=0
+export VERBOSE=0
 export WEBSERVER_PORT=8000
 
 while [[ $# -gt 0 ]]
@@ -784,6 +793,11 @@ do
 
 	-V)
 		VERBOSE=1
+		shift
+		;;
+
+	-D)
+		DEBUG=1
 		shift
 		;;
 
