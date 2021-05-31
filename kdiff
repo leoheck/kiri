@@ -392,9 +392,9 @@ generate_comparisons()
 
 	if [[ "$current_path" == "$project_path" ]]; then
 		if [[ "$project_path" != "." ]]; then
-			current_path_fix="${project_path}"
-		else
 			current_path_fix="./"
+		else
+			current_path_fix="${project_path}"
 		fi
 	else
 		current_path_fix="${project_path}"
@@ -697,7 +697,7 @@ generate_comparisons()
 
 	# Insert pages list
 	echo "    Insert pages list"
-	pages=$(get_pages "${board_name}" "${project_dir}/${board_name}.sch")
+	pages=$(get_pages "${board_name}" "${current_path_fix}/${board_name}.sch")
 	insert_pages "${web_dir}/${main_html}" "$pages"
 
 	# Update board title
