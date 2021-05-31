@@ -390,8 +390,8 @@ generate_comparisons()
 
 	current_path=$(realpath --relative-to="$repo_root_path" .)
 
-	if [[ "$project_path" == "$current_path" ]]; then
-		if [[ "$project_path" == "." ]]; then
+	if [[ "$current_path" == "$project_path" ]]; then
+		if [[ "$project_path" != "." ]]; then
 			current_path_fix="${project_path}"
 		else
 			current_path_fix="./"
@@ -592,15 +592,21 @@ generate_comparisons()
 
 				if [[ ! "$PLOTGITSCH_MISSING" == 1 ]]; then
 
-					if [[ "$current_path_fix" == "." ]] || [[ "$current_path_fix" == "./" ]]; then
-						if [[ "$project_path" != "." ]]; then
-							plotgitsch_path="-r ${project_path}"
-						fi
-					else
+					if [[ "$project_path" == "." ]] || [[ "$project_path" == "./" ]]; then
 						plotgitsch_path=""
+						lib_path="."
+					else
+						if [[ "$current_path" != "$project_path" ]]; then
+							pushd ${project_path} &> /dev/null
+							plotgitsch_path="-r ${project_path}"
+							lib_path="."
+						else
+							plotgitsch_path="-r ${project_path}"
+							lib_path="."
+						fi
 					fi
 
-					cmd="plotgitsch ${plotgitsch_path} -m -l ${current_path_fix}/${board_name}-cache.lib -c ${removed_color}:${added_color}:${unchanged_color}:${background_color} ${i} ${j} ${HASHTAG} &> /dev/null"
+					cmd="plotgitsch ${plotgitsch_path} -m -l ${lib_path}/${board_name}-cache.lib -c ${removed_color}:${added_color}:${unchanged_color}:${background_color} ${i} ${j} ${HASHTAG} &> /dev/null"
 					if [[ "${VERBOSE}" == "1" ]]; then
 						echo "   $cmd"
 					fi
@@ -616,6 +622,11 @@ generate_comparisons()
 					fi
 					if [[ "${VERBOSE}" == "1" ]]; then
 						echo
+					fi
+
+					if [[ "$current_path" != "$project_path" ]]; then
+						popd &> /dev/null
+						mv ${project_path}/*.svg .
 					fi
 				fi
 
@@ -686,7 +697,7 @@ generate_comparisons()
 
 	# Insert pages list
 	echo "    Insert pages list"
-	pages=$(get_pages "${board_name}" "${current_path_fix}/${board_name}.sch")
+	pages=$(get_pages "${board_name}" "${project_dir}/${board_name}.sch")
 	insert_pages "${web_dir}/${main_html}" "$pages"
 
 	# Update board title
