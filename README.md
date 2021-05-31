@@ -39,6 +39,7 @@ sudo apt install -y opam
 sudo apt install -y python3-pip
 sudo apt install -y python3-tk
 sudo apt install -y kicad
+sudo apt install -y dos2unix
 
 # Initialize opam
 opam init --disable-sandboxing --reinit
