@@ -18,11 +18,10 @@ if [[ "$PLOTGITSH_KEEP_ORIGINALS" == "1" ]]; then
 	mv -f "$2" "$orig_2"
 fi
 
+echo
 echo "Exporting..."
-echo "$svg_new_1 (${hash_1})"
-echo "$svg_new_2 (${hash_2})"
+echo "$1 -> $svg_new_1"
+echo "$2 -> $svg_new_2"
 
 cp -f "$1" "$svg_new_1" > /dev/null
 cp -f "$2" "$svg_new_2" > /dev/null
-
-echo
