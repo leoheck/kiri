@@ -361,8 +361,8 @@ generate_comparisons()
 	project_path=$3
 	kicad_pcb=$4
 
-	# Workaround for windows line endings.
-	if [[ -f "${kicad_pcb}.bkp" ]]; then
+	# Workaround for windows line endings
+	if [[ ! -f "${kicad_pcb}.bkp" ]]; then
 		cp "${kicad_pcb}" "${kicad_pcb}.bkp" 2> /dev/null
 	fi
 	dos2unix "${kicad_pcb}"
@@ -388,8 +388,14 @@ generate_comparisons()
 		fi
 	fi
 
-	if [[ "$project_path" == $(basename "$(pwd)") ]]; then
-		current_path_fix="./"
+	current_path=$(realpath --relative-to="$repo_root_path" .)
+
+	if [[ "$project_path" == "$current_path" ]]; then
+		if [[ "$project_path" == "." ]]; then
+			current_path_fix="${project_path}"
+		else
+			current_path_fix="./"
+		fi
 	else
 		current_path_fix="${project_path}"
 	fi
@@ -585,11 +591,15 @@ generate_comparisons()
 				background_color="222222"
 
 				if [[ ! "$PLOTGITSCH_MISSING" == 1 ]]; then
+
 					if [[ "$current_path_fix" == "." ]] || [[ "$current_path_fix" == "./" ]]; then
-						plotgitsch_path=""
+						if [[ "$project_path" != "." ]]; then
+							plotgitsch_path="-r ${project_path}"
+						fi
 					else
-						plotgitsch_path="-r ${project_path}"
+						plotgitsch_path=""
 					fi
+
 					cmd="plotgitsch ${plotgitsch_path} -m -l ${current_path_fix}/${board_name}-cache.lib -c ${removed_color}:${added_color}:${unchanged_color}:${background_color} ${i} ${j} ${HASHTAG} &> /dev/null"
 					if [[ "${VERBOSE}" == "1" ]]; then
 						echo "   $cmd"
@@ -733,7 +743,7 @@ generate_comparisons()
 
 	# Restore board
 	if [[ -f "${kicad_pcb}.bkp" ]]; then
-		cp "${kicad_pcb}.bkp" "${kicad_pcb}" &> /dev/null
+		mv -f "${kicad_pcb}.bkp" "${kicad_pcb}" &> /dev/null
 	fi
 }
 
@@ -868,7 +878,7 @@ web_dir="${output_dir}/web/"
 
 echo
 
-if [[ ! "${LAUNCH_PAGE}" = 0 ]]; then
+if [[ ! "${LAUNCH_PAGE}" == 0 ]]; then
 	if grep -q "Microsoft" "/proc/version" &> /dev/null; then
 		# Webserver alternative for Windows with WSL
 		host=127.0.0.1
