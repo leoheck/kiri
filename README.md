@@ -8,9 +8,8 @@ It is currently supporting Kicad projects that use GIT.
 # Dependencies
 
 
-## [Installing dependencies on Windows](https://www.tenforums.com/tutorials/46769-enable-disable-windows-subsystem-linux-wsl-windows-10-a.html)
-
-Configure WSL
+## Installing dependencies on Windows
+[Configure WSL](https://www.tenforums.com/tutorials/46769-enable-disable-windows-subsystem-linux-wsl-windows-10-a.html)
 
 ```batch
 :: Enalbe Windows Sybsystem for Linux (using Power Shell)
