@@ -410,6 +410,8 @@ window.onkeydown = function(e) {
         if (document.getElementById('diff-pcb').style.display === "inline") {
             panZoom_pcb.resetZoom();
             panZoom_pcb.center();
+            document.getElementById("sliderRange").value = 0;
+            sliderChange();
             // panZoom_pcb.fit() // cannot be used, bug?
         }
 
@@ -634,6 +636,8 @@ window.onload = function() {
         if (document.getElementById('diff-pcb').style.display === "inline") {
             panZoom_pcb.resetZoom();
             panZoom_pcb.center();
+            document.getElementById("sliderRange").value = 0;
+            sliderChange();
             // panZoom_pcb.fit(); // cannot be used, bug?
         }
     });
@@ -724,9 +728,19 @@ function show_slide() {
 // =======================================
 // =======================================
 function sliderChange() {
-    document.getElementById("diff-xlink-1-pcb").style.x = parseFloat(document.getElementById("sliderRange").value).toFixed(2)+"%";
-    document.getElementById("diff-xlink-2-pcb").style.x = -parseFloat(document.getElementById("sliderRange").value).toFixed(2)+"%";
-  }  
+    if (document.getElementById("sliderRange").value >= 0)
+    {
+        document.getElementById("diff-xlink-1-pcb").style.opacity = (100-Math.abs(parseFloat(document.getElementById("sliderRange").value)).toFixed(2))+"%";
+        document.getElementById("diff-xlink-2-pcb").style.opacity = "100%";
+    }
+    if (document.getElementById("sliderRange").value < 0)
+    {
+        document.getElementById("diff-xlink-2-pcb").style.opacity = (100-Math.abs(parseFloat(document.getElementById("sliderRange").value)).toFixed(2))+"%";
+        document.getElementById("diff-xlink-1-pcb").style.opacity = "100%";
+    }
+    
+    console.log(parseFloat(document.getElementById("sliderRange").value).toFixed(2)+"%");
+  }
 
 function change_page_onclick(obj) {
     pages = $("#pages_list input:radio[name='pages']");
