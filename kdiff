@@ -268,7 +268,7 @@ insert_pages()
 
 		IFS= read -r -d '' HTML_SNIPPET <<-EOM
 		    <input type="radio" id="${page_filename}" value="${page_filename}" name="pages" ${checked} onchange="change_page()"/>
-		    <label class="rounded text-sm-left list-group-item radio-box" for="${page_filename}">
+		    <label class="rounded text-sm-left list-group-item radio-box" onclick="schematicChangeOnClick(${page_filename})" for="${page_filename}">
 		    <span style="margin-left:0.5em; margin-right:0.1em;" class="iconify" data-icon="gridicons:pages" data-inline="false"></span>
 		    ${page_name}
 		    </label>
@@ -336,7 +336,7 @@ insert_layers()
 
 		IFS= read -r -d '' HTML_SNIPPET <<-EOM
 		    <input type="radio" id="${layer}" name="layers" value="${layer}" ${checked}  onchange="change_layer()"/>
-		    <label class="rounded text-sm-left list-group-item radio-box" for="${layer}">
+		    <label class="rounded text-sm-left list-group-item radio-box" onclick="layerChangeOnClick(${layer})" for="${layer}">
 		        <span style="margin-left:0.5em; margin-right:0.1em; color: ${layer_color}" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
 		        ${layer}
 		    </label>

@@ -723,3 +723,20 @@ function show_slide() {
 
 // =======================================
 // =======================================
+function schematicChangeOnClick(sourceObject){
+    console.log(sourceObject);
+    pages = $("#pages_list input:radio[name='pages']");
+    pages[pages.index(pages.filter(sourceObject))].checked = true;
+    change_page()
+    
+    
+
+}
+
+function layerChangeOnClick(sourceObject){  
+    console.log(sourceObject);
+    layers = $("#layers_list input:radio[name='layers']");
+    layers[layers.index(layers.filter(sourceObject))].checked = true;
+    change_layer();
+    
+}
