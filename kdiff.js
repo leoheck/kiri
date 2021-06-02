@@ -723,3 +723,15 @@ function show_slide() {
 
 // =======================================
 // =======================================
+
+function change_page_onclick(obj) {
+    pages = $("#pages_list input:radio[name='pages']");
+    pages[pages.index(pages.filter(obj))].checked = true;
+    change_page();
+}
+
+function change_layer_onclick(obj) {
+    layers = $("#layers_list input:radio[name='layers']");
+    layers[layers.index(layers.filter(obj))].checked = true;
+    change_layer();
+}
