@@ -28,7 +28,7 @@ Set-Location C:\ubuntu-2004
 And then continue with the instructions in "Installing dependencies on Linux" inside the WSL (Ubuntu terminal).
 
 
-## Installing dependencies on Linux/WSL
+## Linux/WSL dependencies
 
 ```
 # Basic dependencies for Linux/WSL
@@ -39,6 +39,7 @@ sudo apt install -y python3-pip
 sudo apt install -y python3-tk
 sudo apt install -y kicad
 sudo apt install -y dos2unix
+sudo apt install -y coreutils
 
 # Initialize opam
 opam init --disable-sandboxing --reinit
@@ -51,18 +52,24 @@ pip3 install pygubu
 pip3 install python_dateutil
 ```
 
-## Installing dependencies on OSX
+After installing dependencies continue with [Install 3rdParty Tools](https://github.com/leoheck/kdiff#install-3rdparty-tools)
 
-Install dependencies from "Installing dependencies on Linux" section and then
+## OSX dependencies
 
 ```
 # Donwload and Install Kicad for OSX - https://www.kicad.org/download/macos/
+sudo spctl --master-disable
 
-# Install extra dependencies
+# Opam dependencies
+brew install gmp
+brew install pkg-config
+brew install opam
+
+# Kdiff dependencies
 brew install gsed
 brew install findutils
 brew install dos2unix
-brew install opam
+brew install coreutils
 
 # Initialize opam
 opam init --disable-sandboxing --reinit
@@ -70,19 +77,20 @@ opam switch create 4.09.1
 opam switch 4.09.1
 eval $(opam env)
 
-# Plotgitsch Dependencies
+# Plotgitsch dependencies
 opam install lwt_ppx
 opam install cmdliner
 opam install base64
 opam install sha
 opam install tyxml
 opam install git-unix
-# still missing instructions here... 
 
 # Kicad-Diff dependencies
 pip3 install pygubu
 pip3 install python_dateutil
 ```
+
+After installing dependencies continue with [Install 3rdParty Tools](https://github.com/leoheck/kdiff#install-3rdparty-tools)
 
 # Install 3rdParty Tools
 
