@@ -28,10 +28,10 @@ Set-Location C:\ubuntu-2004
 And then continue with the instructions in "Installing dependencies on Linux" inside the WSL (Ubuntu terminal).
 
 
-## Installing dependencies on Linux
+## Installing dependencies on Linux/WSL
 
 ```
-# Basic dependencies
+# Basic dependencies for Linux/WSL
 sudo apt install -y libgmp-dev
 sudo apt install -y pkg-config
 sudo apt install -y opam
@@ -46,17 +46,9 @@ opam switch create 4.09.1
 opam switch 4.09.1
 eval $(opam env)
 
-# Install custom plotgitsch
-git clone https://github.com/leoheck/plotkicadsch.git
-cd plotkicadsch
-./install.sh
-
 # Kicad-Diff dependencies
 pip3 install pygubu
 pip3 install python_dateutil
-
-# Install Kicad-Diff
-git clone https://github.com/Gasman2014/KiCad-Diff.git
 ```
 
 ## Installing dependencies on OSX
@@ -64,8 +56,44 @@ git clone https://github.com/Gasman2014/KiCad-Diff.git
 Install dependencies from "Installing dependencies on Linux" section and then
 
 ```
+# Donwload and Install Kicad for OSX - https://www.kicad.org/download/macos/
+
+# Install extra dependencies
 brew install gsed
 brew install findutils
+brew install dos2unix
+brew install opam
+
+# Initialize opam
+opam init --disable-sandboxing --reinit
+opam switch create 4.09.1
+opam switch 4.09.1
+eval $(opam env)
+
+# Plotgitsch Dependencies
+opam install lwt_ppx
+opam install cmdliner
+opam install base64
+opam install sha
+opam install tyxml
+opam install git-unix
+# still missing instructions here... 
+
+# Kicad-Diff dependencies
+pip3 install pygubu
+pip3 install python_dateutil
+```
+
+# Install 3rdParty Tools
+
+```
+# Install custom plotgitsch
+git clone https://github.com/leoheck/plotkicadsch.git
+cd plotkicadsch
+./install.sh
+
+# Install Kicad-Diff
+git clone https://github.com/Gasman2014/KiCad-Diff.git
 ```
 
 ## Environment Setup (before using it)
