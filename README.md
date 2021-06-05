@@ -1,12 +1,13 @@
-# Kicad Diff
+# Kicad Diff (kdiff)
 
-This repo is a test to have a more complete diff tool for Kicad.
+This repo is a testcase to have a visual diff tool for Kicad.
 It uses [Kicad-Diff](https://github.com/Gasman2014/KiCad-Diff) to generate layout diffs and [Plotgitsh](https://github.com/jnavila/plotkicadsch) to generate schematic diffs.
 
 It is currently supporting Kicad projects that use GIT.
 
 # Dependencies
 
+> kdiff works with Kicad `5.*`
 
 ## Installing dependencies on Windows
 [Configure WSL](https://www.tenforums.com/tutorials/46769-enable-disable-windows-subsystem-linux-wsl-windows-10-a.html)
@@ -57,7 +58,7 @@ After installing dependencies continue with [Install 3rdParty Tools](https://git
 ## OSX dependencies
 
 ```
-# Donwload and Install Kicad for OSX - https://www.kicad.org/download/macos/
+# Download and Install Kicad for OSX - https://www.kicad.org/download/macos/
 sudo spctl --master-disable
 
 # Opam dependencies
