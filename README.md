@@ -122,7 +122,7 @@ source ./env.sh
 ## Using
 ```
 cd [kicad_git_repo]
-kdiff board.kicad_pcb
+kdiff board.pro
 ```
 
 ## Command line flags (Help)
