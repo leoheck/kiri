@@ -31,7 +31,7 @@ And then continue with the instructions in "Installing dependencies on Linux" in
 
 ## Linux/WSL dependencies
 
-```
+```bash
 # Basic dependencies for Linux/WSL
 sudo apt install -y libgmp-dev
 sudo apt install -y pkg-config
@@ -60,7 +60,7 @@ After installing dependencies continue with [Install 3rdParty Tools](https://git
 
 ## OSX dependencies
 
-```
+```bash
 # Download and Install Kicad for OSX - https://www.kicad.org/download/macos/
 sudo spctl --master-disable
 
@@ -99,7 +99,7 @@ After installing dependencies continue with [Install 3rdParty Tools](https://git
 
 # Install 3rdParty Tools
 
-```
+```bash
 # Install custom plotgitsch
 git clone https://github.com/leoheck/plotkicadsch.git
 cd plotkicadsch
@@ -110,7 +110,7 @@ git clone https://github.com/Gasman2014/KiCad-Diff.git
 ```
 
 ## Environment Setup (before using it)
-```
+```bash
 # Load KiCad-Diff environment
 cd KiCad-Diff
 source ./env.sh
@@ -133,7 +133,7 @@ kdiff board.pro
 
 How to access tool help, this may change, so prefer to use `kdiff -h` instead.
 
-```
+```bash
 ➜ kdiff -h
 
     USAGE :
@@ -163,6 +163,19 @@ How to access tool help, this may change, so prefer to use `kdiff -h` instead.
 
         # Nested Kicad projects
         kdiff nested-project/board.pro -r -V
+```
+
+# Kicad integration
+
+It is also possible to integrate kdiff in PCBNew toolbar
+
+```bash
+# Create folder if it does not exist
+mkdir -p ~/.kicad/scripting/plugins
+
+# Copy the pluging there
+cd kdiff
+cp -r kicad_plugin ~/.kicad/scripting/plugins/kdiff
 ```
 
 ## Examples

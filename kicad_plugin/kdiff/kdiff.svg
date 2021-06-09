@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   height="27.733334"
+   width="27.733334"
+   version="1.1"
+   id="svg2"
+   inkscape:version="1.0.2 (e86c870879, 2021-01-15)"
+   sodipodi:docname="stitching-vias.svg"
+   viewBox="0 0 26 26"
+   inkscape:export-filename="C:\kicad-wb-1602\msys64\home\userC\RF-round-diff\new-solder-mask\bitmaps_png\sources\soldermask_clearance-26.png"
+   inkscape:export-xdpi="82.105263"
+   inkscape:export-ydpi="82.105263">
+  <metadata
+     id="metadata40">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="2048"
+     inkscape:window-height="1088"
+     id="namedview38"
+     showgrid="true"
+     inkscape:snap-to-guides="false"
+     inkscape:snap-grids="true"
+     inkscape:zoom="20.581297"
+     inkscape:cx="24.950844"
+     inkscape:cy="26.01806"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg2"
+     showguides="true"
+     inkscape:guide-bbox="true"
+     inkscape:document-rotation="0">
+    <inkscape:grid
+       type="xygrid"
+       id="grid3017"
+       empspacing="2"
+       visible="true"
+       enabled="true"
+       snapvisiblegridlinesonly="true"
+       spacingx="0.5"
+       spacingy="0.5"
+       originx="0"
+       originy="0" />
+  </sodipodi:namedview>
+  <defs
+     id="defs4">
+    <filter
+       id="c"
+       height="1.3651"
+       width="1.2097"
+       y="-0.18257"
+       x="-0.10484"
+       style="color-interpolation-filters:sRGB">
+      <feGaussianBlur
+         stdDeviation="1.5978799"
+         id="feGaussianBlur7" />
+    </filter>
+    <filter
+       id="d"
+       height="1.4696"
+       width="1.4809999"
+       y="-0.23481999"
+       x="-0.24049"
+       style="color-interpolation-filters:sRGB">
+      <feGaussianBlur
+         stdDeviation="1.5978799"
+         id="feGaussianBlur10" />
+    </filter>
+  </defs>
+  <rect
+     style="fill:#008000;fill-opacity:1;stroke:none;stroke-width:0.9375;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:1.99997282;stroke-opacity:1"
+     id="rect4495"
+     width="26"
+     height="26"
+     x="-1.0458432e-15"
+     y="1.7763568e-15"
+     inkscape:export-filename="C:\kicad-wb-1602\msys64\home\userC\RF-round-diff\new-solder-mask\bitmaps_png\sources\stitching-vias.png"
+     inkscape:export-xdpi="101.97701"
+     inkscape:export-ydpi="101.97701" />
+  <g
+     transform="matrix(1.6382539,0,0,1.5572263,1.2572207,0.36314149)"
+     id="g16"
+     inkscape:export-xdpi="101.97701"
+     inkscape:export-ydpi="101.97701"
+     inkscape:export-filename="C:\kicad-wb-1602\msys64\home\userC\RF-round-diff\new-solder-mask\bitmaps_png\sources\stitching-vias.png">
+    <rect
+       height="16"
+       width="16"
+       y="0"
+       x="0"
+       id="rect18"
+       style="fill-opacity:0" />
+  </g>
+  <rect
+     style="opacity:0.25;fill:#008000;fill-opacity:1;stroke:#b3b3b3;stroke-width:2.24165964;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:1.99997282;stroke-opacity:1"
+     id="rect4737"
+     width="26"
+     height="26"
+     x="0"
+     y="1.7193647e-08"
+     inkscape:export-filename="C:\kicad-wb-1602\msys64\home\userC\RF-round-diff\new-solder-mask\bitmaps_png\sources\stitching-vias.png"
+     inkscape:export-xdpi="101.97701"
+     inkscape:export-ydpi="101.97701" />
+  <g
+     id="g845"
+     transform="translate(28,-6.000001)"
+     inkscape:export-filename="C:\kicad-wb-1602\msys64\home\userC\RF-round-diff\new-solder-mask\bitmaps_png\sources\stitching-vias.png"
+     inkscape:export-xdpi="101.97701"
+     inkscape:export-ydpi="101.97701" />
+  <rect
+     style="fill:#3d6fff;fill-opacity:1;stroke:#ffffff;stroke-width:1.20098;stroke-opacity:0.776078"
+     id="rect842"
+     width="8"
+     height="20"
+     x="15"
+     y="3.5"
+     inkscape:export-filename="C:\kicad-wb-1602\msys64\home\userC\RF-round-diff\new-solder-mask\bitmaps_png\sources\stitching-vias.png"
+     inkscape:export-xdpi="101.97701"
+     inkscape:export-ydpi="101.97701" />
+  <rect
+     style="fill:#ff5b20;stroke:#ffffff;stroke-width:1.00031;stroke-opacity:0.776078;fill-opacity:1"
+     id="rect844"
+     width="8.5"
+     height="20"
+     x="3"
+     y="3.5"
+     inkscape:export-filename="C:\kicad-wb-1602\msys64\home\userC\RF-round-diff\new-solder-mask\bitmaps_png\sources\stitching-vias.png"
+     inkscape:export-xdpi="101.97701"
+     inkscape:export-ydpi="101.97701" />
+  <text
+     xml:space="preserve"
+     style="font-style:normal;font-weight:normal;font-size:37.5px;line-height:1.25;font-family:sans-serif;letter-spacing:0.009375px;word-spacing:0.009375px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.9375"
+     x="4.9430671"
+     y="18.537107"
+     id="text850"
+     inkscape:export-filename="C:\kicad-wb-1602\msys64\home\userC\RF-round-diff\new-solder-mask\bitmaps_png\sources\stitching-vias.png"
+     inkscape:export-xdpi="101.97701"
+     inkscape:export-ydpi="101.97701"><tspan
+       sodipodi:role="line"
+       id="tspan848"
+       x="4.9430671"
+       y="18.537107"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:17.5px;font-family:'Ubuntu Mono';-inkscape-font-specification:'Ubuntu Mono Bold';stroke-width:0.9375"
+       dx="0.0099999998">KD</tspan></text>
+</svg>
