@@ -124,11 +124,6 @@ if __name__ == "__main__":
 
     prjctPath, kicad_project = get_kicad_project_path(escape_string(kicad_project_path))
 
-    print("")
-    print("  Project PATH:", prjctPath)
-    print(" Kicad Project:", kicad_project)
-    print("    Board Name:", board_file)
-
     if not args.webserver_disable:
 
         socketserver.TCPServer.allow_reuse_address = True
