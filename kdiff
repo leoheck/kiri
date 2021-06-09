@@ -248,8 +248,8 @@ insert_commits()
 	# new_contents=${contents//"<!-- FILL_COMMITS_HERE -->"/${COMMITS_LIST_HTML}}
 	# printf '%s' "${new_contents}" > "${html}"
 
-	COMMITS_LIST_HTML=$(echo $COMMITS_LIST_HTML | sed_ "s/#/-/g")
-	sed_ -i 's#<!-- FILL_COMMITS_HERE -->#'"${COMMITS_LIST_HTML}"'#g' ${html}
+	COMMITS_LIST_HTML=$(echo $COMMITS_LIST_HTML | sed_ "s/@/-/g")
+	sed_ -i 's@<!-- FILL_COMMITS_HERE -->@'"${COMMITS_LIST_HTML}"'@g' ${html}
 }
 
 insert_pages()
@@ -296,8 +296,8 @@ insert_pages()
 	# HTML_CONTENT_UPDATED=${HTML_CONTENT//"<!-- FILL_PAGES_HERE -->"/${PAGES_LIST_HTML}}
 	# printf '%s' "${HTML_CONTENT_UPDATED}" > "${html}"
 
-	PAGES_LIST_HTML=$(echo $PAGES_LIST_HTML | sed_ "s/#/-/g")
-	sed_ -i 's#<!-- FILL_PAGES_HERE -->#'"${PAGES_LIST_HTML}"'#g' ${html}
+	PAGES_LIST_HTML=$(echo $PAGES_LIST_HTML | sed_ "s/@/-/g")
+	sed_ -i 's@<!-- FILL_PAGES_HERE -->@'"${PAGES_LIST_HTML}"'@g' ${html}
 }
 
 insert_layers()
@@ -368,8 +368,8 @@ insert_layers()
 	# HTML_CONTENT_UPDATED=${HTML_CONTENT//"<!-- FILL_LAYERS_HERE -->"/${LAYERS_LIST_HTML}}
 	# printf '%s' "${HTML_CONTENT_UPDATED}" > "${html}"
 
-	LAYERS_LIST_HTML=$(echo $LAYERS_LIST_HTML | sed_ "s/#/-/g")
-	sed_ -i 's#<!-- FILL_LAYERS_HERE -->#'"${LAYERS_LIST_HTML}"'#g' ${html}
+	LAYERS_LIST_HTML=$(echo $LAYERS_LIST_HTML | sed_ "s/@/-/g")
+	sed_ -i 's@<!-- FILL_LAYERS_HERE -->@'"${LAYERS_LIST_HTML}"'@g' ${html}
 }
 
 generate_comparisons()
