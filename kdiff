@@ -370,7 +370,7 @@ generate_comparisons()
 	if [[ ! -f "${kicad_pcb}.bkp" ]]; then
 		cp "${kicad_pcb}" "${kicad_pcb}.bkp" 2> /dev/null
 	fi
-	dos2unix "${kicad_pcb}"
+	dos2unix "${kicad_pcb}" &> /dev/null
 
 	main_html=index.html
 
