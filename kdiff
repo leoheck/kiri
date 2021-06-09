@@ -369,7 +369,7 @@ insert_layers()
 	# printf '%s' "${HTML_CONTENT_UPDATED}" > "${html}"
 
 	LAYERS_LIST_HTML=$(echo $LAYERS_LIST_HTML | sed_ "s/#/-/g")
-	sed_ -i 's#<!-- FILL_PAGES_HERE -->#'"${LAYERS_LIST_HTML}"'#g' ${html}
+	sed_ -i 's#<!-- FILL_LAYERS_HERE -->#'"${LAYERS_LIST_HTML}"'#g' ${html}
 }
 
 generate_comparisons()
