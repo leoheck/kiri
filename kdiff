@@ -312,10 +312,13 @@ insert_layers()
 	IFS=$'\n'
 	for layer in $layers; do
 
-		# Fix layer name by replacing "." with "_"
-		layer=$(sed_ "s/\./_/g" <<< "${layer}")
+		layer_id=$(echo $layer | cut -d " " -f1)
+		layer_name=$(echo $layer | cut -d " " -f2)
 
-		case $layer in
+		# Update layer name by replacing "." with "_"
+		layer_name=$(sed_ "s/\./_/g" <<< "${layer_name}")
+
+		case $layer_name in
 			B*Adhes)   layer_color="#3545A8" ;;
 			B*CrtYd)   layer_color="#D3D04B" ;;
 			B*Cu)      layer_color="#359632" ;;
@@ -326,6 +329,7 @@ insert_layers()
 			Cmts*User) layer_color="#7AC0F4" ;;
 			Dwgs*User) layer_color="#0364D3" ;;
 			Eco1*User) layer_color="#008500" ;;
+			Eco2*User) layer_color="#008500" ;;
 			Edge_Cuts) layer_color="#C9C83B" ;;
 			F*Adhes)   layer_color="#A74AA8" ;;
 			F*CrtYd)   layer_color="#A7A7A7" ;;
@@ -342,6 +346,16 @@ insert_layers()
 			*)         layer_color="" ;;
 		esac
 
+		# Adjust (copper) layers that have custom names
+		case $layer_id in
+			0)         layer_color="#952927" ;; # F*Cu
+			1)         layer_color="#C2C200" ;; # In1*Cu
+			2)         layer_color="#C200C2" ;; # In2*Cu
+			3)         layer_color="#C20000" ;; # In3*Cu
+			4)         layer_color="#0000C2" ;; # In4*Cu
+			31)        layer_color="#359632" ;; # B*Cu
+		esac
+
 		if [[ "$n" == "0" ]]; then
 			checked="checked='checked'"
 		else
@@ -349,10 +363,10 @@ insert_layers()
 		fi
 
 		IFS= read -r -d '' HTML_SNIPPET <<-EOM
-		    <input type="radio" id="${layer}" name="layers" value="${layer}" ${checked}  onchange="change_layer()"/>
-		    <label class="rounded text-sm-left list-group-item radio-box" onclick="change_layer_onclick(${layer})" for="${layer}">
+		    <input type="radio" id="${layer_name}" name="layers" value="${layer_name}" ${checked}  onchange="change_layer()"/>
+		    <label class="rounded text-sm-left list-group-item radio-box" onclick="change_layer_onclick(${layer_name})" for="${layer_name}">
 		        <span style="margin-left:0.5em; margin-right:0.1em; color: ${layer_color}" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
-		        ${layer}
+		        ${layer_name}
 		    </label>
 		EOM
 
@@ -497,12 +511,11 @@ generate_comparisons()
 
 	n=0
 
-	sch_page_names=$(get_pages "${board_name}" "${current_path_fix}/${board_name}.sch" | cut -d"|" -f2)
-	board_layers=$(sed_ -n '/^  (layers/,/  )$/{/^  (layers/!{/  )$/!p}}' "${kicad_pcb}" | sed_ "s/^[ \t]\+//g" | sed_ "s/[()]//g" | cut -d" " -f2 | tr "." "_")
+	sch_page_names=$(get_pages "${board_name}" "${current_path_fix}/${board_name}.sch" | cut -d"|" -f2 | sed_ "s/\r$//g")
 
-	# Remove windows line endings
-	sch_page_names=$(echo "$sch_page_names" | sed_ "s/\r$//g")
-	board_layers=$(echo "$board_layers" | sed_ "s/\r$//g")
+	# Layers IDs
+	# https://docs.kicad.org/doxygen/layers__id__colors__and__visibility_8h_source.html
+	board_layers=$(sed_ -n '/^  (layers/,/  )$/{/^  (layers/!{/  )$/!p}}' "${kicad_pcb}" | sed_ "s/^[ \t]\+//g" | sed_ "s/[()]//g" | cut -d" " -f-2 | sed_ "s/\r$//g")
 
 	if [[ "${VERBOSE}" == "1" ]]; then
 		echo "Schematic Pages"
@@ -592,12 +605,15 @@ generate_comparisons()
 
 				IFS=$'\n'
 				for layer in $board_layers; do
+
+					layer_name=$(echo $layer | cut -d " " -f2)
+
 					# Create blank svg when it is missing
-					if [[ ! -f "${output_dir}/$i/${board_name}-${layer}.svg" ]]; then
-						ln -sf "${web_dir}/blank.svg" "${output_dir}/$i/${board_name}-${layer}.svg"
+					if [[ ! -f "${output_dir}/$i/${board_name}-${layer_name}.svg" ]]; then
+						ln -sf "${web_dir}/blank.svg" "${output_dir}/$i/${board_name}-${layer_name}.svg"
 					fi
-					if [[ ! -f "${output_dir}/$j/${board_name}-${layer}.svg" ]]; then
-						ln -sf "${web_dir}/blank.svg" "${output_dir}/$j/${board_name}-${layer}.svg"
+					if [[ ! -f "${output_dir}/$j/${board_name}-${layer_name}.svg" ]]; then
+						ln -sf "${web_dir}/blank.svg" "${output_dir}/$j/${board_name}-${layer_name}.svg"
 					fi
 				done
 
@@ -756,7 +772,7 @@ generate_comparisons()
 
 	# Update initial layout images
 	echo "    Update initial layout images"
-	initial_layer=$(echo "$board_layers" | head -1)
+	initial_layer=$(echo "$board_layers" | head -1 | cut -d " " -f2 | tr "." "_")
 	sed_ -i "s|\[INITIAL_COMMIT_1_PCB\]|../${commit1}/${board_name}-${initial_layer}.svg|g" "${web_dir}/${main_html}"
 	sed_ -i "s|\[INITIAL_COMMIT_2_PCB\]|../${commit2}/${board_name}-${initial_layer}.svg|g" "${web_dir}/${main_html}"
 
@@ -767,7 +783,6 @@ generate_comparisons()
 
 	# Insert layers list
 	echo "    Insert layers list"
-	board_layers=$(sed_ -n '/^  (layers/,/  )$/{/^  (layers/!{/  )$/!p}}' "${kicad_pcb}" | sed_ "s/^[ \t]\+//g" | sed_ "s/[()]//g" | cut -d" " -f2)
 	insert_layers "${web_dir}/${main_html}" "$board_layers"
 
 	# Restore board
