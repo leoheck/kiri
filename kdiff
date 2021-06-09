@@ -881,9 +881,15 @@ if [[ "$kicad_pro" == "" ]]; then
 fi
 
 # Change path if not inside the repo to work from everywhere
+repo_path="$(dirname $kicad_pro)"
 if ! git -C "$(pwd)" rev-parse 2> /dev/null; then
-	repo_path="$(dirname $kicad_pro)"
-	pushd $repo_path
+	pushd "$repo_path" &> /dev/null
+	kicad_pro="$(basename $kicad_pro)"
+else
+	if ! grep "$(pwd)" <<< "$repo_path"; then
+		pushd "$repo_path" &> /dev/null
+		kicad_pro="$(basename $kicad_pro)"
+	fi
 fi
 
 kicad_pcb=${kicad_pro//.pro/.kicad_pcb}
