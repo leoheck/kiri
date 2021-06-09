@@ -6,7 +6,7 @@ show_help()
 
 	USAGE :
 
-	    kdiff [OPTIONS] KICAD_PROJECT_FILE
+	    kdiff [OPTIONS] [KICAD_PROJECT]
 
 	OPTIONS:
 
@@ -18,6 +18,11 @@ show_help()
 	    -p PORT     Set webserver port
 	    -V          Verbose
 	    -h          This help
+
+	KICAD_PROJECT
+
+	    KICAD_PROJECT (.pro) is optional.
+	    If it is missing then a GIUI file selector is used instead.
 
 	EXAMPLES:
 
@@ -844,6 +849,30 @@ do
 	esac
 done
 
+if [[ "$kicad_pro" == "" ]]; then
+	if ! check_tool "zenity" &> /dev/null; then "zenity is missing"; exit; fi
+
+	if [[ $DISPLAY == "" ]]; then
+		export DISPLAY=:0.0
+	fi
+
+	kicad_pro=$(\
+		zenity \
+		    --title "Select Kicad project" \
+			--file-selection \
+			--file-filter='Kicad projects (.pro) | *.pro' \
+			--file-filter='All files | *')
+	if [[ ! -f "$kicad_pro" ]]; then
+		exit 0
+	fi
+fi
+
+# Change path if not inside the repo to work from everywhere
+if ! git -C "$(pwd)" rev-parse 2> /dev/null; then
+	repo_path="$(dirname $kicad_pro)"
+	pushd $repo_path
+fi
+
 kicad_pcb=${kicad_pro//.pro/.kicad_pcb}
 
 # Check required tools
@@ -880,7 +909,7 @@ project_dir=$(dirname "$kicad_pcb_path" | sed_ "s|${repo_root}/||g")
 if [[ -f "${kicad_pro}" ]]; then
 	generate_comparisons "${script_dir}" "${repo_root}" "${project_dir}" "${kicad_pcb}"
 else
-	echo "The board ${kicad_pcb} does not exit"
+	echo "The board \"${kicad_pcb}\" does not exit"
 	exit 1
 fi
 

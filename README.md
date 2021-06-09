@@ -41,6 +41,7 @@ sudo apt install -y python3-tk
 sudo apt install -y kicad
 sudo apt install -y dos2unix
 sudo apt install -y coreutils
+sudo apt install -y zenity
 
 # Initialize opam
 opam init --disable-sandboxing --reinit
@@ -52,6 +53,8 @@ eval $(opam env)
 pip3 install pygubu
 pip3 install python_dateutil
 ```
+
+Zenity is optional. Windows users will need to have installed an X Server like [XMing](https://sourceforge.net/projects/xming/) to be able to run it with Zenity.
 
 After installing dependencies continue with [Install 3rdParty Tools](https://github.com/leoheck/kdiff#install-3rdparty-tools)
 
@@ -71,6 +74,7 @@ brew install gsed
 brew install findutils
 brew install dos2unix
 brew install coreutils
+brew install zenity
 
 # Initialize opam
 opam init --disable-sandboxing --reinit
@@ -132,28 +136,33 @@ How to access tool help, this may change, so prefer to use `kdiff -h` instead.
 ```
 ➜ kdiff -h
 
-USAGE :
+    USAGE :
 
-    kdiff [OPTIONS] KICAD_PROJECT_FILE
+        kdiff [OPTIONS] [KICAD_PROJECT]
 
-OPTIONS:
+    OPTIONS:
 
-    -a          Track all commits (slower).
-    -o HASH     Show commits starting from this one.
-    -n HASH     Show commits until this one delimited by this one.
-    -r          Remove kidiff folder before run
-    -l          Do not launch browser at the end
-    -p PORT     Set webserver port
-    -V          Verbose
-    -h          This help
+        -a          Track all commits (slower).
+        -o HASH     Show commits starting from this one.
+        -n HASH     Show commits until this one delimited by this one.
+        -r          Remove kidiff folder before run
+        -l          Do not launch browser at the end
+        -p PORT     Set webserver port
+        -V          Verbose
+        -h          This help
 
-EXAMPLES:
+    KICAD_PROJECT
 
-    # Kicad project on the root of the repo
-    kdiff board.pro
+        KICAD_PROJECT (.pro) is optional.
+        If it is missing then a GIUI file selector is used instead.
 
-    # Nested Kicad projects 
-    kdiff nested-project/board.pro -r -V
+    EXAMPLES:
+
+        # Kicad project on the root of the repo
+        kdiff board.pro
+
+        # Nested Kicad projects
+        kdiff nested-project/board.pro -r -V
 ```
 
 ## Examples
