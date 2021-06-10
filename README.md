@@ -52,6 +52,7 @@ eval $(opam env)
 # Kicad-Diff dependencies
 pip3 install pygubu
 pip3 install python_dateutil
+pip3 install tk
 ```
 
 Zenity is optional. Windows users will need to have installed an X Server like [XMing](https://sourceforge.net/projects/xming/) to be able to run it with Zenity.
@@ -74,7 +75,6 @@ brew install gsed
 brew install findutils
 brew install dos2unix
 brew install coreutils
-brew install zenity
 
 # Initialize opam
 opam init --disable-sandboxing --reinit
@@ -93,6 +93,7 @@ opam install git-unix
 # Kicad-Diff dependencies
 pip3 install pygubu
 pip3 install python_dateutil
+pip3 install tk
 ```
 
 After installing dependencies continue with [Install 3rdParty Tools](https://github.com/leoheck/kdiff#install-3rdparty-tools)

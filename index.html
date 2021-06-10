@@ -216,6 +216,7 @@
 										</div>
 									</form>
 								</div>
+
 								<div id="diff-sch" style="width: 100%; height: 75vh; display: inline;">
 									<svg id="svg-id-sch" xmlns="http://www.w3.org/2000/svg" version="1.1"
 										xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -223,13 +224,15 @@
 										<g>
 											<svg id="img-1-sch">
 												<defs>
-												<filter id="f1_sch">
-												<feColorMatrix id="c1-sch" type="matrix" values="
-												1   0   0   0   0
-												0   1   0   1   0
-												0   0   1   1   0
-												0   0   0   1   0 " />
-												</filter>
+													<filter id="f1_sch">
+														<feColorMatrix in=SourceGraphic
+															type="matrix"
+															values="
+															1  0  0  0  0
+															0  1  0  1  0
+															0  0  1  1  0
+															0  0  0  1  0" />
+													</filter>
 												</defs>
 												<image id="diff-xlink-1-sch" x="0" y="0" height="100%" width="100%" filter="url(#f1_sch)"
 													href="[INITIAL_COMMIT_1_SCH]"
@@ -237,13 +240,15 @@
 											</svg>
 											<svg id="img-2-sch-sch">
 												<defs>
-												<filter id="f2_sch">
-												<feColorMatrix id="c2-sch" type="matrix" values="
-												1   0   0   1   0
-												0   1   0   0   0
-												0   0   1   0   0
-												0   0   0  .5   0" />
-												</filter>
+													<filter id="f2_sch">
+														<feColorMatrix in=SourceGraphic
+															type="matrix"
+															values="
+															1  0  0  1  0
+															0  1  0  0  0
+															0  0  1  0  0
+															0  0  0 .5  0" />
+													</filter>
 												</defs>
 												<image id="diff-xlink-2-sch" x="0" y="0" height="100%" width="100%" filter="url(#f2_sch)" 
 													href="[INITIAL_COMMIT_2_SCH]"
@@ -259,13 +264,15 @@
 										<g>
 											<svg id="img-1-pcb">
 												<defs>
-												<filter id="f1_pcb">
-												<feColorMatrix id="c3-pcb" type="matrix" values="
-												1   0   0   0   0
-												0   1   0   1   0
-												0   0   1   1   0
-												0   0   0   1   0 " />
-												</filter>
+													<filter id="f1_pcb">
+														<feColorMatrix in=SourceGraphic
+														type="matrix" 
+														values="
+														1  0  0  0  0
+														0  1  0  1  0
+														0  0  1  1  0
+														0  0  0  1  0 " />
+													</filter>
 												</defs>
 												<image id="diff-xlink-1-pcb" x="0" y="0" height="100%" width="100%" filter="url(#f1_pcb)" 
 													href="[INITIAL_COMMIT_1_PCB]"
@@ -273,13 +280,15 @@
 											</svg>
 											<svg id="img-2-pcb-pcb">
 												<defs>
-												<filter id="f2_pcb">
-												<feColorMatrix id="c4-pcb" type="matrix" values="
-												1   0   0   1   0
-												0   1   0   0   0
-												0   0   1   0   0
-												0   0   0  .5   0" />
-												</filter>
+													<filter id="f2_pcb">
+														<feColorMatrix in=SourceGraphic
+														type="matrix" 
+														values="
+														1  0  0  1  0
+														0  1  0  0  0
+														0  0  1  0  0
+														0  0  0 .5  0" />
+													</filter>
 												</defs>
 												<image id="diff-xlink-2-pcb" x="0" y="0" height="100%" width="100%" filter="url(#f2_pcb)" 
 													href="[INITIAL_COMMIT_2_PCB]"

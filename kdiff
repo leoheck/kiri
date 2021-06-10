@@ -869,18 +869,22 @@ do
 done
 
 if [[ "$kicad_pro" == "" ]]; then
-	if ! check_tool "zenity" &> /dev/null; then "zenity is missing"; exit; fi
+	if check_tool "zenity" &> /dev/null; then
 
-	if [[ $DISPLAY == "" ]]; then
-		export DISPLAY=:0.0
+		if [[ $DISPLAY == "" ]]; then
+			export DISPLAY=:0.0
+		fi
+
+		kicad_pro=$(\
+			zenity \
+			    --title "Select Kicad project" \
+				--file-selection \
+				--file-filter='Kicad projects (.pro) | *.pro' \
+				--file-filter='All files | *')
+	else
+		kicad_pro=$(file_picker.py)
 	fi
 
-	kicad_pro=$(\
-		zenity \
-		    --title "Select Kicad project" \
-			--file-selection \
-			--file-filter='Kicad projects (.pro) | *.pro' \
-			--file-filter='All files | *')
 	if [[ ! -f "$kicad_pro" ]]; then
 		exit 0
 	fi
