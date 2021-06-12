@@ -975,9 +975,9 @@ web_dir="${output_dir}/web/"
 
 if [[ ! "${LAUNCH_PAGE}" == 0 ]]; then
 	if grep -q "Microsoft" "/proc/version" &> /dev/null; then
-		# Webserver alternative for Windows with WSL
+		# Wseb-server alternative for Windows with WSL
 		host=127.0.0.1
-		echo "Starting webserver at http://${host}:${WEBSERVER_PORT}"
+		echo "Starting web-server at http://${host}:${WEBSERVER_PORT}"
 		cmd.exe /C start "http://${host}:${WEBSERVER_PORT}" &> /dev/null &
 		echo "(Hit Ctrl+C to exit)"
 		if python3 -m http.server -d "${web_dir}/../" -b "$host" "$WEBSERVER_PORT" &> /dev/null; then
@@ -985,8 +985,8 @@ if [[ ! "${LAUNCH_PAGE}" == 0 ]]; then
 			kill -9 $pid > /dev/null
 		else
 			echo
-			echo -e "Error: Port of the webserver in use."
-			echo -e "Close older section or change default port with '-p [PORT]'"
+			echo -e "Error: Web-server's port is already in use."
+			echo -e "Close older kdiff sessions or change the port with '-p [PORT]'"
 			exit 1
 		fi
 	else
@@ -995,8 +995,8 @@ if [[ ! "${LAUNCH_PAGE}" == 0 ]]; then
 			kill -9 $pid > /dev/null
 		else
 			echo
-			echo -e "Error: Port of the webserver in use."
-			echo -e "Close older section or change default port with '-p [PORT]'"
+			echo -e "Error: Web-server's port is already in use."
+			echo -e "Close older kdiff sessions or change the port with '-p [PORT]'"
 			exit 1
 		fi
 	fi
