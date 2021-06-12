@@ -341,14 +341,22 @@ insert_layers()
 			*)         layer_color="" ;;
 		esac
 
+		# Layers
+		F_CU=0
+		IN1_CU=1
+		IN2_CU=2
+		IN3_CU=3
+		IN4_CU=4
+		B_CU=31
+
 		# Adjust (copper) layers that have custom names
 		case "$layer_id" in
-			0)         layer_color="#952927" ;; # F*Cu
-			1)         layer_color="#C2C200" ;; # In1*Cu
-			2)         layer_color="#C200C2" ;; # In2*Cu
-			3)         layer_color="#C20000" ;; # In3*Cu
-			4)         layer_color="#0000C2" ;; # In4*Cu
-			31)        layer_color="#359632" ;; # B*Cu
+			${F_CU})   layer_color="#952927" ;;
+			${IN1_CU}) layer_color="#C2C200" ;;
+			${IN2_CU}) layer_color="#C200C2" ;;
+			${IN3_CU}) layer_color="#C20000" ;;
+			${IN4_CU}) layer_color="#0000C2" ;;
+			${B_CU})   layer_color="#359632" ;;
 		esac
 
 		if [[ "$n" == "0" ]]; then
@@ -513,7 +521,7 @@ generate_comparisons()
 		echo "${sch_page_names}" | nl
 		echo
 		echo "Layers"
-		echo "${board_layers}" | nl
+		echo "${board_layers}" | column -t | nl
 		echo
 	fi
 
@@ -971,11 +979,25 @@ if [[ ! "${LAUNCH_PAGE}" == 0 ]]; then
 		host=127.0.0.1
 		echo "Starting webserver at http://${host}:${WEBSERVER_PORT}"
 		cmd.exe /C start "http://${host}:${WEBSERVER_PORT}" &> /dev/null &
-		python3 -m http.server -d "${web_dir}/../" -b "$host" "$WEBSERVER_PORT" &> /dev/null
 		echo "(Hit Ctrl+C to exit)"
+		if python3 -m http.server -d "${web_dir}/../" -b "$host" "$WEBSERVER_PORT" &> /dev/null; then
+			pid=$!
+			kill -9 $pid > /dev/null
+		else
+			echo
+			echo -e "Error: Port of the webserver in use."
+			echo -e "Close older section or change default port with '-p [PORT]'"
+			exit 1
+		fi
 	else
-		webserver.py -p "$WEBSERVER_PORT" "${kicad_pcb}"
-		pid=$?
-		kill -9 $pid > /dev/null
+		if webserver.py -p "$WEBSERVER_PORT" "${kicad_pcb}" 2> /dev/null; then
+			pid=$!
+			kill -9 $pid > /dev/null
+		else
+			echo
+			echo -e "Error: Port of the webserver in use."
+			echo -e "Close older section or change default port with '-p [PORT]'"
+			exit 1
+		fi
 	fi
 fi
