@@ -583,13 +583,33 @@ generate_comparisons()
 					if [[ "$ret" == "1" ]]; then
 						if [[ ! $(du -s "${output_dir}/$i/${board_name}.kicad_pcb" | cut -d$'\t' -f1) = 0 ]]; then
 							cmd="plotpcb -o \"${output_dir}/$i/\" -q \"${output_dir}/$i/${board_name}.kicad_pcb\" ${HASHTAG} &> /dev/null"
-							echo "   ${cmd}"
-							eval "$cmd"
+							if [[ "$VERBOSE" == "1" ]]; then
+								echo "   ${cmd}"
+							fi
+							if [[ "$DRY_RUN" == "0" ]]; then
+								eval "$cmd"
+								ret=$?
+								if [[ "$VERBOSE" == "1" ]]; then
+									if [[ "${ret}" -gt "0" ]]; then
+										echo "   Status: ${ret}"
+									fi
+								fi
+							fi
 						fi
 						if [[ ! $(du -s "${output_dir}/$j/${board_name}.kicad_pcb" | cut -d$'\t' -f1) = 0 ]]; then
 							cmd="plotpcb -o \"${output_dir}/$j/\" -q \"${output_dir}/$j/${board_name}.kicad_pcb\" ${HASHTAG} &> /dev/null"
-							echo "   ${cmd}"
-							eval "$cmd"
+							if [[ "$VERBOSE" == "1" ]]; then
+								echo "   ${cmd}"
+							fi
+							if [[ "$DRY_RUN" == "0" ]]; then
+								eval "$cmd"
+								ret=$?
+								if [[ "$VERBOSE" == "1" ]]; then
+									if [[ "${ret}" -gt "0" ]]; then
+										echo "   Status: ${ret}"
+									fi
+								fi
+							fi
 						fi
 					fi
 				fi
