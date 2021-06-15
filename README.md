@@ -108,7 +108,7 @@ pip3 install tk
 
 After installing dependencies continue with [Install 3rdParty Tools](https://github.com/leoheck/kdiff#install-3rdparty-tools)
 
-# Install 3rdParty Tools
+## Install 3rdParty Tools
 
 ```bash
 # Install custom plotgitsch
