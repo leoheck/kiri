@@ -12,7 +12,7 @@ It is currently supporting Kicad projects that use GIT.
 
 ## Installing dependencies
 
-To install dependencies with a single command, open a terminal and execute:
+To install dependencies with a single command, open a terminal (on Windows use WSL) and execute:
 
 ```bash 
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/leoheck/kdiff/main/install_dependencies.sh)"
