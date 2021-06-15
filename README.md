@@ -9,6 +9,16 @@ It is currently supporting Kicad projects that use GIT.
 
 > kdiff works with Kicad `5.*`
 
+
+## Installing dependencies
+
+To install dependencies with a single command, open a terminal and execute:
+
+```bash 
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/leoheck/kdiff/main/install_dependencies.sh)"
+
+```
+
 ## Installing dependencies on Windows
 [Configure WSL](https://www.tenforums.com/tutorials/46769-enable-disable-windows-subsystem-linux-wsl-windows-10-a.html)
 
