@@ -245,7 +245,9 @@ insert_commits()
 	# Disables check since it does not work with quotes
 	# shellcheck disable=SC2086
 	COMMITS_LIST_HTML=$(echo $COMMITS_LIST_HTML | sed_ "s/@/-/g")
-	sed_ -i 's@<!-- FILL_COMMITS_HERE -->@'"${COMMITS_LIST_HTML}"'@g' "${html}"
+	echo 's@<!-- FILL_COMMITS_HERE -->@'"${COMMITS_LIST_HTML}"'@g' > .script.sed
+	sed_ -i -f .script.sed "${html}"
+	rm -rf .script.sed
 }
 
 insert_pages()
@@ -289,7 +291,9 @@ insert_pages()
 	# Disables check since it does not work with quotes
 	# shellcheck disable=SC2086
 	PAGES_LIST_HTML=$(echo $PAGES_LIST_HTML | sed_ "s/@/-/g")
-	sed_ -i 's@<!-- FILL_PAGES_HERE -->@'"${PAGES_LIST_HTML}"'@g' "${html}"
+	echo 's@<!-- FILL_PAGES_HERE -->@'"${PAGES_LIST_HTML}"'@g' > .script.sed
+	sed_ -i -f .script.sed "${html}"
+	rm -rf .script.sed
 }
 
 insert_layers()
@@ -382,7 +386,9 @@ insert_layers()
 	# Disables check since it does not work with quotes
 	# shellcheck disable=SC2086
 	LAYERS_LIST_HTML=$(echo $LAYERS_LIST_HTML | sed_ "s/@/-/g")
-	sed_ -i 's@<!-- FILL_LAYERS_HERE -->@'"${LAYERS_LIST_HTML}"'@g' "${html}"
+	echo 's@<!-- FILL_LAYERS_HERE -->@'"${LAYERS_LIST_HTML}"'@g' > .script.sed
+	sed_ -i -f .script.sed "${html}"
+	rm -rf .script.sed
 }
 
 generate_comparisons()
