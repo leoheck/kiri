@@ -23,6 +23,8 @@ os=$(get_os_name)
 
 if [[ $os == "LINUX" ]]; then
 
+	sudo apt install -y git
+
 	# Basic dependencies for Linux/WSL
 	sudo apt install -y libgmp-dev
 	sudo apt install -y pkg-config
@@ -47,6 +49,7 @@ if [[ $os == "OSX" ]]; then
 	fi
 
 	check_tool brew
+	brew install git
 
 	# Opam dependencies
 	brew install gmp
