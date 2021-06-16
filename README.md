@@ -144,7 +144,7 @@ kdiff board.pro
 
 How to access tool help, this may change, so prefer to use `kdiff -h` instead.
 
-```bash
+```
 ➜ kdiff -h
 
     USAGE :
@@ -153,26 +153,31 @@ How to access tool help, this may change, so prefer to use `kdiff -h` instead.
 
     OPTIONS:
 
-        -a          Track all commits (slower).
-        -o HASH     Show commits starting from this one.
-        -n HASH     Show commits until this one delimited by this one.
-        -r          Remove kidiff folder before run
-        -l          Do not launch browser at the end
-        -p PORT     Set webserver port
-        -V          Verbose
-        -h          This help
+        -a|--all         Include all commits even if schematics/layout don't have changes
+        -o|--older HASH  Show commits starting from this one
+        -n|--newer HASH  Show commits until this one delimited by this one
+        -r|--remove      Remove cache (kidiff) folder before run
+        -l|--webservice  Do not launch webservice/browser at the end
+        -p|--port PORT   Set webserver port
+        -V|--verbose     Verbose
+        -v|--version     Show version
+        -D|--debug       Extra info
+        -h|--help        This help
 
-    KICAD_PROJECT
+    KICAD_PROJECT:
 
-        KICAD_PROJECT (.pro) is optional.
-        If it is missing then a GIUI file selector is used instead.
+        KICAD_PROJECT file (.pro) is optional.
+        If it is missing then file selector in GUI is used instead
 
     EXAMPLES:
+
+        # Launch GUI with file selector
+        kdiff
 
         # Kicad project on the root of the repo
         kdiff board.pro
 
-        # Nested Kicad projects
+        # Nested project (with verbose and starting fresh)
         kdiff nested-project/board.pro -r -V
 ```
 

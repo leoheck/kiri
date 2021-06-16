@@ -10,39 +10,78 @@ show_help()
 
 	OPTIONS:
 
-	    -a          Track all commits (slower).
-	    -o HASH     Show commits starting from this one.
-	    -n HASH     Show commits until this one delimited by this one.
-	    -r          Remove kidiff folder before run
-	    -l          Do not launch browser at the end
-	    -p PORT     Set webserver port
-	    -V          Verbose
-	    -h          This help
+	    -a|--all         Include all commits even if schematics/layout don't have changes
+	    -o|--older HASH  Show commits starting from this one
+	    -n|--newer HASH  Show commits until this one delimited by this one
+	    -r|--remove      Remove cache (kidiff) folder before run
+	    -l|--webservice  Do not launch webservice/browser at the end
+	    -p|--port PORT   Set webserver port
+	    -V|--verbose     Verbose
+	    -v|--version     Show version
+	    -D|--debug       Extra info
+	    -h|--help        This help
 
-	KICAD_PROJECT
+	KICAD_PROJECT:
 
-	    KICAD_PROJECT (.pro) is optional.
-	    If it is missing then a GIUI file selector is used instead.
+	    KICAD_PROJECT file (.pro) is optional.
+	    If it is missing then file selector in GUI is used instead
 
 	EXAMPLES:
+
+	    # Launch GUI with file selector
+	    kdiff
 
 	    # Kicad project on the root of the repo
 	    kdiff board.pro
 
-	    # Nested Kicad projects
+	    # Nested project (with verbose and starting fresh)
 	    kdiff nested-project/board.pro -r -V
 	EOM
 
 	echo -e "$HELP_MESSAGE"
 }
 
-# ======================
-# Custom tools
-# ======================
+show_version()
+{
+	IFS= read -r -d '' VERSION <<-EOM
+
+	    $(basename "$0") x.y.z
+	    plotgitsch $(plotgitsch --version)
+	    kidiff x.y.z
+	EOM
+
+	echo -e "$VERSION"
+}
+
+ctrl_c()
+{
+	echo "** Trapped CTRL-C"
+	exit 1
+}
+
+check_tool()
+{
+	tool=${1}
+	exit=${2}
+
+	if ! command -v "${tool}" &> /dev/null; then
+		if [[ "${exit}" != "" ]]; then
+			echo "${tool} could not be found"
+			exit 1
+		fi
+		return 1
+	else
+		return 0
+	fi
+}
+
+# ==============================================
+# Redefine functions for making Linux/OSX smooth
+# ==============================================
 
 readlink_osx()
 {
-	target_file="$1"
+	target_file="${1}"
 	dir_name=$(dirname "$target_file")
 
 	cd "${dir_name}" || exit
@@ -69,10 +108,10 @@ readlink_()
 {
 	case $OSTYPE in
 		darwin*)
-			readlink_osx "$1"
+			readlink_osx "${1}"
 			;;
 		*)
-			readlink -f "$1"
+			readlink -f "${1}"
 			;;
 	esac
 }
@@ -114,30 +153,12 @@ find_()
 }
 
 # ======================
-
-ctrl_c()
-{
-	echo "** Trapped CTRL-C"
-	exit 1
-}
-
-check_tool() {
-	tool=$1
-	if ! command -v "${tool}" &> /dev/null; then
-		# echo "${tool} could not be found"
-		#exit
-		echo 1
-		return 1
-	else
-		echo 0
-		return 0
-	fi
-}
+# ======================
 
 get_pages()
 {
-	board_name=$1
-	main_schematic=$2
+	board_name=${1}
+	main_schematic=${2}
 
 	# First page is this one
 	pages="${board_name}|${board_name}"
@@ -165,11 +186,11 @@ get_pages()
 
 insert_commits()
 {
-	html="$1"
-	commits="$2"
-	project="$3"
-	kicad_pcb="$4"
-	sch_files=$(echo "$5" | sed_ "s/^[ \t]\+//g" | sed_ "s/[ \t]$\+//g")
+	html="${1}"
+	commits="${2}"
+	project="${3}"
+	kicad_pcb="${4}"
+	sch_files=$(echo "${5}" | sed_ "s/^[ \t]\+//g" | sed_ "s/[ \t]$\+//g")
 
 	# GIT COMMITS FORMAT
 	#
@@ -252,8 +273,8 @@ insert_commits()
 
 insert_pages()
 {
-	html="$1"
-	pages="$2"
+	html="${1}"
+	pages="${2}"
 
 	# FORMAT
 	# pagename|pagepath.sch
@@ -298,8 +319,8 @@ insert_pages()
 
 insert_layers()
 {
-	html="$1"
-	layers="$2"
+	html="${1}"
+	layers="${2}"
 
 	# FORMAT
 	# LAYER_ID LAYER_NAME
@@ -345,6 +366,8 @@ insert_layers()
 			*)         layer_color="" ;;
 		esac
 
+		# https://docs.kicad.org/doxygen/layers__id__colors__and__visibility_8h_source.html
+
 		# Layers
 		F_CU=0
 		IN1_CU=1
@@ -355,12 +378,12 @@ insert_layers()
 
 		# Adjust (copper) layers that have custom names
 		case "$layer_id" in
-			${F_CU})   layer_color="#952927" ;;
-			${IN1_CU}) layer_color="#C2C200" ;;
-			${IN2_CU}) layer_color="#C200C2" ;;
-			${IN3_CU}) layer_color="#C20000" ;;
-			${IN4_CU}) layer_color="#0000C2" ;;
-			${B_CU})   layer_color="#359632" ;;
+			"${F_CU}")   layer_color="#952927" ;;
+			"${IN1_CU}") layer_color="#C2C200" ;;
+			"${IN2_CU}") layer_color="#C200C2" ;;
+			"${IN3_CU}") layer_color="#C20000" ;;
+			"${IN4_CU}") layer_color="#0000C2" ;;
+			"${B_CU}")   layer_color="#359632" ;;
 		esac
 
 		if [[ "$n" == "0" ]]; then
@@ -391,12 +414,172 @@ insert_layers()
 	rm -rf .script.sed
 }
 
-generate_comparisons()
+generate_schematic_artifacts()
 {
-	script_path=$1
-	repo_root_path=$2
-	project_path=$3
-	kicad_pcb=$4
+	project_path=${1}
+	board_name=${2}
+	sch_page_names=${3}
+
+	removed_color="FF0000"
+	added_color="008FFF"
+	unchanged_color="FFFFFF"
+	background_color="222222"
+
+	if [[ ! "$PLOTGITSCH_MISSING" == 1 ]]; then
+
+		if [[ "$project_path" == "." ]] || [[ "$project_path" == "./" ]]; then
+			plotgitsch_path=""
+			lib_path="."
+		else
+			if [[ "$current_path" != "$project_path" ]]; then
+				pushd "${project_path}" &> /dev/null || exit
+				plotgitsch_path="-r ${project_path}"
+				lib_path="."
+			else
+				plotgitsch_path="-r ${project_path}"
+				lib_path="."
+			fi
+		fi
+
+		cmd="plotgitsch ${plotgitsch_path} -m -l ${lib_path}/${board_name}-cache.lib -c ${removed_color}:${added_color}:${unchanged_color}:${background_color} ${i} ${j} ${HIDE} &> /dev/null"
+		if [[ "${VERBOSE}" == "1" ]]; then
+			echo "   $cmd"
+		fi
+		if [[ "$DRY_RUN" == "0" ]]; then
+			eval "$cmd"
+			ret=$?
+			if [[ "$VERBOSE" == "1" ]]; then
+				if [[ "${ret}" -gt "0" ]]; then
+					echo "   Status: ${ret}"
+				fi
+			fi
+		fi
+		if [[ "$current_path" != "$project_path" ]]; then
+			popd &> /dev/null || exit
+			mv "${project_path}"/*.svg .
+		fi
+	fi
+
+	IFS=$'\n'
+	for sch_page_name in $sch_page_names; do
+		# Create blank svg when it is missing
+		if [[ ! -f "sch1-${sch_page_name}.svg" ]]; then
+			ln -sf "${web_dir}/blank.svg" "sch1-${sch_page_name}.svg"
+		fi
+		if [[ ! -f "sch2-${sch_page_name}.svg" ]]; then
+			ln -sf "${web_dir}/blank.svg" "sch2-${sch_page_name}.svg"
+		fi
+	done
+
+	IFS=$'\n'
+	for sch_page_svg in *.svg; do
+		# Background transparent
+		sed_ -i 's/fill="#FFFFFF"/fill="#FFFFFF00"/g' "$sch_page_svg" &> /dev/null
+		sed_ -i 's/fill="#222222"/fill="#22222200"/g' "$sch_page_svg" &> /dev/null
+
+		# Elements in black
+		sed_ -i 's/fill="#FF0000"/fill="#000000FF"/g' "$sch_page_svg" &> /dev/null
+		sed_ -i 's/fill="#00FF00"/fill="#000000FF"/g' "$sch_page_svg" &> /dev/null
+		sed_ -i 's/stroke="#800000"/stroke="#000000FF"/g' "$sch_page_svg" &> /dev/null
+
+		case "$sch_page_svg" in
+			sch1-*)
+				new_sch_name=${sch_page_svg//sch1/sch}
+				mv -f "$sch_page_svg" "${output_dir}/$i/${new_sch_name}" 2> /dev/null
+				;;
+
+			sch2-*)
+				new_sch_name=${sch_page_svg//sch2/sch}
+				mv -f "$sch_page_svg" "${output_dir}/$j/${new_sch_name}" 2> /dev/null
+				;;
+		esac
+	done
+}
+
+generate_layout_artifacts()
+{
+	output_dir=${1}
+	kicad_pcb=${2}
+	board_name=${3}
+
+	if [[ ! "${KIDIFF_MISSING}" == 1 ]]; then
+
+		cmd="kidiff ${kicad_pcb} --webserver-disable -a $i -b $j ${HIDE} &> /dev/null"
+		if [[ "$VERBOSE" == "1" ]]; then
+			echo "   $cmd"
+		fi
+		if [[ "$DRY_RUN" == "0" ]]; then
+			eval "$cmd"
+			ret=$?
+			if [[ "$VERBOSE" == "1" ]]; then
+				if [[ "${ret}" -gt "0" ]]; then
+					echo "   Status: ${ret}"
+				fi
+			fi
+		fi
+
+		if [ -f "${output_dir}/diff.txt" ]; then
+			cp -f "${output_dir}/diff.txt" "${output_dir}/diff-pcb-$i-$j.txt"
+			cp -f "${output_dir}/diff.txt" "${output_dir}/diff-pcb-$j-$i.txt"
+		fi
+
+		# If board does not have diff images were not generated
+		if [[ "$ret" == "1" ]]; then
+			if [[ ! $(du -s "${output_dir}/$i/${board_name}.kicad_pcb" | cut -d$'\t' -f1) = 0 ]]; then
+				cmd="plotpcb -o \"${output_dir}/$i/\" -q \"${output_dir}/$i/${board_name}.kicad_pcb\" ${HIDE} &> /dev/null"
+				if [[ "$VERBOSE" == "1" ]]; then
+					echo "   ${cmd}"
+				fi
+				if [[ "$DRY_RUN" == "0" ]]; then
+					eval "$cmd"
+					ret=$?
+					if [[ "$VERBOSE" == "1" ]]; then
+						if [[ "${ret}" -gt "0" ]]; then
+							echo "   Status: ${ret}"
+						fi
+					fi
+				fi
+			fi
+			if [[ ! $(du -s "${output_dir}/$j/${board_name}.kicad_pcb" | cut -d$'\t' -f1) = 0 ]]; then
+				cmd="plotpcb -o \"${output_dir}/$j/\" -q \"${output_dir}/$j/${board_name}.kicad_pcb\" ${HIDE} &> /dev/null"
+				if [[ "$VERBOSE" == "1" ]]; then
+					echo "   ${cmd}"
+				fi
+				if [[ "$DRY_RUN" == "0" ]]; then
+					eval "$cmd"
+					ret=$?
+					if [[ "$VERBOSE" == "1" ]]; then
+						if [[ "${ret}" -gt "0" ]]; then
+							echo "   Status: ${ret}"
+						fi
+					fi
+				fi
+			fi
+		fi
+	fi
+
+	IFS=$'\n'
+	for layer in $used_board_layers; do
+
+		layer_name=$(echo "$layer" | cut -d " " -f2)
+
+		# Create blank svg when it is missing
+		if [[ ! -f "${output_dir}/$i/${board_name}-${layer_name}.svg" ]]; then
+			ln -sf "${web_dir}/blank.svg" "${output_dir}/$i/${board_name}-${layer_name}.svg"
+		fi
+		if [[ ! -f "${output_dir}/$j/${board_name}-${layer_name}.svg" ]]; then
+			ln -sf "${web_dir}/blank.svg" "${output_dir}/$j/${board_name}-${layer_name}.svg"
+		fi
+	done
+}
+
+generate_artifacts()
+{
+	script_path=${1}
+	repo_path=${2}
+	project_path=${3}
+	kicad_sch=${4}
+	kicad_pcb=${5}
 
 	# Workaround for windows line endings
 	if [[ ! -f "${kicad_pcb}.bkp" ]]; then
@@ -410,9 +593,9 @@ generate_comparisons()
 	board_name="${filename%.*}"
 
 	if [[ "${project_path}" != "." ]]; then
-		output_dir="${repo_root_path}/kidiff/${project_path}"
+		output_dir="${repo_path}/kidiff/${project_path}"
 	else
-		output_dir="${repo_root_path}/kidiff/"
+		output_dir="${repo_path}/kidiff/"
 	fi
 
 	web_dir="${output_dir}/web/"
@@ -425,7 +608,7 @@ generate_comparisons()
 		fi
 	fi
 
-	current_path=$(realpath --relative-to="$repo_root_path" .)
+	current_path=$(realpath --relative-to="$repo_path" .)
 
 	if [[ "$current_path" == "$project_path" ]]; then
 		if [[ "$project_path" != "." ]]; then
@@ -439,14 +622,15 @@ generate_comparisons()
 
 	sch_files=$(find_ "${current_path_fix}" -name "*.sch" -printf "%p ")
 
-	if [[ "${VERBOSE}" == "1" ]]; then
+	if [[ "${DEBUG}" == "1" ]]; then
 		echo
-		echo "    script_dir: ${script_path}"
+		echo "    script_path: ${script_path}"
 		echo
-		echo "     repo_root: ${repo_root_path}"
+		echo "     repo_path: ${repo_path}"
 		echo "   project_dir: ${project_path}"
 		echo
 		echo "     kicad_pcb: ${kicad_pcb}"
+		echo "     kicad_sch: ${kicad_sch}"
 		echo "     sch_files: ${sch_files}"
 		echo "    board_name: ${board_name}"
 		echo
@@ -468,7 +652,7 @@ generate_comparisons()
 		fi
 		commits=$(eval "${cmd}")
 	else
-		cmd="git-kdiff-log ${git_branch} -- ${kicad_pcb} ${sch_files}"
+		cmd="git-kdiff-log ${git_branch} -- ${sch_files} ${kicad_pcb}"
 		if [[ "${VERBOSE}" == "1" ]]; then
 			echo "$cmd"
 			echo
@@ -502,41 +686,35 @@ generate_comparisons()
 		exit 0
 	fi
 
-	a=$(echo "$commits" | tac_ | cut -d' '  -f1);
-	b=$a
-
-	na=$(echo "$a" | wc -w | sed_ "s/^[ \t]\+//g")
-	nb=$(echo "$b" | wc -w | sed_ "s/^[ \t]\+//g")
-	nab=$(echo "${na} * (${nb} - 1) " | bc)
+	hashs=$(echo "${commits}" | tac_ | cut -d' '  -f1);
+	n_hashs=$(echo "$hashs" | wc -w | sed_ "s/^[ \t]\+//g")
+	n_comparisons=$(echo "${n_hashs} * (${n_hashs} - 1) " | bc)
 
 	echo
-	echo "Generating artifacts for ${na} commits."
-	echo "Totaling ${nab} possible comparisons."
+	echo "Generating artifacts for ${n_hashs} commits."
+	echo "Totaling ${n_comparisons} possible comparisons."
 	echo
 
 	n=0
 
-	sch_page_names=$(get_pages "${board_name}" "${current_path_fix}/${board_name}.sch" | cut -d"|" -f2 | sed_ "s/\r$//g")
-
-	# Layers IDs
-	# https://docs.kicad.org/doxygen/layers__id__colors__and__visibility_8h_source.html
-	board_layers=$(sed_ -n '/^  (layers/,/  )$/{/^  (layers/!{/  )$/!p}}' "${kicad_pcb}" | sed_ "s/^[ \t]\+//g" | sed_ "s/[()]//g" | cut -d" " -f-2 | sed_ "s/\r$//g")
+	sch_page_names=$(get_pages "${board_name}" "${current_path_fix}/${kicad_sch}" | cut -d"|" -f2 | sed_ "s/\r$//g")
+	used_board_layers=$(sed_ -n '/^  (layers/,/  )$/{/^  (layers/!{/  )$/!p}}' "${kicad_pcb}" | sed_ "s/^[ \t]\+//g" | sed_ "s/[()]//g" | cut -d" " -f-2 | sed_ "s/\r$//g")
 
 	if [[ "${VERBOSE}" == "1" ]]; then
-		echo "Schematic Pages"
-		echo "${sch_page_names}" | nl
+		echo "Schematic Pages:"
+		echo "${sch_page_names}" | nl -s": "
 		echo
-		echo "Layers"
-		echo "${board_layers}" | column -t | nl
+		echo "Used PCB layers:"
+		echo "${used_board_layers}" | column -t | nl -s": "
 		echo
 	fi
 
 	IFS=$'\n'
-	for i in $a; do
+	for i in $hashs; do
 
 		k=0
 
-		for j in $b; do
+		for j in $hashs; do
 
 			if [[ "$i" != "$j" ]]; then
 
@@ -563,181 +741,21 @@ generate_comparisons()
 				mkdir -p "${output_dir}/$i/"
 				mkdir -p "${output_dir}/$j/"
 
-				# ====
-
 				if [[ "$DEBUG" == 0 ]]; then
-					HASHTAG=""
+					HIDE=""
 				else
-					HASHTAG="#"
+					HIDE="#"
 				fi
 
-				# ====
+				generate_schematic_artifacts "${project_path}" "${board_name}" "${sch_page_names}"
+				generate_layout_artifacts "${output_dir}" "${kicad_pcb}" "${board_name}"
 
-				if [[ ! "${KIDIFF_MISSING}" == 1 ]]; then
-
-					cmd="kidiff ${kicad_pcb} --webserver-disable -a $i -b $j ${HASHTAG} &> /dev/null"
-					if [[ "$VERBOSE" == "1" ]]; then
-						echo "   $cmd"
-					fi
-					if [[ "$DRY_RUN" == "0" ]]; then
-						eval "$cmd"
-						ret=$?
-						if [[ "$VERBOSE" == "1" ]]; then
-							if [[ "${ret}" -gt "0" ]]; then
-								echo "   Status: ${ret}"
-							fi
-						fi
-					fi
-
-					if [ -f "${output_dir}/diff.txt" ]; then
-						cp -f "${output_dir}/diff.txt" "${output_dir}/diff-pcb-$i-$j.txt"
-						cp -f "${output_dir}/diff.txt" "${output_dir}/diff-pcb-$j-$i.txt"
-					fi
-
-					if [[ "$ret" == "1" ]]; then
-						if [[ ! $(du -s "${output_dir}/$i/${board_name}.kicad_pcb" | cut -d$'\t' -f1) = 0 ]]; then
-							cmd="plotpcb -o \"${output_dir}/$i/\" -q \"${output_dir}/$i/${board_name}.kicad_pcb\" ${HASHTAG} &> /dev/null"
-							if [[ "$VERBOSE" == "1" ]]; then
-								echo "   ${cmd}"
-							fi
-							if [[ "$DRY_RUN" == "0" ]]; then
-								eval "$cmd"
-								ret=$?
-								if [[ "$VERBOSE" == "1" ]]; then
-									if [[ "${ret}" -gt "0" ]]; then
-										echo "   Status: ${ret}"
-									fi
-								fi
-							fi
-						fi
-						if [[ ! $(du -s "${output_dir}/$j/${board_name}.kicad_pcb" | cut -d$'\t' -f1) = 0 ]]; then
-							cmd="plotpcb -o \"${output_dir}/$j/\" -q \"${output_dir}/$j/${board_name}.kicad_pcb\" ${HASHTAG} &> /dev/null"
-							if [[ "$VERBOSE" == "1" ]]; then
-								echo "   ${cmd}"
-							fi
-							if [[ "$DRY_RUN" == "0" ]]; then
-								eval "$cmd"
-								ret=$?
-								if [[ "$VERBOSE" == "1" ]]; then
-									if [[ "${ret}" -gt "0" ]]; then
-										echo "   Status: ${ret}"
-									fi
-								fi
-							fi
-						fi
-					fi
+				if [[ "${VERBOSE}" == "1" ]]; then
+					echo
 				fi
-
-				IFS=$'\n'
-				for layer in $board_layers; do
-
-					layer_name=$(echo "$layer" | cut -d " " -f2)
-
-					# Create blank svg when it is missing
-					if [[ ! -f "${output_dir}/$i/${board_name}-${layer_name}.svg" ]]; then
-						ln -sf "${web_dir}/blank.svg" "${output_dir}/$i/${board_name}-${layer_name}.svg"
-					fi
-					if [[ ! -f "${output_dir}/$j/${board_name}-${layer_name}.svg" ]]; then
-						ln -sf "${web_dir}/blank.svg" "${output_dir}/$j/${board_name}-${layer_name}.svg"
-					fi
-				done
-
-				# ====
-
-				removed_color="FF0000"
-				added_color="008FFF"
-				unchanged_color="FFFFFF"
-				background_color="222222"
-
-				if [[ ! "$PLOTGITSCH_MISSING" == 1 ]]; then
-
-					if [[ "$project_path" == "." ]] || [[ "$project_path" == "./" ]]; then
-						plotgitsch_path=""
-						lib_path="."
-					else
-						if [[ "$current_path" != "$project_path" ]]; then
-							pushd "${project_path}" &> /dev/null || exit
-							plotgitsch_path="-r ${project_path}"
-							lib_path="."
-						else
-							plotgitsch_path="-r ${project_path}"
-							lib_path="."
-						fi
-					fi
-
-					cmd="plotgitsch ${plotgitsch_path} -m -l ${lib_path}/${board_name}-cache.lib -c ${removed_color}:${added_color}:${unchanged_color}:${background_color} ${i} ${j} ${HASHTAG} &> /dev/null"
-					if [[ "${VERBOSE}" == "1" ]]; then
-						echo "   $cmd"
-					fi
-					if [[ "$DRY_RUN" == "0" ]]; then
-						eval "$cmd"
-						ret=$?
-						if [[ "$VERBOSE" == "1" ]]; then
-							if [[ "${ret}" -gt "0" ]]; then
-								echo "   Status: ${ret}"
-								echo
-							fi
-						fi
-					fi
-					if [[ "${VERBOSE}" == "1" ]]; then
-						echo
-					fi
-
-					if [[ "$current_path" != "$project_path" ]]; then
-						popd &> /dev/null || exit
-						mv "${project_path}"/*.svg .
-					fi
-				fi
-
-				IFS=$'\n'
-				for sch_page_name in $sch_page_names; do
-					# Create blank svg when it is missing
-					if [[ ! -f "sch1-${sch_page_name}.svg" ]]; then
-						ln -sf "${web_dir}/blank.svg" "sch1-${sch_page_name}.svg"
-					fi
-					if [[ ! -f "sch2-${sch_page_name}.svg" ]]; then
-						ln -sf "${web_dir}/blank.svg" "sch2-${sch_page_name}.svg"
-					fi
-				done
-
-				IFS=$'\n'
-				for sch_page_svg in *.svg; do
-					# Background transparent
-					sed_ -i 's/fill="#FFFFFF"/fill="#FFFFFF00"/g' "$sch_page_svg" &> /dev/null
-					sed_ -i 's/fill="#222222"/fill="#22222200"/g' "$sch_page_svg" &> /dev/null
-
-					# Elements in black
-					sed_ -i 's/fill="#FF0000"/fill="#000000FF"/g' "$sch_page_svg" &> /dev/null
-					sed_ -i 's/fill="#00FF00"/fill="#000000FF"/g' "$sch_page_svg" &> /dev/null
-					sed_ -i 's/stroke="#800000"/stroke="#000000FF"/g' "$sch_page_svg" &> /dev/null
-
-					case "$sch_page_svg" in
-						sch1-*)
-							new_sch_name=${sch_page_svg//sch1/sch}
-							mv -f "$sch_page_svg" "${output_dir}/$i/${new_sch_name}" 2> /dev/null
-							;;
-
-						sch2-*)
-							new_sch_name=${sch_page_svg//sch2/sch}
-							mv -f "$sch_page_svg" "${output_dir}/$j/${new_sch_name}" 2> /dev/null
-							;;
-					esac
-				done
 			fi
 		done
 
-		# THIS CAN BE USED TO DISABLE PAGES AND LAYERS THAT DONT HAVE DIFFERENCES
-
-		# IFS=$'\n'
-		# for svg_path in ${output_dir}/${j}/*.svg; do
-		# 	svg=$(echo $svg_path | sed "s|${output_dir}/${j}/||g" | sed "s/\.svg//g")
-		# 	differs=0
-		# 	if diff ${output_dir}/${i}/${svg}.svg $svg_path > ${output_dir}/diff2/$i-$j-$svg.diff; then
-		# 		differs=1
-		# 	fi
-		# 	echo "diff ${output_dir}/${i}/$svg $svg_path $differs" >> ${output_dir}/svgs.diff
-		# 	echo "$differs" >> ${output_dir}/diff2/$i-$j-$svg.differs
-		# done
 	done
 
 	echo "Assembling the HTML"
@@ -802,13 +820,13 @@ generate_comparisons()
 
 	# Update initial layout images
 	echo "Setting initial layouts"
-	initial_layer=$(echo "$board_layers" | head -1 | cut -d " " -f2 | tr "." "_")
+	initial_layer=$(echo "$used_board_layers" | head -1 | cut -d " " -f2 | tr "." "_")
 	sed_ -i "s|\[INITIAL_COMMIT_1_PCB\]|../${commit1}/${board_name}-${initial_layer}.svg|g" "${web_dir}/${main_html}"
 	sed_ -i "s|\[INITIAL_COMMIT_2_PCB\]|../${commit2}/${board_name}-${initial_layer}.svg|g" "${web_dir}/${main_html}"
 
 	# Insert layers list
 	echo "Adding layers list"
-	insert_layers "${web_dir}/${main_html}" "$board_layers"
+	insert_layers "${web_dir}/${main_html}" "$used_board_layers"
 
 	# Restore board
 	if [[ -f "${kicad_pcb}.bkp" ]]; then
@@ -820,11 +838,10 @@ generate_comparisons()
 # ====================================================================
 # ====================================================================
 
+trap ctrl_c INT
 
 script_path=$(readlink_ "$0")
-script_dir=$(dirname "$script_path")
-
-trap ctrl_c INT
+script_path=$(dirname "${script_path}")
 
 export ALL_COMMITS=0
 export DEBUG=0
@@ -838,23 +855,23 @@ export WEBSERVER_PORT=8000
 
 while [[ $# -gt 0 ]]
 do
-	key="$1"
+	key="${1}"
 
 	case $key in
-	-a)
+	-a|--all)
 		ALL_COMMITS=1
 		shift
 		;;
 
-	-d)
+	-d|--dry-run)
 		VERBOSE=1
 		DRY_RUN=1
 		shift
 		;;
 
-	-h)
+	-h|--help)
 		show_help
-		exit 1
+		exit 0
 		;;
 
 	-l)
@@ -862,41 +879,46 @@ do
 		shift
 		;;
 
-	-n)
-		NEWER_COMMIT="$2"
+	-n|--newer)
+		NEWER_COMMIT="${2}"
 		shift
 		shift
 		;;
 
-	-o)
-		OLDER_COMMIT="$2"
+	-o|--older)
+		OLDER_COMMIT="${2}"
 		shift
 		shift
 		;;
 
-	-r)
+	-r|--remove)
 		REMOVE_KDIFF_FOLDER=1
 		shift
 		;;
 
-	-p)
-		WEBSERVER_PORT="$2"
+	-p|--port)
+		WEBSERVER_PORT="${2}"
 		shift
 		shift
 		;;
 
-	-V)
+	-V|--verbose)
 		VERBOSE=1
 		shift
 		;;
 
-	-D)
+	-v|--version)
+		show_version
+		exit 0
+		;;
+
+	-D|--debug)
 		DEBUG=1
 		shift
 		;;
 
 	*)
-		kicad_pro="$1"
+		kicad_pro="${1}"
 		shift # past argument
 		;;
 	esac
@@ -937,6 +959,7 @@ else
 fi
 
 kicad_pcb=${kicad_pro//.pro/.kicad_pcb}
+kicad_sch=${kicad_pro//.pro/.sch}
 
 # Check required tools
 if [[ "${DRY_RUN}" == 0 ]]; then
@@ -948,12 +971,12 @@ if [[ "${DRY_RUN}" == 0 ]]; then
 	export KIDIFF_MISSING
 fi
 
-if [[ ! "${PLOTGITSCH_MISSING}" = 0 ]]; then
-	echo "INFO: plotgitsch is missing, schematic diff won't be generated"
+if [[ "${PLOTGITSCH_MISSING}" == 1 ]]; then
+	echo "INFO: plotgitsch is missing, skipping schematic diffs"
 fi
 
-if [[ ! "${KIDIFF_MISSING}" = 0 ]]; then
-	echo "INFO: kidiff is missing, layout diff won't be generated"
+if [[ "${KIDIFF_MISSING}" == 1 ]]; then
+	echo "INFO: kidiff is missing, skipping layout diffs"
 fi
 
 if ! check_tool "dos2unix" &> /dev/null; then "dos2unix is missing"; exit; fi
@@ -965,18 +988,18 @@ case $OSTYPE in
 		;;
 esac
 
-repo_root=$(git rev-parse --show-toplevel)
-kicad_pcb_path=$(readlink_ "${kicad_pcb}" | sed_ "s|${repo_root}/||g")
-project_dir=$(dirname "$kicad_pcb_path" | sed_ "s|${repo_root}/||g")
+repo_path=$(git rev-parse --show-toplevel)
+kicad_pcb_path=$(readlink_ "${kicad_pcb}" | sed_ "s|${repo_path}/||g")
+project_dir=$(dirname "$kicad_pcb_path" | sed_ "s|${repo_path}/||g")
 
 if [[ -f "${kicad_pro}" ]]; then
-	generate_comparisons "${script_dir}" "${repo_root}" "${project_dir}" "${kicad_pcb}"
+	generate_artifacts "${script_path}" "${repo_path}" "${project_dir}" "${kicad_sch}" "${kicad_pcb}"
 else
-	echo "The board \"${kicad_pcb}\" does not exit"
+	echo "Kicad project \"${kicad_pro}\" does not exit"
 	exit 1
 fi
 
-output_dir="${repo_root}/kidiff/${project_dir}"
+output_dir="${repo_path}/kidiff/${project_dir}"
 web_dir="${output_dir}/web/"
 
 if [[ ! "${LAUNCH_PAGE}" == 0 ]]; then
