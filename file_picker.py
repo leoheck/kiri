@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 
-# sudo apt-get install python3-tk 
+# sudo apt-get install python3-tk
 
 import pathlib
 from tkinter import *
 from tkinter import ttk
 from tkinter.filedialog import askopenfilename
 
-filetypes = [ 
-    ("Kicad Project", "*.pro"), 
+filetypes = [
+    ("Kicad Project", "*.pro *.kicad_pro"),
     ("All Files", "*.*")
 ]
 

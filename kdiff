@@ -23,7 +23,7 @@ show_help()
 
 	KICAD_PROJECT:
 
-	    KICAD_PROJECT file (.pro) is optional.
+	    KICAD_PROJECT file is optional.
 	    If it is missing then file selector in GUI is used instead
 
 	EXAMPLES:
@@ -174,7 +174,7 @@ get_pages()
 
 		pagename=$(echo "$pagename" | sed_ "s/^ //g" | sed_ "s/ $//g")
 		pagepath=$(echo "$pagepaths" | sed_ -n ${n}p)
-		filename=$(basename "$pagepath" | sed_ "s/.sch//g")
+		filename=$(basename "$pagepath" | sed_ "s/${KICAD_SCH_EXTENSION}//g")
 
 		page="${pagename}|${filename}"
 		pages="${pages}\n${page}"
@@ -211,7 +211,7 @@ insert_commits()
 
 		empty_icon='<span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: rgba(255, 0, 0, 0.5);" data-icon="bx:bx-x" data-inline="false"></span>'
 
-		# check for changes in .sch files
+		# check for changes in ".sch|.kicad_sch" files
 		if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${project}" | cat | grep -s -E "${sch_files// /|}" &> /dev/null; then
 			sch_icon='<span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: #A6E22E;" data-icon="carbon:schematics" data-inline="false"></span>'
 		else
@@ -277,7 +277,7 @@ insert_pages()
 	pages="${2}"
 
 	# FORMAT
-	# pagename|pagepath.sch
+	# pagename|pagepath(.sch|.kicad_sch)
 
 	n=0
 
@@ -287,7 +287,7 @@ insert_pages()
 	for page in $pages; do
 
 		page_name=$(echo "$page" | cut -d'|' -f1 | sed_ "s/[ \t]\+//g")
-		page_filename=$(echo "$page" | cut -d'|' -f2 | sed_ "s/[ \t]\+//g" | sed_ "s/.sch//g")
+		page_filename=$(echo "$page" | cut -d'|' -f2 | sed_ "s/[ \t]\+//g" | sed_ "s/${KICAD_SCH_EXTENSION}//g")
 
 		if [[ $n == 0 ]]; then
 			checked='checked="checked"'
@@ -620,7 +620,7 @@ generate_artifacts()
 		current_path_fix="${project_path}"
 	fi
 
-	sch_files=$(find_ "${current_path_fix}" -name "*.sch" -printf "%p ")
+	sch_files=$(find_ "${current_path_fix}" -name "*${KICAD_SCH_EXTENSION}" -printf "%p ")
 
 	if [[ "${DEBUG}" == "1" ]]; then
 		echo
@@ -698,7 +698,7 @@ generate_artifacts()
 	n=0
 
 	sch_page_names=$(get_pages "${board_name}" "${current_path_fix}/${kicad_sch}" | cut -d"|" -f2 | sed_ "s/\r$//g")
-	used_board_layers=$(sed_ -n '/^  (layers/,/  )$/{/^  (layers/!{/  )$/!p}}' "${kicad_pcb}" | sed_ "s/^[ \t]\+//g" | sed_ "s/[()]//g" | cut -d" " -f-2 | sed_ "s/\r$//g")
+	used_board_layers=$(sed_ -n '/^  (layers/,/  )$/{/^  (layers/!{/  )$/!p}}' "${kicad_pcb}" | sed_ "s/^[ \t]\+//g" | sed_ "s/[()]//g" | cut -d" " -f-2 | sed_ "s/\r$//g" | sed "s/\"//g")
 
 	if [[ "${VERBOSE}" == "1" ]]; then
 		echo "Schematic Pages:"
@@ -774,7 +774,7 @@ generate_artifacts()
 
 	# Insert pages list
 	echo "Adding schematic pages list"
-	pages=$(get_pages "${board_name}" "${current_path_fix}/${board_name}.sch")
+	pages=$(get_pages "${board_name}" "${current_path_fix}/${board_name}${KICAD_SCH_EXTENSION}")
 	insert_pages "${web_dir}/${main_html}" "$pages"
 
 	# Update board title
@@ -935,7 +935,7 @@ if [[ "$kicad_pro" == "" ]]; then
 			zenity \
 			    --title "Select Kicad project" \
 				--file-selection \
-				--file-filter='Kicad projects (.pro) | *.pro' \
+				--file-filter="Kicad Project | *.kicad_pro | *.pro" \
 				--file-filter='All files | *')
 	else
 		kicad_pro=$(file_picker.py)
@@ -958,8 +958,21 @@ else
 	fi
 fi
 
-kicad_pcb=${kicad_pro//.pro/.kicad_pcb}
-kicad_sch=${kicad_pro//.pro/.sch}
+filename=$(basename -- "${kicad_pro}")
+extension="${filename##*.}"
+filename="${filename%.*}"
+
+if [[ ${extension} == "kicad_pro" ]]; then
+	echo "Kicad >= 5.99 project"
+	export KICAD_PRO_EXTENSION=".kicad_pro"
+	export KICAD_SCH_EXTENSION=".kicad_sch"
+else
+	export KICAD_PRO_EXTENSION=".pro"
+	export KICAD_SCH_EXTENSION=".sch"
+fi
+
+kicad_sch=${filename}${KICAD_SCH_EXTENSION}
+kicad_pcb=${filename}.kicad_pcb
 
 # Check required tools
 if [[ "${DRY_RUN}" == 0 ]]; then
