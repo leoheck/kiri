@@ -284,7 +284,7 @@ insert_pages()
 	PAGES_LIST_HTML=""
 
 	IFS=$'\n'
-	for page in ${page}s; do
+	for page in ${pages}; do
 
 		page_name=$(echo "${page}" | cut -d'|' -f1 | sed_ "s/[ \t]\+//g")
 		page_filename=$(echo "${page}" | cut -d'|' -f2 | sed_ "s/[ \t]\+//g" | sed_ "s/${KICAD_SCH_EXTENSION}//g")
@@ -775,7 +775,7 @@ generate_artifacts()
 	# Insert pages list
 	echo "Adding schematic pages list"
 	pages=$(get_pages "${board_name}" "${current_path_fix}/${board_name}${KICAD_SCH_EXTENSION}")
-	insert_pages "${web_dir}/${main_html}" "${page}s"
+	insert_pages "${web_dir}/${main_html}" "${pages}"
 
 	# Update board title
 	echo "Setting board title"
