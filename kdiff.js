@@ -67,7 +67,6 @@ var keysDown = {};
 
 window.onkeydown = function(e) {
     keysDown[e.key] = true;
-    console.log("keysDown:", keysDown);
 
     var commits = "";
     var selected_commits = [];
@@ -88,7 +87,6 @@ window.onkeydown = function(e) {
 
     if (keysDown.s || keysDown.S) {
 
-        console.log("==========================");
         var view_mode = $('#view_mode input[name="view_mode"]:checked').val();
         var next_view_mode = "";
 
@@ -112,7 +110,7 @@ window.onkeydown = function(e) {
             document.getElementById("show_pcb").checked = false;
         }
 
-        console.log("current_view_mode:", next_view_mode);
+        keysDown = {};
     }
 
     // =======================================
@@ -121,7 +119,6 @@ window.onkeydown = function(e) {
 
     if (keysDown.d || keysDown.D) {
 
-        console.log("==========================");
         var view_type = $('#view_type input[name="view_type"]:checked').val();
         var next_view_type = "";
 
@@ -147,14 +144,14 @@ window.onkeydown = function(e) {
             document.getElementById("show_slide").checked = false;
         }
 
-        console.log("current_view_type:", next_view_type);
+        keysDown = {};
     }
 
     // =======================================
     // Next Commit Pair
     // =======================================
 
-    if (keysDown["]"]) {
+    if (keysDown["]"] || (event.ctrlKey && keysDown.ArrowDown)) {
 
         commits = $("#commits_form input:checkbox[name='commit']");
 
@@ -168,29 +165,33 @@ window.onkeydown = function(e) {
             }
         }
 
-        // Move only second item (restore first item)
-        next_selected_commits[0] = selected_commits[0];
-
-        if (selected_commits[1] < commits.length - 1) {
-            for (i = 0; i < selected_commits.length; i++) {
-                commits[selected_commits[i]].checked = false;
-            }
-            for (i = 0; i < selected_commits.length; i++) {
-                commits[next_selected_commits[i]].checked = true;
-            }
-        }
-
-        // Restore boundary
-        if (next_selected_commits[1] == commits.length) {
+        // When second commit reaches the end, moves the first commit forward (if possible)
+        if (next_selected_commits[1] >= commits.length) {
             next_selected_commits[1] = commits.length - 1;
+            if (next_selected_commits[0] <= commits.length - 2) {
+                next_selected_commits[0] = selected_commits[0] + 1;
+            }
+        }
+        else {
+            // By default does not change the first commit
+            next_selected_commits[0] = selected_commits[0];
         }
 
-        console.log("curr[1]:", selected_commits[1]);
-        console.log("next[1]:", next_selected_commits[1]);
-
-        if (selected_commits[1] != next_selected_commits[1]) {
-            update_commits();
+        // Fix bottom boundary
+        if (next_selected_commits[0] >= next_selected_commits[1]) {
+            next_selected_commits[0] = next_selected_commits[1] - 1;
         }
+
+        // Update selected commits
+        for (i = 0; i < selected_commits.length; i++) {
+            commits[selected_commits[i]].checked = false;
+        }
+        for (i = 0; i < selected_commits.length; i++) {
+            commits[next_selected_commits[i]].checked = true;
+        }
+
+        update_commits();
+        keysDown = {};
     }
 
     // =======================================
@@ -210,31 +211,28 @@ window.onkeydown = function(e) {
             }
         }
 
-        if (selected_commits[1] < commits.length - 1) {
-            for (i = 0; i < selected_commits.length; i++) {
-                commits[selected_commits[i]].checked = false;
-            }
-            for (i = 0; i < selected_commits.length; i++) {
-                commits[next_selected_commits[i]].checked = true;
-            }
+        // Fix bottom boundary
+        if (next_selected_commits[1] >= commits.length - 1) {
+            next_selected_commits[1] = commits.length - 1;
+            next_selected_commits[0] = commits.length - 2;
         }
 
-        // Restore boundary
-        if ((next_selected_commits[0] == commits.length - 1) && (next_selected_commits[1] == commits.length)) {
-            next_selected_commits[0] = selected_commits[0];
-            next_selected_commits[1] = selected_commits[1];
+        for (i = 0; i < selected_commits.length; i++) {
+            commits[selected_commits[i]].checked = false;
+        }
+        for (i = 0; i < selected_commits.length; i++) {
+            commits[next_selected_commits[i]].checked = true;
         }
 
-        if ((selected_commits[1] != next_selected_commits[1])) {
-            update_commits();
-        }
+        update_commits();
+        keysDown = {};
     }
 
     // =======================================
-    // Previows Commit Pair
+    // Previews Commit Pair
     // =======================================
 
-    if (keysDown["["]) {
+    if (keysDown["["] || (event.ctrlKey && keysDown.ArrowUp )) {
 
         commits = $("#commits_form input:checkbox[name='commit']");
 
@@ -248,28 +246,32 @@ window.onkeydown = function(e) {
             }
         }
 
+        // By default does not change the first commit
         next_selected_commits[0] = selected_commits[0];
 
-        if (next_selected_commits[1] > next_selected_commits[0]) {
-            for (i = 0; i < selected_commits.length; i++) {
-                commits[selected_commits[i]].checked = false;
-            }
-            for (i = 0; i < selected_commits.length; i++) {
-                commits[next_selected_commits[i]].checked = true;
+        // When commits are touching, move first backwards (if possible)
+        if (next_selected_commits[1] == next_selected_commits[0]) {
+            if (next_selected_commits[0] > 0) {
+                next_selected_commits[0] = next_selected_commits[0] -1;
             }
         }
 
-        // Restore boundary
-        if (next_selected_commits[1] == 0) {
+        // Fix top boundary
+        if (next_selected_commits[0] <= 0) {
+            next_selected_commits[0] = 0;
             next_selected_commits[1] = 1;
         }
 
-        console.log("curr[1]:", selected_commits[1]);
-        console.log("next[1]:", next_selected_commits[1]);
-
-        if ((selected_commits[0] != next_selected_commits[1]) && (selected_commits[1] != next_selected_commits[1])) {
-            update_commits();
+        // Update selected commits
+        for (i = 0; i < selected_commits.length; i++) {
+            commits[selected_commits[i]].checked = false;
         }
+        for (i = 0; i < selected_commits.length; i++) {
+            commits[next_selected_commits[i]].checked = true;
+        }
+
+        update_commits();
+        keysDown = {};
     }
 
     // =======================================
@@ -289,28 +291,22 @@ window.onkeydown = function(e) {
             }
         }
 
-        // Update selection only
-        if (next_selected_commits[0] >= 0) {
-            for (i = 0; i < selected_commits.length; i++) {
-                commits[selected_commits[i]].checked = false;
-            }
-            for (i = 0; i < selected_commits.length; i++) {
-                commits[next_selected_commits[i]].checked = true;
-            }
-        }
-
-        // Restore boundary
-        if ((next_selected_commits[0] == -1) && (next_selected_commits[1] == 0)) {
+        // Fix top boundary
+        if (next_selected_commits[0] <= 0) {
             next_selected_commits[0] = 0;
             next_selected_commits[1] = 1;
         }
 
-        console.log("curr[1]:", selected_commits[1]);
-        console.log("next[1]:", next_selected_commits[1]);
-
-        if ((selected_commits[0] != next_selected_commits[0]) || (selected_commits[0] > 0)) {
-            update_commits();
+        // Update selected commits
+        for (i = 0; i < selected_commits.length; i++) {
+            commits[selected_commits[i]].checked = false;
         }
+        for (i = 0; i < selected_commits.length; i++) {
+            commits[next_selected_commits[i]].checked = true;
+        }
+
+        update_commits();
+        keysDown = {};
     }
 
     // =======================================
@@ -329,6 +325,7 @@ window.onkeydown = function(e) {
         }
 
         update_commits();
+        keysDown = {};
     }
 
     // =======================================
@@ -361,6 +358,8 @@ window.onkeydown = function(e) {
 
             change_layer();
         }
+
+        keysDown = {};
     }
 
     // =======================================
@@ -393,6 +392,8 @@ window.onkeydown = function(e) {
 
             change_layer();
         }
+
+        keysDown = {};
     }
 
     // =======================================
@@ -400,7 +401,6 @@ window.onkeydown = function(e) {
     // =======================================
 
     if (keysDown.f || keysDown.F) {
-        console.log("Reset Zoom");
 
         if (document.getElementById('diff-sch').style.display === "inline") {
             panZoom_sch.resetZoom();
@@ -416,7 +416,7 @@ window.onkeydown = function(e) {
         keysDown = {};
     }
 
-    keysDown = {};
+    // keysDown = {};
 };
 
 // =======================================
@@ -445,8 +445,6 @@ function update_commits() {
     var commit1 = values[0].replace(/\s+/g, '');
     var commit2 = values[1].replace(/\s+/g, '');
 
-    console.log("==========================");
-
     // =======================================
     // Update Schematic
 
@@ -455,13 +453,8 @@ function update_commits() {
 
     var page_name = pages[selected_page].id;
 
-    console.log("selected_page:", pages[selected_page].value);
-
     var sch_image_path_1 = "../" + commit1 + "/" + "sch-" + page_name + ".svg" + img_timestamp();
     var sch_image_path_2 = "../" + commit2 + "/" + "sch-" + page_name + ".svg" + img_timestamp();
-
-    console.log("sch_1:", sch_image_path_1);
-    console.log("sch_2:", sch_image_path_2);
 
     document.getElementById("diff-xlink-1-sch").href.baseVal = sch_image_path_1;
     document.getElementById("diff-xlink-2-sch").href.baseVal = sch_image_path_2;
@@ -482,17 +475,12 @@ function update_commits() {
         }
     }
 
-    console.log("selected_layer:", selected_layer);
-
     if (!selected_layer) {
         selected_layer = "F_Cu";
     }
 
     var image_path_1 = "../" + commit1 + "/" + board_name + "-" + selected_layer + ".svg" + img_timestamp();
     var image_path_2 = "../" + commit2 + "/" + board_name + "-" + selected_layer + ".svg" + img_timestamp();
-
-    console.log("pcb_1:", image_path_1);
-    console.log("pcb_2:", image_path_2);
 
     document.getElementById("diff-xlink-1-pcb").href.baseVal = image_path_1;
     document.getElementById("diff-xlink-2-pcb").href.baseVal = image_path_2;
@@ -512,8 +500,6 @@ function change_page() {
     var selected_page = pages.index(pages.filter(':checked'));
     var page_name = pages[selected_page].id;
 
-    console.log("selected_page:", page_name);
-
     var current_href1 = document.getElementById("diff-xlink-1-sch").href.baseVal;
     var current_href2 = document.getElementById("diff-xlink-2-sch").href.baseVal;
 
@@ -523,16 +509,12 @@ function change_page() {
     var image_path_1 = "../" + commit1 + "/" + "sch-" + page_name + ".svg" + img_timestamp();
     var image_path_2 = "../" + commit2 + "/" + "sch-" + page_name + ".svg" + img_timestamp();
 
-    console.log("page_1:", image_path_1);
-    console.log("page_2:", image_path_2);
-
     document.getElementById("diff-xlink-1-pcb").href.baseVal = image_path_1;
     document.getElementById("diff-xlink-2-pcb").href.baseVal = image_path_2;
 
     document.getElementById("diff-xlink-1-pcb").setAttributeNS('http://www.w3.org/1999/xlink', 'href', image_path_1);
     document.getElementById("diff-xlink-2-pcb").setAttributeNS('http://www.w3.org/1999/xlink', 'href', image_path_2);
 
-    // Refreshing view somehow. How this works?
     update_commits();
 }
 
@@ -540,8 +522,6 @@ function change_layer() {
     var layers = $("#layers_list input:radio[name='layers']");
     var selected_layer = layers.index(layers.filter(':checked'));
     var layer_name = layers[selected_layer].value;
-
-    console.log("selected_layer:", layer_name);
 
     var current_href1 = document.getElementById("diff-xlink-1-pcb").href.baseVal;
     var current_href2 = document.getElementById("diff-xlink-2-pcb").href.baseVal;
@@ -560,10 +540,6 @@ function change_layer() {
     document.getElementById("diff-xlink-1-pcb").setAttributeNS('http://www.w3.org/1999/xlink', 'href', image_path_1);
     document.getElementById("diff-xlink-2-pcb").setAttributeNS('http://www.w3.org/1999/xlink', 'href', image_path_2);
 
-    console.log("image_path_1:", image_path_1);
-    console.log("image_path_2:", image_path_2);
-
-    // Refreshing view somehow. How this works?
     update_commits();
 }
 
@@ -714,11 +690,11 @@ function show_pcb() {
 // =======================================
 
 function show_onion() {
-    console.log("Function:", "show_onion");
+    // console.log("Function:", "show_onion");
 }
 
 function show_slide() {
-    console.log("Function:", "show_slide");
+    // console.log("Function:", "show_slide");
 }
 
 // =======================================
