@@ -182,6 +182,11 @@ window.onkeydown = function(e) {
             next_selected_commits[0] = next_selected_commits[1] - 1;
         }
 
+        // Fix bottom boundary
+        if (next_selected_commits[0] >= commits.length - 2) {
+            next_selected_commits[0] = commits.length - 2;
+        }
+
         // Update selected commits
         for (i = 0; i < selected_commits.length; i++) {
             commits[selected_commits[i]].checked = false;
@@ -214,6 +219,10 @@ window.onkeydown = function(e) {
         // Fix bottom boundary
         if (next_selected_commits[1] >= commits.length - 1) {
             next_selected_commits[1] = commits.length - 1;
+        }
+
+        // Fix bottom boundary
+        if (next_selected_commits[0] >= commits.length - 2) {
             next_selected_commits[0] = commits.length - 2;
         }
 
@@ -257,8 +266,12 @@ window.onkeydown = function(e) {
         }
 
         // Fix top boundary
-        if (next_selected_commits[0] <= 0) {
+        if (next_selected_commits[0] < 0) {
             next_selected_commits[0] = 0;
+        }
+
+        // Fix top boundary
+        if (next_selected_commits[1] <= 1) {
             next_selected_commits[1] = 1;
         }
 
@@ -294,6 +307,10 @@ window.onkeydown = function(e) {
         // Fix top boundary
         if (next_selected_commits[0] <= 0) {
             next_selected_commits[0] = 0;
+        }
+
+        // Fix top boundary
+        if (next_selected_commits[1] <= 1) {
             next_selected_commits[1] = 1;
         }
 
