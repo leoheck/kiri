@@ -85,20 +85,19 @@ fi
 opam switch 4.09.1
 eval $(opam env)
 
-# Clone and install Plotkicadsh 
-if [[ ! -d ./plotkicadsch ]]; then
-	git clone https://github.com/leoheck/plotkicadsch.git
-fi
+
+# Clone this project
+git clone https://github.com/leoheck/kdiff
+git submodule update --init --recursive
+
+# Install custom plotgitsch
 cd plotkicadsch
 ./install.sh
+
+# Load KiCad-Diff environment
+cd ../KiCad-Diff
+source ./env.sh
+
+# Load kdiff environment
 cd ..
-
-# Clone Kicad-diff
-if [[ ! -d ./KiCad-Diff ]]; then
-	git clone https://github.com/Gasman2014/KiCad-Diff.git
-fi
-
-# Clone kdiff
-if [[ ! -d ./kdiff ]]; then
-	git clone https://github.com/leoheck/kdiff.git
-fi
+source ./env.sh

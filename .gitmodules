@@ -1,0 +1,8 @@
+[submodule "KiCad-Diff"]
+	path = KiCad-Diff
+	url = https://github.com/leoheck/KiCad-Diff.git
+	branch = layer-improvements-2
+[submodule "plotkicadsch"]
+	path = plotkicadsch
+	url = https://github.com/leoheck/plotkicadsch.git
+	branch = master

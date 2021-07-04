@@ -108,29 +108,23 @@ pip3 install tk
 
 After installing dependencies continue with [Install 3rdParty Tools](https://github.com/leoheck/kdiff#install-3rdparty-tools)
 
-## Install 3rdParty Tools
+## Installing and using
 
 ```bash
+# Clone this project
+git clone https://github.com/leoheck/kdiff
+git submodule update --init --recursive
+
 # Install custom plotgitsch
-git clone https://github.com/leoheck/plotkicadsch.git
 cd plotkicadsch
 ./install.sh
 
-# Install Kicad-Diff
-git clone https://github.com/Gasman2014/KiCad-Diff.git
-```
-
-## Environment Setup (before using it)
-```bash
 # Load KiCad-Diff environment
-cd KiCad-Diff
+cd ../KiCad-Diff
 source ./env.sh
 
-# Install kdiff environment
-git clone https://github.com/leoheck/kdiff
-cd kdiff
-
 # Load kdiff environment
+cd ..
 source ./env.sh
 ```
 
