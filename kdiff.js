@@ -508,8 +508,8 @@ function update_commits() {
     // =======================================
     // Update Legend
 
-    document.getElementById("commit1_legend_hash").innerHTML = "(" + commit1.toUpperCase() + ")";
-    document.getElementById("commit2_legend_hash").innerHTML = "(" + commit2.toUpperCase() + ")";
+    document.getElementById("commit1_legend_hash").innerHTML = "(" + commit1 + ")";
+    document.getElementById("commit2_legend_hash").innerHTML = "(" + commit2 + ")";
 }
 
 function change_page() {
