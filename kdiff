@@ -201,61 +201,103 @@ insert_commits()
 
 	COMMITS_LIST_HTML=""
 
+	empty_icon='<span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: rgba(255, 0, 0, 0.5);" data-icon="bx:bx-x" data-inline="false"></span>'
+
 	IFS=$'\n'
 	for commit in ${commits}; do
 
-		hash=$(echo "${commit}" | cut -d'|' -f1 | sed_ "s/^ //g" | sed_ "s/[ t]\+//g" )
-		date=$(echo "${commit}" | cut -d'|' -f2 | cut -d' ' -f1-2 | sed_ "s/^ //g" )
-		user=$(echo "${commit}" | cut -d'|' -f3 | sed_ "s/^ //g" )
-		 msg=$(echo "${commit}" | cut -d'|' -f4 | sed_ "s/^ //g" )
+		if [[ ${commit} != "local" ]]; then
 
-		empty_icon='<span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: rgba(255, 0, 0, 0.5);" data-icon="bx:bx-x" data-inline="false"></span>'
+			hash=$(echo "${commit}" | cut -d'|' -f1 | sed_ "s/^ //g" | sed_ "s/[ t]\+//g" )
+			date=$(echo "${commit}" | cut -d'|' -f2 | cut -d' ' -f1-2 | sed_ "s/^ //g" )
+			user=$(echo "${commit}" | cut -d'|' -f3 | sed_ "s/^ //g" )
+			 msg=$(echo "${commit}" | cut -d'|' -f4 | sed_ "s/^ //g" )
 
-		# check for changes in ".sch|.kicad_sch" files
-		if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${project}" | cat | grep -s -E "${sch_files// /|}" &> /dev/null; then
-			sch_icon='<span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: #A6E22E;" data-icon="carbon:schematics" data-inline="false"></span>'
+
+			# check for changes in ".sch|.kicad_sch" files
+			if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${project}" | cat | grep -s -E "${sch_files// /|}" &> /dev/null; then
+				sch_icon='<span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: #A6E22E;" data-icon="carbon:schematics" data-inline="false"></span>'
+			else
+				sch_icon="${empty_icon}"
+			fi
+
+			# check for changes in .kicad_pcb files
+			if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${project}" | cat | grep -s "${kicad_pcb}" &> /dev/null; then
+				layout_icon='<span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: #F92672;" data-icon="codicon:circuit-board" data-inline="false"></span>'
+			else
+				layout_icon="${empty_icon}"
+			fi
+
+			# Check for changes in textual files only
+			if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${project}" | cat | grep -s -vE "${sch_files// /|}${kicad_pcb}" &> /dev/null; then
+				text_icon='<span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: #888888;" data-icon="bi:file-earmark-text" data-inline="false"></span>'
+			else
+				text_icon="${empty_icon}"
+			fi
+
+			if [[ $n == 1 ]] || [[ $n == 2 ]]; then
+				checked="checked='checked'"
+			else
+				checked=""
+			fi
+
+			IFS= read -r -d '' COMMIT_HTML <<-EOM
+			    <input class="chkGroup" type="checkbox" id="${hash}" name="commit" value="${hash}" ${checked} onchange="update_commits()"/>
+			    <label class="text-sm-left list-group-item" for="${hash}">
+			      <table style="width:100%">
+			        <tr>
+			          <td rowspan=2 style="vertical-align: top; width: 1.8em;">
+			              <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" width="15" height="15">
+			                  <path d="M7.5 10.5a3 3 0 010-6m0 6a3 3 0 000-6m0 6V15m0-10.5V0" stroke="currentColor"></path>
+			              </svg>
+			            </td>
+			          <td><em class="text-info" style="  line-height: 0.7;">${msg}</em></td>
+			        </tr>
+			        <tr>
+			          <td white-space:nowrap;overflow: hidden;><span class="text-success font-weight-normal">${hash}</span> <span class="text-muted"> | </span> ${sch_icon} ${layout_icon} ${text_icon} <span class="text-muted font-weight-normal"> | ${date} | ${user}</td>
+			        </tr>
+			      </table>
+			    </label>
+			EOM
+
 		else
+
+			hash="local"
+			date="$(date +'%Y-%m-%d')"
+			user="${USER}"
+			 msg="Local changes"
+
 			sch_icon="${empty_icon}"
-		fi
-
-		# check for changes in .kicad_pcb files
-		if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${project}" | cat | grep -s "${kicad_pcb}" &> /dev/null; then
-			layout_icon='<span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: #F92672;" data-icon="codicon:circuit-board" data-inline="false"></span>'
-		else
 			layout_icon="${empty_icon}"
-		fi
-
-		# Check for changes in textual files only
-		if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${project}" | cat | grep -s -vE "${sch_files// /|}${kicad_pcb}" &> /dev/null; then
-			text_icon='<span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: #888888;" data-icon="bi:file-earmark-text" data-inline="false"></span>'
-		else
 			text_icon="${empty_icon}"
-		fi
 
-		if [[ $n == 0 ]] || [[ $n == 1 ]]; then
-			checked="checked='checked'"
-		else
-			checked=""
-		fi
+			if [[ $n == 1 ]] || [[ $n == 2 ]]; then
+				checked="checked='checked'"
+			else
+				checked=""
+			fi
 
-		IFS= read -r -d '' COMMIT_HTML <<-EOM
-		    <input class="chkGroup" type="checkbox" id="${hash}" name="commit" value="${hash}" ${checked} onchange="update_commits()"/>
-		    <label class="text-sm-left list-group-item" for="${hash}">
-		      <table style="width:100%">
-		        <tr>
-		          <td rowspan=2 style="vertical-align: top; width: 1.8em;">
-		              <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" width="15" height="15">
-		                  <path d="M7.5 10.5a3 3 0 010-6m0 6a3 3 0 000-6m0 6V15m0-10.5V0" stroke="currentColor"></path>
-		              </svg>
-		            </td>
-		          <td><em class="text-info" style="  line-height: 0.7;">${msg}</em></td>
-		        </tr>
-		        <tr>
-		          <td white-space:nowrap;overflow: hidden;><span class="text-success text-uppercase font-weight-normal">${hash}</span> <span class="text-muted"> | </span> ${sch_icon} ${layout_icon} ${text_icon} <span class="text-muted font-weight-normal"> | ${date} | ${user}</td>
-		        </tr>
-		      </table>
-		    </label>
-		EOM
+			IFS= read -r -d '' COMMIT_HTML <<-EOM
+			    <input class="chkGroup" type="checkbox" id="${hash}" name="commit" value="${hash}" ${checked} onchange="update_commits()"/>
+			    <label class="text-sm-left list-group-item" for="${hash}">
+			      <table style="width:100%">
+			        <tr>
+			          <td rowspan=2 style="vertical-align: top; width: 1.8em;">
+			              <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" width="15" height="15">
+			                  <path d="M7.5 10.5a3 3 0 010-6m0 6a3 3 0 000-6m0 6V15m0-10.5V0" stroke="currentColor"></path>
+			              </svg>
+			            </td>
+			          <td><em class="text-warning" style="  line-height: 0.7;">${msg}</em></td>
+			        </tr>
+			      </table>
+			    </label>
+			EOM
+
+	        # <tr>
+	        #   <td white-space:nowrap;overflow: hidden;><span class="text-success font-weight-normal">${hash}</span> <span class="text-muted"> | </span> ${sch_icon} ${layout_icon} ${text_icon} <span class="text-muted font-weight-normal"> | ${date} | ${user}</td>
+	        # </tr>
+
+		fi
 
 		n=$((n+1))
 
@@ -333,6 +375,8 @@ insert_layers()
 	for layer in ${layers}; do
 
 		layer_id=$(echo "${layer}" | cut -d " " -f1)
+		layer_id=$(printf "%02d" "$layer_id")
+
 		layer_name=$(echo "${layer}" | cut -d " " -f2)
 
 		# Update layer name by replacing "." with "_"
@@ -369,11 +413,11 @@ insert_layers()
 		# https://docs.kicad.org/doxygen/layers__id__colors__and__visibility_8h_source.html
 
 		# Layers
-		F_CU=0
-		IN1_CU=1
-		IN2_CU=2
-		IN3_CU=3
-		IN4_CU=4
+		F_CU=00
+		IN1_CU=01
+		IN2_CU=02
+		IN3_CU=03
+		IN4_CU=04
 		B_CU=31
 
 		# Adjust (copper) layers that have custom names
@@ -393,10 +437,10 @@ insert_layers()
 		fi
 
 		IFS= read -r -d '' HTML_SNIPPET <<-EOM
-		    <input type="radio" id="${layer_name}" name="layers" value="${layer_name}" ${checked}  onchange="change_layer()"/>
-		    <label class="rounded text-sm-left list-group-item radio-box" onclick="change_layer_onclick(${layer_name})" for="${layer_name}">
+		    <input type="radio" id="${layer_name}" name="layers" value="${layer_id}-${layer_name}" ${checked}  onchange="change_layer()"/>
+		    <label class="rounded text-sm-left list-group-item radio-box" onclick="change_layer_onclick(${layer_id}-${layer_name})" for="${layer_id}-${layer_name}">
 		        <span style="margin-left:0.5em; margin-right:0.1em; color: ${layer_color}" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
-		        ${layer_name}
+		        ${layer_id}-${layer_name}
 		    </label>
 		EOM
 
@@ -416,14 +460,19 @@ insert_layers()
 
 generate_schematic_artifacts()
 {
-	project_path=${1}
-	board_name=${2}
-	sch_page_names=${3}
+	commit1=${1}
+	commit2=${2}
+	project_path=${3}
+	board_name=${4}
+	sch_page_names=${5}
 
 	removed_color="FF0000"
 	added_color="008FFF"
 	unchanged_color="FFFFFF"
 	background_color="222222"
+
+	if [[ ${commit1} == "local" ]]; then commit1="dir:./"; fi
+	if [[ ${commit2} == "local" ]]; then commit2="dir:./"; fi
 
 	if [[ ! "${PLOTGITSCH_MISSING}" == 1 ]]; then
 
@@ -441,7 +490,7 @@ generate_schematic_artifacts()
 			fi
 		fi
 
-		cmd="plotgitsch ${plotgitsch_path} -m -l ${lib_path}/${board_name}-cache.lib -c ${removed_color}:${added_color}:${unchanged_color}:${background_color} ${i} ${j} ${HIDE} &> /dev/null"
+		cmd="plotgitsch ${plotgitsch_path} -m -l ${lib_path}/${board_name}-cache.lib -c ${removed_color}:${added_color}:${unchanged_color}:${background_color} ${commit1} ${commit2} ${HIDE} &> /dev/null"
 		if [[ "${VERBOSE}" == "1" ]]; then
 			echo "   ${cmd}"
 		fi
@@ -461,7 +510,8 @@ generate_schematic_artifacts()
 	fi
 
 	IFS=$'\n'
-	for sch_page_name in $sch_page_names; do
+	for sch_page_name in ${sch_page_names}; do
+
 		# Create blank svg when it is missing
 		if [[ ! -f "sch1-${sch_page_name}.svg" ]]; then
 			ln -sf "${web_dir}/blank.svg" "sch1-${sch_page_name}.svg"
@@ -471,8 +521,13 @@ generate_schematic_artifacts()
 		fi
 	done
 
+	# Restore names
+	if [[ ${commit1} == "dir:./" ]]; then commit1="local"; fi
+	if [[ ${commit2} == "dir:./" ]]; then commit2="local"; fi
+
 	IFS=$'\n'
 	for sch_page_svg in *.svg; do
+
 		# Background transparent
 		sed_ -i 's/fill="#FFFFFF"/fill="#FFFFFF00"/g' "${sch_page_svg}" &> /dev/null
 		sed_ -i 's/fill="#222222"/fill="#22222200"/g' "${sch_page_svg}" &> /dev/null
@@ -485,12 +540,12 @@ generate_schematic_artifacts()
 		case "${sch_page_svg}" in
 			sch1-*)
 				new_sch_name=${sch_page_svg//sch1/sch}
-				mv -f "${sch_page_svg}" "${output_dir}/${i}/${new_sch_name}" 2> /dev/null
+				mv -f "${sch_page_svg}" "${output_dir}/${commit1}/${new_sch_name}" 2> /dev/null
 				;;
 
 			sch2-*)
 				new_sch_name=${sch_page_svg//sch2/sch}
-				mv -f "${sch_page_svg}" "${output_dir}/${j}/${new_sch_name}" 2> /dev/null
+				mv -f "${sch_page_svg}" "${output_dir}/${commit2}/${new_sch_name}" 2> /dev/null
 				;;
 		esac
 	done
@@ -498,13 +553,18 @@ generate_schematic_artifacts()
 
 generate_layout_artifacts()
 {
-	output_dir=${1}
-	kicad_pcb=${2}
-	board_name=${3}
+	commit1=${1}
+	commit2=${2}
+	output_dir=${3}
+	kicad_pcb=${4}
+	board_name=${5}
+
+	if [[ ${commit1} == "local" ]]; then commit1="${kicad_pcb}"; fi
+	if [[ ${commit2} == "local" ]]; then commit2="${kicad_pcb}"; fi
 
 	if [[ ! "${KIDIFF_MISSING}" == 1 ]]; then
 
-		cmd="kidiff ${kicad_pcb} --webserver-disable -a ${i} -b ${j} ${HIDE} &> /dev/null"
+		cmd="kidiff ${kicad_pcb} --webserver-disable -a ${commit1} -b ${commit2} ${HIDE} &> /dev/null"
 		if [[ "${VERBOSE}" == "1" ]]; then
 			echo "   ${cmd}"
 		fi
@@ -519,14 +579,18 @@ generate_layout_artifacts()
 		fi
 
 		if [ -f "${output_dir}/diff.txt" ]; then
-			cp -f "${output_dir}/diff.txt" "${output_dir}/diff-pcb-${i}-${j}.txt"
-			cp -f "${output_dir}/diff.txt" "${output_dir}/diff-pcb-${j}-${i}.txt"
+			cp -f "${output_dir}/diff.txt" "${output_dir}/diff-pcb-${commit1}-${commit2}.txt"
+			cp -f "${output_dir}/diff.txt" "${output_dir}/diff-pcb-${commit2}-${commit1}.txt"
 		fi
+
+		# Restore names
+		if [[ ${commit1} == "${kicad_pcb}" ]]; then commit1="local"; fi
+		if [[ ${commit2} == "${kicad_pcb}" ]]; then commit2="local"; fi
 
 		# If board does not have diff images were not generated
 		if [[ "$ret" == "1" ]]; then
-			if [[ ! $(du -s "${output_dir}/${i}/${board_name}.kicad_pcb" | cut -d$'\t' -f1) = 0 ]]; then
-				cmd="plotpcb -o \"${output_dir}/${i}/\" -q \"${output_dir}/${i}/${board_name}.kicad_pcb\" ${HIDE} &> /dev/null"
+			if [[ ! $(du -s "${output_dir}/${commit1}/${kicad_pcb}" | cut -d$'\t' -f1) = 0 ]]; then
+				cmd="plotpcb -o \"${output_dir}/${commit1}/\" -q \"${output_dir}/${commit1}/${kicad_pcb}\" ${HIDE} &> /dev/null"
 				if [[ "${VERBOSE}" == "1" ]]; then
 					echo "   ${cmd}"
 				fi
@@ -540,8 +604,8 @@ generate_layout_artifacts()
 					fi
 				fi
 			fi
-			if [[ ! $(du -s "${output_dir}/${j}/${board_name}.kicad_pcb" | cut -d$'\t' -f1) = 0 ]]; then
-				cmd="plotpcb -o \"${output_dir}/${j}/\" -q \"${output_dir}/${j}/${board_name}.kicad_pcb\" ${HIDE} &> /dev/null"
+			if [[ ! $(du -s "${output_dir}/${commit2}/${kicad_pcb}" | cut -d$'\t' -f1) = 0 ]]; then
+				cmd="plotpcb -o \"${output_dir}/${commit2}/\" -q \"${output_dir}/${commit2}/${kicad_pcb}\" ${HIDE} &> /dev/null"
 				if [[ "${VERBOSE}" == "1" ]]; then
 					echo "   ${cmd}"
 				fi
@@ -561,14 +625,19 @@ generate_layout_artifacts()
 	IFS=$'\n'
 	for layer in ${used_board_layers}; do
 
-		layer_name=$(echo "${layer}" | cut -d " " -f2)
+		layer_id=$(echo "${layer}" | cut -d " " -f1)
+		layer_id=$(printf "%02d" "$layer_id")
 
-		# Create blank svg when it is missing
-		if [[ ! -f "${output_dir}/${i}/${board_name}-${layer_name}.svg" ]]; then
-			ln -sf "${web_dir}/blank.svg" "${output_dir}/${i}/${board_name}-${layer_name}.svg"
+		layer_name=$(echo "${layer}" | cut -d " " -f2 | sed "s/\./_/g")
+
+		# Create blank svgs if some is missing
+
+		if [[ ! -f "${output_dir}/${commit1}/${board_name}-${layer_id}-${layer_name}.svg" ]]; then
+			ln -sf "${web_dir}/blank.svg" "${output_dir}/${i}/${board_name}-${layer_id}-${layer_name}.svg"
 		fi
-		if [[ ! -f "${output_dir}/${j}/${board_name}-${layer_name}.svg" ]]; then
-			ln -sf "${web_dir}/blank.svg" "${output_dir}/${j}/${board_name}-${layer_name}.svg"
+
+		if [[ ! -f "${output_dir}/${commit2}/${board_name}-${layer_id}-${layer_name}.svg" ]]; then
+			ln -sf "${web_dir}/blank.svg" "${output_dir}/${j}/${board_name}-${layer_id}-${layer_name}.svg"
 		fi
 	done
 }
@@ -686,8 +755,14 @@ generate_artifacts()
 		exit 0
 	fi
 
+	# Add local changes to be compared
+	IFS= read -r -d '' commits <<-EOM
+	local
+	${commits}
+	EOM
+
 	hashs=$(echo "${commits}" | tac_ | cut -d' '  -f1);
-	n_hashs=$(echo "$hashs" | wc -w | sed_ "s/^[ \t]\+//g")
+	n_hashs=$(echo "${hashs}" | wc -w | sed_ "s/^[ \t]\+//g")
 	n_comparisons=$(echo "${n_hashs} * (${n_hashs} - 1) " | bc)
 
 	echo
@@ -700,6 +775,8 @@ generate_artifacts()
 	sch_page_names=$(get_pages "${board_name}" "${current_path_fix}/${kicad_sch}" | cut -d"|" -f2 | sed_ "s/\r$//g")
 	used_board_layers=$(sed_ -n '/^  (layers/,/  )$/{/^  (layers/!{/  )$/!p}}' "${kicad_pcb}" | sed_ "s/^[ \t]\+//g" | sed_ "s/[()]//g" | cut -d" " -f-2 | sed_ "s/\r$//g" | sed "s/\"//g")
 
+# | sed "s/\./_/g"
+
 	if [[ "${VERBOSE}" == "1" ]]; then
 		echo "Schematic Pages:"
 		echo "${sch_page_names}" | nl -s": "
@@ -710,11 +787,11 @@ generate_artifacts()
 	fi
 
 	IFS=$'\n'
-	for i in $hashs; do
+	for i in ${hashs}; do
 
 		k=0
 
-		for j in $hashs; do
+		for j in ${hashs}; do
 
 			if [[ "${i}" != "${j}" ]]; then
 
@@ -732,10 +809,10 @@ generate_artifacts()
 					skipping=""
 				fi
 
-				if [[ $k == 1 ]]; then
-					printf "%4d. %s - %s%s\n" "$n" "${i}" "${j}" "${skipping}"
+				if [[ ${k} == 1 ]]; then
+					printf "%4d. %s - %s%s\n" "${n}" "${i}" "${j}" "${skipping}"
 				else
-					printf "%4d. %s - %s%s \n" "$n" "       " "${j}" "${skipping}"
+					printf "%4d. %s - %s%s \n" "${n}" "       " "${j}" "${skipping}"
 				fi
 
 				mkdir -p "${output_dir}/${i}/"
@@ -747,8 +824,8 @@ generate_artifacts()
 					HIDE="#"
 				fi
 
-				generate_schematic_artifacts "${project_path}" "${board_name}" "${sch_page_names}"
-				generate_layout_artifacts "${output_dir}" "${kicad_pcb}" "${board_name}"
+				generate_schematic_artifacts "${i}" "${j}" "${project_path}" "${board_name}" "${sch_page_names}"
+				generate_layout_artifacts "${i}" "${j}" "${output_dir}" "${kicad_pcb}" "${board_name}"
 
 				if [[ "${VERBOSE}" == "1" ]]; then
 					echo
@@ -805,8 +882,8 @@ generate_artifacts()
 	echo "Setting board name"
 	sed_ -i "s|var board_name =.*|var board_name = \"${board_name}\"; // generated by kdiff script |g" "${web_dir}/kdiff.js"
 
-	commit1=$(echo "${commits}" | head -n1 | tail -n1 | cut -d" " -f1)
-	commit2=$(echo "${commits}" | head -n2 | tail -n1 | cut -d" " -f1)
+	commit1=$(echo "${commits}" | head -n2 | tail -n1 | cut -d" " -f1)
+	commit2=$(echo "${commits}" | head -n3 | tail -n1 | cut -d" " -f1)
 
 	# Initial commit legend
 	echo "Setting initial commits"
@@ -820,9 +897,10 @@ generate_artifacts()
 
 	# Update initial layout images
 	echo "Setting initial layouts"
-	initial_layer=$(echo "${used_board_layers}" | head -1 | cut -d " " -f2 | tr "." "_")
-	sed_ -i "s|\[INITIAL_COMMIT_1_PCB\]|../${commit1}/${board_name}-${initial_layer}.svg|g" "${web_dir}/${main_html}"
-	sed_ -i "s|\[INITIAL_COMMIT_2_PCB\]|../${commit2}/${board_name}-${initial_layer}.svg|g" "${web_dir}/${main_html}"
+	initial_layer_id=$(echo "${used_board_layers}" | head -1 | cut -d " " -f1 | tr "." "_" | printf "%02d")
+	initial_layer_name=$(echo "${used_board_layers}" | head -1 | cut -d " " -f2 | tr "." "_")
+	sed_ -i "s|\[INITIAL_COMMIT_1_PCB\]|../${commit1}/${board_name}-${initial_layer_id}-${initial_layer_name}.svg|g" "${web_dir}/${main_html}"
+	sed_ -i "s|\[INITIAL_COMMIT_2_PCB\]|../${commit2}/${board_name}-${initial_layer_id}-${initial_layer_name}.svg|g" "${web_dir}/${main_html}"
 
 	# Insert layers list
 	echo "Adding layers list"

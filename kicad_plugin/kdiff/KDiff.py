@@ -11,7 +11,7 @@ class KDiff(pcbnew.ActionPlugin):
     def defaults(self):
         self.name = "KDiff"
         self.category = "Review"
-        self.description = "Kicad Visuall Diff Inspector"
+        self.description = "Visuall Diff Inspector"
         self.icon_file_name = os.path.join(os.path.dirname(__file__), "./kdiff.png")
         self.show_toolbar_button = True
 
