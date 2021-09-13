@@ -122,7 +122,7 @@ if __name__ == "__main__":
     kicad_project_path = os.path.dirname(os.path.realpath(args.kicad_pcb))
     board_file = os.path.basename(os.path.realpath(args.kicad_pcb))
 
-    prjctPath, kicad_project = get_kicad_project_path(escape_string(kicad_project_path))
+    prjctPath, kicad_project = get_kicad_project_path(kicad_project_path)
 
     if not args.webserver_disable:
 
