@@ -71,18 +71,6 @@ def parse_cli_args():
     return args
 
 
-def escape_string(val):
-
-    if sys.version_info[0] >= 3:
-        unicode = str
-
-    val = unicode(val)
-    val = val.replace(u"\\", u"\\\\")
-    val = val.replace(u" ", u"\\ ")
-
-    return "".join(val.splitlines())
-
-
 def run_cmd(path: str, cmd: List[str]) -> Tuple[str, str]:
 
     p = Popen(
