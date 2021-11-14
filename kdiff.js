@@ -1,4 +1,4 @@
-// Atempt to fix the:
+// Attempt to fix the:
 // [Violation] Added non-passive event listener to a scroll-blocking
 
 jQuery.event.special.touchstart = {
