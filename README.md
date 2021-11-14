@@ -67,8 +67,6 @@ pip3 install tk
 
 Zenity is optional. Windows users will need to have installed an X Server like [XMing](https://sourceforge.net/projects/xming/) to be able to run it with Zenity.
 
-After installing dependencies continue with [Install 3rdParty Tools](https://github.com/leoheck/kdiff#install-3rdparty-tools)
-
 ## OSX dependencies
 
 ```bash
