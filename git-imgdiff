@@ -1,41 +1,17 @@
 #!/bin/bash
 
 echo
-echo "Command line:"
-echo "$0 $@"
-echo
+echo "Command: $(basename $0) $@"
 
-a=${1}
+a=$1
+b=$2
 
-# Workaround if second parameter is missing
-if [[ ${2} != "" ]]; then
-	b=${2}
-else
-	b=${1}
+if [[ $2 !=	"" ]]; then
+	b=$2
 fi
 
-# Remove random number from the filename
-svg_new_1=$(basename "${a}" | sed "s|from_\(.*\)\([0-9a-f]\{6\}\).svg|sch1-\1.svg|g")
-svg_new_2=$(basename "${b}" | sed   "s|to_\(.*\)\([0-9a-f]\{6\}\).svg|sch2-\1.svg|g")
+svg1=$(basename $a | sed "s|from_|sch1-|g")
+svg2=$(basename $b | sed "s|to_|sch2-|g")
 
-# Extract random number from the filename
-hash_1=$(basename "${a}" | sed "s|from_.*\([0-9a-f]\{6\}\).svg|\1|g")
-hash_2=$(basename "${b}" | sed   "s|to_.*\([0-9a-f]\{6\}\).svg|\1|g")
-
-# Rename originals filename: remove /tmp and keep the random number
-orig_1=$(basename "${a}" | sed "s|from_\(.*\)\([0-9a-f]\{6\}\).svg|sch1-\1-\2.svg|g")
-orig_2=$(basename "${b}" | sed   "s|to_\(.*\)\([0-9a-f]\{6\}\).svg|sch2-\1-\2.svg|g")
-
-# Keep originals
-if [[ "$PLOTGITSH_KEEP_ORIGINALS" == "1" ]]; then
-	mv -f "${a}" "${orig_1}"
-	mv -f "${b}" "${orig_2}"
-fi
-
-echo
-echo "Exporting..."
-echo "${a} -> ${svg_new_1}"
-echo "${b} -> ${svg_new_2}"
-
-cp -f "${a}" "${svg_new_1}" > /dev/null
-cp -f "${b}" "${svg_new_2}" > /dev/null
+mv -f "$a" "$svg1"
+mv -f "$b" "$svg2"
