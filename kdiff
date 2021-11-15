@@ -492,7 +492,7 @@ generate_schematic_artifacts()
 			fi
 		fi
 
-		cmd="plotgitsch ${plotgitsch_path} -m -l ${lib_path}/${board_name}-cache.lib -c ${removed_color}:${added_color}:${unchanged_color}:${background_color} ${commit1} ${commit2} ${HIDE} &> /dev/null"
+		cmd="plotgitsch ${plotgitsch_path} -k -m -l ${lib_path}/${board_name}-cache.lib -c ${removed_color}:${added_color}:${unchanged_color}:${background_color} ${commit1} ${commit2} ${HIDE} &> /dev/null"
 		if [[ "${VERBOSE}" == "1" ]]; then
 			echo "   ${cmd}"
 		fi
@@ -930,7 +930,7 @@ script_path=$(dirname "${script_path}")
 export ALL_COMMITS=0
 export DEBUG=0
 export DRY_RUN=0
-export LAUNCH_PAGE=1
+export LAUNCH_BROWSER=1
 export NEWER_COMMIT=""
 export OLDER_COMMIT=""
 export REMOVE_KDIFF_FOLDER=0
@@ -948,8 +948,9 @@ do
 		;;
 
 	-d|--dry-run)
-		VERBOSE=1
 		DRY_RUN=1
+		LAUNCH_BROWSER=0
+		VERBOSE=1
 		shift
 		;;
 
@@ -959,7 +960,7 @@ do
 		;;
 
 	-l)
-		LAUNCH_PAGE=0
+		LAUNCH_BROWSER=0
 		shift
 		;;
 
@@ -1060,22 +1061,21 @@ fi
 kicad_sch=${filename}${KICAD_SCH_EXTENSION}
 kicad_pcb=${filename}.kicad_pcb
 
+
+export PLOTGITSCH_MISSING=$(check_tool plotgitsch)
+export KIDIFF_MISSING=$(check_tool kidiff)
+
 # Check required tools
-if [[ "${DRY_RUN}" == 0 ]]; then
-	check_tool opam > /dev/null
-	eval "$(opam config env)"
-	PLOTGITSCH_MISSING=$(check_tool plotgitsch)
-	KIDIFF_MISSING=$(check_tool kidiff)
-	export PLOTGITSCH_MISSING
-	export KIDIFF_MISSING
-fi
+if [[ "${DRY_RUN}" = 0 ]]; then
 
-if [[ "${PLOTGITSCH_MISSING}" == 1 ]]; then
-	echo "INFO: plotgitsch is missing, skipping schematic diffs"
-fi
+	if [[ "${PLOTGITSCH_MISSING}" = 1 ]]; then
+		echo "INFO: plotgitsch is missing, skipping schematic diffs"
+	fi
 
-if [[ "${KIDIFF_MISSING}" == 1 ]]; then
-	echo "INFO: kidiff is missing, skipping layout diffs"
+	if [[ "${KIDIFF_MISSING}" = 1 ]]; then
+		echo "INFO: kidiff is missing, skipping layout diffs"
+	fi
+
 fi
 
 if ! check_tool "dos2unix" &> /dev/null; then "dos2unix is missing"; exit; fi
@@ -1101,7 +1101,7 @@ fi
 output_dir="${repo_path}/kidiff/${project_dir}"
 web_dir="${output_dir}/web/"
 
-if [[ ! "${LAUNCH_PAGE}" == 0 ]]; then
+if [[ "${LAUNCH_BROWSER}" != 0 ]]; then
 	if grep -q "Microsoft" "/proc/version" &> /dev/null; then
 		# Wseb-server alternative for Windows with WSL
 		host=127.0.0.1
