@@ -23,7 +23,7 @@ sh -c "$(curl -fsSL https://raw.githubusercontent.com/leoheck/kdiff/main/install
 [Configure WSL](https://www.tenforums.com/tutorials/46769-enable-disable-windows-subsystem-linux-wsl-windows-10-a.html)
 
 ```batch
-:: Enalbe Windows Sybsystem for Linux (using Power Shell)
+:: Enable Windows Subsystem for Linux (using Power Shell)
 dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart
 Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux
 #Install-WindowsFeature -Name Microsoft-Windows-Subsystem-Linux
@@ -66,8 +66,6 @@ pip3 install tk
 ```
 
 Zenity is optional. Windows users will need to have installed an X Server like [XMing](https://sourceforge.net/projects/xming/) to be able to run it with Zenity.
-
-After installing dependencies continue with [Install 3rdParty Tools](https://github.com/leoheck/kdiff#install-3rdparty-tools)
 
 ## OSX dependencies
 
@@ -183,7 +181,7 @@ It is also possible to integrate kdiff in PCBNew toolbar
 # Create folder if it does not exist
 mkdir -p ~/.kicad/scripting/plugins
 
-# Copy the pluging there
+# Copy the plugin there
 cd kdiff
 cp -r kicad_plugin ~/.kicad/scripting/plugins/kdiff
 ```
