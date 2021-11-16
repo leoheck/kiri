@@ -10,16 +10,19 @@ show_help()
 
 	OPTIONS:
 
-	    -a|--all         Include all commits even if schematics/layout don't have changes
-	    -o|--older HASH  Show commits starting from this one
-	    -n|--newer HASH  Show commits until this one delimited by this one
-	    -r|--remove      Remove cache (kidiff) folder before run
-	    -l|--webservice  Do not launch webservice/browser at the end
-	    -p|--port PORT   Set webserver port
-	    -V|--verbose     Verbose
-	    -v|--version     Show version
-	    -D|--debug       Extra info
-	    -h|--help        This help
+	    -a|--all           Include all commits even if schematics/layout don't have changes
+	    -o|--older HASH    Show commits starting from this one
+	    -n|--newer HASH    Show commits until this one delimited by this one
+	    -r|--remove        Remove cache (kidiff) folder before run
+	    -l|--webservice    Do not launch webservice/browser at the end
+	    -p|--port PORT     Set webserver port
+	    -V|--verbose       Verbose
+	    -v|--version       Show version
+	    -D|--debug         Extra info
+	    -dp|--debug-plotgitsch
+	                       Show Plotgitsch stdout and stderr
+	    -dk|--debug-kidiff Show Kidiff stdout and stderr
+	    -h|--help          This help
 
 	KICAD_PROJECT:
 
@@ -40,6 +43,14 @@ show_help()
 
 	echo -e "${HELP_MESSAGE}"
 }
+
+# Colors
+bold="\e[1m"
+inv="\e[7"
+red="\e[31m"
+green="\e[32m"
+yellow="\e[33m"
+reset="\e[0m"
 
 show_version()
 {
@@ -484,27 +495,28 @@ generate_schematic_artifacts()
 		else
 			if [[ "${current_path}" != "${project_path}" ]]; then
 				pushd "${project_path}" &> /dev/null || exit
-				plotgitsch_path="-r ${project_path}"
+				plotgitsch_path=" -r ${project_path}"
 				lib_path="."
 			else
-				plotgitsch_path="-r ${project_path}"
+				plotgitsch_path=" -r ${project_path}"
 				lib_path="."
 			fi
 		fi
 
-		cmd="plotgitsch ${plotgitsch_path} -k -m -l ${lib_path}/${board_name}-cache.lib -c ${removed_color}:${added_color}:${unchanged_color}:${background_color} ${commit1} ${commit2} ${HIDE} &> /dev/null"
-		if [[ "${VERBOSE}" == "1" ]]; then
-			echo "   ${cmd}"
+		cmd="plotgitsch${plotgitsch_path} -k -m -l ${lib_path}/${board_name}-cache.lib -c ${removed_color}:${added_color}:${unchanged_color}:${background_color} ${commit1} ${commit2} ${STDOUT_PLOTGITSCH}"
+		if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
+			echo -e "   ${green}${cmd}${reset}"
 		fi
 		if [[ "${DRY_RUN}" == "0" ]]; then
-			eval "${cmd}"
+			eval ${cmd}
 			ret=$?
 			if [[ "${VERBOSE}" == "1" ]]; then
 				if [[ "${ret}" -gt "0" ]]; then
-					echo "   Status: ${ret}"
+					echo -e "${red}${bold}   Status: ${ret}${reset}"
 				fi
 			fi
 		fi
+
 		if [[ "${current_path}" != "${project_path}" ]]; then
 			popd &> /dev/null || exit
 			mv "${project_path}"/*.svg .
@@ -566,16 +578,16 @@ generate_layout_artifacts()
 
 	if [[ ! "${KIDIFF_MISSING}" == 1 ]]; then
 
-		cmd="kidiff ${kicad_pcb} --webserver-disable -a ${commit1} -b ${commit2} ${HIDE} &> /dev/null"
-		if [[ "${VERBOSE}" == "1" ]]; then
-			echo "   ${cmd}"
+		cmd="kidiff ${kicad_pcb} --webserver-disable -a ${commit1} -b ${commit2} ${STDOUT_KIDIFF}"
+		if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_KIDIFF}" = "1" ]]; then
+			echo -e "   ${green}${cmd}${reset}"
 		fi
 		if [[ "${DRY_RUN}" == "0" ]]; then
 			eval "${cmd}"
 			ret=$?
 			if [[ "${VERBOSE}" == "1" ]]; then
 				if [[ "${ret}" -gt "0" ]]; then
-					echo "   Status: ${ret}"
+					echo -ne "${red}${bold}   Status: ${ret}${reset}"
 				fi
 			fi
 		fi
@@ -592,9 +604,9 @@ generate_layout_artifacts()
 		# If board does not have diff images were not generated
 		if [[ "$ret" == "1" ]]; then
 			if [[ ! $(du -s "${output_dir}/${commit1}/${kicad_pcb}" | cut -d$'\t' -f1) = 0 ]]; then
-				cmd="plotpcb -o \"${output_dir}/${commit1}/\" -q \"${output_dir}/${commit1}/${kicad_pcb}\" ${HIDE} &> /dev/null"
-				if [[ "${VERBOSE}" == "1" ]]; then
-					echo "   ${cmd}"
+				cmd="plotpcb -o \"${output_dir}/${commit1}/\" -q \"${output_dir}/${commit1}/${kicad_pcb}\" ${STDOUT_KIDIFF}"
+				if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_KIDIFF}" = "1" ]]; then
+					echo -e "   ${green}${cmd}${reset}"
 				fi
 				if [[ "${DRY_RUN}" == "0" ]]; then
 					eval "${cmd}"
@@ -607,9 +619,9 @@ generate_layout_artifacts()
 				fi
 			fi
 			if [[ ! $(du -s "${output_dir}/${commit2}/${kicad_pcb}" | cut -d$'\t' -f1) = 0 ]]; then
-				cmd="plotpcb -o \"${output_dir}/${commit2}/\" -q \"${output_dir}/${commit2}/${kicad_pcb}\" ${HIDE} &> /dev/null"
-				if [[ "${VERBOSE}" == "1" ]]; then
-					echo "   ${cmd}"
+				cmd="plotpcb -o \"${output_dir}/${commit2}/\" -q \"${output_dir}/${commit2}/${kicad_pcb}\" ${STDOUT_KIDIFF}"
+				if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_KIDIFF}" = "1" ]]; then
+					echo -e "   ${green}${cmd}${reset}"
 				fi
 				if [[ "${DRY_RUN}" == "0" ]]; then
 					eval "${cmd}"
@@ -820,11 +832,24 @@ generate_artifacts()
 				mkdir -p "${output_dir}/${i}/"
 				mkdir -p "${output_dir}/${j}/"
 
-				if [[ "$DEBUG" == 0 ]]; then
-					HIDE=""
-				else
+				HIDE=""
+				STDOUT_PLOTGITSCH="&> /dev/null"
+				STDOUT_KIDIFF="&> /dev/null"
+
+				if [[ "$DEBUG" == 1 ]]; then
 					HIDE="#"
+					STDOUT_PLOTGITSCH=""
+					STDOUT_KIDIFF=""
 				fi
+
+				if [[ "$DEBUG_PLOTGITSCH" == 1 ]]; then
+					STDOUT_PLOTGITSCH=""
+				fi
+
+				if [[ "$DEBUG_KIDIFF" == 1 ]]; then
+					STDOUT_KIDIFF=""
+				fi
+
 
 				generate_schematic_artifacts "${i}" "${j}" "${project_path}" "${board_name}" "${sch_page_names}"
 				generate_layout_artifacts "${i}" "${j}" "${output_dir}" "${kicad_pcb}" "${board_name}"
@@ -929,6 +954,8 @@ script_path=$(dirname "${script_path}")
 
 export ALL_COMMITS=0
 export DEBUG=0
+export DEBUG_PLOTGITSCH=0
+export DEBUG_KIDIFF=0
 export DRY_RUN=0
 export LAUNCH_BROWSER=1
 export NEWER_COMMIT=""
@@ -999,6 +1026,18 @@ do
 
 	-D|--debug)
 		DEBUG=1
+		DEBUG_KIDIFF=1
+		DEBUG_PLOTGITSCH=1
+		shift
+		;;
+
+	-Dp|-DP|-dp|--debug-plotgitsch)
+		DEBUG_PLOTGITSCH=1
+		shift
+		;;
+
+	-Dk|-DK|-dk|--debug-kidiff)
+		DEBUG_KIDIFF=1
 		shift
 		;;
 
