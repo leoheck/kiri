@@ -85,7 +85,6 @@ fi
 opam switch 4.09.1
 eval $(opam env)
 
-
 # Clone this project
 git clone https://github.com/leoheck/kdiff
 git submodule update --init --recursive
