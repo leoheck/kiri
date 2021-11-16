@@ -14,7 +14,7 @@ show_help()
 	    -o|--older HASH    Show commits starting from this one
 	    -n|--newer HASH    Show commits until this one delimited by this one
 	    -r|--remove        Remove cache (kidiff) folder before run
-	    -l|--webservice    Do not launch webservice/browser at the end
+	    -l|--webserver    Do not launch webserver/browser at the end
 	    -p|--port PORT     Set webserver port
 	    -V|--verbose       Verbose
 	    -v|--version       Show version
@@ -56,9 +56,9 @@ show_version()
 {
 	IFS= read -r -d '' VERSION <<-EOM
 
-	    $(basename "${0}") x.y.z
 	    plotgitsch $(plotgitsch --version)
-	    kidiff x.y.z
+	    [WIP] kidiff x.y.z
+	    [WIP] $(basename "${0}") x.y.z
 	EOM
 
 	echo -e "$VERSION"

@@ -191,13 +191,13 @@ cp -r kicad_plugin ~/.kicad/scripting/plugins/kdiff
 Schematic view, assets generated using Plotkicadsch
 
 <p align="center">
-	<img src="misc/sch.png" width="820" alt="sch">
+	<img src="misc/kdiff_sch.png" width="820" alt="sch">
 </p>
 
 Layout view, assets generated using Kicad-Diff
 
 <p align="center">
-	<img src="misc/pcb.png" width="820" alt="pcb">
+	<img src="misc/kdiff_pcb.png" width="820" alt="pcb">
 </p>
 
 Demo on Youtube
