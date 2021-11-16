@@ -667,6 +667,14 @@ function show_sch() {
     // New layers list
     layers_dropdown = document.getElementById("layers_dropdown");
     layers_dropdown.style.display = "none";
+
+    // Hide pcb title
+    sch_view = document.getElementById("pcb_title");
+    sch_view.style.display = "none";
+
+    // Show sch title
+    pages_list = document.getElementById("sch_title");
+    pages_list.style.display = "inline";
 }
 
 function show_pcb() {
@@ -700,6 +708,14 @@ function show_pcb() {
     // New layers list
     layers_dropdown = document.getElementById("layers_dropdown");
     layers_dropdown.style.display = "none";
+
+    // Show PCB Title
+    sch_view = document.getElementById("pcb_title");
+    sch_view.style.display = "inline";
+
+    // Hide SCH Title
+    pages_list = document.getElementById("sch_title");
+    pages_list.style.display = "none";
 }
 
 // =======================================
