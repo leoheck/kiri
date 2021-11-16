@@ -450,7 +450,7 @@ insert_layers()
 		fi
 
 		IFS= read -r -d '' HTML_SNIPPET <<-EOM
-		    <input type="radio" id="${layer_name}" name="layers" value="${layer_id}-${layer_name}" ${checked}  onchange="change_layer()"/>
+		    <input type="radio" id="${layer_id}-${layer_name}" name="layers" value="${layer_id}-${layer_name}" ${checked}  onchange="change_layer()"/>
 		    <label class="rounded text-sm-left list-group-item radio-box" onclick="change_layer_onclick(${layer_id}-${layer_name})" for="${layer_id}-${layer_name}">
 		        <span style="margin-left:0.5em; margin-right:0.1em; color: ${layer_color}" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
 		        ${layer_id}-${layer_name}
