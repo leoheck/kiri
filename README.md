@@ -7,7 +7,7 @@ It is currently supporting Kicad projects that use GIT.
 
 # Dependencies
 
-> kdiff works with Kicad `5.*`
+> kdiff works with Kicad 5.*
 
 
 ## Installing dependencies
