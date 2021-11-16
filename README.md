@@ -12,14 +12,15 @@ It is currently supporting Kicad projects that use GIT.
 
 ## Installing dependencies
 
-To install dependencies with a single command, open a terminal (on Windows use WSL) and execute:
+To install dependencies with a single command on any Operating System, open a terminal and execute:
+Windows users must use WSL/WSL2.
 
-```bash 
+```bash
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/leoheck/kdiff/main/install_dependencies.sh)"
 
 ```
 
-## Installing dependencies on Windows
+## Environment preparation on Windows
 [Configure WSL](https://www.tenforums.com/tutorials/46769-enable-disable-windows-subsystem-linux-wsl-windows-10-a.html)
 
 ```batch
@@ -39,7 +40,7 @@ Set-Location C:\ubuntu-2004
 And then continue with the instructions in "Installing dependencies on Linux" inside the WSL (Ubuntu terminal).
 
 
-## Linux/WSL dependencies
+## Installing dependencies on Linux/WSL
 
 ```bash
 # Basic dependencies for Linux/WSL
@@ -67,7 +68,7 @@ pip3 install tk
 
 Zenity is optional. Windows users will need to have installed an X Server like [XMing](https://sourceforge.net/projects/xming/) to be able to run it with Zenity.
 
-## OSX dependencies
+## Installing dependencies on OSX
 
 ```bash
 # Download and Install Kicad for OSX - https://www.kicad.org/download/macos/
@@ -104,17 +105,17 @@ pip3 install python_dateutil
 pip3 install tk
 ```
 
-After installing dependencies continue with [Install 3rdParty Tools](https://github.com/leoheck/kdiff#install-3rdparty-tools)
+After installing dependencies continue with [the next section](https://github.com/leoheck/kdiff#Installing-3rd-Party-Tools)
 
-## Installing and using
+## Installing 3rd-Party Tools
 
 ```bash
-# Clone this project
+# Clone kdiff repo
 git clone https://github.com/leoheck/kdiff
 git submodule update --init --recursive
 
-# Install custom plotgitsch
-cd plotkicadsch
+# Install plotgitsch
+cd kdiff/plotkicadsch
 ./install.sh
 
 # Load KiCad-Diff environment
@@ -126,54 +127,58 @@ cd ..
 source ./env.sh
 ```
 
-## Using
+# Using Kdiff
 ```
 cd [kicad_git_repo]
 kdiff board.pro
 ```
 
-## Command line flags (Help)
+## Command line flags (aka Help)
 
 How to access tool help, this may change, so prefer to use `kdiff -h` instead.
 
 ```
 ➜ kdiff -h
 
-    USAGE :
+USAGE :
 
-        kdiff [OPTIONS] [KICAD_PROJECT]
+    kdiff [OPTIONS] [KICAD_PROJECT]
 
-    OPTIONS:
+OPTIONS:
 
-        -a|--all         Include all commits even if schematics/layout don't have changes
-        -o|--older HASH  Show commits starting from this one
-        -n|--newer HASH  Show commits until this one delimited by this one
-        -r|--remove      Remove cache (kidiff) folder before run
-        -l|--webservice  Do not launch webservice/browser at the end
-        -p|--port PORT   Set webserver port
-        -V|--verbose     Verbose
-        -v|--version     Show version
-        -D|--debug       Extra info
-        -h|--help        This help
+    -a|--all           Include all commits even if schematics/layout don't have changes
+    -o|--older HASH    Show commits starting from this one
+    -n|--newer HASH    Show commits until this one delimited by this one
+    -r|--remove        Remove cache (kidiff) folder before run
+    -l|--webserver    Do not launch webserver/browser at the end
+    -p|--port PORT     Set webserver port
+    -V|--verbose       Verbose
+    -v|--version       Show version
+    -D|--debug         Extra info
+    -dp|--debug-plotgitsch
+                       Show Plotgitsch stdout and stderr
+    -dk|--debug-kidiff Show Kidiff stdout and stderr
+    -h|--help          This help
 
-    KICAD_PROJECT:
+KICAD_PROJECT:
 
-        KICAD_PROJECT file (.pro) is optional.
-        If it is missing then file selector in GUI is used instead
+    KICAD_PROJECT file is optional.
+    If it is missing then file selector in GUI is used instead
 
-    EXAMPLES:
+EXAMPLES:
 
-        # Launch GUI with file selector
-        kdiff
+    # Launch GUI with file selector
+    kdiff
 
-        # Kicad project on the root of the repo
-        kdiff board.pro
+    # Kicad project on the root of the repo
+    kdiff board.pro
 
-        # Nested project (with verbose and starting fresh)
-        kdiff nested-project/board.pro -r -V
+    # Nested project (with verbose and starting fresh)
+    kdiff nested-project/board.pro -r -V
+
 ```
 
-# Kicad integration
+# (EXTRA) Kicad integration
 
 It is also possible to integrate kdiff in PCBNew toolbar
 
@@ -186,7 +191,7 @@ cd kdiff
 cp -r kicad_plugin ~/.kicad/scripting/plugins/kdiff
 ```
 
-## Examples
+# Examples
 
 Schematic view, assets generated using Plotkicadsch
 
@@ -200,6 +205,6 @@ Layout view, assets generated using Kicad-Diff
 	<img src="misc/kdiff_pcb.png" width="820" alt="pcb">
 </p>
 
-Demo on Youtube
+Demo on Youtube (old version)
 
-[![Demo](http://img.youtube.com/vi/PMC0USSsbDE/0.jpg)](http://www.youtube.com/watch?v=PMC0USSsbDE "")
+[![Demo](http://img.youtube.com/vi/PMC0USSsbDE/0.jpg)](http://www.youtube.com/watch?v=PMC0USSsbDE)
