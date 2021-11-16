@@ -4,5 +4,5 @@
 	branch = master
 [submodule "plotkicadsch"]
 	path = plotkicadsch
-	url = git@github.com:leoheck/plotkicadsch.git
+	url = git@github.com:jnavila/plotkicadsch.git
 	branch = master
