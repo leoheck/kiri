@@ -207,4 +207,6 @@ Layout view, assets generated using Kicad-Diff
 
 Demo on Youtube (old version)
 
-[![Demo](http://img.youtube.com/vi/PMC0USSsbDE/0.jpg)](http://www.youtube.com/watch?v=PMC0USSsbDE)
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=nTQUwghvy5Q" target="_blank">
+    <img src="http://img.youtube.com/vi/PMC0USSsbDE/0.jpg" alt="Kdiff Demo" width="820">
+</a>
