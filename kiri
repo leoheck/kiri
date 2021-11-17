@@ -53,13 +53,28 @@ yellow="\e[33m"
 blue="\e[34m"
 reset="\e[0m"
 
+git_repo_version_from_tool()
+{
+	tool=$1
+	tool_path=$(dirname $(which ${tool}))
+
+	last_commit_hash=$(git --git-dir ${tool_path}/.git/ rev-parse --short HEAD)
+	last_commit_date=$(git --git-dir ${tool_path}/.git/ log -1 --format="%at" | xargs -I{} date -d @{} +"%Y/%m/%d %Hh%M")
+
+	echo "${last_commit_hash} ${last_commit_date}"
+}
+
+
 show_version()
 {
+	kidiff_version=$(git_repo_version_from_tool kidiff)
+	kiri_version=$(git_repo_version_from_tool kiri)
+
 	IFS= read -r -d '' VERSION <<-EOM
 
 	    plotgitsch $(plotgitsch --version)
-	    [WIP] kidiff x.y.z
-	    [WIP] $(basename "${0}") x.y.z
+	    kidiff ${kidiff_version}
+	    $(basename "${0}") ${kiri_version}
 	EOM
 
 	echo -e "$VERSION"
