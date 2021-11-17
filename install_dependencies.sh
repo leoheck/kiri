@@ -3,7 +3,7 @@
 get_os_name() {
 	case "$OSTYPE" in
 		solaris*) echo "SOLARIS" ;;
-		darwin*)  echo "OSX" ;; 
+		darwin*)  echo "OSX" ;;
 		linux*)   echo "LINUX" ;;
 		msys*)    echo "WINDOWS" ;;
 		bsd*)     echo "BSD" ;;
@@ -78,9 +78,9 @@ pip3 install python_dateutil
 pip3 install tk
 
 # Initialize Opam
-if [[ -d "~/.opam/4.09.1" ]]; then
+if [[ ! -d "$HOME/.opam/4.09.1" ]]; then
 	opam init --disable-sandboxing --reinit
-	opam switch create 4.09.1
+	opam create 4.09.1
 fi
 opam switch 4.09.1
 eval $(opam env)
@@ -90,7 +90,7 @@ git clone https://github.com/leoheck/kiri
 git submodule update --init --recursive
 
 # Install custom plotgitsch
-cd plotkicadsch
+cd kiri/submodules/plotkicadsch
 ./install.sh
 
 # Load KiCad-Diff environment
@@ -98,5 +98,5 @@ cd ../KiCad-Diff
 source ./env.sh
 
 # Load kiri environment
-cd ..
+cd ../../
 source ./env.sh
