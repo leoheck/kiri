@@ -731,7 +731,7 @@ generate_artifacts()
 	git_branch=$(git rev-parse --abbrev-ref HEAD)
 
 	if [[ "$ALL_COMMITS" == "1" ]]; then
-		cmd="git-kiri-log ${git_branch} -- ${project_path}"
+		cmd="kiri-git-log ${git_branch} -- ${project_path}"
 		if [[ "${VERBOSE}" == "1" ]]; then
 			echo
 			echo "${green}${cmd}${reset}"
@@ -739,7 +739,7 @@ generate_artifacts()
 		fi
 		commits=$(eval "${cmd}")
 	else
-		cmd="git-kiri-log ${git_branch} -- ${sch_files} ${kicad_pcb}"
+		cmd="kiri-git-log ${git_branch} -- ${sch_files} ${kicad_pcb}"
 		if [[ "${VERBOSE}" == "1" ]]; then
 			echo
 			echo -e "${green}${cmd}${reset}"
@@ -1076,7 +1076,7 @@ if [[ "${kicad_pro}" == "" ]]; then
 				--file-filter="Kicad Project | *.kicad_pro | *.pro" \
 				--file-filter='All files | *')
 	else
-		kicad_pro=$(file_picker.py)
+		kicad_pro=$(kiri-file-picker.py)
 	fi
 
 	if [[ ! -f "${kicad_pro}" ]]; then
@@ -1171,7 +1171,7 @@ if [[ "${LAUNCH_BROWSER}" != 0 ]]; then
 			exit 1
 		fi
 	else
-		if kiri-webserver.py -p "${WEBSERVER_PORT}" "${kicad_pcb}" 2> /dev/null; then
+		if kiri-server.py -p "${WEBSERVER_PORT}" "${kicad_pcb}" 2> /dev/null; then
 			pid=$!
 			kill -9 $pid > /dev/null
 		else
