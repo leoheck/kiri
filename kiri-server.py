@@ -58,7 +58,7 @@ def parse_cli_args():
         "-v", "--verbose", action="count", default=0, help="Increase verbosity (-vvv)"
     )
     parser.add_argument(
-        "kicad_pcb", metavar="PCB_PATH", nargs="?", help="Kicad PCB path"
+        "kicad_pro", metavar="KICAD_PRO_PATH", nargs="?", help="Kicad project file (.pro) path"
     )
 
     args = parser.parse_args()
@@ -107,10 +107,15 @@ if __name__ == "__main__":
     signal.signal(signal.SIGINT, signal_handler)
     args = parse_cli_args()
 
-    kicad_project_path = os.path.dirname(os.path.realpath(args.kicad_pcb))
-    board_file = os.path.basename(os.path.realpath(args.kicad_pcb))
+    if args.kicad_pro:
+        kicad_project_path = os.path.dirname(os.path.realpath(args.kicad_pro))
+        prjctPath, kicad_project = get_kicad_project_path(kicad_project_path)
+    # else:
+        # kicad_project = ""
+        # prjctPath = "../"
 
-    prjctPath, kicad_project = get_kicad_project_path(kicad_project_path)
+    print(prjctPath, kicad_project)
+    # exit(1)
 
     if not args.webserver_disable:
 
