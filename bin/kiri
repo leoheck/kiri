@@ -703,7 +703,7 @@ generate_artifacts()
 
 	if [[ "$REMOVE_KIRI_FOLDER" == "1" ]]; then
 		echo
-		echo -e "${blue}Removing folder:${reset} ${output_dir}"
+		echo -e "${blue}Removing previows folder:${reset} ${output_dir}"
 		if ! rm -rf "${output_dir}" &> /dev/null; then
 			echo "Warning: folder was not removed"
 		fi
@@ -887,12 +887,12 @@ generate_artifacts()
 	echo -e "${blue}Assembling the HTML${reset}"
 
 	# Copy assets
-	cp -f "${script_path}/assets/${main_html}"  "${web_dir}/"
-	cp -f "${script_path}/assets/kiri.js"       "${web_dir}/"
-	cp -f "${script_path}/assets/kiri.css"      "${web_dir}/"
-	cp -f "${script_path}/assets/blank.svg"     "${web_dir}/"
-	cp -f "${script_path}/assets/favicon.ico"   "${web_dir}/"
-	cp -f "${script_path}/assets/redirect.html" "${web_dir}/../index.html"
+	cp -f "${script_path}/../assets/${main_html}"  "${web_dir}/"
+	cp -f "${script_path}/../assets/kiri.js"       "${web_dir}/"
+	cp -f "${script_path}/../assets/kiri.css"      "${web_dir}/"
+	cp -f "${script_path}/../assets/blank.svg"     "${web_dir}/"
+	cp -f "${script_path}/../assets/favicon.ico"   "${web_dir}/"
+	cp -f "${script_path}/../assets/redirect.html" "${web_dir}/../index.html"
 
 	# Selected commit index
 	commit1_idx=0
