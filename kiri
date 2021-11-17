@@ -1171,7 +1171,7 @@ if [[ "${LAUNCH_BROWSER}" != 0 ]]; then
 			exit 1
 		fi
 	else
-		if kiri-server.py -p "${WEBSERVER_PORT}" "${kicad_pcb}" 2> /dev/null; then
+		if kiri-server.py -p "${WEBSERVER_PORT}" "${kicad_pro}" 2> /dev/null; then
 			pid=$!
 			kill -9 $pid > /dev/null
 		else
