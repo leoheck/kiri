@@ -6,13 +6,13 @@ import os
 import subprocess
 import pathlib
 
-class KDiff(pcbnew.ActionPlugin):
+class KiRI(pcbnew.ActionPlugin):
 
     def defaults(self):
-        self.name = "KDiff"
-        self.category = "Review"
-        self.description = "Visuall Diff Inspector"
-        self.icon_file_name = os.path.join(os.path.dirname(__file__), "./kdiff.png")
+        self.name = "KiRI"
+        self.category = "Revision"
+        self.description = "Kicad Revision Inspector"
+        self.icon_file_name = os.path.join(os.path.dirname(__file__), "./kiri.png")
         self.show_toolbar_button = True
 
     def Run(self):
@@ -22,13 +22,13 @@ class KDiff(pcbnew.ActionPlugin):
             board = pcbnew.GetBoard()
             project_name = str(os.path.basename(board.GetFileName())).replace(".kicad_pcb", ".pro")
             project_file_path = os.path.join(project_path, project_name)
-            cmd = ['kdiff', project_file_path]
+            cmd = ['kiri', project_file_path]
         except:
-            cmd = [kdiff]
+            cmd = [kiri]
 
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = process.communicate()
         #print(stdout)
         #print(stderr)
 
-KDiff().register()
+KiRI().register()

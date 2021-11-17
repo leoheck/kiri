@@ -18,7 +18,7 @@ def select_file(current_path):
     filename = askopenfilename(
         initialdir=current_path,
         filetypes=filetypes,
-        title="Kdiff - Select Kicad project file",
+        title="KiRI - Select Kicad project file",
     )
 
     print(filename)

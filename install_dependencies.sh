@@ -56,7 +56,7 @@ if [[ $os == "OSX" ]]; then
 	brew install pkg-config
 	brew install opam
 
-	# Kdiff dependencies
+	# KiRI dependencies
 	brew install gsed
 	brew install findutils
 	brew install dos2unix
@@ -86,7 +86,7 @@ opam switch 4.09.1
 eval $(opam env)
 
 # Clone this project
-git clone https://github.com/leoheck/kdiff
+git clone https://github.com/leoheck/kiri
 git submodule update --init --recursive
 
 # Install custom plotgitsch
@@ -97,6 +97,6 @@ cd plotkicadsch
 cd ../KiCad-Diff
 source ./env.sh
 
-# Load kdiff environment
+# Load kiri environment
 cd ..
 source ./env.sh
