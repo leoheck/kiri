@@ -50,6 +50,7 @@ inv="\e[7"
 red="\e[31m"
 green="\e[32m"
 yellow="\e[33m"
+blue="\e[34m"
 reset="\e[0m"
 
 show_version()
@@ -699,7 +700,7 @@ generate_artifacts()
 
 	if [[ "$REMOVE_KDIFF_FOLDER" == "1" ]]; then
 		echo
-		echo "Removing ${output_dir} folder ..."
+		echo -e "${blue}Removing folder:${reset} ${output_dir}"
 		if ! rm -rf "${output_dir}" &> /dev/null; then
 			echo "Warning: folder was not removed"
 		fi
@@ -744,14 +745,16 @@ generate_artifacts()
 	if [[ "$ALL_COMMITS" == "1" ]]; then
 		cmd="git-kdiff-log ${git_branch} -- ${project_path}"
 		if [[ "${VERBOSE}" == "1" ]]; then
-			echo "${cmd}"
+			echo
+			echo "${green}${cmd}${reset}"
 			echo
 		fi
 		commits=$(eval "${cmd}")
 	else
 		cmd="git-kdiff-log ${git_branch} -- ${sch_files} ${kicad_pcb}"
 		if [[ "${VERBOSE}" == "1" ]]; then
-			echo "${cmd}"
+			echo
+			echo -e "${green}${cmd}${reset}"
 			echo
 		fi
 		commits=$(eval "${cmd}")
@@ -773,7 +776,7 @@ generate_artifacts()
 	fi
 
 	if [[ "${VERBOSE}" == "1" ]]; then
-		echo "Commits list:"
+		echo -e "${blue}Commits list:${reset}"
 		echo "${commits}"
 	fi
 
@@ -793,26 +796,25 @@ generate_artifacts()
 	n_hashs=$(echo "${hashs}" | wc -w | sed_ "s/^[ \t]\+//g")
 	n_comparisons=$(echo "${n_hashs} * (${n_hashs} - 1) " | bc)
 
-	echo
-	echo "Generating artifacts for ${n_hashs} commits."
-	echo "Totaling ${n_comparisons} comparisons."
-	echo
-
-	n=0
-
 	sch_page_names=$(get_pages "${board_name}" "${current_path_fix}/${kicad_sch}" | cut -d"|" -f2 | sed_ "s/\r$//g")
 	used_board_layers=$(sed_ -n '/^  (layers/,/  )$/{/^  (layers/!{/  )$/!p}}' "${kicad_pcb}" | sed_ "s/^[ \t]\+//g" | sed_ "s/[()]//g" | cut -d" " -f-2 | sed_ "s/\r$//g" | sed "s/\"//g")
 
-# | sed "s/\./_/g"
+	echo
 
 	if [[ "${VERBOSE}" == "1" ]]; then
-		echo "Schematic Pages:"
+		echo -e "${blue}Schematic Pages:${reset}"
 		echo "${sch_page_names}" | nl -s": "
 		echo
-		echo "Used PCB layers:"
+		echo -e "${blue}Used PCB layers:${reset}"
 		echo "${used_board_layers}" | column -t | nl -s": "
 		echo
 	fi
+
+	echo -e "${blue}Generating artifacts${reset}"
+	echo "For ${n_hashs} commits, totaling ${n_comparisons} comparisons"
+	echo
+
+	n=0
 
 	IFS=$'\n'
 	for i in ${hashs}; do
@@ -876,7 +878,10 @@ generate_artifacts()
 
 	done
 
-	echo "Assembling the HTML"
+	if [[ "${VERBOSE}" == "0" ]]; then
+		echo
+	fi
+	echo -e "${blue}Assembling the HTML${reset}"
 
 	# Copy assets
 	cp -f "${script_path}/${main_html}"  "${web_dir}/"
@@ -1167,7 +1172,7 @@ if [[ "${LAUNCH_BROWSER}" != 0 ]]; then
 		host=127.0.0.1
 		echo "Starting web-server at http://${host}:${WEBSERVER_PORT}"
 		cmd.exe /C start "http://${host}:${WEBSERVER_PORT}" &> /dev/null &
-		echo "(Hit Ctrl+C to exit)"
+		echo "Hit Ctrl+C to end session"
 		if python3 -m http.server -d "${web_dir}/../" -b "${host}" "${WEBSERVER_PORT}" &> /dev/null; then
 			pid=$!
 			kill -9 $pid > /dev/null
@@ -1178,7 +1183,7 @@ if [[ "${LAUNCH_BROWSER}" != 0 ]]; then
 			exit 1
 		fi
 	else
-		if webserver.py -p "${WEBSERVER_PORT}" "${kicad_pcb}" 2> /dev/null; then
+		if kdiff-webserver.py -p "${WEBSERVER_PORT}" "${kicad_pcb}" 2> /dev/null; then
 			pid=$!
 			kill -9 $pid > /dev/null
 		else
