@@ -7,10 +7,10 @@ import pprint
 import traceback
 import sys
 
-print("Starting plugin kdiff")
+print("Starting KiRI plugin")
 
 try:
-    from .KDiff import *
+    from .kiri import *
 except Exception as e:
     traceback.print_exc(file=sys.stdout)
     pprint.pprint(e)

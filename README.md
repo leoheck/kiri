@@ -105,9 +105,11 @@ pip3 install python_dateutil
 pip3 install tk
 ```
 
-After installing dependencies continue with [the next section](https://github.com/leoheck/kdiff#Installing-3rd-Party-Tools)
+After installing dependencies continue with [the next section](https://github.com/leoheck/kdiff#Installing-Submodules)
 
-## Installing 3rd-Party Tools
+## Installing Submodules
+
+This tool uses submodules for Plotgitsch and Kicad-Diff to guarantee these tools are in a version that work. Feel free to override these with other versions of them.
 
 ```bash
 # Clone kdiff repo
@@ -115,7 +117,7 @@ git clone https://github.com/leoheck/kdiff
 git submodule update --init --recursive
 
 # Install plotgitsch
-cd kdiff/plotkicadsch
+cd kdiff/submodules/plotkicadsch
 ./install.sh
 
 # Load KiCad-Diff environment
@@ -123,7 +125,7 @@ cd ../KiCad-Diff
 source ./env.sh
 
 # Load kdiff environment
-cd ..
+cd ../../
 source ./env.sh
 ```
 
