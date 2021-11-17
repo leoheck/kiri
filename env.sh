@@ -43,4 +43,4 @@ readlink_()
 script=$(readlink_ "$0")
 script_path=$(dirname "$script")
 
-export PATH="${script_path}:$PATH"
+export PATH="${script_path}/bin:$PATH"
