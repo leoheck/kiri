@@ -503,12 +503,25 @@ generate_schematic_artifacts()
 			fi
 		fi
 
+		# Workaround to make local copy working
+		# Remove local kidiff folder temporarly
+		if [[ ${commit2} == "" ]]; then
+			mv kidiff /tmp/.kidiff
+		fi
+
 		cmd="plotgitsch${plotgitsch_path} -k -m -l ${lib_path}/${board_name}-cache.lib -c ${removed_color}:${added_color}:${unchanged_color}:${background_color} ${commit1} ${commit2} ${STDOUT_PLOTGITSCH}"
 		if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
 			echo -e "   ${green}${cmd}${reset}"
 		fi
 		if [[ "${DRY_RUN}" == "0" ]]; then
 			eval ${cmd}
+
+			# [Temporarly] Workaround to make local copy working
+			# Move back local kidiff folder
+			if [[ ${commit2} == "" ]]; then
+				mv /tmp/.kidiff kidiff
+			fi
+
 			ret=$?
 			if [[ "${VERBOSE}" == "1" ]]; then
 				if [[ "${ret}" -gt "0" ]]; then
@@ -516,6 +529,7 @@ generate_schematic_artifacts()
 				fi
 			fi
 		fi
+
 
 		if [[ "${current_path}" != "${project_path}" ]]; then
 			popd &> /dev/null || exit
@@ -587,7 +601,7 @@ generate_layout_artifacts()
 			ret=$?
 			if [[ "${VERBOSE}" == "1" ]]; then
 				if [[ "${ret}" -gt "0" ]]; then
-					echo -ne "${red}${bold}   Status: ${ret}${reset}"
+					echo -e "${red}${bold}   Status: ${ret}${reset}"
 				fi
 			fi
 		fi
@@ -613,7 +627,7 @@ generate_layout_artifacts()
 					ret=$?
 					if [[ "${VERBOSE}" == "1" ]]; then
 						if [[ "${ret}" -gt "0" ]]; then
-							echo "   Status: ${ret}"
+							echo -e "${red}${bold}   Status: ${ret}${reset}"
 						fi
 					fi
 				fi
@@ -628,7 +642,7 @@ generate_layout_artifacts()
 					ret=$?
 					if [[ "${VERBOSE}" == "1" ]]; then
 						if [[ "${ret}" -gt "0" ]]; then
-							echo "   Status: ${ret}"
+							echo -e "${red}${bold}   Status: ${ret}${reset}"
 						fi
 					fi
 				fi
@@ -781,7 +795,7 @@ generate_artifacts()
 
 	echo
 	echo "Generating artifacts for ${n_hashs} commits."
-	echo "Totaling ${n_comparisons} possible comparisons."
+	echo "Totaling ${n_comparisons} comparisons."
 	echo
 
 	n=0
