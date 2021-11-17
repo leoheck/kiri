@@ -887,12 +887,12 @@ generate_artifacts()
 	echo -e "${blue}Assembling the HTML${reset}"
 
 	# Copy assets
-	cp -f "${script_path}/${main_html}"  "${web_dir}/"
-	cp -f "${script_path}/kiri.js"      "${web_dir}/"
-	cp -f "${script_path}/kiri.css"     "${web_dir}/"
-	cp -f "${script_path}/blank.svg"     "${web_dir}/"
-	cp -f "${script_path}/favicon.ico"   "${web_dir}/"
-	cp -f "${script_path}/redirect.html" "${web_dir}/../index.html"
+	cp -f "${script_path}/assets/${main_html}"  "${web_dir}/"
+	cp -f "${script_path}/assets/kiri.js"       "${web_dir}/"
+	cp -f "${script_path}/assets/kiri.css"      "${web_dir}/"
+	cp -f "${script_path}/assets/blank.svg"     "${web_dir}/"
+	cp -f "${script_path}/assets/favicon.ico"   "${web_dir}/"
+	cp -f "${script_path}/assets/redirect.html" "${web_dir}/../index.html"
 
 	# Selected commit index
 	commit1_idx=0
