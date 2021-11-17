@@ -3,4 +3,4 @@
 # thus __init__.py (this file) is executed
 # We import the plugin class here and register it to pcbnew
 
-from . import kdiff
+from . import kiri

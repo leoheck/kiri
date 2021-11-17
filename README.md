@@ -1,14 +1,11 @@
-# Kicad Diff (kdiff)
+# Kicad Revision Inspector (KiRI)
 
-This repo is a testcase to have a visual diff tool for Kicad.
-It uses [Kicad-Diff](https://github.com/Gasman2014/KiCad-Diff) to generate layout diffs and [Plotgitsh](https://github.com/jnavila/plotkicadsch) to generate schematic diffs.
+KiRI is small tool to experiment having a visual diff tool for Kicad.
+It uses [Kicad-Diff](https://github.com/Gasman2014/KiCad-Diff) to generate layout diffs and [Plotgitsch](https://github.com/jnavila/plotkicadsch) to generate schematic diffs.
 
-It is currently supporting Kicad projects that use GIT.
+It currently supports Kicad 5.* projects that use Git as source management.
 
-# Dependencies
-
-> kdiff works with Kicad 5.*
-
+Previously known as KDiff, it was renamed KiRI since the old name was pretty close to the KiDiff or Kicad-Diff, one of the projects referred to above.
 
 ## Installing dependencies
 
@@ -16,7 +13,7 @@ To install dependencies with a single command on any Operating System, open a te
 Windows users must use WSL/WSL2.
 
 ```bash
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/leoheck/kdiff/main/install_dependencies.sh)"
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/leoheck/kiri/main/install_dependencies.sh)"
 
 ```
 
@@ -24,12 +21,12 @@ sh -c "$(curl -fsSL https://raw.githubusercontent.com/leoheck/kdiff/main/install
 [Configure WSL](https://www.tenforums.com/tutorials/46769-enable-disable-windows-subsystem-linux-wsl-windows-10-a.html)
 
 ```batch
-:: Enable Windows Subsystem for Linux (using Power Shell)
+# Enable Windows Subsystem for Linux (using Power Shell)
 dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart
 Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux
 #Install-WindowsFeature -Name Microsoft-Windows-Subsystem-Linux
 
-:: Install Ubuntu 20.04
+# Install Ubuntu 20.04
 Invoke-WebRequest -Uri https://aka.ms/wsl-ubuntu-2004 -OutFile ~/Downloads/ubuntu-2004.zip
 New-Item -Path C:\ubuntu-2004 -ItemType Directory
 Expand-Archive -Path ~/Downloads/ubuntu-2004.zip C:\ubuntu-2004
@@ -79,7 +76,7 @@ brew install gmp
 brew install pkg-config
 brew install opam
 
-# Kdiff dependencies
+# KiRI dependencies
 brew install gsed
 brew install findutils
 brew install dos2unix
@@ -105,44 +102,46 @@ pip3 install python_dateutil
 pip3 install tk
 ```
 
-After installing dependencies continue with [the next section](https://github.com/leoheck/kdiff#Installing-3rd-Party-Tools)
+After installing dependencies continue with [the next section](https://github.com/leoheck/kiri#Installing-Submodules)
 
-## Installing 3rd-Party Tools
+## Installing Submodules
+
+This tool uses submodules for Plotgitsch and Kicad-Diff to guarantee these tools are in a version that work. Feel free to override these with other versions of them.
 
 ```bash
-# Clone kdiff repo
-git clone https://github.com/leoheck/kdiff
+# Clone kiri repo
+git clone https://github.com/leoheck/kiri
 git submodule update --init --recursive
 
 # Install plotgitsch
-cd kdiff/plotkicadsch
+cd kiri/submodules/plotkicadsch
 ./install.sh
 
 # Load KiCad-Diff environment
 cd ../KiCad-Diff
 source ./env.sh
 
-# Load kdiff environment
-cd ..
+# Load kiri environment
+cd ../../
 source ./env.sh
 ```
 
-# Using Kdiff
+# Using KiRI
 ```
 cd [kicad_git_repo]
-kdiff board.pro
+kiri board.pro
 ```
 
 ## Command line flags (aka Help)
 
-How to access tool help, this may change, so prefer to use `kdiff -h` instead.
+How to access tool help, this may change, so prefer to use `kiri -h` instead.
 
 ```
-➜ kdiff -h
+➜ kiri -h
 
 USAGE :
 
-    kdiff [OPTIONS] [KICAD_PROJECT]
+    kiri [OPTIONS] [KICAD_PROJECT]
 
 OPTIONS:
 
@@ -168,27 +167,27 @@ KICAD_PROJECT:
 EXAMPLES:
 
     # Launch GUI with file selector
-    kdiff
+    kiri
 
     # Kicad project on the root of the repo
-    kdiff board.pro
+    kiri board.pro
 
     # Nested project (with verbose and starting fresh)
-    kdiff nested-project/board.pro -r -V
+    kiri nested-project/board.pro -r -V
 
 ```
 
 # (EXTRA) Kicad integration
 
-It is also possible to integrate kdiff in PCBNew toolbar
+It is also possible to integrate kiri in PCBNew toolbar
 
 ```bash
 # Create folder if it does not exist
 mkdir -p ~/.kicad/scripting/plugins
 
 # Copy the plugin there
-cd kdiff
-cp -r kicad_plugin ~/.kicad/scripting/plugins/kdiff
+cd kiri
+cp -r kicad_plugin ~/.kicad/scripting/plugins/kiri
 ```
 
 # Examples
@@ -196,17 +195,17 @@ cp -r kicad_plugin ~/.kicad/scripting/plugins/kdiff
 Schematic view, assets generated using Plotkicadsch
 
 <p align="center">
-	<img src="misc/kdiff_sch.png" width="820" alt="sch">
+	<img src="misc/kiri_sch.png" width="820" alt="sch">
 </p>
 
 Layout view, assets generated using Kicad-Diff
 
 <p align="center">
-	<img src="misc/kdiff_pcb.png" width="820" alt="pcb">
+	<img src="misc/kiri_pcb.png" width="820" alt="pcb">
 </p>
 
 Demo on Youtube (old version)
 
 <a href="http://www.youtube.com/watch?v=PMC0USSsbDE" target="_blank">
-    <img src="https://img.youtube.com/vi/PMC0USSsbDE/maxresdefault.jpg" alt="Kdiff Demo" width="820">
+    <img src="https://img.youtube.com/vi/PMC0USSsbDE/maxresdefault.jpg" alt="KiRI Demo" width="820">
 </a>
