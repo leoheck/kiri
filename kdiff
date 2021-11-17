@@ -924,8 +924,8 @@ generate_artifacts()
 	echo "- Setting sch/pcb revision"
 	sch_revision=$(grep -i "Rev" "${current_path_fix}/${board_name}${KICAD_SCH_EXTENSION}" 2> /dev/null | sed_ "s/^[ \t]\+//g" | sed_ "s/[()]//g" | cut -d" " -f2- | sed_ "s/\"//g")
 	pcb_revision=$(grep "(rev " "${kicad_pcb}" 2> /dev/null | sed_ "s/^[ \t]\+//g" | sed_ "s/[()]//g" | cut -d" " -f2- | sed_ "s/\"//g")
-	if [[ $revision_sch == "" ]]; then revision_pcb="{sch_rev}"; fi
-	if [[ $revision_pcb == "" ]]; then revision_pcb="{pcb_rev}"; fi
+	if [[ $revision_sch == "" ]]; then pcb_revision="{sch_rev}"; fi
+	if [[ $revision_pcb == "" ]]; then sch_revision="{pcb_rev}"; fi
 	sed_ -i "s|\[SCH_REVISION\]|${sch_revision}|g" "${web_dir}/${main_html}"
 	sed_ -i "s|\[PCB_REVISION\]|${pcb_revision}|g" "${web_dir}/${main_html}"
 
