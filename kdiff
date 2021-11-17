@@ -808,7 +808,7 @@ generate_artifacts()
 		echo -e "${blue}Schematic Pages:${reset}"
 		echo "${sch_page_names}" | nl -s": "
 		echo
-		echo -e "${blue}Used PCB layers:${reset}"
+		echo -e "${blue}PCB Layers:${reset}"
 		echo "${used_board_layers}" | column -t | nl -s": "
 		echo
 	fi
