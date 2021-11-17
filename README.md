@@ -1,11 +1,11 @@
 # Kicad Revision Inspector (KiRI)
 
 KiRI is small tool to experiment having a visual diff tool for Kicad.
-It uses [Kicad-Diff](https://github.com/Gasman2014/KiCad-Diff) to generate layout diffs and [Plotgitsh](https://github.com/jnavila/plotkicadsch) to generate schematic diffs.
+It uses [Kicad-Diff](https://github.com/Gasman2014/KiCad-Diff) to generate layout diffs and [Plotgitsch](https://github.com/jnavila/plotkicadsch) to generate schematic diffs.
 
 It currently supports Kicad 5.* projects that use Git as source management.
 
-This tool was renamed KiRI since the previous name (KDiff) was pretty close to the KiDiff or Kicad-Diff, one of the projects referred to above.
+Previously known as KDiff, it was renamed KiRI since the old name was pretty close to the KiDiff or Kicad-Diff, one of the projects referred to above.
 
 ## Installing dependencies
 
@@ -21,12 +21,12 @@ sh -c "$(curl -fsSL https://raw.githubusercontent.com/leoheck/kiri/main/install_
 [Configure WSL](https://www.tenforums.com/tutorials/46769-enable-disable-windows-subsystem-linux-wsl-windows-10-a.html)
 
 ```batch
-:: Enable Windows Subsystem for Linux (using Power Shell)
+# Enable Windows Subsystem for Linux (using Power Shell)
 dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart
 Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux
 #Install-WindowsFeature -Name Microsoft-Windows-Subsystem-Linux
 
-:: Install Ubuntu 20.04
+# Install Ubuntu 20.04
 Invoke-WebRequest -Uri https://aka.ms/wsl-ubuntu-2004 -OutFile ~/Downloads/ubuntu-2004.zip
 New-Item -Path C:\ubuntu-2004 -ItemType Directory
 Expand-Archive -Path ~/Downloads/ubuntu-2004.zip C:\ubuntu-2004
