@@ -479,6 +479,7 @@ generate_schematic_artifacts()
 	project_path=${3}
 	board_name=${4}
 	sch_page_names=${5}
+	repo_path=${6}
 
 	removed_color="FF0000"
 	added_color="008FFF"
@@ -505,9 +506,10 @@ generate_schematic_artifacts()
 		fi
 
 		# Workaround to make local copy working
-		# Remove local kidiff folder temporarly
+		# Remove local kidiff folder temporary
+		# Still not working on nested projects
 		if [[ ${commit2} == "" ]]; then
-			mv kidiff /tmp/.kidiff
+			mv ${repo_path}/kidiff /tmp/.kidiff
 		fi
 
 		cmd="plotgitsch${plotgitsch_path} -k -m -l ${lib_path}/${board_name}-cache.lib -c ${removed_color}:${added_color}:${unchanged_color}:${background_color} ${commit1} ${commit2} ${STDOUT_PLOTGITSCH}"
@@ -517,10 +519,10 @@ generate_schematic_artifacts()
 		if [[ "${DRY_RUN}" == "0" ]]; then
 			eval ${cmd}
 
-			# [Temporarly] Workaround to make local copy working
+			# [Temporary] Workaround to make local copy working
 			# Move back local kidiff folder
 			if [[ ${commit2} == "" ]]; then
-				mv /tmp/.kidiff kidiff
+				mv /tmp/.kidiff ${repo_path}/kidiff
 			fi
 
 			ret=$?
@@ -531,6 +533,7 @@ generate_schematic_artifacts()
 			fi
 		fi
 
+		# find -name "*.svg"
 
 		if [[ "${current_path}" != "${project_path}" ]]; then
 			popd &> /dev/null || exit
@@ -867,7 +870,7 @@ generate_artifacts()
 				fi
 
 
-				generate_schematic_artifacts "${i}" "${j}" "${project_path}" "${board_name}" "${sch_page_names}"
+				generate_schematic_artifacts "${i}" "${j}" "${project_path}" "${board_name}" "${sch_page_names}" "${repo_path}"
 				generate_layout_artifacts "${i}" "${j}" "${output_dir}" "${kicad_pcb}" "${board_name}"
 
 				if [[ "${VERBOSE}" == "1" ]]; then
