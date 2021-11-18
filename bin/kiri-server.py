@@ -107,15 +107,8 @@ if __name__ == "__main__":
     signal.signal(signal.SIGINT, signal_handler)
     args = parse_cli_args()
 
-    if args.kicad_pro:
-        kicad_project_path = os.path.dirname(os.path.realpath(args.kicad_pro))
-        prjctPath, kicad_project = get_kicad_project_path(kicad_project_path)
-    # else:
-        # kicad_project = ""
-        # prjctPath = "../"
-
-    print(prjctPath, kicad_project)
-    # exit(1)
+    kicad_project_path = os.path.dirname(os.path.realpath(args.kicad_pro))
+    prjctPath, kicad_project = get_kicad_project_path(kicad_project_path)
 
     if not args.webserver_disable:
 
