@@ -15,15 +15,15 @@ import socketserver
 from subprocess import PIPE, Popen
 from typing import List, Tuple
 
-prjctPath = None
+wwwdir_path = None
 httpd = None
+default_port = 8080
 
 
 class WebServerHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(
-            *args,
-            directory=os.path.realpath(os.path.join(prjctPath, "kidiff"), **kwargs)
+            *args, directory=os.path.realpath(wwwdir_path, **kwargs)
         )
 
     def log_message(self, format, *args):
@@ -44,9 +44,12 @@ def parse_cli_args():
         help="Set DISPLAY value, default :1.0",
         default=":1.0",
     )
-    parser.add_argument("-x", "--dir", type=str, help="Directory to serve")
+    parser.add_argument("-n", "--nested", action='store_true', help="Fix paths when it was a nested project")
     parser.add_argument(
-        "-p", "--port", type=int, help="Set webserver port", default=9092
+        "-p", "--port", type=int, help="Force the weverver on an specific port"
+    )
+    parser.add_argument(
+        "-r", "--port_range", type=int, default=10, help="Port range to try"
     )
     parser.add_argument(
         "-w",
@@ -58,7 +61,7 @@ def parse_cli_args():
         "-v", "--verbose", action="count", default=0, help="Increase verbosity (-vvv)"
     )
     parser.add_argument(
-        "kicad_pro", metavar="KICAD_PRO_PATH", nargs="?", help="Kicad project file (.pro) path"
+        "wwwdir", metavar="WWWDIR", help="A folder with web/index.html inside"
     )
 
     args = parser.parse_args()
@@ -69,6 +72,28 @@ def parse_cli_args():
         print(args)
 
     return args
+
+def launch_webserver(request_handler, port, kicad_project):
+
+    global httpd
+    httpd = socketserver.TCPServer(("", port), request_handler)
+
+    with httpd:
+        if args.nested:
+            url = "http://127.0.0.1:{port}/{nested_project}/web/index.html".format(
+                port=str(port),
+                nested_project=kicad_project
+            )
+        else:
+            url = "http://127.0.0.1:{port}/web/index.html".format(
+                port=str(port)
+            )
+
+        print("")
+        print("Starting webserver at {}".format(url))
+        print("(Hit Ctrl+C to exit)")
+        webbrowser.open(url)
+        httpd.serve_forever()
 
 
 def run_cmd(path: str, cmd: List[str]) -> Tuple[str, str]:
@@ -89,44 +114,50 @@ def run_cmd(path: str, cmd: List[str]) -> Tuple[str, str]:
     return stdout.strip("\n "), stderr
 
 
-def get_kicad_project_path(prjctPath):
-    """Returns the root folder of the repository"""
-
-    cmd = ["git", "rev-parse", "--show-toplevel"]
-
-    stdout, _ = run_cmd(prjctPath, cmd)
-    repo_root_path = stdout.strip()
-
-    kicad_project_path = os.path.relpath(prjctPath, repo_root_path)
-
-    return repo_root_path, kicad_project_path
-
-
 if __name__ == "__main__":
 
     signal.signal(signal.SIGINT, signal_handler)
     args = parse_cli_args()
 
-    kicad_project_path = os.path.dirname(os.path.realpath(args.kicad_pro))
-    prjctPath, kicad_project = get_kicad_project_path(kicad_project_path)
+    if args.wwwdir:
+
+        wwwdir_path = os.path.abspath(args.wwwdir)
+        kicad_project = ".."
+
+        # Assume it is running outside of the webserver the folder
+        index_html = os.path.realpath(os.path.join(wwwdir_path, "web", "index.html"))
+        if not os.path.exists(index_html):
+            print("Could not find index.html")
+            exit(1)
+
+        if args.verbose:
+            print("")
+            print("wwwdir_path:", wwwdir_path)
+            print("kicad_project:", kicad_project)
+            print("index_html:", index_html)
+            print("")
+
+    else:
+        print("WWWDIR is missing")
+        exit(1)
 
     if not args.webserver_disable:
 
         socketserver.TCPServer.allow_reuse_address = True
         request_handler = WebServerHandler
-        httpd = socketserver.TCPServer(("", args.port), request_handler)
 
-        with httpd:
-            url = (
-                "http://127.0.0.1:"
-                + str(args.port)
-                + "/"
-                + kicad_project
-                + "/"
-                + "web/index.html"
-            )
-            print("")
-            print("Starting webserver at {}".format(url.replace("./", "")))
-            print("(Hit Ctrl+C to exit)")
-            webbrowser.open(url)
-            httpd.serve_forever()
+    if args.port:
+        try:
+            launch_webserver(request_handler, args.port, kicad_project)
+        except Exception:
+            print("Specified port {port} is in use".format(port=port))
+            pass
+    else:
+        for i in range(args.port_range):
+            try:
+                port = default_port + i
+                launch_webserver(request_handler, port, kicad_project)
+            except Exception:
+                # print("Specified port {port} is in use".format(port=port))
+                pass
+        print("Specified ports are in use.")
