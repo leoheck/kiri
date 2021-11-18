@@ -230,7 +230,7 @@ insert_commits()
 
 	COMMITS_LIST_HTML=""
 
-	empty_icon='<span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: rgba(255, 0, 0, 0.5);" data-icon="bx:bx-x" data-inline="false"></span>'
+	empty_icon='<span class="iconify" style="padding-left: 0px; padding-right: 0px; width: 14px; height: 14px; color: rgba(255, 0, 0, 0.5);" data-icon="bx:bx-x" data-inline="false"></span>'
 
 	IFS=$'\n'
 	for commit in ${commits}; do
@@ -245,21 +245,21 @@ insert_commits()
 
 			# check for changes in ".sch|.kicad_sch" files
 			if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${project}" | cat | grep -s -E "${sch_files// /|}" &> /dev/null; then
-				sch_icon='<span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: #A6E22E;" data-icon="carbon:schematics" data-inline="false"></span>'
+				sch_icon='<span class="iconify" style="padding-left: 0px; padding-right: 0px; width: 14px; height: 14px; color: #A6E22E;" data-icon="carbon:schematics" data-inline="false"></span>'
 			else
 				sch_icon="${empty_icon}"
 			fi
 
 			# check for changes in .kicad_pcb files
 			if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${project}" | cat | grep -s "${kicad_pcb}" &> /dev/null; then
-				layout_icon='<span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: #F92672;" data-icon="codicon:circuit-board" data-inline="false"></span>'
+				layout_icon='<span class="iconify" style="padding-left: 0px; padding-right: 0px; width: 14px; height: 14px; color: #F92672;" data-icon="codicon:circuit-board" data-inline="false"></span>'
 			else
 				layout_icon="${empty_icon}"
 			fi
 
 			# Check for changes in textual files only
 			if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${project}" | cat | grep -s -vE "${sch_files// /|}${kicad_pcb}" &> /dev/null; then
-				text_icon='<span class="iconify" style="padding-left: 0px; padding-right 0px; width: 14px; height: 14px; color: #888888;" data-icon="bi:file-earmark-text" data-inline="false"></span>'
+				text_icon='<span class="iconify" style="padding-left: 0px; padding-right: 0px; width: 14px; height: 14px; color: #888888;" data-icon="bi:file-earmark-text" data-inline="false"></span>'
 			else
 				text_icon="${empty_icon}"
 			fi
@@ -272,18 +272,18 @@ insert_commits()
 
 			IFS= read -r -d '' COMMIT_HTML <<-EOM
 			    <input class="chkGroup" type="checkbox" id="${hash}" name="commit" value="${hash}" ${checked} onchange="update_commits()"/>
-			    <label class="text-sm-left list-group-item" for="${hash}">
+				<label class="text-sm-left list-group-item" style="display: block; width: 480px" for="${hash}">
 			      <table style="width:100%">
 			        <tr>
 			          <td rowspan=2 style="vertical-align: top; width: 1.8em;">
-			              <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" width="15" height="15">
-			                  <path d="M7.5 10.5a3 3 0 010-6m0 6a3 3 0 000-6m0 6V15m0-10.5V0" stroke="currentColor"></path>
-			              </svg>
-			            </td>
+			            <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" width="15" height="15">
+			              <path d="M7.5 10.5a3 3 0 010-6m0 6a3 3 0 000-6m0 6V15m0-10.5V0" stroke="currentColor"></path>
+			            </svg>
+			          </td>
 			          <td><em class="text-info" style="  line-height: 0.7;">${msg}</em></td>
 			        </tr>
 			        <tr>
-			          <td white-space:nowrap;overflow: hidden;><span class="text-success font-weight-normal">${hash}</span> <span class="text-muted"> | </span> ${sch_icon} ${layout_icon} ${text_icon} <span class="text-muted font-weight-normal"> | ${date} | ${user}</td>
+			          <td style="white-space:nowrap; overflow: hidden;"><span class="text-success font-weight-normal">${hash}</span> <span class="text-muted"> | </span> ${sch_icon} ${layout_icon} ${text_icon} <span class="text-muted font-weight-normal"> | ${date} | ${user}</span></td>
 			        </tr>
 			      </table>
 			    </label>
@@ -308,23 +308,19 @@ insert_commits()
 
 			IFS= read -r -d '' COMMIT_HTML <<-EOM
 			    <input class="chkGroup" type="checkbox" id="${hash}" name="commit" value="${hash}" ${checked} onchange="update_commits()"/>
-			    <label class="text-sm-left list-group-item" for="${hash}">
+			    <label class="text-sm-left list-group-item" style="display: block; width: 480px" for="${hash}">
 			      <table style="width:100%">
 			        <tr>
-			          <td rowspan=2 style="vertical-align: top; width: 1.8em;">
-			              <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" width="15" height="15">
-			                  <path d="M7.5 10.5a3 3 0 010-6m0 6a3 3 0 000-6m0 6V15m0-10.5V0" stroke="currentColor"></path>
-			              </svg>
-			            </td>
-			          <td><em class="text-warning" style="  line-height: 0.7;">${msg}</em></td>
+			          <td style="vertical-align: top; width: 1.8em;">
+			            <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" width="15" height="15">
+			              <path d="M7.5 10.5a3 3 0 010-6m0 6a3 3 0 000-6m0 6V15m0-10.5V0" stroke="currentColor"></path>
+			            </svg>
+			          </td>
+			          <td><em class="text-warning" style=" line-height: 0.7;">${msg}</em></td>
 			        </tr>
 			      </table>
 			    </label>
 			EOM
-
-	        # <tr>
-	        #   <td white-space:nowrap;overflow: hidden;><span class="text-success font-weight-normal">${hash}</span> <span class="text-muted"> | </span> ${sch_icon} ${layout_icon} ${text_icon} <span class="text-muted font-weight-normal"> | ${date} | ${user}</td>
-	        # </tr>
 
 		fi
 
@@ -368,7 +364,7 @@ insert_pages()
 
 		IFS= read -r -d '' HTML_SNIPPET <<-EOM
 		    <input type="radio" id="${page_filename}" value="${page_filename}" name="pages" ${checked} onchange="change_page()"/>
-		    <label class="rounded text-sm-left list-group-item radio-box" onclick="change_page_onclick(${page_filename})" for="${page_filename}">
+		    <label class="rounded text-sm-left list-group-item radio-box" onclick="change_page_onclick()" for="${page_filename}">
 		    <span style="margin-left:0.5em; margin-right:0.1em;" class="iconify" data-icon="gridicons:pages" data-inline="false"></span>
 		    ${page_name}
 		    </label>
@@ -466,8 +462,8 @@ insert_layers()
 		fi
 
 		IFS= read -r -d '' HTML_SNIPPET <<-EOM
-		    <input type="radio" id="${layer_id}-${layer_name}" name="layers" value="${layer_id}-${layer_name}" ${checked}  onchange="change_layer()"/>
-		    <label class="rounded text-sm-left list-group-item radio-box" onclick="change_layer_onclick(${layer_id}-${layer_name})" for="${layer_id}-${layer_name}">
+		    <input type="radio" id="${layer_id}-${layer_name}" name="layers" value="${layer_id}-${layer_name}" ${checked} onchange="change_layer()"/>
+		    <label class="rounded text-sm-left list-group-item radio-box" onclick="change_layer_onclick()" for="${layer_id}-${layer_name}">
 		        <span style="margin-left:0.5em; margin-right:0.1em; color: ${layer_color}" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
 		        ${layer_id}-${layer_name}
 		    </label>

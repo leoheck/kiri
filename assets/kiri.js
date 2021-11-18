@@ -652,10 +652,6 @@ function show_sch() {
     pages_list.style.display = "inline";
     // pages_list.style.display = "none";
 
-    // New pages list
-    pages_dropdown = document.getElementById("pages_dropdown");
-    pages_dropdown.style.display = "none";
-
     // Hide layout image
     pcb_view = document.getElementById("diff-pcb");
     pcb_view.style.display = "none";
@@ -663,10 +659,6 @@ function show_sch() {
     // Hide layers list
     layers_list = document.getElementById("layers_list");
     layers_list.style.display = "none";
-
-    // New layers list
-    layers_dropdown = document.getElementById("layers_dropdown");
-    layers_dropdown.style.display = "none";
 
     // Hide pcb title
     sch_view = document.getElementById("pcb_title");
@@ -692,10 +684,6 @@ function show_pcb() {
     pages_list = document.getElementById("pages_list");
     pages_list.style.display = "none";
 
-    // New pages list
-    pages_dropdown = document.getElementById("pages_dropdown");
-    pages_dropdown.style.display = "none";
-
     // Show layout image
     pcb_view = document.getElementById("diff-pcb");
     pcb_view.style.display = "inline";
@@ -704,10 +692,6 @@ function show_pcb() {
     layers_list = document.getElementById("layers_list");
     layers_list.style.display = "inline";
     //layers_list.style.display = "none";
-
-    // New layers list
-    layers_dropdown = document.getElementById("layers_dropdown");
-    layers_dropdown.style.display = "none";
 
     // Show PCB Title
     sch_view = document.getElementById("pcb_title");
@@ -734,13 +718,9 @@ function show_slide() {
 // =======================================
 
 function change_page_onclick(obj) {
-    pages = $("#pages_list input:radio[name='pages']");
-    pages[pages.index(pages.filter(obj))].checked = true;
     change_page();
 }
 
 function change_layer_onclick(obj) {
-    layers = $("#layers_list input:radio[name='layers']");
-    layers[layers.index(layers.filter(obj))].checked = true;
     change_layer();
 }
