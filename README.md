@@ -36,7 +36,6 @@ Set-Location C:\ubuntu-2004
 
 And then continue with the instructions in "Installing dependencies on Linux" inside the WSL (Ubuntu terminal).
 
-
 ## Installing dependencies on Linux/WSL
 
 ```bash
@@ -145,24 +144,30 @@ USAGE :
 
 OPTIONS:
 
-    -a|--all           Include all commits even if schematics/layout don't have changes
-    -o|--older HASH    Show commits starting from this one
-    -n|--newer HASH    Show commits until this one delimited by this one
-    -r|--remove        Remove cache (kidiff) folder before run
-    -l|--webserver    Do not launch webserver/browser at the end
-    -p|--port PORT     Set webserver port
-    -V|--verbose       Verbose
-    -v|--version       Show version
-    -D|--debug         Extra info
-    -dp|--debug-plotgitsch
-                       Show Plotgitsch stdout and stderr
-    -dk|--debug-kidiff Show Kidiff stdout and stderr
-    -h|--help          This help
+     -a|--all         Include all commits even if schematics/layout don't have changes
+     -o|--older HASH  Show commits starting from this one
+     -n|--newer HASH  Show commits until this one delimited by this one
+
+     -l|--webserver   Do not launch webserver/browser at the end
+     -p|--port PORT   Set webserver port. By default it will try to use an available port.
+
+     -d|--output-dir  Change output folder path/name
+     -r|--remove      Remove generated folder before running it
+     -x|--archive     Archive generate files
+
+     -v|--version     Show version
+     -h|--help        Show help
+
+     -D|--debug       Extra info
+    -dp|--debug-sch   Show Plotgitsch stdout and stderr
+    -dk|--debug-pcb   Show Kidiff stdout and stderr
+     -y|--dry-run     Run without generate artifacts
+     -V|--verbose     Verbose
 
 KICAD_PROJECT:
 
     KICAD_PROJECT file is optional.
-    If it is missing then file selector in GUI is used instead
+    If it is missing the GUI file selector will be loaded
 
 EXAMPLES:
 
@@ -190,22 +195,32 @@ cd kiri
 cp -r kicad_plugin ~/.kicad/scripting/plugins/kiri
 ```
 
+# Archiving generated files
+
+There is a possibility to archive generated files. to visualize generated files, unpack the folder anywhere and execute the webserver inside of the folder, as shown below:
+
+```
+tar -xvzf kiri-2021.11.18-16h39.tgz
+cd kiri
+./kiri-webserver.py .
+```
+
 # Examples
 
 Schematic view, assets generated using Plotkicadsch
 
 <p align="center">
-	<img src="misc/kiri_sch.png" width="820" alt="sch">
+    <img src="misc/kiri_sch.png" width="820" alt="Schematic View">
 </p>
 
 Layout view, assets generated using Kicad-Diff
 
 <p align="center">
-	<img src="misc/kiri_pcb.png" width="820" alt="pcb">
+    <img src="misc/kiri_pcb.png" width="820" alt="Layout View">
 </p>
 
 Demo on Youtube (old version)
 
 <a href="http://www.youtube.com/watch?v=PMC0USSsbDE" target="_blank">
-    <img src="https://img.youtube.com/vi/PMC0USSsbDE/maxresdefault.jpg" alt="KiRI Demo" width="820">
+    <img src="https://img.youtube.com/vi/PMC0USSsbDE/maxresdefault.jpg" alt="Kicad Revision Inspector Demo" width="820">
 </a>
