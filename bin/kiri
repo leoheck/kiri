@@ -10,24 +10,29 @@ show_help()
 
 	OPTIONS:
 
-	    -a|--all           Include all commits even if schematics/layout don't have changes
-	    -o|--older HASH    Show commits starting from this one
-	    -n|--newer HASH    Show commits until this one delimited by this one
-	    -r|--remove        Remove cache (kidiff) folder before run
-	    -l|--webserver    Do not launch webserver/browser at the end
-	    -p|--port PORT     Set webserver port
-	    -V|--verbose       Verbose
-	    -v|--version       Show version
-	    -D|--debug         Extra info
-	    -dp|--debug-plotgitsch
-	                       Show Plotgitsch stdout and stderr
-	    -dk|--debug-kidiff Show Kidiff stdout and stderr
-	    -h|--help          This help
+	     -a|--all         Include all commits even if schematics/layout don't have changes
+	     -o|--older HASH  Show commits starting from this one
+	     -n|--newer HASH  Show commits until this one delimited by this one
+
+	     -l|--webserver   Do not launch webserver/browser at the end
+	     -p|--port PORT   Set webserver port. By default it will try to use an available port.
+
+         -d|--output-dir  Change output folder path/name
+	     -r|--remove      Remove generated folder before running it
+
+	     -v|--version     Show version
+	     -h|--help        Show help
+
+	     -D|--debug       Extra info
+	    -dp|--debug-sch   Show Plotgitsch stdout and stderr
+	    -dk|--debug-pcb   Show Kidiff stdout and stderr
+	     -y|--dry-run     Run without generate artifacts
+	     -V|--verbose     Verbose
 
 	KICAD_PROJECT:
 
 	    KICAD_PROJECT file is optional.
-	    If it is missing then file selector in GUI is used instead
+	    If it is missing the GUI file selector will be loaded
 
 	EXAMPLES:
 
@@ -592,7 +597,7 @@ generate_layout_artifacts()
 
 	if [[ ! "${KIDIFF_MISSING}" == 1 ]]; then
 
-		cmd="kidiff ${kicad_pcb} --webserver-disable -a ${commit1} -b ${commit2} ${STDOUT_KIDIFF}"
+		cmd="kidiff ${kicad_pcb} --webserver-disable -a ${commit1} -b ${commit2} -o ${OUTPUT_DIR} ${STDOUT_KIDIFF}"
 		if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_KIDIFF}" = "1" ]]; then
 			echo -e "   ${green}${cmd}${reset}"
 		fi
@@ -690,16 +695,19 @@ generate_artifacts()
 	board_name="${filename%.*}"
 
 	if [[ "${project_path}" != "." ]]; then
-		output_dir="${repo_path}/kidiff/${project_path}"
+		# output_dir="${repo_path}/kidiff/${project_path}"
+		output_dir=${OUTPUT_DIR}/${project_path}
 	else
-		output_dir="${repo_path}/kidiff/"
+		# output_dir="${repo_path}/kidiff/"
+		output_dir=${OUTPUT_DIR}/
 	fi
 
 	web_dir="${output_dir}/web/"
 
+	echo
+	echo -e "${blue}Output folder:${reset} $(realpath ${OUTPUT_DIR})"
 	if [[ "$REMOVE_KIRI_FOLDER" == "1" ]]; then
-		echo
-		echo -e "${blue}Removing previows folder:${reset} ${output_dir}"
+		echo -e "${red}Removing previows existing folder${reset}"
 		if ! rm -rf "${output_dir}" &> /dev/null; then
 			echo "Warning: folder was not removed"
 		fi
@@ -889,6 +897,7 @@ generate_artifacts()
 	cp -f "${script_path}/../assets/blank.svg"     "${web_dir}/"
 	cp -f "${script_path}/../assets/favicon.ico"   "${web_dir}/"
 	cp -f "${script_path}/../assets/redirect.html" "${web_dir}/../index.html"
+	cp -f "${script_path}/../bin/kiri-server"      "${web_dir}/../index.html"
 
 	# Selected commit index
 	commit1_idx=0
@@ -987,7 +996,9 @@ export NEWER_COMMIT=""
 export OLDER_COMMIT=""
 export REMOVE_KIRI_FOLDER=0
 export VERBOSE=0
-export WEBSERVER_PORT=8000
+export WEBSERVER_PORT=
+
+export OUTPUT_DIR=
 
 while [[ $# -gt 0 ]]
 do
@@ -999,7 +1010,13 @@ do
 		shift
 		;;
 
-	-d|--dry-run)
+	-d|--output-dir)
+		OUTPUT_DIR=${2}
+		shift
+		shift
+		;;
+
+	-y|--dry-run)
 		DRY_RUN=1
 		LAUNCH_BROWSER=0
 		VERBOSE=1
@@ -1087,7 +1104,7 @@ if [[ "${kicad_pro}" == "" ]]; then
 				--file-filter="Kicad Project | *.kicad_pro | *.pro" \
 				--file-filter='All files | *')
 	else
-		kicad_pro=$(kiri-file-picker.py)
+		kicad_pro=$(kiri-file-picker)
 	fi
 
 	if [[ ! -f "${kicad_pro}" ]]; then
@@ -1162,8 +1179,12 @@ else
 	exit 1
 fi
 
-output_dir="${repo_path}/kidiff/${project_dir}"
+# output_dir="${repo_path}/kidiff/${project_dir}"
+output_dir=${OUTPUT_DIR}/${project_dir}
 web_dir="${output_dir}/web/"
+
+echo
+echo -e "${blue}Output folder:${reset} $(realpath ${OUTPUT_DIR})"
 
 if [[ "${LAUNCH_BROWSER}" != 0 ]]; then
 	if grep -q "Microsoft" "/proc/version" &> /dev/null; then
@@ -1182,13 +1203,15 @@ if [[ "${LAUNCH_BROWSER}" != 0 ]]; then
 			exit 1
 		fi
 	else
-		if kiri-server.py -p "${WEBSERVER_PORT}" "${kicad_pro}" 2> /dev/null; then
+		ADD_WEBSERVER_PORT=
+		if [[ ${WEBSERVER_PORT} != "" ]]; then
+			ADD_WEBSERVER_PORT="-p ${WEBSERVER_PORT}"
+		fi
+		if kiri-server "${output_dir}" ${ADD_WEBSERVER_PORT} 2> /dev/null; then
 			pid=$!
 			kill -9 $pid > /dev/null
 		else
-			echo
-			echo -e "Error: Web-server's port ${WEBSERVER_PORT} already in use."
-			echo -e "Close older kiri sessions or change the port with '-p [PORT]'"
+			echo -e "Something went wrong with kiri-server, try to force the port with '-p'"
 			exit 1
 		fi
 	fi
