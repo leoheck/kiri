@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Install Kicad Plugin
+# Install KiRI and Kicad Plugin
 # To work, kiri must be in PATH
 
 # Remove old version if any
