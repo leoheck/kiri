@@ -15,12 +15,12 @@ else
 	curl -LkSs https://github.com/leoheck/kiri/archive/refs/heads/main.zip -o /tmp/kiri.zip
 	curl -LkSs https://github.com/leoheck/KiCad-Diff/archive/cb5631cabf847f033341ef2eb41c93d7b150c1ad.zip -o /tmp/KiCad-Diff.zip
 	curl -LkSs https://github.com/jnavila/plotkicadsch/archive/4603ff9d66c7bd1ab19249271830bb10e36afc67.zip -o /tmp/plotkicadsch.zip
-	
+
 	cd /tmp
 
 	unzip -qq /tmp/kiri.zip
 	unzip -qq /tmp/KiCad-Diff.zip
-	unzip -qq /tmp/plotkicadsch.zip	
+	unzip -qq /tmp/plotkicadsch.zip
 
 	rm -rf /tmp/kiri.zip
 	rm -rf /tmp/KiCad-Diff.zip
@@ -34,12 +34,11 @@ else
 
 fi
 
-# plotgitsch requires installation
+# Install plotkicadsch
 cd $HOME/kiri/submodules/plotkicadsch
 make build
 make install
 cd -
-
 
 case $OSTYPE in
 	darwin*)
