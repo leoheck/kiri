@@ -34,6 +34,13 @@ else
 
 fi
 
+# plotgitsch requires installation
+cd $HOME/kiri/submodules/plotkicadsch
+make build
+make install
+cd -
+
+
 case $OSTYPE in
 	darwin*)
 		KICAD_PLUGINS_PATH="$HOME/Library/Preferences/kicad/scripting/plugins"
