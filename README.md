@@ -7,14 +7,18 @@ It currently supports Kicad 5.* projects that use Git as source management.
 
 Previously known as KDiff, it was renamed KiRI since the old name was pretty close to the KiDiff or Kicad-Diff, one of the projects referred to above.
 
-## Installing dependencies
+## Installing
 
-To install dependencies with a single command on any Operating System, open a terminal and execute:
-Windows users must use WSL/WSL2.
+To install this repo and the dependencies with a single command on any Operating System, open a terminal and execute the following commands:
+
+> Windows users must use WSL/WSL2.
 
 ```bash
+# Installing dependencies
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/leoheck/kiri/main/install_dependencies.sh)"
 
+# Installing Kiri and Kicad Plugin
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/leoheck/kiri/main/install_kiri.sh)"
 ```
 
 ## Environment preparation on Windows
