@@ -8,7 +8,7 @@ rm -rf $HOME/kiri
 
 if which git &> /dev/null; then
 
-	git clone https://github.com/leoheck/kiri.git $HOME/kiri
+	git clone --recurse-submodules -j8 https://github.com/leoheck/kiri.git $HOME/kiri
 
 else
 
