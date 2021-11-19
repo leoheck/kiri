@@ -36,7 +36,9 @@ rm -rf ${KICAD_PLUGINS_PATH}/kiri
 cp -r $HOME/kiri/kicad_plugin ${KICAD_PLUGINS_PATH}/kiri
 
 echo
+echo
 echo "Add the follwing lines to your ~/.bashrc or ~/.zshrc"
+echo
 echo "source \$HOME/kiri/env.sh"
 echo "source \$HOME/kiri/submodules/KiCad-Diff/env.sh"
 echo
