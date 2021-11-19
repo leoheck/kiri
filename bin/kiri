@@ -1124,7 +1124,8 @@ if [[ "${kicad_pro}" == "" ]]; then
 
 		kicad_pro=$(\
 			zenity \
-			    --title "Select Kicad project" \
+				--filename=$(pwd)/ \
+				--title "Select Kicad project" \
 				--file-selection \
 				--file-filter="Kicad Project | *.kicad_pro | *.pro" \
 				--file-filter='All files | *')
