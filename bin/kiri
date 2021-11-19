@@ -566,10 +566,20 @@ generate_schematic_artifacts()
 
 		# Create blank svg when it is missing
 		if [[ ! -f "sch1-${sch_page_name}.svg" ]]; then
-			ln -sf "${web_dir}/blank.svg" "sch1-${sch_page_name}.svg"
+			if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_KIDIFF}" = "1" ]]; then
+				echo -e "   ${red}Recreating missing sch1-${sch_page_name}.svg${reset}"
+			fi
+			# ln -sf "${web_dir}/blank.svg" "sch1-${sch_page_name}.svg"
+			# ln -sf "../${web_dir}/blank.svg" "sch1-${sch_page_name}.svg"
+			cp "${script_path}/../assets/blank.svg" "sch1-${sch_page_name}.svg"
 		fi
 		if [[ ! -f "sch2-${sch_page_name}.svg" ]]; then
-			ln -sf "${web_dir}/blank.svg" "sch2-${sch_page_name}.svg"
+			if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_KIDIFF}" = "1" ]]; then
+				echo -e "   ${red}Recreating missing sch2-${sch_page_name}.svg${reset}"
+			fi
+			# ln -sf "${web_dir}/blank.svg" "sch2-${sch_page_name}.svg"
+			# ln -sf "../${web_dir}/blank.svg" "sch2-${sch_page_name}.svg"
+			cp "${script_path}/../assets/blank.svg" "sch1-${sch_page_name}.svg"
 		fi
 	done
 
@@ -687,11 +697,19 @@ generate_layout_artifacts()
 		# Create blank svgs if some is missing
 
 		if [[ ! -f "${output_dir}/${commit1}/${board_name}-${layer_id}-${layer_name}.svg" ]]; then
-			ln -sf "${web_dir}/blank.svg" "${output_dir}/${i}/${board_name}-${layer_id}-${layer_name}.svg"
+			if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_KIDIFF}" = "1" ]]; then
+				echo -e "   ${red}Recreating missing file: ${output_dir}/${commit1}/${board_name}-${layer_id}-${layer_name}.svg${reset}"
+			fi
+			# ln -sf "${web_dir}/blank.svg" "${output_dir}/${i}/${board_name}-${layer_id}-${layer_name}.svg"
+			cp "${script_path}/../assets/blank.svg" "${output_dir}/${i}/${board_name}-${layer_id}-${layer_name}.svg"
 		fi
 
 		if [[ ! -f "${output_dir}/${commit2}/${board_name}-${layer_id}-${layer_name}.svg" ]]; then
-			ln -sf "${web_dir}/blank.svg" "${output_dir}/${j}/${board_name}-${layer_id}-${layer_name}.svg"
+			if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_KIDIFF}" = "1" ]]; then
+				echo -e "   ${red}Recreating file: ${output_dir}/${commit2}/${board_name}-${layer_id}-${layer_name}.svg${reset}"
+			fi
+			# ln -sf "${web_dir}/blank.svg" "${output_dir}/${j}/${board_name}-${layer_id}-${layer_name}.svg"
+			cp "${script_path}/../assets/blank.svg" "${output_dir}/${j}/${board_name}-${layer_id}-${layer_name}.svg"
 		fi
 	done
 }
