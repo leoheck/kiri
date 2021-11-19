@@ -103,8 +103,8 @@ ctrl_c()
 		mv -f "${kicad_pcb}.bkp" "${kicad_pcb}" &> /dev/null
 	fi
 
-	# Remove files
-	rm -rf ${OUTPUT_DIR}
+	# Remove leftovers
+	# rm -rf ${OUTPUT_DIR}
 	rm -rf sch[12]-*.svg
 
 	exit 1
