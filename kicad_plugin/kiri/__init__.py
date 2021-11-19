@@ -10,7 +10,7 @@ import sys
 print("Starting KiRI plugin")
 
 try:
-    from .kiri import *
+    from .KiRI import *
 except Exception as e:
     traceback.print_exc(file=sys.stdout)
     pprint.pprint(e)
