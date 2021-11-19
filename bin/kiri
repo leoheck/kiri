@@ -728,7 +728,7 @@ generate_artifacts()
 	echo
 	echo -e "${blue}Output folder:${reset} $(realpath ${OUTPUT_DIR})"
 	if [[ "$REMOVE_KIRI_FOLDER" == "1" ]]; then
-		echo -e "${red}Removing previows existing folder${reset}"
+		echo -e "${red}Removing previous existing folder${reset}"
 		if ! rm -rf "${output_dir}" &> /dev/null; then
 			echo "Warning: folder was not removed"
 		fi
