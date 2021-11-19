@@ -682,7 +682,7 @@ generate_layout_artifacts()
 		layer_id=$(echo "${layer}" | cut -d " " -f1)
 		layer_id=$(printf "%02d" "$layer_id")
 
-		layer_name=$(echo "${layer}" | cut -d " " -f2 | sed "s/\./_/g")
+		layer_name=$(echo "${layer}" | cut -d " " -f2 | sed_ "s/\./_/g")
 
 		# Create blank svgs if some is missing
 
@@ -829,7 +829,7 @@ generate_artifacts()
 	n_comparisons=$(echo "${n_hashs} * (${n_hashs} - 1) " | bc)
 
 	sch_page_names=$(get_pages "${board_name}" "${current_path_fix}/${kicad_sch}" | cut -d"|" -f2 | sed_ "s/\r$//g")
-	used_board_layers=$(sed_ -n '/^  (layers/,/  )$/{/^  (layers/!{/  )$/!p}}' "${kicad_pcb}" | sed_ "s/^[ \t]\+//g" | sed_ "s/[()]//g" | cut -d" " -f-2 | sed_ "s/\r$//g" | sed "s/\"//g")
+	used_board_layers=$(sed_ -n '/^  (layers/,/  )$/{/^  (layers/!{/  )$/!p}}' "${kicad_pcb}" | sed_ "s/^[ \t]\+//g" | sed_ "s/[()]//g" | cut -d" " -f-2 | sed_ "s/\r$//g" | sed_ "s/\"//g")
 
 	echo
 
