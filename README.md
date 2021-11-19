@@ -119,10 +119,15 @@ cd kiri/submodules/plotkicadsch
 # Load KiCad-Diff environment
 cd ../KiCad-Diff
 source ./env.sh
+```
 
-# Load kiri environment
-cd ../../
-source ./env.sh
+# Loading kiri environment
+
+Setup the environment using the follwing commands.
+
+```
+source [PATH_TO_KIRI_REPO]/kiri/env.sh
+source [PATH_TO_KIRI_REPO]/kiri/submodules/KiCad-Diff/env.sh
 ```
 
 # Using KiRI
