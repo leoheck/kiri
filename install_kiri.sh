@@ -13,12 +13,24 @@ if which git &> /dev/null; then
 else
 
 	curl -LkSs https://github.com/leoheck/kiri/archive/refs/heads/main.zip -o /tmp/kiri.zip
-
+	curl -LkSs https://github.com/leoheck/KiCad-Diff/archive/cb5631cabf847f033341ef2eb41c93d7b150c1ad.zip -o /tmp/KiCad-Diff.zip
+	curl -LkSs https://github.com/jnavila/plotkicadsch/archive/4603ff9d66c7bd1ab19249271830bb10e36afc67.zip -o /tmp/plotkicadsch.zip
+	
 	cd /tmp
-	unzip /tmp/kiri.zip
-	rm -rf kiri.zip
 
-	mv kiri-main $HOME/kiri
+	unzip -qq /tmp/kiri.zip
+	unzip -qq /tmp/KiCad-Diff.zip
+	unzip -qq /tmp/plotkicadsch.zip	
+
+	rm -rf /tmp/kiri.zip
+	rm -rf /tmp/KiCad-Diff.zip
+	rm -rf /tmp/plotkicadsch.zip
+
+	mv /tmp/kiri-main $HOME/kiri
+	mv /tmp/plotkicadsch-4603ff9d66c7bd1ab19249271830bb10e36afc67 $HOME/kiri/submodules/plotkicadsch
+	mv /tmp/KiCad-Diff-cb5631cabf847f033341ef2eb41c93d7b150c1ad $HOME/kiri/submodules/KiCad-Diff
+
+	cd -
 
 fi
 
