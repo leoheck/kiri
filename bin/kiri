@@ -94,7 +94,19 @@ show_version()
 
 ctrl_c()
 {
+	echo
 	echo "** Trapped CTRL-C"
+	echo "Cleaning up and leaving"
+
+	# Restore board bkp
+	if [[ -f "${kicad_pcb}.bkp" ]]; then
+		mv -f "${kicad_pcb}.bkp" "${kicad_pcb}" &> /dev/null
+	fi
+
+	# Remove files
+	rm -rf ${OUTPUT_DIR}
+	rm -rf sch[12]-*.svg
+
 	exit 1
 }
 
@@ -618,9 +630,11 @@ generate_layout_artifacts()
 			fi
 		fi
 
+		# Discard textual diffs from kidiff
 		if [ -f "${output_dir}/diff.txt" ]; then
-			cp -f "${output_dir}/diff.txt" "${output_dir}/diff-pcb-${commit1}-${commit2}.txt"
-			cp -f "${output_dir}/diff.txt" "${output_dir}/diff-pcb-${commit2}-${commit1}.txt"
+			# cp -f "${output_dir}/diff.txt" "${output_dir}/diff-pcb-${commit1}-${commit2}.txt"
+			# cp -f "${output_dir}/diff.txt" "${output_dir}/diff-pcb-${commit2}-${commit1}.txt"
+			rm -rf ${output_dir}/diff.txt
 		fi
 
 		# Restore names
@@ -829,7 +843,7 @@ generate_artifacts()
 	fi
 
 	echo -e "${blue}Generating artifacts${reset}"
-	echo "For ${n_hashs} commits, totaling ${n_comparisons} comparisons"
+	echo "${n_hashs} commits, totaling ${n_comparisons} comparisons"
 	echo
 
 	n=0
