@@ -13,6 +13,7 @@ show_help()
 	     -a|--all         Include all commits even if schematics/layout don't have changes
 	     -o|--older HASH  Show commits starting from this one
 	     -n|--newer HASH  Show commits until this one delimited by this one
+	     -t|--last VAL    Show last N commits
 
 	     -l|--webserver   Do not launch webserver/browser at the end
 	     -p|--port PORT   Set webserver port. By default it will try to use an available port.
@@ -59,10 +60,9 @@ yellow="\e[33m"
 blue="\e[34m"
 reset="\e[0m"
 
-git_repo_version_from_tool()
+kidiff_version()
 {
-	tool=$1
-	tool_path=$(dirname $(which ${tool}))
+	tool_path=$(dirname $(which kidiff))
 
 	last_commit_hash=$(git --git-dir ${tool_path}/.git/ rev-parse --short HEAD)
 	last_commit_date=$(git --git-dir ${tool_path}/.git/ log -1 --format="%at" | xargs -I{} date -d @{} +"%Y/%m/%d %Hh%M")
@@ -70,17 +70,23 @@ git_repo_version_from_tool()
 	echo "${last_commit_hash} ${last_commit_date}"
 }
 
+kiri_version()
+{
+	tool_path=$(dirname $(which kiri))
+
+	last_commit_hash=$(git --git-dir ${tool_path}/../.git/ rev-parse --short HEAD)
+	last_commit_date=$(git --git-dir ${tool_path}/../.git/ log -1 --format="%at" | xargs -I{} date -d @{} +"%Y/%m/%d %Hh%M")
+
+	echo "${last_commit_hash} ${last_commit_date}"
+}
 
 show_version()
 {
-	kidiff_version=$(git_repo_version_from_tool kidiff)
-	kiri_version=$(git_repo_version_from_tool kiri)
-
 	IFS= read -r -d '' VERSION <<-EOM
 
 	    plotgitsch $(plotgitsch --version)
-	    kidiff ${kidiff_version}
-	    $(basename "${0}") ${kiri_version}
+	    kidiff $(kidiff_version)
+	    $(basename "${0}") $(kiri_version)
 	EOM
 
 	echo -e "$VERSION"
@@ -783,13 +789,17 @@ generate_artifacts()
 		commits=$(echo "${commits}" | sed_ -n "/^${NEWER_COMMIT}/,\$p")
 	fi
 
+	if [[ "${SHOW_LAST_N_COMMITS}" != "" ]]; then
+		commits=$(echo "${commits}" | head -n ${SHOW_LAST_N_COMMITS})
+	fi
+
 	if [[ "${VERBOSE}" == "1" ]]; then
 		echo -e "${blue}Commits list:${reset}"
 		echo "${commits}"
 	fi
 
 	# Commits list has to have 2 commits at least
-	if [[ $(echo "${commits}" | wc -l | sed_ "s/^[ \t]\+//g") -lt "2" ]]; then
+	if [[ $(echo "${commits}" | wc -l | sed_ "s/^[ \t]\+//g") -lt "1" ]]; then
 		echo "Leaving, less than 2 commits found"
 		exit 0
 	fi
@@ -1001,6 +1011,8 @@ export WEBSERVER_PORT=
 
 export OUTPUT_DIR=kiri
 
+export SHOW_LAST_N_COMMITS=
+
 while [[ $# -gt 0 ]]
 do
 	key="${1}"
@@ -1036,6 +1048,12 @@ do
 
 	-n|--newer)
 		NEWER_COMMIT="${2}"
+		shift
+		shift
+		;;
+
+	-t|--last)
+		SHOW_LAST_N_COMMITS="${2}"
 		shift
 		shift
 		;;
