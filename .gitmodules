@@ -1,8 +1,8 @@
-[submodule "KiCad-Diff"]
-	path = submodules/KiCad-Diff
-	url = https://github.com/leoheck/KiCad-Diff
-	branch = output-folder
 [submodule "plotkicadsch"]
 	path = submodules/plotkicadsch
 	url = git@github.com:jnavila/plotkicadsch.git
 	branch = master
+[submodule "KiCad-Diff"]
+	path = submodules/KiCad-Diff
+	url = https://github.com/leoheck/KiCad-Diff.git
+	branch = output-folder
