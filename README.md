@@ -152,6 +152,7 @@ OPTIONS:
      -a|--all         Include all commits even if schematics/layout don't have changes
      -o|--older HASH  Show commits starting from this one
      -n|--newer HASH  Show commits until this one delimited by this one
+     -t|--last VAL    Show last N commits
 
      -l|--webserver   Do not launch webserver/browser at the end
      -p|--port PORT   Set webserver port. By default it will try to use an available port.
