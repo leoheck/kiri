@@ -3,14 +3,24 @@
 # Install Kicad Plugin
 # To work, kiri must be in PATH
 
-# Donwload repo zip
-curl https://github.com/leoheck/kiri/archive/refs/heads/main.zip -O /tmp/kiri.zip
-
-# Remove old if any
+# Remove old version if any
 rm -rf $HOME/kiri
 
-unzip /tmp/kiri.zip -d $HOME/
-rm -rf kiri.zip
+if which git &> /dev/null; then
+
+	git clone https://github.com/leoheck/kiri.git $HOME/kriri
+
+else
+
+	curl -LkSs https://github.com/leoheck/kiri/archive/refs/heads/main.zip -o /tmp/kiri.zip
+
+	cd /tmp
+	unzip /tmp/kiri.zip
+	rm -rf kiri.zip
+
+	mv kiri-main $HOME/kiri
+
+fi
 
 case $OSTYPE in
 	darwin*)
