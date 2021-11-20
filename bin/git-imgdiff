@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo
-echo "Command: $(basename $0) $@"
+echo "KiRI Command: $(basename $0) $@"
 
 a=$1
 b=$2
@@ -13,5 +13,10 @@ fi
 svg1=$(basename $a | sed "s|from_|sch1-|g")
 svg2=$(basename $b | sed "s|to_|sch2-|g")
 
+echo ""
+echo "Creating $(realpath ${svg1})"
+echo "Creating $(realpath ${svg2})"
+
 mv -f "$a" "$svg1"
 mv -f "$b" "$svg2"
+
