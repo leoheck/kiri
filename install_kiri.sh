@@ -6,12 +6,12 @@
 # Remove old version if any
 rm -rf $HOME/kiri
 
-# Make sure opam in the PATH
+# Make sure opam is in the the PATH
 eval $(opam env)
-
 
 if which git &> /dev/null; then
 	git clone --recurse-submodules -j8 https://github.com/leoheck/kiri.git $HOME/kiri
+	cd $HOME/kiri/
 else
 	echo "Git is missing"
 	exit 1
@@ -45,5 +45,3 @@ echo
 echo "source \$HOME/kiri/env.sh"
 echo "source \$HOME/kiri/submodules/KiCad-Diff/env.sh"
 echo
-
-
