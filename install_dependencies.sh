@@ -26,6 +26,7 @@ if [[ $os == "LINUX" ]]; then
 	sudo apt install -y dos2unix
 	sudo apt install -y coreutils
 	sudo apt install -y zenity
+	sudo apt install -y dune
 
 fi
 
@@ -55,6 +56,7 @@ if [[ $os == "OSX" ]]; then
 	brew install gmp
 	brew install pkg-config
 	brew install opam
+	brew install dune
 
 	# KiRI dependencies
 	brew install gsed
@@ -77,6 +79,8 @@ opam switch 4.09.1
 eval $(opam env)
 
 # Plotgitsch dependencies
+opam install -y digestif
+opam install -y lwt
 opam install -y lwt_ppx
 opam install -y cmdliner
 opam install -y base64
