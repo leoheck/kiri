@@ -1,6 +1,6 @@
 [submodule "plotkicadsch"]
 	path = submodules/plotkicadsch
-	url = git@github.com:jnavila/plotkicadsch.git
+	url = https://github.com/jnavila/plotkicadsch.git
 	branch = master
 [submodule "KiCad-Diff"]
 	path = submodules/KiCad-Diff
