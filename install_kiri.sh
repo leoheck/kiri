@@ -40,8 +40,10 @@ fi
 
 # Install plotkicadsch
 cd $HOME/kiri/submodules/plotkicadsch
-make build
-make install
+opam pin add kicadsch .
+opam pin add plotkicadsch .
+opam update
+opam install plotkicadsch
 cd -
 
 case $OSTYPE in
@@ -64,3 +66,5 @@ echo
 echo "source \$HOME/kiri/env.sh"
 echo "source \$HOME/kiri/submodules/KiCad-Diff/env.sh"
 echo
+
+
