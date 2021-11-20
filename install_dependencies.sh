@@ -11,14 +11,6 @@ get_os_name() {
 	esac
 }
 
-check_tool() {
-	tool=$1
-	if ! command -v "${tool}" &> /dev/null; then
-		echo "${tool} could not be found, it must be installed"
-		exit 1
-	fi
-}
-
 os=$(get_os_name)
 
 # Basic dependencies for Linux/WSL
@@ -52,7 +44,9 @@ if [[ $os == "OSX" ]]; then
 	fi
 
 	# Install homebrew
-	/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+	if ! which brew &> /dev/null; then
+		/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+	fi
 
 	brew install git
 
