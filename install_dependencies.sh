@@ -41,6 +41,7 @@ if [[ $os == "OSX" ]]; then
 	    sudo cp -R /Volumes/KiCad/KiCad /Applications/
 	    sudo cp -R /Volumes/KiCad/kicad "/Volumes/KiCad/Application Support/"
 	    sudo hdiutil unmount /Volumes/KiCad
+	    rm -rf ~/Downloads/kicad.dmg
 	fi
 
 	# Install homebrew
