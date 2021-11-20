@@ -16,7 +16,9 @@ To install this repo and the dependencies with a single command on any Operating
 ```bash
 # Installing dependencies
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/leoheck/kiri/main/install_dependencies.sh)"
+```
 
+```bash
 # Installing KiRI and Kicad Plugin
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/leoheck/kiri/main/install_kiri.sh)"
 ```
