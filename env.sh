@@ -3,6 +3,8 @@
 # Usage: Source this file as:
 # $> source ./env.sh
 
+export TK_SILENCE_DEPRECATION=1
+
 readlink_osx()
 {
 	target_file="$1"
