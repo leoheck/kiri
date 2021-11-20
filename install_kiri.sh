@@ -19,10 +19,10 @@ fi
 
 # Install plotkicadsch
 cd $HOME/kiri/submodules/plotkicadsch
-opam pin add kicadsch .
-opam pin add plotkicadsch .
-opam update
-opam install plotkicadsch
+opam pin add -y kicadsch .
+opam pin add -y plotkicadsch .
+opam update -y
+opam install -y plotkicadsch
 cd -
 
 case $OSTYPE in
