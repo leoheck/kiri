@@ -68,14 +68,6 @@ pip3 install pygubu
 pip3 install python_dateutil
 pip3 install tk
 
-# Plotgitsch dependencies
-opam install -y lwt_ppx
-opam install -y cmdliner
-opam install -y base64
-opam install -y sha
-opam install -y tyxml
-opam install -y git-unix
-
 # Initialize Opam
 if [[ ! -d "$HOME/.opam/4.09.1" ]]; then
 	opam init --disable-sandboxing --reinit
@@ -83,3 +75,11 @@ if [[ ! -d "$HOME/.opam/4.09.1" ]]; then
 fi
 opam switch 4.09.1
 eval $(opam env)
+
+# Plotgitsch dependencies
+opam install -y lwt_ppx
+opam install -y cmdliner
+opam install -y base64
+opam install -y sha
+opam install -y tyxml
+opam install -y git-unix
