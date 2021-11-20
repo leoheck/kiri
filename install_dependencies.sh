@@ -21,11 +21,10 @@ check_tool() {
 
 os=$(get_os_name)
 
+# Basic dependencies for Linux/WSL
 if [[ $os == "LINUX" ]]; then
 
 	sudo apt install -y git
-
-	# Basic dependencies for Linux/WSL
 	sudo apt install -y libgmp-dev
 	sudo apt install -y pkg-config
 	sudo apt install -y opam
@@ -40,27 +39,27 @@ fi
 
 if [[ $os == "OSX" ]]; then
 
+	sudo spctl --master-disable
+
 	# Download and Install Kicad for OSX - https://www.kicad.org/download/macos/
-	if ! open -Ra "kicad"; then
-		echo "You need to install Kicad"
-		echo "https://www.kicad.org/download/macos/"
-		sudo spctl --master-disable
-		exit 1
+	if [ ! -d "/Applications/KiCad/kicad.app" ]
+	then
+	    curl -Lo ~/Downloads/kicad.dmg https://osdn.net/projects/kicad/storage/kicad-unified-5.1.12-1-10_14.dmg
+	    sudo hdiutil attach ~/Downloads/kicad.dmg
+	    sudo cp -R /Volumes/KiCad/KiCad /Applications/
+	    sudo cp -R /Volumes/KiCad/kicad "/Volumes/KiCad/Application Support/"
+	    sudo hdiutil unmount /Volumes/KiCad
 	fi
 
-	check_tool brew
+	# Install homebrew
+	/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
 	brew install git
 
 	# Opam dependencies
 	brew install gmp
 	brew install pkg-config
 	brew install opam
-
-	# KiRI dependencies
-	brew install gsed
-	brew install findutils
-	brew install dos2unix
-	brew install coreutils
 
 	# Plotgitsch dependencies
 	opam install -y lwt_ppx
@@ -70,6 +69,11 @@ if [[ $os == "OSX" ]]; then
 	opam install -y tyxml
 	opam install -y git-unix
 
+	# KiRI dependencies
+	brew install gsed
+	brew install findutils
+	brew install dos2unix
+	brew install coreutils
 fi
 
 # Kicad-Diff dependencies
@@ -84,19 +88,3 @@ if [[ ! -d "$HOME/.opam/4.09.1" ]]; then
 fi
 opam switch 4.09.1
 eval $(opam env)
-
-# Clone this project
-git clone https://github.com/leoheck/kiri
-git submodule update --init --recursive
-
-# Install custom plotgitsch
-cd kiri/submodules/plotkicadsch
-./install.sh
-
-# Load KiCad-Diff environment
-cd ../KiCad-Diff
-source ./env.sh
-
-# Load kiri environment
-cd ../../
-source ./env.sh
