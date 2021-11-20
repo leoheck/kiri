@@ -84,7 +84,7 @@ pip3 install tk
 # Initialize Opam
 if [[ ! -d "$HOME/.opam/4.09.1" ]]; then
 	opam init --disable-sandboxing --reinit
-	opam create 4.09.1
+	opam switch create 4.09.1
 fi
 opam switch 4.09.1
 eval $(opam env)
