@@ -131,10 +131,15 @@ source ./env.sh
 
 Setup the environment using the follwing commands.
 
+> Make sure you don't forget to change the path to the tool `[PATH_TO_KRIRI]`
+
 ```
-source [PATH_TO_KIRI_REPO]/kiri/env.sh
-source [PATH_TO_KIRI_REPO]/kiri/submodules/KiCad-Diff/env.sh
+echo 'eval $(opam env)'
+echo 'export TK_SILENCE_DEPRECATION=1'
+echo 'export PATH=[PATH_TO_KRIRI]/kiri/submodules/KiCad-Diff/:PATH'
+echo 'export PATH=[PATH_TO_KRIRI]/kiri/bin:PATH'
 ```
+
 
 # Using KiRI
 ```
