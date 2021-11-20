@@ -15,10 +15,10 @@ To install this repo and the dependencies with a single command on any Operating
 
 ```bash
 # Installing dependencies
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/leoheck/kiri/main/install_dependencies.sh)"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/leoheck/kiri/main/install_dependencies.sh)"
 
 # Installing KiRI and Kicad Plugin
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/leoheck/kiri/main/install_kiri.sh)"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/leoheck/kiri/main/install_kiri.sh)"
 ```
 
 ## Environment preparation on Windows
