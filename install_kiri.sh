@@ -43,5 +43,4 @@ echo
 echo "Add the following lines to your ~/.bashrc or ~/.zshrc"
 echo
 echo "source \${HOME}/kiri/env.sh"
-echo "source \${HOME}/kiri/submodules/KiCad-Diff/env.sh"
 echo

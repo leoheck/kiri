@@ -44,3 +44,4 @@ script=$(readlink_ "$0")
 script_path=$(dirname "$script")
 
 export PATH="${script_path}/bin":$PATH
+export PATH="${script_path}/submodules/KiCad-Diff/":$PATH
