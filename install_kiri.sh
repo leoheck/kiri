@@ -6,6 +6,10 @@
 # Remove old version if any
 rm -rf $HOME/kiri
 
+# Make sure opam in the PATH
+eval $(opam env)
+
+
 if which git &> /dev/null; then
 
 	git clone --recurse-submodules -j8 https://github.com/leoheck/kiri.git $HOME/kiri
