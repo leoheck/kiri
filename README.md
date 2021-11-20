@@ -161,6 +161,8 @@ OPTIONS:
      -l|--webserver   Do not launch webserver/browser at the end
      -p|--port PORT   Set webserver port. By default it will try to use an available port.
 
+     -s|--skip-cache  Skip usage of -chache.lib on plotgitsch
+
      -d|--output-dir  Change output folder path/name
      -r|--remove      Remove generated folder before running it
      -x|--archive     Archive generate files
