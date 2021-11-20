@@ -42,5 +42,8 @@ echo
 echo
 echo "Add the following lines to your ~/.bashrc or ~/.zshrc"
 echo
-echo "source \${HOME}/kiri/env.sh"
+echo 'eval $(opam env)'
+echo 'export TK_SILENCE_DEPRECATION=1'
+echo 'export PATH=${HOME}/kiri/submodules/KiCad-Diff/:PATH'
+echo 'export PATH=${HOME}/kiri/bin:PATH'
 echo
