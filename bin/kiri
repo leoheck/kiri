@@ -54,13 +54,13 @@ show_help()
 }
 
 # Colors
-bold="\e[1m"
-inv="\e[7"
-red="\e[31m"
-green="\e[32m"
-yellow="\e[33m"
-blue="\e[34m"
-reset="\e[0m"
+bold=$(printf "\e[1m")
+inv=$(printf "\e[7")
+red=$(printf "\e[31m")
+green=$(printf "\e[32m")
+yellow=$(printf "\e[33m")
+blue=$(printf "\e[34m")
+reset=$(printf "\e[0m")
 
 kidiff_version()
 {

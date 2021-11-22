@@ -19,10 +19,10 @@ fi
 
 # Install plotkicadsch
 cd $HOME/kiri/submodules/plotkicadsch
-opam pin add kicadsch .
-opam pin add plotkicadsch .
-opam update
-opam install plotkicadsch
+opam pin add -y kicadsch .
+opam pin add -y plotkicadsch .
+opam update -y
+opam install -y plotkicadsch
 cd -
 
 case $OSTYPE in
@@ -40,8 +40,10 @@ cp -r $HOME/kiri/kicad_plugin ${KICAD_PLUGINS_PATH}/kiri
 
 echo
 echo
-echo "Add the follwing lines to your ~/.bashrc or ~/.zshrc"
+echo "Add the following lines to your ~/.bashrc or ~/.zshrc"
 echo
-echo "source \$HOME/kiri/env.sh"
-echo "source \$HOME/kiri/submodules/KiCad-Diff/env.sh"
+echo 'eval $(opam env)'
+echo 'export TK_SILENCE_DEPRECATION=1'
+echo 'export PATH=${HOME}/kiri/submodules/KiCad-Diff/:PATH'
+echo 'export PATH=${HOME}/kiri/bin:PATH'
 echo

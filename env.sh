@@ -3,6 +3,8 @@
 # Usage: Source this file as:
 # $> source ./env.sh
 
+export TK_SILENCE_DEPRECATION=1
+
 readlink_osx()
 {
 	target_file="$1"
@@ -43,4 +45,5 @@ readlink_()
 script=$(readlink_ "$0")
 script_path=$(dirname "$script")
 
-export PATH="${script_path}/bin:$PATH"
+export PATH="${script_path}/bin":$PATH
+export PATH="${script_path}/submodules/KiCad-Diff/":$PATH
