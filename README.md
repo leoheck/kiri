@@ -240,6 +240,8 @@ Layout view, assets generated using Kicad-Diff
 
 Demo on Youtube (old version)
 
+<p align="center">
 <a href="http://www.youtube.com/watch?v=PMC0USSsbDE" target="_blank">
     <img src="https://img.youtube.com/vi/PMC0USSsbDE/maxresdefault.jpg" alt="Kicad Revision Inspector Demo" width="820">
 </a>
+</p>
