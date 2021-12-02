@@ -40,10 +40,10 @@ cp -r $HOME/kiri/kicad_plugin ${KICAD_PLUGINS_PATH}/kiri
 
 echo
 echo
-echo "Add the following lines to your ~/.bashrc or ~/.zshrc"
+echo "Add the following lines in your ~/.bashrc or ~/.zshrc"
 echo
 echo 'eval $(opam env)'
 echo 'export TK_SILENCE_DEPRECATION=1'
-echo 'export PATH=${HOME}/kiri/submodules/KiCad-Diff/:PATH'
-echo 'export PATH=${HOME}/kiri/bin:PATH'
+echo 'export PATH=${HOME}/kiri/submodules/KiCad-Diff/:$PATH'
+echo 'export PATH=${HOME}/kiri/bin:$PATH'
 echo
