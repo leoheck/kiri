@@ -24,7 +24,11 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/leoheck/kiri/main/instal
 ```
 
 ## Environment preparation on Windows
+
 [Configure WSL](https://www.tenforums.com/tutorials/46769-enable-disable-windows-subsystem-linux-wsl-windows-10-a.html)
+
+
+On a Powershell terminal with admin right, execute the following commands:
 
 ```powershell
 # Enable Windows Subsystem for Linux (using Power Shell)
@@ -37,7 +41,7 @@ Invoke-WebRequest -Uri https://aka.ms/wsl-ubuntu-2004 -OutFile ~/Downloads/ubunt
 New-Item -Path C:\ubuntu-2004 -ItemType Directory
 Expand-Archive -Path ~/Downloads/ubuntu-2004.zip C:\ubuntu-2004
 Set-Location C:\ubuntu-2004
-& .\ubuntu1804.exe
+& .\ubuntu2004.exe
 ```
 
 And then continue with the instructions in "Installing dependencies on Linux" inside the WSL (Ubuntu terminal).
