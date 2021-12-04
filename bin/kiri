@@ -64,20 +64,20 @@ reset=$(printf "\e[0m")
 
 kidiff_version()
 {
-	tool_path=$(dirname $(which kidiff))
+	tool_path="$(dirname $(which kidiff))"
 
-	last_commit_hash=$(git --git-dir ${tool_path}/.git/ rev-parse --short HEAD)
-	last_commit_date=$(git --git-dir ${tool_path}/.git/ log -1 --format="%at" | xargs -I{} date -d @{} +"%Y/%m/%d %Hh%M")
+	last_commit_hash=$(git --git-dir "${tool_path}/.git/" rev-parse --short HEAD)
+	last_commit_date=$(git --git-dir "${tool_path}/.git/" log -1 --format="%at" | xargs -I{} date -d @{} +"%Y/%m/%d %Hh%M")
 
 	echo "${last_commit_hash} ${last_commit_date}"
 }
 
 kiri_version()
 {
-	tool_path=$(dirname $(which kiri))
+	tool_path="$(dirname $(which kiri))"
 
-	last_commit_hash=$(git --git-dir ${tool_path}/../.git/ rev-parse --short HEAD)
-	last_commit_date=$(git --git-dir ${tool_path}/../.git/ log -1 --format="%at" | xargs -I{} date -d @{} +"%Y/%m/%d %Hh%M")
+	last_commit_hash=$(git --git-dir "${tool_path}/../.git/" rev-parse --short HEAD)
+	last_commit_date=$(git --git-dir "${tool_path}/../.git/" log -1 --format="%at" | xargs -I{} date -d @{} +"%Y/%m/%d %Hh%M")
 
 	echo "${last_commit_hash} ${last_commit_date}"
 }
@@ -261,7 +261,7 @@ insert_commits()
 	IFS=$'\n'
 	for commit in ${commits}; do
 
-		if [[ ${commit} != "local" ]]; then
+		if [[ "${commit}" != "local" ]]; then
 
 			hash=$(echo "${commit}" | cut -d'|' -f1 | sed_ "s/^ //g" | sed_ "s/[ t]\+//g" )
 			date=$(echo "${commit}" | cut -d'|' -f2 | cut -d' ' -f1-2 | sed_ "s/^ //g" )
@@ -290,7 +290,7 @@ insert_commits()
 				text_icon="${empty_icon}"
 			fi
 
-			if [[ ${n} == "${commit1_idx}" ]] || [[ ${n} == "${commit2_idx}" ]]; then
+			if [[ "${n}" == "${commit1_idx}" ]] || [[ "${n}" == "${commit2_idx}" ]]; then
 				checked="checked='checked'"
 			else
 				checked=""
@@ -326,7 +326,7 @@ insert_commits()
 			layout_icon="${empty_icon}"
 			text_icon="${empty_icon}"
 
-			if [[ ${n} == ${commit1_idx} ]] || [[ ${n} == ${commit2_idx} ]]; then
+			if [[ "${n}" == "${commit1_idx}" ]] || [[ "${n}" == "${commit2_idx}" ]]; then
 				checked="checked='checked'"
 			else
 				checked=""
@@ -382,7 +382,7 @@ insert_pages()
 		page_name=$(echo "${page}" | cut -d'|' -f1 | sed_ "s/[ \t]\+//g")
 		page_filename=$(echo "${page}" | cut -d'|' -f2 | sed_ "s/[ \t]\+//g" | sed_ "s/${kicad_sch_extension}//g")
 
-		if [[ $n == 0 ]]; then
+		if [[ "${n}" == "0" ]]; then
 			checked='checked="checked"'
 		else
 			checked=""
@@ -481,7 +481,7 @@ insert_layers()
 			"${B_CU}")   layer_color="#359632" ;;
 		esac
 
-		if [[ "$n" == "0" ]]; then
+		if [[ "${n}" == "0" ]]; then
 			checked="checked='checked'"
 		else
 			checked=""
@@ -525,8 +525,8 @@ generate_schematic_artifacts()
 	background_color="222222"
 
 	# Temporarily change local commits
-	if [[ ${commit1} == "local" ]]; then commit1=""; fi
-	if [[ ${commit2} == "local" ]]; then commit2=""; fi
+	if [[ "${commit1}" == "local" ]]; then commit1=""; fi
+	if [[ "${commit2}" == "local" ]]; then commit2=""; fi
 
 	if [[ ! "${PLOTGITSCH_MISSING}" == 1 ]]; then
 
@@ -543,7 +543,7 @@ generate_schematic_artifacts()
 			echo -e "   ${green}${cmd}${reset}"
 		fi
 		if [[ "${DRY_RUN}" == "0" ]]; then
-			eval ${cmd}
+			eval "${cmd}"
 			ret=$?
 			if [[ "${VERBOSE}" == "1" ]]; then
 				if [[ "${ret}" -gt "0" ]]; then
@@ -575,8 +575,8 @@ generate_schematic_artifacts()
 	done
 
 	# Revert back
-	if [[ ${commit1} == "" ]]; then commit1="local"; fi
-	if [[ ${commit2} == "" ]]; then commit2="local"; fi
+	if [[ "${commit1}" == "" ]]; then commit1="local"; fi
+	if [[ "${commit2}" == "" ]]; then commit2="local"; fi
 
 	IFS=$'\n'
 	for sch_page_svg in *.svg; do
@@ -615,15 +615,15 @@ generate_layout_artifacts()
 	output_dir=${6}
 
 	# Temporarily change local commits
-	if [[ ${commit1} == "local" ]]; then commit1="${kicad_pcb}"; fi
-	if [[ ${commit2} == "local" ]]; then commit2="${kicad_pcb}"; fi
+	if [[ "${commit1}" == "local" ]]; then commit1="${kicad_pcb}"; fi
+	if [[ "${commit2}" == "local" ]]; then commit2="${kicad_pcb}"; fi
 
 	if [[ ! "${KIDIFF_MISSING}" == 1 ]]; then
 
 		# WORKAROUND IT DOES NOT RUN FROM EXTERNAL FOLDER OR REPO ROOT PATH
-		if [[ kicad_pro_subpath != "." ]]; then
-			cd ${kicad_pro_subpath}
-		fi
+		# if [[ "${kicad_pro_subpath}" != "." ]]; then
+			# cd "${kicad_pro_subpath}" || exit
+		# fi
 
 		cmd="kidiff ${kicad_pcb} --webserver-disable -a ${commit1} -b ${commit2} -o ${output_dir} ${STDOUT_KIDIFF}"
 		if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_KIDIFF}" = "1" ]]; then
@@ -640,50 +640,16 @@ generate_layout_artifacts()
 		fi
 
 		# WORKAROUND IT DOES NOT RUN FROM EXTERNAL FOLDER OR REPO ROOT PATH
-		cd - &> /dev/null
+		cd - &> /dev/null || exit
 
 		# Discard textual diffs
 		if [ -f "${output_dir}/diff.txt" ]; then
-			rm -rf ${output_dir}/diff.txt
+			rm -rf "${output_dir}/diff.txt"
 		fi
 
 		# Restore names
-		if [[ ${commit1} == "${kicad_pcb}" ]]; then commit1="local"; fi
-		if [[ ${commit2} == "${kicad_pcb}" ]]; then commit2="local"; fi
-
-		# # If board does not have diff images were not generated
-		# if [[ "$ret" == "1" ]]; then
-		# 	if [[ ! $(du -s "${output_dir}/${commit1}/${kicad_pcb}" | cut -d$'\t' -f1) = 0 ]]; then
-		# 		cmd="plotpcb -o \"${output_dir}/${commit1}/\" -q \"${output_dir}/${commit1}/${kicad_pcb}\" ${STDOUT_KIDIFF}"
-		# 		if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_KIDIFF}" = "1" ]]; then
-		# 			echo -e "   ${green}${cmd}${reset}"
-		# 		fi
-		# 		if [[ "${DRY_RUN}" == "0" ]]; then
-		# 			eval "${cmd}"
-		# 			ret=$?
-		# 			if [[ "${VERBOSE}" == "1" ]]; then
-		# 				if [[ "${ret}" -gt "0" ]]; then
-		# 					echo -e "${red}${bold}   Status: ${ret}${reset}"
-		# 				fi
-		# 			fi
-		# 		fi
-		# 	fi
-		# 	if [[ ! $(du -s "${output_dir}/${commit2}/${kicad_pcb}" | cut -d$'\t' -f1) = 0 ]]; then
-		# 		cmd="plotpcb -o \"${output_dir}/${commit2}/\" -q \"${output_dir}/${commit2}/${kicad_pcb}\" ${STDOUT_KIDIFF}"
-		# 		if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_KIDIFF}" = "1" ]]; then
-		# 			echo -e "   ${green}${cmd}${reset}"
-		# 		fi
-		# 		if [[ "${DRY_RUN}" == "0" ]]; then
-		# 			eval "${cmd}"
-		# 			ret=$?
-		# 			if [[ "${VERBOSE}" == "1" ]]; then
-		# 				if [[ "${ret}" -gt "0" ]]; then
-		# 					echo -e "${red}${bold}   Status: ${ret}${reset}"
-		# 				fi
-		# 			fi
-		# 		fi
-		# 	fi
-		# fi
+		if [[ "${commit1}" == "${kicad_pcb}" ]]; then commit1="local"; fi
+		if [[ "${commit2}" == "${kicad_pcb}" ]]; then commit2="local"; fi
 	fi
 
 	IFS=$'\n'
@@ -727,12 +693,12 @@ generate_artifacts()
 	mkdir -p "${web_dir}/"
 
 	echo -e "\n${blue}Output folder:${reset} ${output_dir}"
-	if [[ "$REMOVE_KIRI_FOLDER" == "1" ]]; then
+	if [[ "${REMOVE_KIRI_FOLDER}" == "1" ]]; then
 		echo -e "${red}Removing previous folder${reset}"
-		rm -rf ${output_dir}
+		rm -rf "${output_dir}"
 	fi
 
-	sch_files=$(find_ ${kicad_pro_subpath} -name "*.${kicad_sch_extension}" -printf "%p ")
+	sch_files=$(find_ "${kicad_pro_subpath}" -name "*.${kicad_sch_extension}" -printf "%p ")
 
 	if [[ "${VERBOSE}" == "1" ]]; then
 		echo
@@ -764,14 +730,14 @@ generate_artifacts()
 		commits=$(eval "${cmd}")
 	fi
 
-	if [[ "$OLDER_COMMIT" != "" ]]; then
+	if [[ "${OLDER_COMMIT}" != "" ]]; then
 		if [[ "${VERBOSE}" == "1" ]]; then
 			echo "  Older commit: ${OLDER_COMMIT}"
 		fi
 		commits=$(echo "${commits}" | sed_ "/^${OLDER_COMMIT}/q")
 	fi
 
-	if [[ "$NEWER_COMMIT" != "" ]]; then
+	if [[ "${NEWER_COMMIT}" != "" ]]; then
 		if [[ "${VERBOSE}" == "1" ]]; then
 			echo "  Newer commit: ${NEWER_COMMIT}"
 			echo
@@ -780,7 +746,7 @@ generate_artifacts()
 	fi
 
 	if [[ "${SHOW_LAST_N_COMMITS}" != "" ]]; then
-		commits=$(echo "${commits}" | head -n ${SHOW_LAST_N_COMMITS})
+		commits=$(echo "${commits}" | head -n "${SHOW_LAST_N_COMMITS}")
 	fi
 
 	if [[ "${VERBOSE}" == "1" ]]; then
@@ -859,16 +825,16 @@ generate_artifacts()
 				STDOUT_PLOTGITSCH="&> /dev/null"
 				STDOUT_KIDIFF="&> /dev/null"
 
-				if [[ "$DEBUG" == 1 ]]; then
+				if [[ "${DEBUG}" == 1 ]]; then
 					STDOUT_PLOTGITSCH=""
 					STDOUT_KIDIFF=""
 				fi
 
-				if [[ "$DEBUG_PLOTGITSCH" == 1 ]]; then
+				if [[ "${DEBUG_PLOTGITSCH}" == 1 ]]; then
 					STDOUT_PLOTGITSCH=""
 				fi
 
-				if [[ "$DEBUG_KIDIFF" == 1 ]]; then
+				if [[ "${DEBUG_KIDIFF}" == 1 ]]; then
 					STDOUT_KIDIFF=""
 				fi
 
@@ -912,15 +878,15 @@ generate_artifacts()
 	insert_pages "${web_dir}/${main_html}" "${sch_page_names}"
 
 	# Set-Project title (folder name)
-	PROJECT_TITLE=$(basename $repo_path)
+	PROJECT_TITLE="$(basename ${repo_path})"
 	sed_ -i "s|\[PROJECT_TITLE\]|${PROJECT_TITLE}|g" "${web_dir}/${main_html}"
 
 	# Update board title
 	echo "- Setting sch/pcb titles"
 	sch_title=$(grep -i "title" "${kicad_pro_subpath}/${kicad_pro_filename}.${kicad_sch_extension}" 2> /dev/null | sed_ "s/^[ \t]\+//g" | cut -d" " -f 2- | sed_ "s/[)\"]//g")
 	pcb_title=$(grep -i "(title .*)" "${kicad_pcb}" 2> /dev/null | sed_ "s/^[ \t]\+//g" | cut -d" " -f 2- | sed_ "s/[)\"]//g")
-	if [[ $sch_title == "" ]]; then sch_title="{SCH_Title}"; fi
-	if [[ $pcb_title == "" ]]; then pcb_title="{PCB_Title}"; fi
+	if [[ "${sch_title}" == "" ]]; then sch_title="{SCH_Title}"; fi
+	if [[ "${pcb_title}" == "" ]]; then pcb_title="{PCB_Title}"; fi
 	sed_ -i "s|\[SCH_TITLE\]|${sch_title}|g" "${web_dir}/${main_html}"
 	sed_ -i "s|\[PCB_TITLE\]|${pcb_title}|g" "${web_dir}/${main_html}"
 
@@ -928,8 +894,8 @@ generate_artifacts()
 	echo "- Setting sch/pcb revision"
 	sch_revision=$(grep -i "Rev" "${kicad_pro_subpath}/${kicad_pro_filename}.${kicad_sch_extension}" 2> /dev/null | sed_ "s/^[ \t]\+//g" | sed_ "s/[()]//g" | cut -d" " -f2- | sed_ "s/\"//g")
 	pcb_revision=$(grep "(rev " "${kicad_pcb}" 2> /dev/null | sed_ "s/^[ \t]\+//g" | sed_ "s/[()]//g" | cut -d" " -f2- | sed_ "s/\"//g")
-	if [[ $pcb_revision == "" ]]; then pcb_revision="{sch_rev}"; fi
-	if [[ $sch_revision == "" ]]; then sch_revision="{pcb_rev}"; fi
+	if [[ "${pcb_revision}" == "" ]]; then pcb_revision="{sch_rev}"; fi
+	if [[ "${sch_revision}" == "" ]]; then sch_revision="{pcb_rev}"; fi
 	sed_ -i "s|\[SCH_REVISION\]|${sch_revision}|g" "${web_dir}/${main_html}"
 	sed_ -i "s|\[PCB_REVISION\]|${pcb_revision}|g" "${web_dir}/${main_html}"
 
@@ -937,8 +903,8 @@ generate_artifacts()
 	echo "- Setting sch/pcb date"
 	sch_date=$(grep -i "date" "${kicad_pro_subpath}/${kicad_pro_filename}.${kicad_sch_extension}" 2> /dev/null | sed_ "s/^[ \t]\+//g" | sed_ "s/[()]//g" | cut -d" " -f2 | sed_ "s/\"//g")
 	pcb_date=$(grep "(date " "${kicad_pcb}" 2> /dev/null | sed_ "s/^[ \t]\+//g" | sed_ "s/[()]//g" | cut -d" " -f2 | sed_ "s/\"//g")
-	if [[ $sch_date == "" ]]; then sch_date="{sch_date}"; fi
-	if [[ $pcb_date == "" ]]; then pcb_date="{pcb_date}"; fi
+	if [[ "${sch_date}" == "" ]]; then sch_date="{sch_date}"; fi
+	if [[ "${pcb_date}" == "" ]]; then pcb_date="{pcb_date}"; fi
 	sed_ -i "s|\[PCB_DATE\]|${pcb_date}|g" "${web_dir}/${main_html}"
 	sed_ -i "s|\[SCH_DATE\]|${sch_date}|g" "${web_dir}/${main_html}"
 
@@ -946,8 +912,8 @@ generate_artifacts()
 	echo "- Setting board name"
 	sed_ -i "s|var board_name =.*|var board_name = \"${kicad_pro_filename}\"; // generated by kiri script |g" "${web_dir}/kiri.js"
 
-	commit1=$(echo "${commits}" | head -n$((${commit1_idx}+1)) | tail -n1 | cut -d" " -f1)
-	commit2=$(echo "${commits}" | head -n$((${commit2_idx}+1)) | tail -n1 | cut -d" " -f1)
+	commit1=$(echo "${commits}" | head -n$(("${commit1_idx}"+1)) | tail -n1 | cut -d" " -f1)
+	commit2=$(echo "${commits}" | head -n$(("${commit2_idx}"+1)) | tail -n1 | cut -d" " -f1)
 
 	# Initial commit legend
 	echo "- Setting initial commits"
@@ -961,7 +927,7 @@ generate_artifacts()
 
 	# Update initial layout images
 	echo "- Setting initial layouts"
-	initial_layer_id=$(echo "${used_board_layers}" | head -1 | cut -d " " -f1 | tr "." "_" | printf "%02d")
+	initial_layer_id=$(printf "%02d" $(echo "${used_board_layers}" | head -1 | cut -d " " -f1 | tr "." "_"))
 	initial_layer_name=$(echo "${used_board_layers}" | head -1 | cut -d " " -f2 | tr "." "_")
 	sed_ -i "s|\[INITIAL_COMMIT_1_PCB\]|../${commit1}/${kicad_pro_filename}-${initial_layer_id}-${initial_layer_name}.svg|g" "${web_dir}/${main_html}"
 	sed_ -i "s|\[INITIAL_COMMIT_2_PCB\]|../${commit2}/${kicad_pro_filename}-${initial_layer_id}-${initial_layer_name}.svg|g" "${web_dir}/${main_html}"
@@ -1111,7 +1077,7 @@ if [[ "${kicad_pro}" == "" ]]; then
 
 		kicad_pro=$(\
 			zenity \
-				--filename=$(pwd)/ \
+				--filename="$(pwd)"/ \
 				--title "Select Kicad project" \
 				--file-selection \
 				--file-filter="Kicad Project | *.kicad_pro | *.pro" \
@@ -1127,8 +1093,8 @@ if [[ ! -f "${kicad_pro}" ]]; then
 fi
 
 if [[ ${OUTPUT_DIR} != "" ]]; then
-	output_dir=$(realpath $OUTPUT_DIR)
-	mkdir -p ${output_dir}
+	output_dir="$(realpath ${OUTPUT_DIR})"
+	mkdir -p "${output_dir}"
 else
 	echo "output_dir is missing"
 	exit 1
@@ -1141,14 +1107,14 @@ pushd "${kicad_pro_dirpath}" &> /dev/null || exit
 repo_path=$(git rev-parse --show-toplevel)
 
 # THESE ARE ALL THE PATHS NEEDED (WORKS FROM EVERYWHERE)
-kicad_pro_path=$(realpath ${kicad_pro})
-repo_path=$(realpath ${repo_path})
+kicad_pro_path="$(realpath ${kicad_pro})"
+repo_path="$(realpath ${repo_path})"
 kicad_pro_subpath=$(dirname "${kicad_pro_path}" | sed_ "s|${repo_path}||g" | sed_ "s|^/||g")
-kicad_pro=$(basename ${kicad_pro})
+kicad_pro="$(basename ${kicad_pro})"
 kicad_pro_filename=${kicad_pro%.*}
 kicad_pro_extension=${kicad_pro##*.}
 
-if [[ ${kicad_pro_subpath} == "" ]]; then
+if [[ "${kicad_pro_subpath}" == "" ]]; then
 	kicad_pro_subpath="."
 fi
 
@@ -1163,8 +1129,8 @@ else
 	export kicad_sch_extension="sch"
 fi
 
-kicad_sch=${kicad_pro_filename}.${kicad_sch_extension}
-kicad_pcb=${kicad_pro_filename}.${kicad_pcb_extension}
+kicad_sch="${kicad_pro_filename}.${kicad_sch_extension}"
+kicad_pcb="${kicad_pro_filename}.${kicad_pcb_extension}"
 
 
 echo
@@ -1227,16 +1193,16 @@ echo -e "${blue}Output folder:${reset} $(realpath ${OUTPUT_DIR})"
 
 if [[ ${ARCHIVE} == 1 ]]; then
 	datetime=$(date +"%Y.%m.%d-%Hh%M")
-	tgz_filename=$(basename ${OUTPUT_DIR})-${datetime}.tgz
+	tgz_filename="$(basename ${OUTPUT_DIR})-${datetime}.tgz"
 	echo -e "${blue}Archiving generated files:${reset} ${tgz_filename}"
-	tar -cvzf ${tgz_filename} ${output_dir} &> /dev/null
+	tar -cvzf "${tgz_filename}" "${output_dir}" &> /dev/null
 fi
 
 if [[ "${LAUNCH_BROWSER}" != 0 ]]; then
 	if grep -q "Microsoft" "/proc/version" &> /dev/null; then
 		# Webserver alternative for Windows with WSL
 		host=127.0.0.1
-		if [[ WEBSERVER_PORT == "" ]]; then
+		if [[ "${WEBSERVER_PORT}" == "" ]]; then
 			WEBSERVER_PORT=8080
 		fi
 		echo "Starting web-server at http://${host}:${WEBSERVER_PORT}"
@@ -1252,7 +1218,7 @@ if [[ "${LAUNCH_BROWSER}" != 0 ]]; then
 			exit 1
 		fi
 	else
-		if [[ ${WEBSERVER_PORT} != "" ]]; then
+		if [[ "${WEBSERVER_PORT}" != "" ]]; then
 			WEBSERVER_PORT_PARAM="-p ${WEBSERVER_PORT}"
 		fi
 		if kiri-server "${output_dir}" ${WEBSERVER_PORT_PARAM} 2> /dev/null; then
@@ -1264,3 +1230,5 @@ if [[ "${LAUNCH_BROWSER}" != 0 ]]; then
 		fi
 	fi
 fi
+
+
