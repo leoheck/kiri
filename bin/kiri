@@ -625,7 +625,7 @@ generate_layout_artifacts()
 			# cd "${kicad_pro_subpath}" || exit
 		# fi
 
-		cmd="kidiff ${kicad_pcb} --webserver-disable -a ${commit1} -b ${commit2} -o ${output_dir} ${STDOUT_KIDIFF}"
+		cmd="kidiff ${kicad_pcb} --webserver-disable -a ${commit1} -b ${commit2} -o \"${output_dir}\" ${STDOUT_KIDIFF}"
 		if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_KIDIFF}" = "1" ]]; then
 			echo -e "   ${green}${cmd}${reset}"
 		fi
@@ -1093,22 +1093,21 @@ if [[ ! -f "${kicad_pro}" ]]; then
 fi
 
 if [[ ${OUTPUT_DIR} != "" ]]; then
-	output_dir="$(realpath ${OUTPUT_DIR})"
+	output_dir=$(realpath "${OUTPUT_DIR}")
 	mkdir -p "${output_dir}"
 else
 	echo "output_dir is missing"
 	exit 1
 fi
 
-
 # DISCOVER REPO_PATH
 kicad_pro_dirpath=$(dirname "${kicad_pro}")
 pushd "${kicad_pro_dirpath}" &> /dev/null || exit
-repo_path=$(git rev-parse --show-toplevel)
+repo_path="$(git rev-parse --show-toplevel)"
 
 # THESE ARE ALL THE PATHS NEEDED (WORKS FROM EVERYWHERE)
-kicad_pro_path="$(realpath ${kicad_pro})"
-repo_path="$(realpath ${repo_path})"
+kicad_pro_path=$(realpath "${kicad_pro}")
+repo_path=$(realpath "${repo_path}")
 kicad_pro_subpath=$(dirname "${kicad_pro_path}" | sed_ "s|${repo_path}||g" | sed_ "s|^/||g")
 kicad_pro="$(basename ${kicad_pro})"
 kicad_pro_filename=${kicad_pro%.*}
@@ -1189,7 +1188,7 @@ fi
 web_dir="${output_dir}/web/"
 
 echo
-echo -e "${blue}Output folder:${reset} $(realpath ${OUTPUT_DIR})"
+echo -e "${blue}Output folder:${reset} "$(realpath "${OUTPUT_DIR}")
 
 if [[ ${ARCHIVE} == 1 ]]; then
 	datetime=$(date +"%Y.%m.%d-%Hh%M")
