@@ -27,7 +27,6 @@ if [[ $os == "LINUX" ]]; then
 	sudo apt install -y coreutils
 	sudo apt install -y zenity
 	sudo apt install -y dune
-
 fi
 
 if [[ $os == "OSX" ]]; then
@@ -76,7 +75,7 @@ if [[ ! -d "$HOME/.opam/4.09.1" ]]; then
 	opam switch create 4.09.1
 fi
 opam switch 4.09.1
-eval $(opam env)
+eval "$(opam env)"
 
 # Plotgitsch dependencies
 opam install -y digestif

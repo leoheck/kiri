@@ -3,15 +3,15 @@
 echo
 echo "KiRI Command: $(basename $0) $@"
 
-a=$1
-b=$2
+a="$1"
+b="$2"
 
-if [[ $2 !=	"" ]]; then
-	b=$2
+if [[ "$2" !=	"" ]]; then
+	b="$2"
 fi
 
-svg1=$(basename $a | sed "s|from_|sch1-|g")
-svg2=$(basename $b | sed "s|to_|sch2-|g")
+svg1=$(basename "$a" | sed "s|from_|sch1-|g")
+svg2=$(basename "$b" | sed "s|to_|sch2-|g")
 
 echo ""
 echo "Creating $(realpath ${svg1})"
