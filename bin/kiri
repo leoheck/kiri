@@ -1109,7 +1109,7 @@ repo_path="$(git rev-parse --show-toplevel)"
 kicad_pro_path=$(realpath "${kicad_pro}")
 repo_path=$(realpath "${repo_path}")
 kicad_pro_subpath=$(dirname "${kicad_pro_path}" | sed_ "s|${repo_path}||g" | sed_ "s|^/||g")
-kicad_pro="$(basename ${kicad_pro})"
+kicad_pro=$(basename "${kicad_pro}")
 kicad_pro_filename=${kicad_pro%.*}
 kicad_pro_extension=${kicad_pro##*.}
 
@@ -1130,7 +1130,6 @@ fi
 
 kicad_sch="${kicad_pro_filename}.${kicad_sch_extension}"
 kicad_pcb="${kicad_pro_filename}.${kicad_pcb_extension}"
-
 
 echo
 echo "      kicad_pro_path = $kicad_pro_path"
