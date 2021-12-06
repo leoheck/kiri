@@ -689,14 +689,14 @@ generate_artifacts()
 	kicad_pro_filename=${6}
 	output_dir=${7}
 
-	web_dir="${output_dir}/web/"
-	mkdir -p "${web_dir}/"
-
 	echo -e "\n${blue}Output folder:${reset} ${output_dir}"
 	if [[ "${REMOVE_KIRI_FOLDER}" == "1" ]]; then
-		echo -e "${red}Removing previous folder${reset}"
+		echo -e "${red}Removing leftovers from the previous run${reset}"
 		rm -rf "${output_dir}"
 	fi
+
+	web_dir="${output_dir}/web/"
+	mkdir -p "${web_dir}/"
 
 	sch_files=$(find_ "${kicad_pro_subpath}" -name "*.${kicad_sch_extension}" -printf "%p ")
 
