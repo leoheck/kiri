@@ -1,0 +1,35 @@
+{
+    "$schema": "https://go.kicad.org/pcm/schemas/v1",
+    "name": "Kiri - Kicad Revision Inspector",
+    "description": "Kicad visual inspectof for Git managed projects",
+    "description_full": "This tool combines in a single and easy to use interface both Plotgitish, that creates visual diffs of schematics, and KicadDiff that does the same for layout.",
+    "identifier": "com.github.leoheck.kiri",
+    "type": "colortheme",
+    "author": {
+        "name": "leoheck",
+        "contact": {
+            "web": "https://github.com/leoheck/kiri"
+        }
+    },
+    "maintainer": {
+        "name": "leoheck",
+        "contact": {
+            "web": "https://github.com/leoheck/kiri"
+        }
+    },
+    "license": "CC0-1.0",
+    "resources": {
+        "homepage": "https://github.com/leoheck/kiri"
+    },
+    "versions": [
+        {
+            "version": "1.0.0",
+            "status": "stable",
+            "kicad_version": "5.99",
+            "download_sha256": "720293bd9bfa95996246bcbb83ad2fc71ab495c8c7dd289ce6a01dd77580eb5f",
+            "download_size": 10129126,
+            "download_url": "https://github.com/leoheck/kiri/archive/refs/tags/1.0.0.zip",
+            "install_size": 21890203
+        }
+    ]
+}
