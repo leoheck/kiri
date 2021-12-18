@@ -33,7 +33,7 @@ class KiRI(pcbnew.ActionPlugin):
         if self.process:
             for p in self.process:
                 if not p.poll():
-                    print("Terminating last KiRI process (pid={})".format(p.pid))
+                    print("Terminating KiRI process (pid={})".format(p.pid))
                     os.killpg(os.getpgid(p.pid), signal.SIGTERM)
                 self.process.remove(p)
 
@@ -42,10 +42,9 @@ class KiRI(pcbnew.ActionPlugin):
             board = pcbnew.GetBoard()
             project_name = str(os.path.basename(board.GetFileName())).replace(".kicad_pcb", ".pro")
             project_file_path = os.path.join(project_path, project_name)
-            # cmd = ['kiri', project_file_path]
-            cmd = ['kiri', project_file_path, "-t", "1"]
+            cmd = ['kiri', project_file_path, "-t", "2", "-r"]
         except:
-            cmd = ['kiri']
+            cmd = ['kiri', "-t", "2", "-r"]
 
         kwargs = {}
         if platform.system() == 'Windows':
@@ -59,7 +58,7 @@ class KiRI(pcbnew.ActionPlugin):
 
         process = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs)
         self.process.append(process)
-        print("Launching KiRI (pid={})".format(process.pid))
+        print("KiRI (pid={})".format(process.pid))
         assert not process.poll()
 
     def exit_handler(self):
