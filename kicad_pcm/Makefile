@@ -1,6 +1,6 @@
 
 project_name = kiri
-project_folder = "kicad_plugin_v6"
+project_folder = "kicad_plugin"
 
 base_metadata_json = metadata.json
 generated_metadata_folder = com.github.leoheck.kiri
