@@ -5,7 +5,7 @@
 
 case $OSTYPE in
 	darwin*)
-		KICAD_PLUGINS_PATH="$HOME/Library/Preferences/Kicad/scripting/plugins"
+		KICAD_PLUGINS_PATH="$HOME/Library/Preferences/KiCad/scripting/plugins"
 		;;
 	*)
 		KICAD_PLUGINS_PATH="$HOME/.local/share/kicad/6.0/scripting/plugins"
