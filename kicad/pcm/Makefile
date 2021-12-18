@@ -1,16 +1,13 @@
 
 project_name = kiri
-project_folder = "kicad_plugin"
+project_folder = "plugin/kiri_v6"
 
 base_metadata_json = metadata.json
 generated_metadata_folder = com.github.leoheck.kiri
 
 pack: $(project_name).tar.gz
-	@ make -s $(project_name).tar.gz
-	@ make -s metadata
-
-$(project_name).tar.gz:
 	tar --exclude=$(project_name).tar.gz -cvzf $(project_name).tar.gz ../$(project_folder)
+	@ make -s metadata
 
 metadata: $(pcm_metadata_json) $(project_name).tar.gz
 	@ mkdir -p $(generated_metadata_folder)/resources

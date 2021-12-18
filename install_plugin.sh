@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Install Kicad Plugin only
-# KiRI must be in PATH for Kicad Plugin work
+# Install Kicad plugin on Kicad v5
+# kiti, kidiff and plotgitsh must be in PATH
 
 case $OSTYPE in
 	darwin*)
@@ -14,4 +14,5 @@ esac
 
 mkdir -p "${KICAD_PLUGINS_PATH}"
 rm -rf "${KICAD_PLUGINS_PATH}/kiri"
-cp -r "${HOME}/kiri/kicad_plugin" "${KICAD_PLUGINS_PATH}/kiri"
+
+cp -r "./kicad/plugin/kiri_v5" "${KICAD_PLUGINS_PATH}/kiri"
