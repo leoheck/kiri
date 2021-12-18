@@ -26,10 +26,10 @@
       "version": "1.0.0",
       "status": "stable",
       "kicad_version": "5.99",
-      "download_sha256": "2b7b1f24fa171e412930727b8801d2a9012c2d8c9ec2e6f9a8b43a0b50e0818f",
-      "download_size": 4311,
+      "download_sha256": "cd759ca4da79525f8d953cb8b110fb9c25d45b8b569dafa09551930c5eb9bd9d",
+      "download_size": 2444,
       "download_url": "https://github.com/leoheck/kiri/archive/refs/tags/1.0.0.zip",
-      "install_size": 19285
+      "install_size": 7773
     }
   ]
 }
