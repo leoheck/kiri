@@ -5,13 +5,13 @@ project_folder = "plugin/kiri_v6"
 base_metadata_json = metadata.json
 generated_metadata_folder = com.github.leoheck.kiri
 
-pack: $(project_name).tar.gz
+pack:
 	tar --exclude=$(project_name).tar.gz -cvzf $(project_name).tar.gz ../$(project_folder)
 	@ make -s metadata
 
 metadata: $(pcm_metadata_json) $(project_name).tar.gz
 	@ mkdir -p $(generated_metadata_folder)/resources
-	@ cp -f ../assets/kiri.png $(generated_metadata_folder)/resources/icon.png
+	@ cp -f ../../assets/kiri.png $(generated_metadata_folder)/resources/icon.png
 	@ cp -f ${base_metadata_json} $(generated_metadata_folder)/metadata.json
 	@ jq ".versions[0].download_sha256 = \"$$(sha256sum $(project_name).tar.gz | cut -d" " -f1)\"" $(generated_metadata_folder)/metadata.json > /tmp/tmp1.json
 	@ jq ".versions[0].download_size = $$(du -sb $(project_name).tar.gz | cut -f1)" /tmp/tmp1.json > /tmp/tmp2.json
