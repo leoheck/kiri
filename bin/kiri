@@ -1197,7 +1197,7 @@ if [[ ${ARCHIVE} == 1 ]]; then
 fi
 
 if [[ "${LAUNCH_BROWSER}" != 0 ]]; then
-	if grep -q "Microsoft" "/proc/version" &> /dev/null; then
+	if grep -i -q "Microsoft" "/proc/version" &> /dev/null; then
 		# Webserver alternative for Windows with WSL
 		host=127.0.0.1
 		if [[ "${WEBSERVER_PORT}" == "" ]]; then
