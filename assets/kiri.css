@@ -37,7 +37,7 @@ html, body {
 }
 
 .list-group input[type="checkbox"] + .list-group-item {
-	cursor: pointer;
+	cursor: none;
 	background-color: #222;
 	color: #dbdbdb;
 	font-family: monospace;
@@ -100,7 +100,7 @@ html, body {
 }
 
 .btn-group input[type="radio"] + .btn-group-item {
-	cursor: pointer;
+	cursor: none;
 	font-family: monospace;
 }
 
@@ -117,7 +117,7 @@ html, body {
 }
 
 .list-group input[type="radio"] + .list-group-item {
-	cursor: pointer;
+	cursor: none;
 	background-color: #222222;
 	color: #dbdbdb;
 	font-family: monospace;
