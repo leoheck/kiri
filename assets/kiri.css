@@ -4,6 +4,7 @@ html, body {
 	margin : 0px;
 	font-size : 1em; /* Normalize view on firefox */
 	line-height : 1.5em; /* Normalize view on firefox */
+	cursor: none;
 }
 
 .fill {
@@ -256,4 +257,23 @@ html, body {
 
 .B_CrtYd {
 	filter : invert(79%) sepia(92%) saturate(322%) hue-rotate(3deg) brightness(89%) contrast(92%);
+}
+
+#================
+
+.ellipsis {
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
+	display: inline-block;
+}
+
+label#layers, label#pages {
+	margin-bottom: 3px;
+	white-space: nowrap;
+	width: 180px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	display: inline-block;
+	vertical-align:top;
 }
