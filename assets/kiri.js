@@ -1,3 +1,6 @@
+
+default_view = "schematic";
+
 // Attempt to fix the:
 // [Violation] Added non-passive event listener to a scroll-blocking
 
@@ -93,21 +96,9 @@ window.onkeydown = function(e) {
         if (view_mode == "show_sch") {
             next_view_mode = "show_pcb";
             show_pcb();
-
-            document.getElementById("show_sch_lbl").classList.remove('active');
-            document.getElementById("show_sch").checked = false;
-
-            document.getElementById("show_pcb_lbl").classList.add('active');
-            document.getElementById("show_pcb").checked = true;
         } else {
             next_view_mode = "show_sch";
             show_sch();
-
-            document.getElementById("show_sch_lbl").classList.add('active');
-            document.getElementById("show_sch").checked = true;
-
-            document.getElementById("show_pcb_lbl").classList.remove('active');
-            document.getElementById("show_pcb").checked = false;
         }
 
         keysDown = {};
@@ -630,6 +621,11 @@ window.onload = function() {
             // panZoom_pcb.fit(); // cannot be used, bug?
         }
     });
+
+    if (default_view == "schematic")
+        show_sch();
+    else
+        show_pcb();
 };
 
 // =======================================
@@ -642,6 +638,12 @@ function show_sch() {
     var pcb_view;
     var pages_list;
     var layers_list;
+
+    document.getElementById("show_sch_lbl").classList.add('active');
+    document.getElementById("show_sch").checked = true;
+
+    document.getElementById("show_pcb_lbl").classList.remove('active');
+    document.getElementById("show_pcb").checked = false;
 
     // Show schematic image
     sch_view = document.getElementById("diff-sch");
@@ -675,6 +677,12 @@ function show_pcb() {
     var pcb_view;
     var pages_list;
     var layers_list;
+
+    document.getElementById("show_sch_lbl").classList.remove('active');
+    document.getElementById("show_sch").checked = false;
+
+    document.getElementById("show_pcb_lbl").classList.add('active');
+    document.getElementById("show_pcb").checked = true;
 
     // Hide layers list
     sch_view = document.getElementById("diff-sch");
