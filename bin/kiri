@@ -620,15 +620,15 @@ create_list_of_layers()
 	if [[ ${kicad_version_of_pcb} < 20211014 ]]; then
 		# KICAD v5
 		# (2 Pwr power)
-		used_board_layers=$(sed_ -n '/^  (layers/,/  )$/{/^  (layers/!{/  )$/!p}}' "${_kicad_pcb}" | sed_ "s/^[ \t]\+//g" | sed_ "s/[()]//g" | cut -d" " -f-2 | sed_ "s/\r$//g" | sed_ "s/\"//g")
+		_used_board_layers=$(sed_ -n '/^  (layers/,/  )$/{/^  (layers/!{/  )$/!p}}' "${_kicad_pcb}" | sed_ "s/^[ \t]\+//g" | sed_ "s/[()]//g" | cut -d" " -f-2 | sed_ "s/\r$//g" | sed_ "s/\"//g" | sed_ -i '/^[[:space:]]*$/d')
 	else
 		if [[ ${KICAD_VERSION} == 6 ]]; then
 			# KICAD v6 (super slow)
 			# (2 "In2.Cu" power "Pwr")
-			used_board_layers=$(sed_ -n '/^  (layers/,/  )$/{/^  (layers/!{/  )$/!p}}' "${_kicad_pcb}" | sed_ "s/^[ \t]\+//g" | sed_ "s/[()]//g" | sed_ "s/\r$//g" | sed_ "s/\"//g")
+			_used_board_layers=$(sed_ -n '/^  (layers/,/  )$/{/^  (layers/!{/  )$/!p}}' "${_kicad_pcb}" | sed_ "s/^[ \t]\+//g" | sed_ "s/[()]//g" | sed_ "s/\r$//g" | sed_ "s/\"//g" | sed_ -i '/^[[:space:]]*$/d')
 			# transform on v5 format for now
 			fixed_used_board_layers=
-			for line in ${used_board_layers}; do
+			for line in ${_used_board_layers}; do
 				original_layer_name=$(echo ${line} | cut -d" " -f2)
 				custom_layer_name=$(echo ${line} | cut -d" " -f4)
 				if [[ ${custom_layer_name} != "" ]]; then
@@ -639,7 +639,7 @@ create_list_of_layers()
 				fixed_used_board_layers="${fixed_used_board_layers}\n${line}"
 				custom_layer_name=
 			done
-			used_board_layers="$(echo -e ${fixed_used_board_layers} | cut -d" " -f-2)"
+			_used_board_layers="$(echo -e ${fixed_used_board_layers} | cut -d" " -f-2)"
 			#============================
 		fi
 	fi
@@ -647,11 +647,11 @@ create_list_of_layers()
 	if [[ "${VERBOSE}" == "1" ]]; then
 		echo -e "${blue}Board: ${_kicad_pcb}${reset}"
 		echo -e "${blue}Used layers:${reset}"
-		echo -e "${used_board_layers}" | column -t | nl -s": "
+		echo -e "${_used_board_layers}" | column -t | nl -s": "
 		echo
 	fi
 
-	echo -e "${used_board_layers}" > ${layers_file}
+	echo -e "${_used_board_layers}" > ${layers_file}
 }
 
 create_list_of_pages()
@@ -673,6 +673,7 @@ create_list_of_pages()
 		sch_page_names=$(get_pages "${kicad_pro_filename}" "${output_dir}/${commit_hash}/${kicad_sch}" | cut -d"|" -f2 | sed_ "s/\r$//g")
 
 		if [[ "${VERBOSE}" == "1" ]]; then
+			echo -e "${blue}Schematic: ${output_dir}/${commit_hash}/${kicad_sch}${reset}"
 			echo -e "${blue}Pages:${reset}"
 			echo "${sch_page_names}" | nl -s": "
 			echo
