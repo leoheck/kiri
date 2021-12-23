@@ -42,9 +42,9 @@ class KiRI(pcbnew.ActionPlugin):
             board = pcbnew.GetBoard()
             project_name = str(os.path.basename(board.GetFileName())).replace(".kicad_pcb", ".pro")
             project_file_path = os.path.join(project_path, project_name)
-            cmd = ['kiri', project_file_path, "-t", "2", "-r"]
+            cmd = ['kiri', project_file_path, "-u", "-t", "2", "-r"]
         except:
-            cmd = ['kiri', "-t", "2", "-r"]
+            cmd = ['kiri', "-u", "-t", "2", "-r"]
 
         kwargs = {}
         if platform.system() == 'Windows':
