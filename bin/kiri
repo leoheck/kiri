@@ -19,6 +19,7 @@ show_help()
 	     -p|--port PORT   Set webserver port. By default it will try to use an available port.
 
 	     -s|--skip-cache  Skip usage of -chache.lib on plotgitsch
+	     -u|--layout      Start with Layout view selected
 
 	     -d|--output-dir  Change output folder path/name
 	     -r|--remove      Remove generated folder before running it
@@ -390,7 +391,7 @@ insert_pages()
 
 		IFS= read -r -d '' HTML_SNIPPET <<-EOM
 		    <input type="radio" id="${page_filename}" value="${page_filename}" name="pages" ${checked} onchange="change_page()"/>
-		    <label class="rounded text-sm-left list-group-item radio-box" onclick="change_page_onclick()" for="${page_filename}">
+		    <label id="layers" class="rounded text-sm-left list-group-item radio-box" onclick="change_page_onclick()" for="${page_filename}">
 		    <span style="margin-left:0.5em; margin-right:0.1em;" class="iconify" data-icon="gridicons:pages" data-inline="false"></span>
 		    ${page_name}
 		    </label>
@@ -434,31 +435,31 @@ insert_layers()
 		layer_name=$(sed_ "s/\./_/g" <<< "${layer_name}")
 
 		case "${layer_name}" in
-			B*Adhes)   layer_color="#3545A8" ;;
-			B*CrtYd)   layer_color="#D3D04B" ;;
-			B*Cu)      layer_color="#359632" ;;
-			B*Fab)     layer_color="#858585" ;;
-			B*Mask)    layer_color="#943197" ;;
-			B*Paste)   layer_color="#969696" ;;
-			B*SilkS)   layer_color="#481649" ;;
-			Cmts*User) layer_color="#7AC0F4" ;;
-			Dwgs*User) layer_color="#0364D3" ;;
-			Eco1*User) layer_color="#008500" ;;
-			Eco2*User) layer_color="#008500" ;;
-			Edge_Cuts) layer_color="#C9C83B" ;;
-			F*Adhes)   layer_color="#A74AA8" ;;
-			F*CrtYd)   layer_color="#A7A7A7" ;;
-			F*Cu)      layer_color="#952927" ;;
-			F*Fab)     layer_color="#C2C200" ;;
-			F*Mask)    layer_color="#943197" ;;
-			F*Paste)   layer_color="#3DC9C9" ;;
-			F*SilkS)   layer_color="#339697" ;;
-			In1*Cu)    layer_color="#C2C200" ;;
-			In2*Cu)    layer_color="#C200C2" ;;
-			In3*Cu)    layer_color="#C20000" ;;
-			In4*Cu)    layer_color="#0000C2" ;;
-			Margin)    layer_color="#D357D2" ;;
-			*)         layer_color="" ;;
+			B*Adhes*)   layer_color="#3545A8" ;;
+			B*CrtYd*|B_Courtyard*)     layer_color="#D3D04B" ;;
+			B*Cu*)      layer_color="#359632" ;;
+			B*Fab*)     layer_color="#858585" ;;
+			B*Mask*)    layer_color="#943197" ;;
+			B*Paste*)   layer_color="#969696" ;;
+			B*Silk*)    layer_color="#481649" ;;
+			Cmts*User*|User_Comments*) layer_color="#7AC0F4" ;;
+			Dwgs*User*|User_Drawings*) layer_color="#0364D3" ;;
+			Eco1*User*|User_Eco1*)     layer_color="#008500" ;;
+			Eco2*User*|User_Eco2*)     layer_color="#008500" ;;
+			Edge_Cuts*) layer_color="#C9C83B" ;;
+			F*Adhes*)   layer_color="#A74AA8" ;;
+			F*CrtYd*|F_Courtyard*)     layer_color="#A7A7A7" ;;
+			F*Cu*)      layer_color="#952927" ;;
+			F*Fab*)     layer_color="#C2C200" ;;
+			F*Mask*)    layer_color="#943197" ;;
+			F*Paste*)   layer_color="#3DC9C9" ;;
+			F*Silk*)    layer_color="#339697" ;;
+			In1*Cu*)    layer_color="#C2C200" ;;
+			In2*Cu*)    layer_color="#C200C2" ;;
+			In3*Cu*)    layer_color="#C20000" ;;
+			In4*Cu*)    layer_color="#0000C2" ;;
+			Margin*)    layer_color="#D357D2" ;;
+			*)          layer_color="" ;;
 		esac
 
 		# https://docs.kicad.org/doxygen/layers__id__colors__and__visibility_8h_source.html
@@ -489,7 +490,7 @@ insert_layers()
 
 		IFS= read -r -d '' HTML_SNIPPET <<-EOM
 		    <input type="radio" id="${layer_id}-${layer_name}" name="layers" value="${layer_id}-${layer_name}" ${checked} onchange="change_layer()"/>
-		    <label class="rounded text-sm-left list-group-item radio-box" onclick="change_layer_onclick()" for="${layer_id}-${layer_name}">
+		    <label id="layers" class="rounded text-sm-left list-group-item radio-box" onclick="change_layer_onclick()" for="${layer_id}-${layer_name}">
 		        <span style="margin-left:0.5em; margin-right:0.1em; color: ${layer_color}" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
 		        ${layer_id}-${layer_name}
 		    </label>
@@ -578,6 +579,9 @@ generate_schematic_artifacts()
 	if [[ "${commit1}" == "" ]]; then commit1="local"; fi
 	if [[ "${commit2}" == "" ]]; then commit2="local"; fi
 
+	create_list_of_pages "${commit1}" "${output_dir}"
+	create_list_of_pages "${commit2}" "${output_dir}"
+
 	IFS=$'\n'
 	for sch_page_svg in *.svg; do
 
@@ -605,6 +609,80 @@ generate_schematic_artifacts()
 	done
 }
 
+create_list_of_layers()
+{
+	_kicad_pcb="$1"
+
+	_board_path=$(dirname ${_kicad_pcb})
+	layers_file=${_board_path}/layers
+
+	# if [[ ${KICAD_VERSION} == 5 ]]; then
+	if [[ ${kicad_version_of_pcb} < 20211014 ]]; then
+		# KICAD v5
+		# (2 Pwr power)
+		used_board_layers=$(sed_ -n '/^  (layers/,/  )$/{/^  (layers/!{/  )$/!p}}' "${_kicad_pcb}" | sed_ "s/^[ \t]\+//g" | sed_ "s/[()]//g" | cut -d" " -f-2 | sed_ "s/\r$//g" | sed_ "s/\"//g")
+	else
+		if [[ ${KICAD_VERSION} == 6 ]]; then
+			# KICAD v6 (super slow)
+			# (2 "In2.Cu" power "Pwr")
+			used_board_layers=$(sed_ -n '/^  (layers/,/  )$/{/^  (layers/!{/  )$/!p}}' "${_kicad_pcb}" | sed_ "s/^[ \t]\+//g" | sed_ "s/[()]//g" | sed_ "s/\r$//g" | sed_ "s/\"//g")
+			# transform on v5 format for now
+			fixed_used_board_layers=
+			for line in ${used_board_layers}; do
+				original_layer_name=$(echo ${line} | cut -d" " -f2)
+				custom_layer_name=$(echo ${line} | cut -d" " -f4)
+				if [[ ${custom_layer_name} != "" ]]; then
+					line=$(echo ${line} | sed_ "s/ ${custom_layer_name} / tmp_${custom_layer_name} /g")
+					line=$(echo ${line} | sed_ "s/ ${original_layer_name} / ${custom_layer_name} /g")
+					line=$(echo ${line} | sed_ "s/ tmp_${custom_layer_name} / ${original_layer_name} /g")
+				fi
+				fixed_used_board_layers="${fixed_used_board_layers}\n${line}"
+				custom_layer_name=
+			done
+			used_board_layers="$(echo -e ${fixed_used_board_layers} | cut -d" " -f-2)"
+			#============================
+		fi
+	fi
+
+	if [[ "${VERBOSE}" == "1" ]]; then
+		echo -e "${blue}Board: ${_kicad_pcb}${reset}"
+		echo -e "${blue}Used layers:${reset}"
+		echo -e "${used_board_layers}" | column -t | nl -s": "
+		echo
+	fi
+
+	echo -e "${used_board_layers}" > ${layers_file}
+}
+
+create_list_of_pages()
+{
+	commit_hash="$1"
+	output_dir="$2"
+	layers_file="${output_dir}/${commit_hash}/pages"
+
+	if [[ ! -f ${layers_file} ]]
+	then
+
+		# Export main schematic page from each version
+		if [[ ${commit_hash} == "local" ]]; then
+			cp "${kicad_pro_subpath}/${kicad_sch}" "${output_dir}/${commit_hash}/${kicad_sch}"
+		else
+			git show ${commit_hash}:"${kicad_pro_subpath}/${kicad_sch}" > "${output_dir}/${commit_hash}/${kicad_sch}"
+		fi
+
+		sch_page_names=$(get_pages "${kicad_pro_filename}" "${output_dir}/${commit_hash}/${kicad_sch}" | cut -d"|" -f2 | sed_ "s/\r$//g")
+
+		if [[ "${VERBOSE}" == "1" ]]; then
+			echo -e "${blue}Pages:${reset}"
+			echo "${sch_page_names}" | nl -s": "
+			echo
+		fi
+
+		echo -e "${sch_page_names}" > ${layers_file}
+	fi
+}
+
+
 generate_layout_artifacts()
 {
 	kicad_pro_subpath=${1}
@@ -625,7 +703,7 @@ generate_layout_artifacts()
 			# cd "${kicad_pro_subpath}" || exit
 		# fi
 
-		cmd="kidiff ${kicad_pcb} --webserver-disable -a ${commit1} -b ${commit2} -o \"${output_dir}\" ${STDOUT_KIDIFF}"
+		cmd="kidiff ${kicad_pcb} --webserver-disable -b ${commit1} -a ${commit2} -o \"${output_dir}\" ${STDOUT_KIDIFF}"
 		if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_KIDIFF}" = "1" ]]; then
 			echo -e "   ${green}${cmd}${reset}"
 		fi
@@ -652,28 +730,41 @@ generate_layout_artifacts()
 		if [[ "${commit2}" == "${kicad_pcb}" ]]; then commit2="local"; fi
 	fi
 
+
+	# Save layer's list
+	kicad_pcb_name="$(basename ${kicad_pcb})"
+	if [[ ! -f "${output_dir}/${commit1}/layers" ]]; then
+		create_list_of_layers "${output_dir}/${commit1}/${kicad_pcb_name}"
+	fi
+	if [[ ! -f "${output_dir}/${commit2}/layers" ]]; then
+		create_list_of_layers "${output_dir}/${commit2}/${kicad_pcb_name}"
+	fi
+
+
 	IFS=$'\n'
 	for layer in ${used_board_layers}; do
 
 		layer_id=$(echo "${layer}" | cut -d " " -f1)
-		layer_id=$(printf "%02d" "$layer_id")
+		layer_id=$(printf "%02d" "${layer_id}")
 
 		layer_name=$(echo "${layer}" | cut -d " " -f2 | sed_ "s/\./_/g")
 
+		svg_file1="${output_dir}/${commit1}/${kicad_pro_filename}-${layer_id}-${layer_name}.svg"
+		svg_file2="${output_dir}/${commit2}/${kicad_pro_filename}-${layer_id}-${layer_name}.svg"
+
 		# Create blank svgs if some is missing
-		if [[ ! -f "${output_dir}/${commit1}/${kicad_pro_filename}-${layer_id}-${layer_name}.svg" ]]; then
+		if [[ ! -f "${svg_file1}" ]]; then
 			if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_KIDIFF}" = "1" ]]; then
-				echo -e "   ${red}Recreating missing file: ${output_dir}/${commit1}/${kicad_pro_filename}-${layer_id}-${layer_name}.svg${reset}"
+				echo -e "   ${red}Recreating missing file: ${svg_file1}${reset}"
 			fi
-			# ln -sf "${web_dir}/blank.svg" "${output_dir}/${i}/${kicad_pro_filename}-${layer_id}-${layer_name}.svg"
 			cp "${script_path}/../assets/blank.svg" "${output_dir}/${i}/${kicad_pro_filename}-${layer_id}-${layer_name}.svg"
 		fi
 
-		if [[ ! -f "${output_dir}/${commit2}/${kicad_pro_filename}-${layer_id}-${layer_name}.svg" ]]; then
+		# Create blank svgs if some is missing
+		if [[ ! -f "${svg_file2}" ]]; then
 			if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_KIDIFF}" = "1" ]]; then
-				echo -e "   ${red}Recreating file: ${output_dir}/${commit2}/${kicad_pro_filename}-${layer_id}-${layer_name}.svg${reset}"
+				echo -e "   ${red}Recreating missing file: ${svg_file2}${reset}"
 			fi
-			# ln -sf "${web_dir}/blank.svg" "${output_dir}/${j}/${kicad_pro_filename}-${layer_id}-${layer_name}.svg"
 			cp "${script_path}/../assets/blank.svg" "${output_dir}/${j}/${kicad_pro_filename}-${layer_id}-${layer_name}.svg"
 		fi
 	done
@@ -698,7 +789,9 @@ generate_artifacts()
 	web_dir="${output_dir}/web/"
 	mkdir -p "${web_dir}/"
 
-	sch_files=$(find_ "${kicad_pro_subpath}" -name "*.${kicad_sch_extension}" -printf "%p ")
+	# THIS IS WRONG
+	# sch_files=$(find_ "${kicad_pro_subpath}" -name "*.${kicad_sch_extension}" -printf "%p ")
+	sch_files=$(git ls-files . | grep "\.${kicad_sch_extension}")
 
 	if [[ "${VERBOSE}" == "1" ]]; then
 		echo
@@ -932,6 +1025,11 @@ generate_artifacts()
 	sed_ -i "s|\[INITIAL_COMMIT_1_PCB\]|../${commit1}/${kicad_pro_filename}-${initial_layer_id}-${initial_layer_name}.svg|g" "${web_dir}/${main_html}"
 	sed_ -i "s|\[INITIAL_COMMIT_2_PCB\]|../${commit2}/${kicad_pro_filename}-${initial_layer_id}-${initial_layer_name}.svg|g" "${web_dir}/${main_html}"
 
+	# Set initial view
+	if [[ "${START_ON_LAYOUT_VIEW}" == 1 ]]; then
+		sed -i "s/default_view = \"schematic\";/default_view = \"layout\";/g" ${web_dir}/kiri.js
+	fi
+
 	# Insert layers list
 	echo "- Adding layers list to the page"
 	insert_layers "${web_dir}/${main_html}" "${used_board_layers}"
@@ -960,6 +1058,7 @@ export WEBSERVER_PORT=
 export OUTPUT_DIR=kiri
 export SHOW_LAST_N_COMMITS=
 export SKIP_CACHE_LIB=0
+export START_ON_LAYOUT_VIEW=0
 
 while [[ $# -gt 0 ]]
 do
@@ -1061,6 +1160,11 @@ do
 		shift
 		;;
 
+	-u|--layout)
+		START_ON_LAYOUT_VIEW=1
+		shift
+		;;
+
 	*)
 		kicad_pro="${1}"
 		shift
@@ -1122,14 +1226,21 @@ pushd "${repo_path}" &> /dev/null || exit
 kicad_pcb_extension="kicad_pcb"
 if [[ ${kicad_pro_extension} == "kicad_pro" ]]; then
 	echo "Kicad >= 5.99 project"
+	export KICAD_VERSION=6
 	source "${script_path}/env-nightly.sh"
 	export kicad_sch_extension="kicad_sch"
 else
+	export KICAD_VERSION=5
 	export kicad_sch_extension="sch"
 fi
 
 kicad_sch="${kicad_pro_filename}.${kicad_sch_extension}"
 kicad_pcb="${kicad_pro_filename}.${kicad_pcb_extension}"
+
+# (kicad_pcb (version 20171130) (host pcbnew 5.1.6+dfsg1-1)
+# (kicad_pcb (version 20171130) (host pcbnew 5.1.12-84ad8e8a86~92~ubuntu21.10.1)
+# (kicad_pcb (version 20211014) (generator pcbnew)
+kicad_version_of_pcb=$(head -n1 "${kicad_pcb}" | sed "s/[()]//g" | cut -f3 -d" ")
 
 echo
 echo "      kicad_pro_path = $kicad_pro_path"
@@ -1138,6 +1249,8 @@ echo "   kicad_pro_subpath = ${kicad_pro_subpath}"
 echo "           kicad_pro = ${kicad_pro}"
 echo "           kicad_sch = ${kicad_sch}"
 echo "           kicad_pcb = ${kicad_pcb}"
+echo "       KICAD_VERSION = ${KICAD_VERSION}"
+echo "   KICAD_PCB_VERSION = ${kicad_version_of_pcb}"
 echo "  kicad_pro_filename = ${kicad_pro_filename}"
 echo " kicad_pro_extension = ${kicad_pro_extension}"
 echo " kicad_sch_extension = ${kicad_sch_extension}"
