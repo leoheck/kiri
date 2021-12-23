@@ -4,7 +4,7 @@ html, body {
 	margin : 0px;
 	font-size : 1em; /* Normalize view on firefox */
 	line-height : 1.5em; /* Normalize view on firefox */
-	cursor: none;
+	caret-color: transparent;
 }
 
 .fill {
@@ -38,7 +38,6 @@ html, body {
 }
 
 .list-group input[type="checkbox"] + .list-group-item {
-	cursor: none;
 	background-color: #222;
 	color: #dbdbdb;
 	font-family: monospace;
@@ -101,7 +100,6 @@ html, body {
 }
 
 .btn-group input[type="radio"] + .btn-group-item {
-	cursor: none;
 	font-family: monospace;
 }
 
@@ -118,7 +116,6 @@ html, body {
 }
 
 .list-group input[type="radio"] + .list-group-item {
-	cursor: none;
 	background-color: #222222;
 	color: #dbdbdb;
 	font-family: monospace;
