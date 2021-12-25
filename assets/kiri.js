@@ -434,6 +434,26 @@ function img_timestamp() {
     return "?t=" + new Date().getTime();
 }
 
+function if_url_exists(url, callback) {
+    let request = new XMLHttpRequest;
+    request.open('GET', url, true);
+    request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+    request.setRequestHeader('Accept', '*/*');
+    request.onprogress = function(event) {
+        let status = event.target.status;
+        let statusFirstNumber = (status).toString()[0];
+        switch (statusFirstNumber) {
+            case '2':
+                request.abort();
+                return callback(true);
+            default:
+                request.abort();
+                return callback(false);
+        };
+    };
+    request.send('');
+};
+
 function update_commits() {
     var commits = $("#commits_form input:checkbox[name='commit']");
     var values = [];
@@ -470,6 +490,9 @@ function update_commits() {
     document.getElementById("diff-xlink-1-sch").setAttributeNS('http://www.w3.org/1999/xlink', 'href', sch_image_path_1);
     document.getElementById("diff-xlink-2-sch").setAttributeNS('http://www.w3.org/1999/xlink', 'href', sch_image_path_2);
 
+    document.getElementById("diff-xlink-1-sch").parentElement.style.display='inline';
+    document.getElementById("diff-xlink-2-sch").parentElement.style.display='inline';
+
     // =======================================
     // Update Layout
 
@@ -496,6 +519,9 @@ function update_commits() {
     document.getElementById("diff-xlink-1-pcb").setAttributeNS('http://www.w3.org/1999/xlink', 'href', image_path_1);
     document.getElementById("diff-xlink-2-pcb").setAttributeNS('http://www.w3.org/1999/xlink', 'href', image_path_2);
 
+    document.getElementById("diff-xlink-1-pcb").parentElement.style.display='inline';
+    document.getElementById("diff-xlink-2-pcb").parentElement.style.display='inline';
+
     // =======================================
     // Update Legend
 
@@ -514,14 +540,37 @@ function change_page() {
     var commit1 = current_href1.split("/")[1];
     var commit2 = current_href2.split("/")[1];
 
-    var image_path_1 = "../" + commit1 + "/" + "sch-" + page_name + ".svg" + img_timestamp();
-    var image_path_2 = "../" + commit2 + "/" + "sch-" + page_name + ".svg" + img_timestamp();
+    var image_path_1 = "../" + commit1 + "/" + "sch-" + page_name + ".svg";
+    var image_path_2 = "../" + commit2 + "/" + "sch-" + page_name + ".svg";
 
-    document.getElementById("diff-xlink-1-pcb").href.baseVal = image_path_1;
-    document.getElementById("diff-xlink-2-pcb").href.baseVal = image_path_2;
+    var timestamp = img_timestamp();
 
-    document.getElementById("diff-xlink-1-pcb").setAttributeNS('http://www.w3.org/1999/xlink', 'href', image_path_1);
-    document.getElementById("diff-xlink-2-pcb").setAttributeNS('http://www.w3.org/1999/xlink', 'href', image_path_2);
+    var image_path_timestamp_1 = image_path_1 + timestamp;
+    var image_path_timestamp_2 = image_path_2 + timestamp;
+
+    document.getElementById("diff-xlink-1-pcb").href.baseVal = image_path_timestamp_1;
+    document.getElementById("diff-xlink-2-pcb").href.baseVal = image_path_timestamp_2;
+
+    document.getElementById("diff-xlink-1-pcb").setAttributeNS('http://www.w3.org/1999/xlink', 'href', image_path_timestamp_1);
+    document.getElementById("diff-xlink-2-pcb").setAttributeNS('http://www.w3.org/1999/xlink', 'href', image_path_timestamp_2);
+
+    if_url_exists(image_path_1, function(exists) {
+        if (exists == true) {
+            document.getElementById("diff-xlink-1-sch").parentElement.style.display = 'inline';
+        }
+        else {
+            document.getElementById("diff-xlink-1-sch").parentElement.style.display = 'none';
+        }
+    });
+
+    if_url_exists(image_path_2, function(exists) {
+        if (exists == true) {
+            document.getElementById("diff-xlink-2-sch").parentElement.style.display = 'inline';
+        }
+        else {
+            document.getElementById("diff-xlink-2-sch").parentElement.style.display = 'none';
+        }
+    });
 
     update_commits();
 }
@@ -539,14 +588,37 @@ function change_layer() {
 
     var board_name = "board";
 
-    var image_path_1 = "../" + commit1 + "/" + board_name + "-" + layer_name + ".svg" + img_timestamp();
-    var image_path_2 = "../" + commit2 + "/" + board_name + "-" + layer_name + ".svg" + img_timestamp();
+    var image_path_1 = "../" + commit1 + "/" + board_name + "-" + layer_name + ".svg";
+    var image_path_2 = "../" + commit2 + "/" + board_name + "-" + layer_name + ".svg";
 
-    document.getElementById("diff-xlink-1-pcb").href.baseVal = image_path_1;
-    document.getElementById("diff-xlink-2-pcb").href.baseVal = image_path_2;
+    var timestamp = img_timestamp();
 
-    document.getElementById("diff-xlink-1-pcb").setAttributeNS('http://www.w3.org/1999/xlink', 'href', image_path_1);
-    document.getElementById("diff-xlink-2-pcb").setAttributeNS('http://www.w3.org/1999/xlink', 'href', image_path_2);
+    var image_path_timestamp_1 = image_path_1 + timestamp;
+    var image_path_timestamp_2 = image_path_2 + timestamp;
+
+    document.getElementById("diff-xlink-1-pcb").href.baseVal = image_path_timestamp_1;
+    document.getElementById("diff-xlink-2-pcb").href.baseVal = image_path_timestamp_2;
+
+    document.getElementById("diff-xlink-1-pcb").setAttributeNS('http://www.w3.org/1999/xlink', 'href', image_path_timestamp_1);
+    document.getElementById("diff-xlink-2-pcb").setAttributeNS('http://www.w3.org/1999/xlink', 'href', image_path_timestamp_2);
+
+    if_url_exists(image_path_1, function(exists) {
+        if (exists == true) {
+            document.getElementById("diff-xlink-1-pcb").parentElement.style.display = 'inline';
+        }
+        else {
+            document.getElementById("diff-xlink-1-pcb").parentElement.style.display = 'none';
+        }
+    });
+
+    if_url_exists(image_path_2, function(exists) {
+        if (exists == true) {
+            document.getElementById("diff-xlink-2-pcb").parentElement.style.display = 'inline';
+        }
+        else {
+            document.getElementById("diff-xlink-2-pcb").parentElement.style.display = 'none';
+        }
+    });
 
     update_commits();
 }
@@ -731,4 +803,14 @@ function change_page_onclick(obj) {
 
 function change_layer_onclick(obj) {
     change_layer();
+}
+
+// #===========================
+
+// Hide image if it is missing
+function imgError(image) {
+    image.onerror = null;
+    parent = document.getElementById(image.id).parentElement
+    parent.style.display = 'none';
+    return true;
 }
