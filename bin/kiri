@@ -556,23 +556,20 @@ generate_schematic_artifacts()
 
 	IFS=$'\n'
 	for sch_page_name in ${sch_page_names}; do
-
 		# Create blank svg when it is missing
-
 		if [[ ! -f "sch1-${sch_page_name}.svg" ]]; then
 			if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
 				echo -e "   ${red}Recreating missing sch1-${sch_page_name}.svg${reset}"
 			fi
 			cp "${script_path}/../assets/blank.svg" "sch1-${sch_page_name}.svg"
 		fi
-
+		# Create blank svg when it is missing
 		if [[ ! -f "sch2-${sch_page_name}.svg" ]]; then
 			if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
 				echo -e "   ${red}Recreating missing sch2-${sch_page_name}.svg${reset}"
 			fi
 			cp "${script_path}/../assets/blank.svg" "sch1-${sch_page_name}.svg"
 		fi
-
 	done
 
 	# Revert back
@@ -645,7 +642,8 @@ create_list_of_layers()
 	fi
 
 	if [[ "${VERBOSE}" == "1" ]]; then
-		echo -e "${blue}Board: ${_kicad_pcb}${reset}"
+		echo
+		echo -e "${blue}Board: ${reset}${_kicad_pcb}"
 		echo -e "${blue}Used layers:${reset}"
 		echo -e "${_used_board_layers}" | column -t | nl -s": "
 		echo
@@ -673,7 +671,8 @@ create_list_of_pages()
 		sch_page_names=$(get_pages "${kicad_pro_filename}" "${output_dir}/${commit_hash}/${kicad_sch}" | cut -d"|" -f2 | sed_ "s/\r$//g")
 
 		if [[ "${VERBOSE}" == "1" ]]; then
-			echo -e "${blue}Schematic: ${output_dir}/${commit_hash}/${kicad_sch}${reset}"
+			echo
+			echo -e "${blue}Schematic: ${reset}${output_dir}/${commit_hash}/${kicad_sch}"
 			echo -e "${blue}Pages:${reset}"
 			echo "${sch_page_names}" | nl -s": "
 			echo
@@ -1028,7 +1027,7 @@ generate_artifacts()
 
 	# Set initial view
 	if [[ "${START_ON_LAYOUT_VIEW}" == 1 ]]; then
-		sed -i "s/default_view = \"schematic\";/default_view = \"layout\";/g" ${web_dir}/kiri.js
+		sed_ -i "s/default_view = \"schematic\";/default_view = \"layout\";/g" ${web_dir}/kiri.js
 	fi
 
 	# Insert layers list
@@ -1241,7 +1240,7 @@ kicad_pcb="${kicad_pro_filename}.${kicad_pcb_extension}"
 # (kicad_pcb (version 20171130) (host pcbnew 5.1.6+dfsg1-1)
 # (kicad_pcb (version 20171130) (host pcbnew 5.1.12-84ad8e8a86~92~ubuntu21.10.1)
 # (kicad_pcb (version 20211014) (generator pcbnew)
-kicad_version_of_pcb=$(head -n1 "${kicad_pcb}" | sed "s/[()]//g" | cut -f3 -d" ")
+kicad_version_of_pcb=$(head -n1 "${kicad_pcb}" | sed_ "s/[()]//g" | cut -f3 -d" ")
 
 echo
 echo "      kicad_pro_path = $kicad_pro_path"
