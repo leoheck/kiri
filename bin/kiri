@@ -65,7 +65,7 @@ reset=$(printf "\e[0m")
 
 kidiff_version()
 {
-	tool_path="$(dirname $(which kidiff))"
+	tool_path=$(dirname "$(which kidiff)")
 
 	last_commit_hash=$(git --git-dir "${tool_path}/.git/" rev-parse --short HEAD)
 	last_commit_date=$(git --git-dir "${tool_path}/.git/" log -1 --format="%at" | xargs -I{} date -d @{} +"%Y/%m/%d %Hh%M")
@@ -75,7 +75,7 @@ kidiff_version()
 
 kiri_version()
 {
-	tool_path="$(dirname $(which kiri))"
+	tool_path=$(dirname "$(which kiri)")
 
 	last_commit_hash=$(git --git-dir "${tool_path}/../.git/" rev-parse --short HEAD)
 	last_commit_date=$(git --git-dir "${tool_path}/../.git/" log -1 --format="%at" | xargs -I{} date -d @{} +"%Y/%m/%d %Hh%M")
@@ -182,14 +182,14 @@ tac_()
 	esac
 }
 
-sed_()
+sed()
 {
 	case ${OSTYPE} in
 		darwin*)
 			gsed "$@"
 			;;
 		*)
-			sed "$@"
+			command sed "$@"
 			;;
 	esac
 }
@@ -217,8 +217,8 @@ get_pages()
 	# First page is this one
 	pages="${board_name}|${board_name}"
 
-	pagenames=$(sed_ "s/\r$//g" "${main_schematic}" | grep "^F0 " | cut -d" " -f2 | tr "\n" "|" | sed_ "s/\"//g" | sed_ "s/|$//g" | tr "|" "\n")
-	pagepaths=$(sed_ "s/\r$//g" "${main_schematic}" | grep "^F1 " | cut -d" " -f2 | tr "\n" "|" | sed_ "s/\"//g" | sed_ "s/|$//g" | tr "|" "\n")
+	pagenames=$(sed "s/\r$//g" "${main_schematic}" | grep "^F0 " | cut -d" " -f2 | tr "\n" "|" | sed "s/\"//g" | sed "s/|$//g" | tr "|" "\n")
+	pagepaths=$(sed "s/\r$//g" "${main_schematic}" | grep "^F1 " | cut -d" " -f2 | tr "\n" "|" | sed "s/\"//g" | sed "s/|$//g" | tr "|" "\n")
 
 	IFS=$'\n'
 	n=0
@@ -226,9 +226,9 @@ get_pages()
 
 		n=$((n+1))
 
-		pagename=$(echo "${pagename}" | sed_ "s/^ //g" | sed_ "s/ $//g")
-		pagepath=$(echo "${pagepaths}" | sed_ -n ${n}p)
-		filename=$(basename "${pagepath}" | sed_ "s/\.${kicad_sch_extension}//g")
+		pagename=$(echo "${pagename}" | sed "s/^ //g" | sed "s/ $//g")
+		pagepath=$(echo "${pagepaths}" | sed -n ${n}p)
+		filename=$(basename "${pagepath}" | sed "s/\.${kicad_sch_extension}//g")
 
 		page="${pagename}|${filename}"
 		pages="${pages}\n${page}"
@@ -246,7 +246,7 @@ insert_commits()
 	commit2_idx="${4}"
 	project="${5}"
 	kicad_pcb="${6}"
-	sch_files=$(echo "${7}" | sed_ "s/^[ \t]\+//g" | sed_ "s/[ \t]$\+//g")
+	sch_files=$(echo "${7}" | sed "s/^[ \t]\+//g" | sed "s/[ \t]$\+//g")
 
 	# GIT COMMITS FORMAT
 	#
@@ -264,10 +264,10 @@ insert_commits()
 
 		if [[ "${commit}" != "local" ]]; then
 
-			hash=$(echo "${commit}" | cut -d'|' -f1 | sed_ "s/^ //g" | sed_ "s/[ t]\+//g" )
-			date=$(echo "${commit}" | cut -d'|' -f2 | cut -d' ' -f1-2 | sed_ "s/^ //g" )
-			user=$(echo "${commit}" | cut -d'|' -f3 | sed_ "s/^ //g" )
-			 msg=$(echo "${commit}" | cut -d'|' -f4 | sed_ "s/^ //g" )
+			hash=$(echo "${commit}" | cut -d'|' -f1 | sed "s/^ //g" | sed "s/[ t]\+//g" )
+			date=$(echo "${commit}" | cut -d'|' -f2 | cut -d' ' -f1-2 | sed "s/^ //g" )
+			user=$(echo "${commit}" | cut -d'|' -f3 | sed "s/^ //g" )
+			 msg=$(echo "${commit}" | cut -d'|' -f4 | sed "s/^ //g" )
 
 
 			# check for changes in ".sch|.kicad_sch" files
@@ -359,9 +359,9 @@ insert_commits()
 
 	# Disables check since it does not work with quotes
 	# shellcheck disable=SC2086
-	COMMITS_LIST_HTML=$(echo ${COMMITS_LIST_HTML} | sed_ "s/@/-/g")
+	COMMITS_LIST_HTML=$(echo ${COMMITS_LIST_HTML} | sed "s/@/-/g")
 	echo 's@<!-- FILL_COMMITS_HERE -->@'"${COMMITS_LIST_HTML}"'@g' > .script.sed
-	sed_ -i -f .script.sed "${html}"
+	sed -i -f .script.sed "${html}"
 	rm -rf .script.sed
 }
 
@@ -380,8 +380,8 @@ insert_pages()
 	IFS=$'\n'
 	for page in ${pages}; do
 
-		page_name=$(echo "${page}" | cut -d'|' -f1 | sed_ "s/[ \t]\+//g")
-		page_filename=$(echo "${page}" | cut -d'|' -f2 | sed_ "s/[ \t]\+//g" | sed_ "s/${kicad_sch_extension}//g")
+		page_name=$(echo "${page}" | cut -d'|' -f1 | sed "s/[ \t]\+//g")
+		page_filename=$(echo "${page}" | cut -d'|' -f2 | sed "s/[ \t]\+//g" | sed "s/${kicad_sch_extension}//g")
 
 		if [[ "${n}" == "0" ]]; then
 			checked='checked="checked"'
@@ -390,10 +390,10 @@ insert_pages()
 		fi
 
 		IFS= read -r -d '' HTML_SNIPPET <<-EOM
-		    <input type="radio" id="${page_filename}" value="${page_filename}" name="pages" ${checked} onchange="change_page()"/>
-		    <label id="layers" class="rounded text-sm-left list-group-item radio-box" onclick="change_page_onclick()" for="${page_filename}">
+		    <input  id="${page_filename}" type="radio" value="${page_filename}" name="pages" ${checked} onchange="change_page()"/>
+		    <label for="${page_filename}" id="label-${page}" class="rounded text-sm-left list-group-item radio-box" onclick="change_page_onclick()">
 		    <span style="margin-left:0.5em; margin-right:0.1em;" class="iconify" data-icon="gridicons:pages" data-inline="false"></span>
-		    ${page_name}
+			    ${page_name}
 		    </label>
 		EOM
 
@@ -405,16 +405,55 @@ insert_pages()
 
 	# Disables check since it does not work with quotes
 	# shellcheck disable=SC2086
-	PAGES_LIST_HTML=$(echo ${PAGES_LIST_HTML} | sed_ "s/@/-/g")
+	PAGES_LIST_HTML=$(echo ${PAGES_LIST_HTML} | sed "s/@/-/g")
 	echo 's@<!-- FILL_PAGES_HERE -->@'"${PAGES_LIST_HTML}"'@g' > .script.sed
-	sed_ -i -f .script.sed "${html}"
+	sed -i -f .script.sed "${html}"
 	rm -rf .script.sed
+}
+
+# Fix layer names when using Kicad v6 on old projects (v5)
+fix_layer_names()
+{
+	_layers="$1"
+
+	_layers_new=
+	if [[ ${KICAD_VERSION} == 6 ]] && [[ ${kicad_version_of_pcb} -lt 20211014 ]]; then
+
+		IFS=$'\n'
+		for layer in ${_layers}; do
+			layer_id=$(echo "${layer}" | cut -d" " -f1)
+			layer_name=$(echo "${layer}" | cut -d" " -f2)
+			case "${layer_name}" in
+				B.Adhes)   new_layer_name="B.Adhesive" ;;
+				F.Adhes)   new_layer_name="F.Adhesive" ;;
+				Cmts.User) new_layer_name="User.Comments" ;;
+				Dwgs.User) new_layer_name="User.Drawings" ;;
+				Eco1.User) new_layer_name="User.Eco1" ;;
+				Eco2.User) new_layer_name="User.Eco2" ;;
+				B.SilkS)   new_layer_name="B.Silkscreen" ;;
+				F.SilkS)   new_layer_name="F.Silkscreen" ;;
+				B.CrtYd)   new_layer_name="B.Courtyard" ;;
+				F.CrtYd)   new_layer_name="F.Courtyard" ;;
+				*)         new_layer_name=${layer_name}  ;;
+			esac
+			if [[ ${_layers_new} == "" ]]; then
+				_layers_new="${layer_id} ${new_layer_name}"
+			else
+				_layers_new="${_layers_new}\n${layer_id} ${new_layer_name}"
+			fi
+		done
+
+		echo -e "${_layers_new}"
+	else
+		echo -e "${_layers}"
+	fi
 }
 
 insert_layers()
 {
-	html="${1}"
-	layers="${2}"
+	output_dir="${1}"
+	html="${2}"
+	layers="${3}"
 
 	# FORMAT
 	# LAYER_ID LAYER_NAME
@@ -423,63 +462,71 @@ insert_layers()
 
 	LAYERS_LIST_HTML=""
 
+	# All used layers (from all commits)
+	# layers=$(find "${output_dir}" -name "layers" -exec cat {} \; | sort | uniq)
+	# layers=$(fix_layer_names "${layers}")
+
 	IFS=$'\n'
 	for layer in ${layers}; do
 
 		layer_id=$(echo "${layer}" | cut -d " " -f1)
-		layer_id=$(printf "%02d" "$layer_id")
+		layer_id_padding=$(printf "%02d" "$layer_id")
 
-		layer_name=$(echo "${layer}" | cut -d " " -f2)
-
-		# Update layer name by replacing "." with "_"
-		layer_name=$(sed_ "s/\./_/g" <<< "${layer_name}")
-
-		case "${layer_name}" in
-			B*Adhes*)   layer_color="#3545A8" ;;
-			B*CrtYd*|B_Courtyard*)     layer_color="#D3D04B" ;;
-			B*Cu*)      layer_color="#359632" ;;
-			B*Fab*)     layer_color="#858585" ;;
-			B*Mask*)    layer_color="#943197" ;;
-			B*Paste*)   layer_color="#969696" ;;
-			B*Silk*)    layer_color="#481649" ;;
-			Cmts*User*|User_Comments*) layer_color="#7AC0F4" ;;
-			Dwgs*User*|User_Drawings*) layer_color="#0364D3" ;;
-			Eco1*User*|User_Eco1*)     layer_color="#008500" ;;
-			Eco2*User*|User_Eco2*)     layer_color="#008500" ;;
-			Edge_Cuts*) layer_color="#C9C83B" ;;
-			F*Adhes*)   layer_color="#A74AA8" ;;
-			F*CrtYd*|F_Courtyard*)     layer_color="#A7A7A7" ;;
-			F*Cu*)      layer_color="#952927" ;;
-			F*Fab*)     layer_color="#C2C200" ;;
-			F*Mask*)    layer_color="#943197" ;;
-			F*Paste*)   layer_color="#3DC9C9" ;;
-			F*Silk*)    layer_color="#339697" ;;
-			In1*Cu*)    layer_color="#C2C200" ;;
-			In2*Cu*)    layer_color="#C200C2" ;;
-			In3*Cu*)    layer_color="#C20000" ;;
-			In4*Cu*)    layer_color="#0000C2" ;;
-			Margin*)    layer_color="#D357D2" ;;
-			*)          layer_color="" ;;
-		esac
-
-		# https://docs.kicad.org/doxygen/layers__id__colors__and__visibility_8h_source.html
+		layer_name=$(grep -m1 "${layer_id}" <<< "${layers}" | cut -d" " -f2 | sed "s/\./_/g")
 
 		# Layers
-		F_CU=00
-		IN1_CU=01
-		IN2_CU=02
-		IN3_CU=03
-		IN4_CU=04
-		B_CU=31
+	     F_Cu=0
+	   In1_Cu=1
+	   In2_Cu=2
+	   In3_Cu=3
+	   In4_Cu=4
+	     B_Cu=31
+	  B_Adhes=32
+	  F_Adhes=33
+	  B_Paste=34
+	  F_Paste=35
+	  B_SilkS=36
+	  F_SilkS=37
+	   B_Mask=38
+	   F_Mask=39
+	Dwgs_User=40
+	Cmts_User=41
+	Eco1_User=42
+	Eco2_User=43
+	Edge_Cuts=44
+	   Margin=45
+	  B_CrtYd=46
+	  F_CrtYd=47
+	    B_Fab=48
+	    F_Fab=49
 
-		# Adjust (copper) layers that have custom names
+		# Coloring by ID
 		case "${layer_id}" in
-			"${F_CU}")   layer_color="#952927" ;;
-			"${IN1_CU}") layer_color="#C2C200" ;;
-			"${IN2_CU}") layer_color="#C200C2" ;;
-			"${IN3_CU}") layer_color="#C20000" ;;
-			"${IN4_CU}") layer_color="#0000C2" ;;
-			"${B_CU}")   layer_color="#359632" ;;
+			"${B_Adhes}")    layer_color="#3545A8" ;;
+			"${B_CrtYd}")    layer_color="#D3D04B" ;;
+			"${B_Cu}")       layer_color="#359632" ;;
+			"${B_Fab}")      layer_color="#858585" ;;
+			"${B_Mask}")     layer_color="#943197" ;;
+			"${B_Paste}")    layer_color="#969696" ;;
+			"${B_SilkS}")    layer_color="#481649" ;;
+			"${Cmts_User}")  layer_color="#7AC0F4" ;;
+			"${Dwgs_User}")  layer_color="#0364D3" ;;
+			"${Eco1_User}")  layer_color="#008500" ;;
+			"${Eco2_User}")  layer_color="#008500" ;;
+			"${Edge_Cuts}")  layer_color="#C9C83B" ;;
+			"${F_Adhes}")    layer_color="#A74AA8" ;;
+			"${F_CrtYd}")    layer_color="#A7A7A7" ;;
+			"${F_Cu}")       layer_color="#952927" ;;
+			"${F_Fab}")      layer_color="#C2C200" ;;
+			"${F_Mask}")     layer_color="#943197" ;;
+			"${F_Paste}")    layer_color="#3DC9C9" ;;
+			"${F_SilkS}")    layer_color="#339697" ;;
+			"${In1_Cu}")     layer_color="#C2C200" ;;
+			"${In2_Cu}")     layer_color="#C200C2" ;;
+			"${In3_Cu}")     layer_color="#C20000" ;;
+			"${In4_Cu}")     layer_color="#0000C2" ;;
+			"${Margin}")     layer_color="#D357D2" ;;
+			*)             layer_color="" ;;
 		esac
 
 		if [[ "${n}" == "0" ]]; then
@@ -489,10 +536,10 @@ insert_layers()
 		fi
 
 		IFS= read -r -d '' HTML_SNIPPET <<-EOM
-		    <input type="radio" id="${layer_id}-${layer_name}" name="layers" value="${layer_id}-${layer_name}" ${checked} onchange="change_layer()"/>
-		    <label id="layers" class="rounded text-sm-left list-group-item radio-box" onclick="change_layer_onclick()" for="${layer_id}-${layer_name}">
+		    <input  id="layer-${layer_id_padding}" value="layer-${layer_name}" type="radio" name="layers" onchange="change_layer()" ${checked}/>
+		    <label for="layer-${layer_id_padding}" id="label-${layer_id_padding}" class="rounded text-sm-left list-group-item radio-box" onclick="change_layer_onclick()">
 		        <span style="margin-left:0.5em; margin-right:0.1em; color: ${layer_color}" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
-		        ${layer_id}-${layer_name}
+		        ${layer_name}
 		    </label>
 		EOM
 
@@ -504,10 +551,87 @@ insert_layers()
 
 	# Disables check since it does not work with quotes
 	# shellcheck disable=SC2086
-	LAYERS_LIST_HTML=$(echo ${LAYERS_LIST_HTML} | sed_ "s/@/-/g")
+	LAYERS_LIST_HTML=$(echo ${LAYERS_LIST_HTML} | sed "s/@/-/g")
 	echo 's@<!-- FILL_LAYERS_HERE -->@'"${LAYERS_LIST_HTML}"'@g' > .script.sed
-	sed_ -i -f .script.sed "${html}"
+	sed -i -f .script.sed "${html}"
 	rm -rf .script.sed
+}
+
+generate_schematic_artifacts_sch2svg()
+{
+	repo_path=${1}
+	kicad_pro_subpath=${2}
+	kicad_pro_filename=${3}
+	sch_page_names=${4}
+	commit1=${5}
+	commit2=${6}
+	output_dir=${7}
+
+	kicad_sch=$(echo "${sch_page_names}" | cut -d" " -f1).${kicad_sch_extension}
+
+	if [[ ! -f "${output_dir}/${commit1}/${kicad_sch}" ]]; then
+		mkdir -p "${output_dir}/${commit1}"
+
+		# Export main schematic page from each version
+		if [[ ${commit1} == "local" ]]; then
+			cp "${kicad_pro_subpath}/${kicad_sch}" "${output_dir}/${commit1}/${kicad_sch}"
+			cp "${kicad_pro_subpath}/board-cache.lib" "${output_dir}/${commit1}/board-cache.lib"
+		else
+			git show "${commit1}:${kicad_pro_subpath}/${kicad_sch}" > "${output_dir}/${commit1}/${kicad_sch}"
+			git show "${commit1}:${kicad_pro_subpath}/board-cache.lib" > "${output_dir}/${commit1}/board-cache.lib"
+		fi
+
+		cmd="sch2svg \"${output_dir}/${commit1}/${kicad_sch}\" \"${output_dir}/${commit1}/\""
+		if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_KIDIFF}" = "1" ]]; then
+			echo -e "   ${green}${cmd}${reset}"
+		fi
+		if [[ "${DRY_RUN}" == "0" ]]; then
+			eval "${cmd}"
+			ret=$?
+			if [[ "${VERBOSE}" == "1" ]]; then
+				if [[ "${ret}" -gt "0" ]]; then
+					echo -e "${red}${bold}   Status: ${ret}${reset}"
+				fi
+			fi
+		fi
+		# if [[ ${ret} == 0 ]]; then
+			cd "${output_dir}/${commit1}" || exit
+			rename "s/^/sch-/g" ./*.svg
+			cd - || exit
+		# fi
+	fi
+
+	if [[ ! -f "${output_dir}/${commit2}/${kicad_sch}" ]]; then
+		mkdir -p "${output_dir}/${commit2}"
+
+		# Export main schematic page from each version
+		if [[ ${commit2} == "local" ]]; then
+			cp "${kicad_pro_subpath}/${kicad_sch}" "${output_dir}/${commit2}/${kicad_sch}"
+			cp "${kicad_pro_subpath}/board-cache.lib" "${output_dir}/${commit2}/board-cache.lib"
+		else
+			git show "${commit2}:${kicad_pro_subpath}/${kicad_sch}" > "${output_dir}/${commit2}/${kicad_sch}"
+			git show "${commit2}:${kicad_pro_subpath}/board-cache.lib" > "${output_dir}/${commit2}/board-cache.lib"
+		fi
+
+		cmd="sch2svg \"${output_dir}/${commit2}/${kicad_sch}\" \"${output_dir}/${commit1}/\""
+		if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_KIDIFF}" = "1" ]]; then
+			echo -e "   ${green}${cmd}${reset}"
+		fi
+		if [[ "${DRY_RUN}" == "0" ]]; then
+			eval "${cmd}"
+			ret=$?
+			if [[ "${VERBOSE}" == "1" ]]; then
+				if [[ "${ret}" -gt "0" ]]; then
+					echo -e "${red}${bold}   Status: ${ret}${reset}"
+				fi
+			fi
+		fi
+		# if [[ ${ret} == 0 ]]; then
+			cd "${output_dir}/${commit2}" || exit
+			rename "s/^/sch-/g" ./*.svg
+			cd - || exit
+		# fi
+	fi
 }
 
 generate_schematic_artifacts()
@@ -554,23 +678,23 @@ generate_schematic_artifacts()
 		fi
 	fi
 
-	IFS=$'\n'
-	for sch_page_name in ${sch_page_names}; do
-		# Create blank svg when it is missing
-		if [[ ! -f "sch1-${sch_page_name}.svg" ]]; then
-			if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
-				echo -e "   ${red}Recreating missing sch1-${sch_page_name}.svg${reset}"
-			fi
-			cp "${script_path}/../assets/blank.svg" "sch1-${sch_page_name}.svg"
-		fi
-		# Create blank svg when it is missing
-		if [[ ! -f "sch2-${sch_page_name}.svg" ]]; then
-			if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
-				echo -e "   ${red}Recreating missing sch2-${sch_page_name}.svg${reset}"
-			fi
-			cp "${script_path}/../assets/blank.svg" "sch1-${sch_page_name}.svg"
-		fi
-	done
+	# IFS=$'\n'
+	# for sch_page_name in ${sch_page_names}; do
+	# 	# Create blank svg when it is missing
+	# 	if [[ ! -f "sch1-${sch_page_name}.svg" ]]; then
+	# 		if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
+	# 			echo -e "   ${red}Recreating missing sch1-${sch_page_name}.svg${reset}"
+	# 		fi
+	# 		cp "${script_path}/../assets/blank.svg" "sch1-${sch_page_name}.svg"
+	# 	fi
+	# 	# Create blank svg when it is missing
+	# 	if [[ ! -f "sch2-${sch_page_name}.svg" ]]; then
+	# 		if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
+	# 			echo -e "   ${red}Recreating missing sch2-${sch_page_name}.svg${reset}"
+	# 		fi
+	# 		cp "${script_path}/../assets/blank.svg" "sch1-${sch_page_name}.svg"
+	# 	fi
+	# done
 
 	# Revert back
 	if [[ "${commit1}" == "" ]]; then commit1="local"; fi
@@ -582,25 +706,47 @@ generate_schematic_artifacts()
 	IFS=$'\n'
 	for sch_page_svg in *.svg; do
 
-		# Make background transparent
-		sed_ -i 's/fill="#FFFFFF"/fill="#FFFFFF00"/g' "${sch_page_svg}" &> /dev/null
-		sed_ -i 's/fill="#222222"/fill="#22222200"/g' "${sch_page_svg}" &> /dev/null
+		# Background has to be transparent
+		sed -i 's/fill="#FFFFFF"/fill="#FFFFFF00"/g' "${sch_page_svg}" &> /dev/null
+		sed -i 's/fill="#222222"/fill="#22222200"/g' "${sch_page_svg}" &> /dev/null
 
-		# Elements in black
-		sed_ -i 's/fill="#FF0000"/fill="#000000FF"/g' "${sch_page_svg}" &> /dev/null
-		sed_ -i 's/fill="#00FF00"/fill="#000000FF"/g' "${sch_page_svg}" &> /dev/null
-		sed_ -i 's/stroke="#800000"/stroke="#000000FF"/g' "${sch_page_svg}" &> /dev/null
+		# Schematic elements have to be black
+		sed -i 's/fill="#FF0000"/fill="#000000FF"/g' "${sch_page_svg}" &> /dev/null
+		sed -i 's/fill="#00FF00"/fill="#000000FF"/g' "${sch_page_svg}" &> /dev/null
+		sed -i 's/stroke="#800000"/stroke="#000000FF"/g' "${sch_page_svg}" &> /dev/null
 
 		case "${sch_page_svg}" in
 
 			sch1-*)
 				new_sch_name=${sch_page_svg//sch1/sch}
-				mv -f "${sch_page_svg}" "${output_dir}/${commit1}/${new_sch_name}" 2> /dev/null
+				svg_file1="${output_dir}/${commit1}/${new_sch_name}"
+
+				mv -f "${sch_page_svg}" "${svg_file1}" 2> /dev/null
+
+				# Fix problematic last svg tag. But how this was introduced?
+				sed -i "s|</svg>svg>|</svg>|g" "${svg_file1}" 2> /dev/null
+
+					echo "Inkscaping ${svg_file1}"
+					scour -i ${svg_file1} -o output.svg --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none &> /dev/null
+					if [[ -f output.svg ]]; then
+						mv output.svg {svg_file1}
+					fi
 				;;
 
 			sch2-*)
 				new_sch_name=${sch_page_svg//sch2/sch}
-				mv -f "${sch_page_svg}" "${output_dir}/${commit2}/${new_sch_name}" 2> /dev/null
+				svg_file2="${output_dir}/${commit2}/${new_sch_name}"
+
+				mv -f "${sch_page_svg}" "${svg_file2}" 2> /dev/null
+
+				# Fix problematic last svg tag. But how this was introduced?
+				sed -i "s|</svg>svg>|</svg>|g" "${svg_file2}" 2> /dev/null
+
+					echo "Inkscaping ${svg_file2}"
+					scour -i ${svg_file2} -o output.svg --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none &> /dev/null
+					if [[ -f output.svg ]]; then
+						mv output.svg {svg_file2}
+					fi
 				;;
 		esac
 	done
@@ -610,65 +756,68 @@ create_list_of_layers()
 {
 	_kicad_pcb="$1"
 
-	_board_path=$(dirname ${_kicad_pcb})
+	_board_path=$(dirname "${_kicad_pcb}")
 	layers_file=${_board_path}/layers
 
-	# if [[ ${KICAD_VERSION} == 5 ]]; then
-	if [[ ${kicad_version_of_pcb} < 20211014 ]]; then
-		# KICAD v5
-		# (2 Pwr power)
-		_used_board_layers=$(sed_ -n '/^  (layers/,/  )$/{/^  (layers/!{/  )$/!p}}' "${_kicad_pcb}" | sed_ "s/^[ \t]\+//g" | sed_ "s/[()]//g" | cut -d" " -f-2 | sed_ "s/\r$//g" | sed_ "s/\"//g" | sed_ -i '/^[[:space:]]*$/d')
+	if [[ ${kicad_version_of_pcb} -lt 20211014 ]]; then
+		# Format = (2 Pwr power)
+		_usedboard_layers=$(sed -n '/^  (layers/,/  )$/{/^  (layers/!{/  )$/!p}}' "${_kicad_pcb}" | sed "s/^[ \t]\+//g" | sed "s/[()]//g" | cut -d" " -f-2 | sed "s/\r$//g" | sed "s/\"//g" | sed '/^[[:space:]]*$/d')
 	else
-		if [[ ${KICAD_VERSION} == 6 ]]; then
-			# KICAD v6 (super slow)
-			# (2 "In2.Cu" power "Pwr")
-			_used_board_layers=$(sed_ -n '/^  (layers/,/  )$/{/^  (layers/!{/  )$/!p}}' "${_kicad_pcb}" | sed_ "s/^[ \t]\+//g" | sed_ "s/[()]//g" | sed_ "s/\r$//g" | sed_ "s/\"//g" | sed_ -i '/^[[:space:]]*$/d')
-			# transform on v5 format for now
-			fixed_used_board_layers=
-			for line in ${_used_board_layers}; do
-				original_layer_name=$(echo ${line} | cut -d" " -f2)
-				custom_layer_name=$(echo ${line} | cut -d" " -f4)
-				if [[ ${custom_layer_name} != "" ]]; then
-					line=$(echo ${line} | sed_ "s/ ${custom_layer_name} / tmp_${custom_layer_name} /g")
-					line=$(echo ${line} | sed_ "s/ ${original_layer_name} / ${custom_layer_name} /g")
-					line=$(echo ${line} | sed_ "s/ tmp_${custom_layer_name} / ${original_layer_name} /g")
-				fi
-				fixed_used_board_layers="${fixed_used_board_layers}\n${line}"
-				custom_layer_name=
-			done
-			_used_board_layers="$(echo -e ${fixed_used_board_layers} | cut -d" " -f-2)"
-			#============================
-		fi
+		# Format = (2 "In2.Cu" power "Pwr")
+		_usedboard_layers=$(sed -n '/^  (layers/,/  )$/{/^  (layers/!{/  )$/!p}}' "${_kicad_pcb}" | sed "s/^[ \t]\+//g" | sed "s/[()]//g" | sed "s/\r$//g" | sed "s/\"//g" | sed '/^[[:space:]]*$/d')
+		# transform on v5 format for now
+		fixed_usedboard_layers=
+		for line in ${_usedboard_layers}; do
+			original_layer_name=$(echo "${line}" | cut -d" " -f2)
+			custom_layer_name=$(echo "${line}" | cut -d" " -f4)
+			if [[ ${custom_layer_name} != "" ]]; then
+				line=$(echo "${line}" | sed "s/ ${custom_layer_name} / tmp_${custom_layer_name} /g")
+				line=$(echo "${line}" | sed "s/ ${original_layer_name} / ${custom_layer_name} /g")
+				line=$(echo "${line}" | sed "s/ tmp_${custom_layer_name} / ${original_layer_name} /g")
+			fi
+			fixed_usedboard_layers="${fixed_usedboard_layers}\n${line}"
+			custom_layer_name=
+		done
+		_usedboard_layers="$(echo -e "${fixed_usedboard_layers}" | cut -d" " -f-2)"
+		#============================
+		# fi
 	fi
 
 	if [[ "${VERBOSE}" == "1" ]]; then
 		echo
 		echo -e "${blue}Board: ${reset}${_kicad_pcb}"
 		echo -e "${blue}Used layers:${reset}"
-		echo -e "${_used_board_layers}" | column -t | nl -s": "
+		echo -e "${_usedboard_layers}" | column -t | nl -s": "
 		echo
 	fi
 
-	echo -e "${_used_board_layers}" > ${layers_file}
+	echo -e "${_usedboard_layers}" > "${layers_file}"
+
+	# Fix layers name on icad 6 for older projects
+	if [[ ${KICAD_VERSION} == 6 ]] && [[ ${kicad_version_of_pcb} -lt 20211014 ]]; then
+		_layers=$(cat "${layers_file}")
+		_layers=$(fix_layer_names "${_layers}")
+		echo -e "${_layers}" > "${layers_file}"
+	fi
 }
 
 create_list_of_pages()
 {
 	commit_hash="$1"
 	output_dir="$2"
-	layers_file="${output_dir}/${commit_hash}/pages"
+	pages_file="${output_dir}/${commit_hash}/pages"
 
-	if [[ ! -f ${layers_file} ]]
+	if [[ ! -f ${pages_file} ]]
 	then
 
 		# Export main schematic page from each version
 		if [[ ${commit_hash} == "local" ]]; then
 			cp "${kicad_pro_subpath}/${kicad_sch}" "${output_dir}/${commit_hash}/${kicad_sch}"
 		else
-			git show ${commit_hash}:"${kicad_pro_subpath}/${kicad_sch}" > "${output_dir}/${commit_hash}/${kicad_sch}"
+			git show "${commit_hash}:${kicad_pro_subpath}/${kicad_sch}" > "${output_dir}/${commit_hash}/${kicad_sch}"
 		fi
 
-		sch_page_names=$(get_pages "${kicad_pro_filename}" "${output_dir}/${commit_hash}/${kicad_sch}" | cut -d"|" -f2 | sed_ "s/\r$//g")
+		sch_page_names=$(get_pages "${kicad_pro_filename}" "${output_dir}/${commit_hash}/${kicad_sch}" | cut -d"|" -f2 | sed "s/\r$//g")
 
 		if [[ "${VERBOSE}" == "1" ]]; then
 			echo
@@ -678,7 +827,7 @@ create_list_of_pages()
 			echo
 		fi
 
-		echo -e "${sch_page_names}" > ${layers_file}
+		echo -e "${sch_page_names}" > "${pages_file}"
 	fi
 }
 
@@ -690,7 +839,7 @@ generate_layout_artifacts()
 	kicad_pcb=${3}
 	commit1=${4}
 	commit2=${5}
-	output_dir=${6}
+	output_dir="${6}"
 
 	# Temporarily change local commits
 	if [[ "${commit1}" == "local" ]]; then commit1="${kicad_pcb}"; fi
@@ -730,9 +879,8 @@ generate_layout_artifacts()
 		if [[ "${commit2}" == "${kicad_pcb}" ]]; then commit2="local"; fi
 	fi
 
-
 	# Save layer's list
-	kicad_pcb_name="$(basename ${kicad_pcb})"
+	kicad_pcb_name=$(basename "${kicad_pcb}")
 	if [[ ! -f "${output_dir}/${commit1}/layers" ]]; then
 		create_list_of_layers "${output_dir}/${commit1}/${kicad_pcb_name}"
 	fi
@@ -740,33 +888,65 @@ generate_layout_artifacts()
 		create_list_of_layers "${output_dir}/${commit2}/${kicad_pcb_name}"
 	fi
 
+	usedboard_layers=$(cat "${output_dir}/${commit1}/layers" "${output_dir}/${commit2}/layers" | sort | uniq )
 
 	IFS=$'\n'
-	for layer in ${used_board_layers}; do
+	for layer in ${usedboard_layers}; do
 
 		layer_id=$(echo "${layer}" | cut -d " " -f1)
 		layer_id=$(printf "%02d" "${layer_id}")
 
-		layer_name=$(echo "${layer}" | cut -d " " -f2 | sed_ "s/\./_/g")
+		layer_name=$(echo "${layer}" | cut -d " " -f2 | sed "s/\./_/g")
 
 		svg_file1="${output_dir}/${commit1}/${kicad_pro_filename}-${layer_id}-${layer_name}.svg"
 		svg_file2="${output_dir}/${commit2}/${kicad_pro_filename}-${layer_id}-${layer_name}.svg"
 
 		# Create blank svgs if some is missing
 		if [[ ! -f "${svg_file1}" ]]; then
-			if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_KIDIFF}" = "1" ]]; then
-				echo -e "   ${red}Recreating missing file: ${svg_file1}${reset}"
+
+			continue
+
+			# if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_KIDIFF}" = "1" ]]; then
+			# 	echo -e "   ${red}Recreating missing file: ${svg_file1}${reset}"
+			# fi
+			# cp "${script_path}/../assets/blank.svg" "${output_dir}/${i}/${kicad_pro_filename}-${layer_id}-${layer_name}.svg"
+
+		else
+			echo "Inkscaping ${svg_file1}"
+			# inkscape --export-type="eps" --export-filename="tmp.eps" --export-area-drawing "${svg_file1}"
+			# inkscape tmp.eps --export-plain-svg --export-filename="${svg_file1}"
+
+			#scour -i ${svg_file1} -o output.svg --enable-viewboxing &> /dev/null
+			scour -i ${svg_file1} -o output.svg --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none &> /dev/null
+			if [[ -f output.svg ]]; then
+				mv output.svg {svg_file1}
 			fi
-			cp "${script_path}/../assets/blank.svg" "${output_dir}/${i}/${kicad_pro_filename}-${layer_id}-${layer_name}.svg"
+
 		fi
 
 		# Create blank svgs if some is missing
 		if [[ ! -f "${svg_file2}" ]]; then
-			if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_KIDIFF}" = "1" ]]; then
-				echo -e "   ${red}Recreating missing file: ${svg_file2}${reset}"
+
+			continue
+
+			# if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_KIDIFF}" = "1" ]]; then
+			# 	echo -e "   ${red}Recreating missing file: ${svg_file2}${reset}"
+			# fi
+			# cp "${script_path}/../assets/blank.svg" "${output_dir}/${j}/${kicad_pro_filename}-${layer_id}-${layer_name}.svg"
+
+		else
+			echo "Inkscaping ${svg_file2}"
+			# inkscape --export-type="eps" --export-filename="tmp.eps" --export-area-drawing "${svg_file2}"
+			# inkscape tmp.eps --export-plain-svg --export-filename="${svg_file2}"
+
+			# scour -i ${svg_file2} -o output.svg --enable-viewboxing 2> /dev/null
+			scour -i ${svg_file2} -o output.svg --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none &> /dev/null
+			if [[ -f output.svg ]]; then
+				mv output.svg {svg_file2}
 			fi
-			cp "${script_path}/../assets/blank.svg" "${output_dir}/${j}/${kicad_pro_filename}-${layer_id}-${layer_name}.svg"
+
 		fi
+
 	done
 }
 
@@ -789,15 +969,13 @@ generate_artifacts()
 	web_dir="${output_dir}/web/"
 	mkdir -p "${web_dir}/"
 
-	# THIS IS WRONG
-	# sch_files=$(find_ "${kicad_pro_subpath}" -name "*.${kicad_sch_extension}" -printf "%p ")
 	sch_files=$(git ls-files . | grep "\.${kicad_sch_extension}")
 
 	if [[ "${VERBOSE}" == "1" ]]; then
 		echo
 		echo "        kicad_pcb: ${kicad_pro_subpath}/${kicad_pcb}"
 		echo "        kicad_sch: ${kicad_sch}"
-		echo "        sch_files: $(echo ${sch_files} | sed_ 's/ /\n                   /g')"
+		echo "        sch_files: $(echo "${sch_files}" | sed 's/ /\n                   /g')"
 		echo "       output_dir: ${output_dir}"
 		echo "          web_dir: ${web_dir}"
 		echo
@@ -827,7 +1005,7 @@ generate_artifacts()
 		if [[ "${VERBOSE}" == "1" ]]; then
 			echo "  Older commit: ${OLDER_COMMIT}"
 		fi
-		commits=$(echo "${commits}" | sed_ "/^${OLDER_COMMIT}/q")
+		commits=$(echo "${commits}" | sed "/^${OLDER_COMMIT}/q")
 	fi
 
 	if [[ "${NEWER_COMMIT}" != "" ]]; then
@@ -835,7 +1013,7 @@ generate_artifacts()
 			echo "  Newer commit: ${NEWER_COMMIT}"
 			echo
 		fi
-		commits=$(echo "${commits}" | sed_ -n "/^${NEWER_COMMIT}/,\$p")
+		commits=$(echo "${commits}" | sed -n "/^${NEWER_COMMIT}/,\$p")
 	fi
 
 	if [[ "${SHOW_LAST_N_COMMITS}" != "" ]]; then
@@ -848,7 +1026,7 @@ generate_artifacts()
 	fi
 
 	# Commits list has to have 2 commits at least
-	if [[ $(echo "${commits}" | wc -l | sed_ "s/^[ \t]\+//g") -lt "1" ]]; then
+	if [[ $(echo "${commits}" | wc -l | sed "s/^[ \t]\+//g") -lt "1" ]]; then
 		echo "Leaving, less than 2 commits found"
 		exit 0
 	fi
@@ -860,23 +1038,14 @@ generate_artifacts()
 	EOM
 
 	hashs=$(echo "${commits}" | tac_ | cut -d' '  -f1);
-	n_hashs=$(echo "${hashs}" | wc -w | sed_ "s/^[ \t]\+//g")
+	n_hashs=$(echo "${hashs}" | wc -w | sed "s/^[ \t]\+//g")
 	n_comparisons=$(echo "${n_hashs} * (${n_hashs} - 1) " | bc)
 
-	sch_page_names=$(get_pages "${kicad_pro_filename}" "${kicad_pro_subpath}/${kicad_sch}" | cut -d"|" -f2 | sed_ "s/\r$//g")
-	used_board_layers=$(sed_ -n '/^  (layers/,/  )$/{/^  (layers/!{/  )$/!p}}' "${kicad_pro_subpath}/${kicad_pcb}" | sed_ "s/^[ \t]\+//g" | sed_ "s/[()]//g" | cut -d" " -f-2 | sed_ "s/\r$//g" | sed_ "s/\"//g")
+	# THESE 2 LINES SHOULD BE REMOVED
+	sch_page_names=$(get_pages "${kicad_pro_filename}" "${kicad_pro_subpath}/${kicad_sch}" | cut -d"|" -f2 | sed "s/\r$//g")
+	# usedboard_layers=$(sed -n '/^  (layers/,/  )$/{/^  (layers/!{/  )$/!p}}' "${kicad_pro_subpath}/${kicad_pcb}" | sed "s/^[ \t]\+//g" | sed "s/[()]//g" | cut -d" " -f-2 | sed "s/\r$//g" | sed "s/\"//g")
 
 	echo
-
-	if [[ "${VERBOSE}" == "1" ]]; then
-		echo -e "${blue}Schematic Pages:${reset}"
-		echo "${sch_page_names}" | nl -s": "
-		echo
-		echo -e "${blue}Layout Layers:${reset}"
-		echo "${used_board_layers}" | column -t | nl -s": "
-		echo
-	fi
-
 	echo -e "${blue}Generating artifacts${reset}"
 	echo "${n_hashs} commits, totaling ${n_comparisons} comparisons"
 	echo
@@ -931,7 +1100,11 @@ generate_artifacts()
 					STDOUT_KIDIFF=""
 				fi
 
-				generate_schematic_artifacts "${repo_path}" "${kicad_pro_subpath}" "${kicad_pro_filename}" "${sch_page_names}" "${i}" "${j}" "${output_dir}"
+				#if [[ ${KICAD_VERSION} == 6 ]]; then
+				#	generate_schematic_artifacts_sch2svg "${repo_path}" "${kicad_pro_subpath}" "${kicad_pro_filename}" "${sch_page_names}" "${i}" "${j}" "${output_dir}"
+				#else
+					generate_schematic_artifacts "${repo_path}" "${kicad_pro_subpath}" "${kicad_pro_filename}" "${sch_page_names}" "${i}" "${j}" "${output_dir}"
+				#fi
 
 				generate_layout_artifacts "${kicad_pro_subpath}" "${kicad_pro_filename}" "${kicad_pcb}" "${i}" "${j}" "${output_dir}"
 
@@ -943,10 +1116,14 @@ generate_artifacts()
 
 	done
 
+	# Remove unecessary Kidiff triptych folder
+	rm -rf "${web_dir}/triptych"
+
 	if [[ "${VERBOSE}" == "0" ]]; then
 		echo
 	fi
 	echo -e "${blue}Assembling the HTML${reset}"
+
 
 	# Copy assets
 	main_html=index.html
@@ -971,68 +1148,69 @@ generate_artifacts()
 	insert_pages "${web_dir}/${main_html}" "${sch_page_names}"
 
 	# Set-Project title (folder name)
-	PROJECT_TITLE="$(basename ${repo_path})"
-	sed_ -i "s|\[PROJECT_TITLE\]|${PROJECT_TITLE}|g" "${web_dir}/${main_html}"
+	PROJECT_TITLE=$(basename "${repo_path}")
+	sed -i "s|\[PROJECT_TITLE\]|${PROJECT_TITLE}|g" "${web_dir}/${main_html}"
 
 	# Update board title
 	echo "- Setting sch/pcb titles"
-	sch_title=$(grep -i "title" "${kicad_pro_subpath}/${kicad_pro_filename}.${kicad_sch_extension}" 2> /dev/null | sed_ "s/^[ \t]\+//g" | cut -d" " -f 2- | sed_ "s/[)\"]//g")
-	pcb_title=$(grep -i "(title .*)" "${kicad_pcb}" 2> /dev/null | sed_ "s/^[ \t]\+//g" | cut -d" " -f 2- | sed_ "s/[)\"]//g")
+	sch_title=$(grep -i "title" "${kicad_pro_subpath}/${kicad_pro_filename}.${kicad_sch_extension}" 2> /dev/null | sed "s/^[ \t]\+//g" | cut -d" " -f 2- | sed "s/[)\"]//g")
+	pcb_title=$(grep -i "(title .*)" "${kicad_pcb}" 2> /dev/null | sed "s/^[ \t]\+//g" | cut -d" " -f 2- | sed "s/[)\"]//g")
 	if [[ "${sch_title}" == "" ]]; then sch_title="{SCH_Title}"; fi
 	if [[ "${pcb_title}" == "" ]]; then pcb_title="{PCB_Title}"; fi
-	sed_ -i "s|\[SCH_TITLE\]|${sch_title}|g" "${web_dir}/${main_html}"
-	sed_ -i "s|\[PCB_TITLE\]|${pcb_title}|g" "${web_dir}/${main_html}"
+	sed -i "s|\[SCH_TITLE\]|${sch_title}|g" "${web_dir}/${main_html}"
+	sed -i "s|\[PCB_TITLE\]|${pcb_title}|g" "${web_dir}/${main_html}"
 
 	# Update board revision
 	echo "- Setting sch/pcb revision"
-	sch_revision=$(grep -i "Rev" "${kicad_pro_subpath}/${kicad_pro_filename}.${kicad_sch_extension}" 2> /dev/null | sed_ "s/^[ \t]\+//g" | sed_ "s/[()]//g" | cut -d" " -f2- | sed_ "s/\"//g")
-	pcb_revision=$(grep "(rev " "${kicad_pcb}" 2> /dev/null | sed_ "s/^[ \t]\+//g" | sed_ "s/[()]//g" | cut -d" " -f2- | sed_ "s/\"//g")
+	sch_revision=$(grep -i "Rev" "${kicad_pro_subpath}/${kicad_pro_filename}.${kicad_sch_extension}" 2> /dev/null | sed "s/^[ \t]\+//g" | sed "s/[()]//g" | cut -d" " -f2- | sed "s/\"//g")
+	pcb_revision=$(grep "(rev " "${kicad_pcb}" 2> /dev/null | sed "s/^[ \t]\+//g" | sed "s/[()]//g" | cut -d" " -f2- | sed "s/\"//g")
 	if [[ "${pcb_revision}" == "" ]]; then pcb_revision="{sch_rev}"; fi
 	if [[ "${sch_revision}" == "" ]]; then sch_revision="{pcb_rev}"; fi
-	sed_ -i "s|\[SCH_REVISION\]|${sch_revision}|g" "${web_dir}/${main_html}"
-	sed_ -i "s|\[PCB_REVISION\]|${pcb_revision}|g" "${web_dir}/${main_html}"
+	sed -i "s|\[SCH_REVISION\]|${sch_revision}|g" "${web_dir}/${main_html}"
+	sed -i "s|\[PCB_REVISION\]|${pcb_revision}|g" "${web_dir}/${main_html}"
 
 	# Update board date
 	echo "- Setting sch/pcb date"
-	sch_date=$(grep -i "date" "${kicad_pro_subpath}/${kicad_pro_filename}.${kicad_sch_extension}" 2> /dev/null | sed_ "s/^[ \t]\+//g" | sed_ "s/[()]//g" | cut -d" " -f2 | sed_ "s/\"//g")
-	pcb_date=$(grep "(date " "${kicad_pcb}" 2> /dev/null | sed_ "s/^[ \t]\+//g" | sed_ "s/[()]//g" | cut -d" " -f2 | sed_ "s/\"//g")
+	sch_date=$(grep -i "date" "${kicad_pro_subpath}/${kicad_pro_filename}.${kicad_sch_extension}" 2> /dev/null | sed "s/^[ \t]\+//g" | sed "s/[()]//g" | cut -d" " -f2 | sed "s/\"//g")
+	pcb_date=$(grep "(date " "${kicad_pcb}" 2> /dev/null | sed "s/^[ \t]\+//g" | sed "s/[()]//g" | cut -d" " -f2 | sed "s/\"//g")
 	if [[ "${sch_date}" == "" ]]; then sch_date="{sch_date}"; fi
 	if [[ "${pcb_date}" == "" ]]; then pcb_date="{pcb_date}"; fi
-	sed_ -i "s|\[PCB_DATE\]|${pcb_date}|g" "${web_dir}/${main_html}"
-	sed_ -i "s|\[SCH_DATE\]|${sch_date}|g" "${web_dir}/${main_html}"
+	sed -i "s|\[PCB_DATE\]|${pcb_date}|g" "${web_dir}/${main_html}"
+	sed -i "s|\[SCH_DATE\]|${sch_date}|g" "${web_dir}/${main_html}"
 
 	# Update board name
 	echo "- Setting board name"
-	sed_ -i "s|var board_name =.*|var board_name = \"${kicad_pro_filename}\"; // generated by kiri script |g" "${web_dir}/kiri.js"
+	sed -i "s|var board_name =.*|var board_name = \"${kicad_pro_filename}\"; // generated by kiri script |g" "${web_dir}/kiri.js"
 
 	commit1=$(echo "${commits}" | head -n$(("${commit1_idx}"+1)) | tail -n1 | cut -d" " -f1)
 	commit2=$(echo "${commits}" | head -n$(("${commit2_idx}"+1)) | tail -n1 | cut -d" " -f1)
 
 	# Initial commit legend
 	echo "- Setting initial commits"
-	sed_ -i "s|\[COMMIT_1_HASH\]|${commit1}|g" "${web_dir}/${main_html}"
-	sed_ -i "s|\[COMMIT_2_HASH\]|${commit2}|g" "${web_dir}/${main_html}"
+	sed -i "s|\[COMMIT_1_HASH\]|${commit1}|g" "${web_dir}/${main_html}"
+	sed -i "s|\[COMMIT_2_HASH\]|${commit2}|g" "${web_dir}/${main_html}"
 
 	# Update initial schematic images
 	echo "- Setting initial schematics"
-	sed_ -i "s|\[INITIAL_COMMIT_1_SCH\]|../${commit1}/sch-${kicad_pro_filename}.svg|g" "${web_dir}/${main_html}"
-	sed_ -i "s|\[INITIAL_COMMIT_2_SCH\]|../${commit2}/sch-${kicad_pro_filename}.svg|g" "${web_dir}/${main_html}"
+	sed -i "s|\[INITIAL_COMMIT_1_SCH\]|../${commit1}/sch-${kicad_pro_filename}.svg|g" "${web_dir}/${main_html}"
+	sed -i "s|\[INITIAL_COMMIT_2_SCH\]|../${commit2}/sch-${kicad_pro_filename}.svg|g" "${web_dir}/${main_html}"
 
 	# Update initial layout images
 	echo "- Setting initial layouts"
-	initial_layer_id=$(printf "%02d" $(echo "${used_board_layers}" | head -1 | cut -d " " -f1 | tr "." "_"))
-	initial_layer_name=$(echo "${used_board_layers}" | head -1 | cut -d " " -f2 | tr "." "_")
-	sed_ -i "s|\[INITIAL_COMMIT_1_PCB\]|../${commit1}/${kicad_pro_filename}-${initial_layer_id}-${initial_layer_name}.svg|g" "${web_dir}/${main_html}"
-	sed_ -i "s|\[INITIAL_COMMIT_2_PCB\]|../${commit2}/${kicad_pro_filename}-${initial_layer_id}-${initial_layer_name}.svg|g" "${web_dir}/${main_html}"
+	usedboard_layers=$(find "${output_dir}" -name "layers" -exec cat {} \; | sort | uniq)
+	initial_layer_id=$(printf "%02d" $(echo -e "${usedboard_layers}" | head -1 | cut -d " " -f1 | tr "." "_"))
+	initial_layer_name=$(echo -e "${usedboard_layers}" | head -1 | cut -d " " -f2 | tr "." "_")
+	sed -i "s|\[INITIAL_COMMIT_1_PCB\]|../${commit1}/${kicad_pro_filename}-${initial_layer_id}-${initial_layer_name}.svg|g" "${web_dir}/${main_html}"
+	sed -i "s|\[INITIAL_COMMIT_2_PCB\]|../${commit2}/${kicad_pro_filename}-${initial_layer_id}-${initial_layer_name}.svg|g" "${web_dir}/${main_html}"
 
-	# Set initial view
+	# Change initial view to layout
 	if [[ "${START_ON_LAYOUT_VIEW}" == 1 ]]; then
-		sed_ -i "s/default_view = \"schematic\";/default_view = \"layout\";/g" ${web_dir}/kiri.js
+		sed -i "s/default_view = \"schematic\";/default_view = \"layout\";/g" "${web_dir}/kiri.js"
 	fi
 
 	# Insert layers list
 	echo "- Adding layers list to the page"
-	insert_layers "${web_dir}/${main_html}" "${used_board_layers}"
+	insert_layers "${output_dir}" "${web_dir}/${main_html}" "${usedboard_layers}"
 }
 
 
@@ -1212,7 +1390,7 @@ repo_path="$(git rev-parse --show-toplevel)"
 # THESE ARE ALL THE PATHS NEEDED (WORKS FROM EVERYWHERE)
 kicad_pro_path=$(realpath "${kicad_pro}")
 repo_path=$(realpath "${repo_path}")
-kicad_pro_subpath=$(dirname "${kicad_pro_path}" | sed_ "s|${repo_path}||g" | sed_ "s|^/||g")
+kicad_pro_subpath=$(dirname "${kicad_pro_path}" | sed "s|${repo_path}||g" | sed "s|^/||g")
 kicad_pro=$(basename "${kicad_pro}")
 kicad_pro_filename=${kicad_pro%.*}
 kicad_pro_extension=${kicad_pro##*.}
@@ -1223,14 +1401,15 @@ fi
 
 pushd "${repo_path}" &> /dev/null || exit
 
+KICAD_VERSION=$(kicad_version.py --major)
+export KICAD_VERSION
+
 kicad_pcb_extension="kicad_pcb"
 if [[ ${kicad_pro_extension} == "kicad_pro" ]]; then
 	echo "Kicad >= 5.99 project"
-	export KICAD_VERSION=6
 	source "${script_path}/env-nightly.sh"
 	export kicad_sch_extension="kicad_sch"
 else
-	export KICAD_VERSION=5
 	export kicad_sch_extension="sch"
 fi
 
@@ -1240,7 +1419,7 @@ kicad_pcb="${kicad_pro_filename}.${kicad_pcb_extension}"
 # (kicad_pcb (version 20171130) (host pcbnew 5.1.6+dfsg1-1)
 # (kicad_pcb (version 20171130) (host pcbnew 5.1.12-84ad8e8a86~92~ubuntu21.10.1)
 # (kicad_pcb (version 20211014) (generator pcbnew)
-kicad_version_of_pcb=$(head -n1 "${kicad_pcb}" | sed_ "s/[()]//g" | cut -f3 -d" ")
+kicad_version_of_pcb=$(head -n1 "${kicad_pcb}" | sed "s/[()]//g" | cut -f3 -d" ")
 
 echo
 echo "      kicad_pro_path = $kicad_pro_path"
@@ -1257,8 +1436,16 @@ echo " kicad_sch_extension = ${kicad_sch_extension}"
 echo " kicad_pcb_extension = ${kicad_pcb_extension}"
 echo "          output_dir = ${output_dir}"
 
-export PLOTGITSCH_MISSING=$(check_tool plotgitsch)
-export KIDIFF_MISSING=$(check_tool kidiff)
+# Kicad 6 does not have a schematic view working yet
+# if [[ "${KICAD_VERSION}" -ge 6 ]]; then
+# 	START_ON_LAYOUT_VIEW=1
+# fi
+
+PLOTGITSCH_MISSING=$(check_tool plotgitsch)
+export PLOTGITSCH_MISSING
+
+KIDIFF_MISSING=$(check_tool kidiff)
+export KIDIFF_MISSING
 
 # Check required tools
 if [[ "${DRY_RUN}" = 0 ]]; then
@@ -1304,7 +1491,7 @@ echo -e "${blue}Output folder:${reset} "$(realpath "${OUTPUT_DIR}")
 
 if [[ ${ARCHIVE} == 1 ]]; then
 	datetime=$(date +"%Y.%m.%d-%Hh%M")
-	tgz_filename="$(basename ${OUTPUT_DIR})-${datetime}.tgz"
+	tgz_filename="$(basename "${OUTPUT_DIR}")-${datetime}.tgz"
 	echo -e "${blue}Archiving generated files:${reset} ${tgz_filename}"
 	tar -cvzf "${tgz_filename}" "${output_dir}" &> /dev/null
 fi
@@ -1341,5 +1528,3 @@ if [[ "${LAUNCH_BROWSER}" != 0 ]]; then
 		fi
 	fi
 fi
-
-
