@@ -59,6 +59,7 @@ sudo apt install -y kicad
 sudo apt install -y dos2unix
 sudo apt install -y coreutils
 sudo apt install -y zenity
+sudo apt install -y scour
 
 # Initialize opam
 opam init --disable-sandboxing --reinit
@@ -90,6 +91,7 @@ brew install gsed
 brew install findutils
 brew install dos2unix
 brew install coreutils
+brew install scour
 
 # Initialize opam
 opam init --disable-sandboxing --reinit

@@ -27,6 +27,7 @@ if [[ $os == "LINUX" ]]; then
 	sudo apt install -y coreutils
 	sudo apt install -y zenity
 	sudo apt install -y dune
+	sudo apt install -y scour
 fi
 
 if [[ $os == "OSX" ]]; then
@@ -62,6 +63,7 @@ if [[ $os == "OSX" ]]; then
 	brew install findutils
 	brew install dos2unix
 	brew install coreutils
+	brew install scour
 fi
 
 # Kicad-Diff dependencies
