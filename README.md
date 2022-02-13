@@ -9,7 +9,7 @@ Previously known as KDiff, it was renamed KiRI since the old name was pretty clo
 
 ## Installing
 
-To install this repo and the dependencies with a single command on any Operating System, open a terminal and execute the following commands:
+To install this tool with on any Operating System, open a terminal and execute the following commands:
 
 > Windows users must use WSL/WSL2. See, [Environment preparation on Windows][Environment preparation on Windows] section.
 
@@ -49,11 +49,11 @@ Set-Location C:\ubuntu-2004
 
 After, install dependencies and Kiri by running script in the [Installing][Installing] section
 
-## Loading kiri environment
+## Loading KiRI environment
 
 Setup the environment using the following commands.
 
-> Make sure `KIRI_HOME` is the right path to the instalation folder
+> Make sure `KIRI_HOME` is the right path to the installation folder
 
 ```
 # Kiri environment setup
@@ -72,61 +72,14 @@ kiri board.pro
 
 ## Command line flags (aka Help)
 
-How to access tool help, this may change, so prefer to use `kiri -h` instead.
-
+Command line flags can be seen using the `-h` flag
 ```
-➜ kiri -h
-
-USAGE :
-
-    kiri [OPTIONS] [KICAD_PROJECT]
-
-OPTIONS:
-
-     -a|--all         Include all commits even if schematics/layout don't have changes
-     -o|--older HASH  Show commits starting from this one
-     -n|--newer HASH  Show commits until this one delimited by this one
-     -t|--last VAL    Show last N commits
-
-     -l|--webserver   Do not launch webserver/browser at the end
-     -p|--port PORT   Set webserver port. By default it will try to use an available port.
-
-     -s|--skip-cache  Skip usage of -chache.lib on plotgitsch
-
-     -d|--output-dir  Change output folder path/name
-     -r|--remove      Remove generated folder before running it
-     -x|--archive     Archive generate files
-
-     -v|--version     Show version
-     -h|--help        Show help
-
-     -D|--debug       Extra info
-    -dp|--debug-sch   Show Plotgitsch stdout and stderr
-    -dk|--debug-pcb   Show Kidiff stdout and stderr
-     -y|--dry-run     Run without generate artifacts
-     -V|--verbose     Verbose
-
-KICAD_PROJECT:
-
-    KICAD_PROJECT file is optional.
-    If it is missing the GUI file selector will be loaded
-
-EXAMPLES:
-
-    # Launch GUI with file selector
-    kiri
-
-    # Kicad project on the root of the repo
-    kiri board.pro
-
-    # Nested project (with verbose and starting fresh)
-    kiri nested-project/board.pro -r -V
-
+kiri -h
 ```
 
-# (EXTRA) Kicad integration
+# Kicad/PCBNew integration
 
-It is also possible to integrate kiri in PCBNew toolbar
+It is possible to integrate KiRI on PCBNew adding a button to the toolbar
 
 ```bash
 # Create folder if it does not exist
