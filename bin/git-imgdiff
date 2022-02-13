@@ -6,7 +6,7 @@ echo "KiRI Command: $(basename $0) $@"
 a="$1"
 b="$2"
 
-if [[ "$2" !=	"" ]]; then
+if [[ "$2" != "" ]]; then
 	b="$2"
 fi
 
@@ -17,6 +17,6 @@ echo ""
 echo "Creating $(realpath ${svg1})"
 echo "Creating $(realpath ${svg2})"
 
+# Rename/move file
 mv -f "$a" "$svg1"
 mv -f "$b" "$svg2"
-
