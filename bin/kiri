@@ -726,7 +726,6 @@ generate_schematic_artifacts()
 				# Fix problematic last svg tag. But how this was introduced?
 				sed -i "s|</svg>svg>|</svg>|g" "${svg_file1}" 2> /dev/null
 
-					echo "Inkscaping ${svg_file1}"
 					scour -i ${svg_file1} -o output.svg --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none &> /dev/null
 					if [[ -f output.svg ]]; then
 						mv output.svg ${svg_file1}
@@ -742,7 +741,6 @@ generate_schematic_artifacts()
 				# Fix problematic last svg tag. But how this was introduced?
 				sed -i "s|</svg>svg>|</svg>|g" "${svg_file2}" 2> /dev/null
 
-					echo "Inkscaping ${svg_file2}"
 					scour -i ${svg_file2} -o output.svg --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none &> /dev/null
 					if [[ -f output.svg ]]; then
 						mv output.svg ${svg_file2}
@@ -912,11 +910,10 @@ generate_layout_artifacts()
 			# cp "${script_path}/../assets/blank.svg" "${output_dir}/${i}/${kicad_pro_filename}-${layer_id}-${layer_name}.svg"
 
 		else
-			echo "Inkscaping ${svg_file1}"
+			# echo "Inkscaping ${svg_file1}"
 			# inkscape --export-type="eps" --export-filename="tmp.eps" --export-area-drawing "${svg_file1}"
 			# inkscape tmp.eps --export-plain-svg --export-filename="${svg_file1}"
 
-			#scour -i ${svg_file1} -o output.svg --enable-viewboxing &> /dev/null
 			scour -i ${svg_file1} -o output.svg --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none &> /dev/null
 			if [[ -f output.svg ]]; then
 				mv output.svg ${svg_file1}
@@ -935,11 +932,10 @@ generate_layout_artifacts()
 			# cp "${script_path}/../assets/blank.svg" "${output_dir}/${j}/${kicad_pro_filename}-${layer_id}-${layer_name}.svg"
 
 		else
-			echo "Inkscaping ${svg_file2}"
+			# echo "Inkscaping ${svg_file2}"
 			# inkscape --export-type="eps" --export-filename="tmp.eps" --export-area-drawing "${svg_file2}"
 			# inkscape tmp.eps --export-plain-svg --export-filename="${svg_file2}"
 
-			# scour -i ${svg_file2} -o output.svg --enable-viewboxing 2> /dev/null
 			scour -i ${svg_file2} -o output.svg --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none &> /dev/null
 			if [[ -f output.svg ]]; then
 				mv output.svg ${svg_file2}
@@ -1100,11 +1096,12 @@ generate_artifacts()
 					STDOUT_KIDIFF=""
 				fi
 
-				#if [[ ${KICAD_VERSION} == 6 ]]; then
-				#	generate_schematic_artifacts_sch2svg "${repo_path}" "${kicad_pro_subpath}" "${kicad_pro_filename}" "${sch_page_names}" "${i}" "${j}" "${output_dir}"
-				#else
+				if [[ ${KICAD_VERSION} == 6 ]]; then
+					continue
+					# generate_schematic_artifacts_sch2svg "${repo_path}" "${kicad_pro_subpath}" "${kicad_pro_filename}" "${sch_page_names}" "${i}" "${j}" "${output_dir}"
+				else
 					generate_schematic_artifacts "${repo_path}" "${kicad_pro_subpath}" "${kicad_pro_filename}" "${sch_page_names}" "${i}" "${j}" "${output_dir}"
-				#fi
+				fi
 
 				generate_layout_artifacts "${kicad_pro_subpath}" "${kicad_pro_filename}" "${kicad_pcb}" "${i}" "${j}" "${output_dir}"
 
@@ -1153,12 +1150,12 @@ generate_artifacts()
 
 	# Update board title
 	echo "- Setting sch/pcb titles"
-	sch_title=$(grep -i "title" "${kicad_pro_subpath}/${kicad_pro_filename}.${kicad_sch_extension}" 2> /dev/null | sed "s/^[ \t]\+//g" | cut -d" " -f 2- | sed "s/[)\"]//g")
+	sch_title=$(grep -i "title " "${kicad_pro_subpath}/${kicad_pro_filename}.${kicad_sch_extension}" 2> /dev/null | sed "s/^[ \t]\+//g" | cut -d" " -f 2- | sed "s/[)\"]//g")
 	pcb_title=$(grep -i "(title .*)" "${kicad_pcb}" 2> /dev/null | sed "s/^[ \t]\+//g" | cut -d" " -f 2- | sed "s/[)\"]//g")
 	if [[ "${sch_title}" == "" ]]; then sch_title="{SCH_Title}"; fi
 	if [[ "${pcb_title}" == "" ]]; then pcb_title="{PCB_Title}"; fi
-	sed -i "s|\[SCH_TITLE\]|${sch_title}|g" "${web_dir}/${main_html}"
-	sed -i "s|\[PCB_TITLE\]|${pcb_title}|g" "${web_dir}/${main_html}"
+	sed -i "s|\[SCH_TITLE\]|[Sch] ${sch_title}|g" "${web_dir}/${main_html}"
+	sed -i "s|\[PCB_TITLE\]|[PCB] ${pcb_title}|g" "${web_dir}/${main_html}"
 
 	# Update board revision
 	echo "- Setting sch/pcb revision"
@@ -1412,7 +1409,7 @@ export KICAD_VERSION
 kicad_pcb_extension="kicad_pcb"
 if [[ ${kicad_pro_extension} == "kicad_pro" ]]; then
 	echo "Kicad >= 5.99 project"
-	source "${script_path}/env-nightly.sh"
+	# source "${script_path}/env-nightly.sh"
 	export kicad_sch_extension="kicad_sch"
 else
 	export kicad_sch_extension="sch"
@@ -1442,9 +1439,9 @@ echo " kicad_pcb_extension = ${kicad_pcb_extension}"
 echo "          output_dir = ${output_dir}"
 
 # Kicad 6 does not have a schematic view working yet
-# if [[ "${KICAD_VERSION}" -ge 6 ]]; then
-# 	START_ON_LAYOUT_VIEW=1
-# fi
+if [[ "${KICAD_VERSION}" -ge 6 ]]; then
+	START_ON_LAYOUT_VIEW=1
+fi
 
 PLOTGITSCH_MISSING=$(check_tool plotgitsch)
 export PLOTGITSCH_MISSING
