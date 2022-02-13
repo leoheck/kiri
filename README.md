@@ -11,7 +11,8 @@ Previously known as KDiff, it was renamed KiRI since the old name was pretty clo
 
 To install this repo and the dependencies with a single command on any Operating System, open a terminal and execute the following commands:
 
-> Windows users must use WSL/WSL2.
+> Windows users must use WSL/WSL2. See, [Environment preparation on Windows][Environment preparation on Windows] section.
+
 
 ```bash
 # Installing dependencies
@@ -20,13 +21,14 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/leoheck/kiri/main/instal
 
 ```bash
 # Installing KiRI and Kicad Plugin
+# The default installation path is "${HOME}/.local/share" it can be changed with the KIRI_INSTALL_PATH variable
+# Example: export KIRI_INSTALL_PATH=/home/$USER/Documents/
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/leoheck/kiri/main/install_kiri.sh)"
 ```
 
-## Environment preparation on Windows
+### Environment preparation on Windows
 
 [Configure WSL](https://www.tenforums.com/tutorials/46769-enable-disable-windows-subsystem-linux-wsl-windows-10-a.html)
-
 
 On a Powershell terminal with admin right, execute the following commands:
 
@@ -44,106 +46,20 @@ Set-Location C:\ubuntu-2004
 & .\ubuntu2004.exe
 ```
 
-And then continue with the instructions in "Installing dependencies on Linux" inside the WSL (Ubuntu terminal).
+After, install dependencies and Kiri by running script in the [Installing][Installing] section
 
-## Installing dependencies on Linux/WSL
+## Loading kiri environment
 
-```bash
-# Basic dependencies for Linux/WSL
-sudo apt install -y libgmp-dev
-sudo apt install -y pkg-config
-sudo apt install -y opam
-sudo apt install -y python3-pip
-sudo apt install -y python3-tk
-sudo apt install -y kicad
-sudo apt install -y dos2unix
-sudo apt install -y coreutils
-sudo apt install -y zenity
-sudo apt install -y scour
+Setup the environment using the following commands.
 
-# Initialize opam
-opam init --disable-sandboxing --reinit
-opam switch create 4.09.1
-opam switch 4.09.1
+> Make sure `KIRI_HOME` is the right path to the instalation folder
+
+```
+# Kiri environment setup
 eval $(opam env)
-
-# Kicad-Diff dependencies
-pip3 install pygubu
-pip3 install python_dateutil
-pip3 install tk
-```
-
-Zenity is optional. Windows users will need to have installed an X Server like [XMing](https://sourceforge.net/projects/xming/) to be able to run it with Zenity.
-
-## Installing dependencies on OSX
-
-```bash
-# Download and Install Kicad for OSX - https://www.kicad.org/download/macos/
-sudo spctl --master-disable
-
-# Opam dependencies
-brew install gmp
-brew install pkg-config
-brew install opam
-
-# KiRI dependencies
-brew install gsed
-brew install findutils
-brew install dos2unix
-brew install coreutils
-brew install scour
-
-# Initialize opam
-opam init --disable-sandboxing --reinit
-opam switch create 4.09.1
-opam switch 4.09.1
-eval $(opam env)
-
-# Plotgitsch dependencies
-opam install lwt_ppx
-opam install cmdliner
-opam install base64
-opam install sha
-opam install tyxml
-opam install git-unix
-
-# Kicad-Diff dependencies
-pip3 install pygubu
-pip3 install python_dateutil
-pip3 install tk
-```
-
-After installing dependencies continue with [the next section](https://github.com/leoheck/kiri#Installing-Submodules)
-
-## Installing Submodules
-
-This tool uses submodules for Plotgitsch and Kicad-Diff to guarantee these tools are in a version that work. Feel free to override these with other versions of them.
-
-```bash
-# Clone kiri repo
-git clone https://github.com/leoheck/kiri
-git submodule update --init --recursive
-
-# Install plotgitsch
-cd kiri/submodules/plotkicadsch
-./install.sh
-
-# Load KiCad-Diff environment
-cd ../KiCad-Diff
-source ./env.sh
-```
-
-# Loading kiri environment
-
-Setup the environment using the follwing commands.
-
-> Make sure you don't forget to change the path to the tool `[PATH_TO_KRIRI]`
-
-```
-eval $(opam env)
-export TK_SILENCE_DEPRECATION=1
-export PATH=[PATH_TO_KRIRI]/kiri/submodules/KiCad-Diff/:PATH
-export PATH=[PATH_TO_KRIRI]/kiri/bin:PATH
+export KIRI_HOME=${HOME}/.local/share/kiri
+export PATH=${KIRI_HOME}/submodules/KiCad-Diff/:${PATH}
+export PATH=${KIRI_HOME}/bin:${PATH}
 ```
 
 
