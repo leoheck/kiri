@@ -21,7 +21,8 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/leoheck/kiri/main/instal
 
 ```bash
 # Installing KiRI and Kicad Plugin
-# The default installation path is "${HOME}/.local/share" it can be changed with the KIRI_INSTALL_PATH variable
+# The default installation path is "${HOME}/.local/share" it can be changed
+# with the KIRI_INSTALL_PATH environment variable.
 # Example: export KIRI_INSTALL_PATH=/home/$USER/Documents/
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/leoheck/kiri/main/install_kiri.sh)"
 ```
