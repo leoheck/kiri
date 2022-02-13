@@ -729,7 +729,7 @@ generate_schematic_artifacts()
 					echo "Inkscaping ${svg_file1}"
 					scour -i ${svg_file1} -o output.svg --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none &> /dev/null
 					if [[ -f output.svg ]]; then
-						mv output.svg {svg_file1}
+						mv output.svg ${svg_file1}
 					fi
 				;;
 
@@ -745,7 +745,7 @@ generate_schematic_artifacts()
 					echo "Inkscaping ${svg_file2}"
 					scour -i ${svg_file2} -o output.svg --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none &> /dev/null
 					if [[ -f output.svg ]]; then
-						mv output.svg {svg_file2}
+						mv output.svg ${svg_file2}
 					fi
 				;;
 		esac
@@ -919,7 +919,7 @@ generate_layout_artifacts()
 			#scour -i ${svg_file1} -o output.svg --enable-viewboxing &> /dev/null
 			scour -i ${svg_file1} -o output.svg --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none &> /dev/null
 			if [[ -f output.svg ]]; then
-				mv output.svg {svg_file1}
+				mv output.svg ${svg_file1}
 			fi
 
 		fi
@@ -942,7 +942,7 @@ generate_layout_artifacts()
 			# scour -i ${svg_file2} -o output.svg --enable-viewboxing 2> /dev/null
 			scour -i ${svg_file2} -o output.svg --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none &> /dev/null
 			if [[ -f output.svg ]]; then
-				mv output.svg {svg_file2}
+				mv output.svg ${svg_file2}
 			fi
 
 		fi
