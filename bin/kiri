@@ -1364,9 +1364,14 @@ if [[ "${kicad_pro}" == "" ]]; then
 				--file-selection \
 				--file-filter="Kicad Project | *.kicad_pro | *.pro" \
 				--file-filter='All files | *')
+		ret=$?
 	else
 		kicad_pro=$(kiri-file-picker)
 	fi
+fi
+
+if [[ $ret > 0 ]]; then
+	exit 1
 fi
 
 if [[ ! -f "${kicad_pro}" ]]; then
