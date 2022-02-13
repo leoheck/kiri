@@ -3,6 +3,14 @@
 # Install Kicad plugin on Kicad v5
 # kiti, kidiff and plotgitsh must be in PATH
 
+KIRI_REPO_PATH=$1
+
+if [ -z "${KIRI_REPO_PATH}" ]; then
+	REPO_PATH=.
+else
+	REPO_PATH="${KIRI_REPO_PATH}"
+fi
+
 case $OSTYPE in
 	darwin*)
 		KICAD_PLUGINS_PATH="$HOME/Library/Preferences/kicad/scripting/plugins"
@@ -12,7 +20,8 @@ case $OSTYPE in
 		;;
 esac
 
-mkdir -p "${KICAD_PLUGINS_PATH}"
-rm -rf "${KICAD_PLUGINS_PATH}/kiri"
-
-cp -r "./kicad/plugin/kiri_v5" "${KICAD_PLUGINS_PATH}/kiri"
+if [[ -d ${HOME}/.kicad ]]; then
+	mkdir -p "${KICAD_PLUGINS_PATH}"
+	rm -rf "${KICAD_PLUGINS_PATH}/kiri"
+	cp -r "${REPO_PATH}/kicad/plugin/kiri_v5" "${KICAD_PLUGINS_PATH}/kiri"
+fi
