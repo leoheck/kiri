@@ -55,7 +55,7 @@ ${cinfo}${cbold}Finish the setup by adding the following lines to your ~/.bashrc
 # Kiri environment setup
 eval \$(opam env)
 export KIRI_HOME=${INSTALL_PATH}/kiri
-export PATH=\${KIRI_HOME}/submodules/KiCad-Diff/:\${PATH}
+export PATH=\${KIRI_HOME}/submodules/KiCad-Diff/bin:\${PATH}
 export PATH=\${KIRI_HOME}/bin:\${PATH}
 
 

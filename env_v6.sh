@@ -63,4 +63,4 @@ case ${OSTYPE} in
 esac
 
 export PATH="${script_path}/bin":$PATH
-export PATH="${script_path}/submodules/KiCad-Diff/":$PATH
+export PATH="${script_path}/submodules/KiCad-Diff/bin":$PATH
