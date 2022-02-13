@@ -61,4 +61,4 @@ export PATH=\${KIRI_HOME}/bin:\${PATH}
 
 EOM
 
-echo -e "${ENV_SETUP_NOTE}"
+echo -e "\n\n${ENV_SETUP_NOTE}\n"
