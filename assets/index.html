@@ -15,18 +15,22 @@
 		<title>[PROJECT_TITLE]</title>
 	</head>
 	<body>
+
+		<div id="server_offline" style="display: 'none';">
+		</div>
+
 		<div class="container fill no-gutters" style="background-color: #333; overflow-y: hidden; overflow-x: hidden; padding: 0px 10px 0px 10px; margin: 0px;">
 			<div class="row fill align-items-start no-gutters" style="overflow-y: hidden; overflow-x: hidden; padding: 0px 0px 0px 0px; margin: 0px;">
 				<div class="col align-self-start justify-content-start col-3 no-gutters" style="height: 100%; overflow-y: hidden; overflow-x: hidden; padding: 0px 0px 0px 0px; margin: 0px;">
 					<div class="list-group 3 no-gutters" style="padding: 0px 0px 0px 0px; margin: 0px 0px 0px 8px; height: 95%;">
 						<span style="margin-top: 1em"></span>
-						<h3 class="text-light">Kicad Revision Inspector</h3>
+						<h3 class="text-light" style="margin-left: 5px;">Kicad Revision Inspector</h3>
 						<div id="sch_title" style="display: inline; margin-left: 5px;">
-							<h4 class="text-warning text-bold" style="margin-bottom: 0px;">[SCH_TITLE]</h4>
+							<h4 class="text-warning text-bold" style="margin-bottom: 0px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">[SCH_TITLE]</h4>
 							<p class="text-light text-sm" >Rev. [SCH_REVISION] ([SCH_DATE])</p>
 						</div>
 						<div id="pcb_title" style="display: none; margin-left: 5px;">
-							<h4 class="text-info text-bold" style="margin-bottom: 0px;">[PCB_TITLE]</h4>
+							<h4 class="text-info text-bold" style="margin-bottom: 0px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">[PCB_TITLE]</h4>
 							<p class="text-light text-sm">Rev. [PCB_REVISION] ([PCB_DATE])</p>
 						</div>
 						<p class="text-light" >
