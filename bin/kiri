@@ -15,7 +15,8 @@ show_help()
 	     -n|--newer HASH  Show commits until this one delimited by this one
 	     -t|--last VAL    Show last N commits
 
-	     -l|--webserver   Do not launch webserver/browser at the end
+	     -l|--no-server   Do not launch webserver/browser at the end
+	     -S|--server-only Start webserver but not launch browser
 	     -p|--port PORT   Set webserver port. By default it will try to use an available port.
 
 	     -s|--skip-cache  Skip usage of -chache.lib on plotgitsch
@@ -67,20 +68,39 @@ kidiff_version()
 {
 	tool_path=$(dirname "$(which kidiff)")
 
-	last_commit_hash=$(git --git-dir "${tool_path}/.git/" rev-parse --short HEAD)
-	last_commit_date=$(git --git-dir "${tool_path}/.git/" log -1 --format="%at" | xargs -I{} date -d @{} +"%Y/%m/%d %Hh%M")
+	if [[ -d "${tool_path}/../.git/" ]]; then
 
-	echo "${last_commit_hash} ${last_commit_date}"
+		last_commit_hash=$(git --git-dir "${tool_path}/../.git/" rev-parse --short HEAD)
+		last_commit_date=$(git --git-dir "${tool_path}/../.git/" log -1 --format="%at" | xargs -I{} date -d @{} +"%Y/%m/%d %Hh%M")
+
+		echo "${last_commit_hash} ${last_commit_date}"
+	else
+
+		if [[ -d "${tool_path}/../../../.git/" ]]; then
+
+			submodule_version=$(git --git-dir "${tool_path}/../../../.git/" submodule | grep -i KiCad-Diff)
+
+			echo "${submodule_version}"
+		else
+
+			echo "Unknown"
+		fi
+	fi
 }
 
 kiri_version()
 {
 	tool_path=$(dirname "$(which kiri)")
 
-	last_commit_hash=$(git --git-dir "${tool_path}/../.git/" rev-parse --short HEAD)
-	last_commit_date=$(git --git-dir "${tool_path}/../.git/" log -1 --format="%at" | xargs -I{} date -d @{} +"%Y/%m/%d %Hh%M")
+	if [[ -d "${tool_path}/../.git/" ]]; then
 
-	echo "${last_commit_hash} ${last_commit_date}"
+		last_commit_hash=$(git --git-dir "${tool_path}/../.git/" rev-parse --short HEAD)
+		last_commit_date=$(git --git-dir "${tool_path}/../.git/" log -1 --format="%at" | xargs -I{} date -d @{} +"%Y/%m/%d %Hh%M")
+
+		echo "${last_commit_hash} ${last_commit_date}"
+	else
+		echo "Unknown"
+	fi
 }
 
 show_version()
@@ -390,9 +410,9 @@ insert_pages()
 		fi
 
 		IFS= read -r -d '' HTML_SNIPPET <<-EOM
-		    <input  id="${page_filename}" type="radio" value="${page_filename}" name="pages" ${checked} onchange="change_page()"/>
-		    <label for="${page_filename}" id="label-${page}" class="rounded text-sm-left list-group-item radio-box" onclick="change_page_onclick()">
-		    <span style="margin-left:0.5em; margin-right:0.1em;" class="iconify" data-icon="gridicons:pages" data-inline="false"></span>
+		    <input  id="${page_filename}" title="${page_name}" type="radio" value="${page_filename}" name="pages" ${checked} onchange="change_page()"/>
+		    <label for="${page_filename}" title="${page_name}" id="label-${page}" class="rounded text-sm-left list-group-item radio-box" onclick="change_page_onclick()" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+		    <span title="${page_name}" style="margin-left:0.5em; margin-right:0.1em;" class="iconify" data-icon="gridicons:pages" data-inline="false"></span>
 			    ${page_name}
 		    </label>
 		EOM
@@ -417,7 +437,7 @@ fix_layer_names()
 	_layers="$1"
 
 	_layers_new=
-	if [[ ${KICAD_VERSION} == 6 ]] && [[ ${kicad_version_of_pcb} -lt 20211014 ]]; then
+	if [[ ${KICAD_VERSION} == 6 ]] && [[ ${PCBS_VERSION} -lt 20211014 ]]; then
 
 		IFS=$'\n'
 		for layer in ${_layers}; do
@@ -724,12 +744,12 @@ generate_schematic_artifacts()
 				mv -f "${sch_page_svg}" "${svg_file1}" 2> /dev/null
 
 				# Fix problematic last svg tag. But how this was introduced?
-				sed -i "s|</svg>svg>|</svg>|g" "${svg_file1}" 2> /dev/null
+				# sed -i "s|</svg>svg>|</svg>|g" "${svg_file1}" 2> /dev/null
 
-					scour -i ${svg_file1} -o output.svg --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none &> /dev/null
-					if [[ -f output.svg ]]; then
-						mv output.svg ${svg_file1}
-					fi
+				scour -i "${svg_file1}" -o output.svg --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none &> /dev/null
+				if [[ -f output.svg ]]; then
+					mv output.svg "${svg_file1}"
+				fi
 				;;
 
 			sch2-*)
@@ -739,14 +759,25 @@ generate_schematic_artifacts()
 				mv -f "${sch_page_svg}" "${svg_file2}" 2> /dev/null
 
 				# Fix problematic last svg tag. But how this was introduced?
-				sed -i "s|</svg>svg>|</svg>|g" "${svg_file2}" 2> /dev/null
+				# sed -i "s|</svg>svg>|</svg>|g" "${svg_file2}" 2> /dev/null
 
-					scour -i ${svg_file2} -o output.svg --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none &> /dev/null
-					if [[ -f output.svg ]]; then
-						mv output.svg ${svg_file2}
-					fi
+				scour -i "${svg_file2}" -o output.svg --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none &> /dev/null
+				if [[ -f output.svg ]]; then
+					mv output.svg "${svg_file2}"
+				fi
 				;;
 		esac
+
+		if [ ! -s "${svg_file1}" ]; then
+			echo "Removing empty file ${svg_file1}"
+			rm -rf "${svg_file1}"
+		fi
+
+		if [ ! -s "${svg_file2}" ]; then
+			echo "Removing empty file ${svg_file2}"
+			rm -rf "${svg_file2}"
+		fi
+
 	done
 }
 
@@ -757,7 +788,7 @@ create_list_of_layers()
 	_board_path=$(dirname "${_kicad_pcb}")
 	layers_file=${_board_path}/layers
 
-	if [[ ${kicad_version_of_pcb} -lt 20211014 ]]; then
+	if [[ ${PCBS_VERSION} -lt 20211014 ]]; then
 		# Format = (2 Pwr power)
 		_usedboard_layers=$(sed -n '/^  (layers/,/  )$/{/^  (layers/!{/  )$/!p}}' "${_kicad_pcb}" | sed "s/^[ \t]\+//g" | sed "s/[()]//g" | cut -d" " -f-2 | sed "s/\r$//g" | sed "s/\"//g" | sed '/^[[:space:]]*$/d')
 	else
@@ -792,7 +823,7 @@ create_list_of_layers()
 	echo -e "${_usedboard_layers}" > "${layers_file}"
 
 	# Fix layers name on icad 6 for older projects
-	if [[ ${KICAD_VERSION} == 6 ]] && [[ ${kicad_version_of_pcb} -lt 20211014 ]]; then
+	if [[ ${KICAD_VERSION} == 6 ]] && [[ ${PCBS_VERSION} -lt 20211014 ]]; then
 		_layers=$(cat "${layers_file}")
 		_layers=$(fix_layer_names "${_layers}")
 		echo -e "${_layers}" > "${layers_file}"
@@ -914,9 +945,9 @@ generate_layout_artifacts()
 			# inkscape --export-type="eps" --export-filename="tmp.eps" --export-area-drawing "${svg_file1}"
 			# inkscape tmp.eps --export-plain-svg --export-filename="${svg_file1}"
 
-			scour -i ${svg_file1} -o output.svg --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none &> /dev/null
+			scour -i "${svg_file1}" -o output.svg --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none &> /dev/null
 			if [[ -f output.svg ]]; then
-				mv output.svg ${svg_file1}
+				mv output.svg "${svg_file1}"
 			fi
 
 		fi
@@ -936,9 +967,9 @@ generate_layout_artifacts()
 			# inkscape --export-type="eps" --export-filename="tmp.eps" --export-area-drawing "${svg_file2}"
 			# inkscape tmp.eps --export-plain-svg --export-filename="${svg_file2}"
 
-			scour -i ${svg_file2} -o output.svg --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none &> /dev/null
+			scour -i "${svg_file2}" -o output.svg --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none &> /dev/null
 			if [[ -f output.svg ]]; then
-				mv output.svg ${svg_file2}
+				mv output.svg "${svg_file2}"
 			fi
 
 		fi
@@ -1096,7 +1127,8 @@ generate_artifacts()
 					STDOUT_KIDIFF=""
 				fi
 
-				if [[ ${KICAD_VERSION} == 6 ]]; then
+				# Kicad-6 boards do not have a schematic view working yet, so skip plotgitsch
+				if [[ ${PCBS_VERSION} -ge 20211014 ]]; then
 					continue
 					# generate_schematic_artifacts_sch2svg "${repo_path}" "${kicad_pro_subpath}" "${kicad_pro_filename}" "${sch_page_names}" "${i}" "${j}" "${output_dir}"
 				else
@@ -1154,8 +1186,8 @@ generate_artifacts()
 	pcb_title=$(grep -i "(title .*)" "${kicad_pcb}" 2> /dev/null | sed "s/^[ \t]\+//g" | cut -d" " -f 2- | sed "s/[)\"]//g")
 	if [[ "${sch_title}" == "" ]]; then sch_title="{SCH_Title}"; fi
 	if [[ "${pcb_title}" == "" ]]; then pcb_title="{PCB_Title}"; fi
-	sed -i "s|\[SCH_TITLE\]|[Sch] ${sch_title}|g" "${web_dir}/${main_html}"
-	sed -i "s|\[PCB_TITLE\]|[PCB] ${pcb_title}|g" "${web_dir}/${main_html}"
+	sed -i "s|\[SCH_TITLE\]|Sch \| ${sch_title}|g" "${web_dir}/${main_html}"
+	sed -i "s|\[PCB_TITLE\]|PCB \| ${pcb_title}|g" "${web_dir}/${main_html}"
 
 	# Update board revision
 	echo "- Setting sch/pcb revision"
@@ -1224,13 +1256,14 @@ export DEBUG=0
 export DEBUG_PLOTGITSCH=0
 export DEBUG_KIDIFF=0
 export DRY_RUN=0
+export START_SERVER=1
 export LAUNCH_BROWSER=1
 export NEWER_COMMIT=""
 export OLDER_COMMIT=""
 export REMOVE_KIRI_FOLDER=0
 export VERBOSE=0
 export WEBSERVER_PORT=
-export OUTPUT_DIR=kiri
+export OUTPUT_DIR=.kiri
 export SHOW_LAST_N_COMMITS=
 export SKIP_CACHE_LIB=0
 export START_ON_LAYOUT_VIEW=0
@@ -1253,7 +1286,7 @@ do
 
 	-y|--dry-run)
 		DRY_RUN=1
-		LAUNCH_BROWSER=0
+		START_SERVER=0
 		VERBOSE=1
 		shift
 		;;
@@ -1263,8 +1296,8 @@ do
 		exit 0
 		;;
 
-	-l)
-		LAUNCH_BROWSER=0
+	-l|--no-server)
+		START_SERVER=0
 		shift
 		;;
 
@@ -1326,12 +1359,17 @@ do
 
 	-x|--archive)
 		ARCHIVE=1
-		LAUNCH_BROWSER=0
+		START_SERVER=0
 		shift
 		;;
 
 	-s|--skip-cache)
 		SKIP_CACHE_LIB=1
+		shift
+		;;
+
+	-S|--server-only)
+		LAUNCH_BROWSER=0
 		shift
 		;;
 
@@ -1367,7 +1405,7 @@ if [[ "${kicad_pro}" == "" ]]; then
 	fi
 fi
 
-if [[ $ret > 0 ]]; then
+if [[ $ret -gt 0 ]]; then
 	exit 1
 fi
 
@@ -1421,7 +1459,7 @@ kicad_pcb="${kicad_pro_filename}.${kicad_pcb_extension}"
 # (kicad_pcb (version 20171130) (host pcbnew 5.1.6+dfsg1-1)
 # (kicad_pcb (version 20171130) (host pcbnew 5.1.12-84ad8e8a86~92~ubuntu21.10.1)
 # (kicad_pcb (version 20211014) (generator pcbnew)
-kicad_version_of_pcb=$(head -n1 "${kicad_pcb}" | sed "s/[()]//g" | cut -f3 -d" ")
+PCBS_VERSION=$(head -n1 "${kicad_pcb}" | sed "s/[()]//g" | cut -f3 -d" ")
 
 echo
 echo "      kicad_pro_path = $kicad_pro_path"
@@ -1431,15 +1469,15 @@ echo "           kicad_pro = ${kicad_pro}"
 echo "           kicad_sch = ${kicad_sch}"
 echo "           kicad_pcb = ${kicad_pcb}"
 echo "       KICAD_VERSION = ${KICAD_VERSION}"
-echo "   KICAD_PCB_VERSION = ${kicad_version_of_pcb}"
+echo "   KICAD_PCB_VERSION = ${PCBS_VERSION}"
 echo "  kicad_pro_filename = ${kicad_pro_filename}"
 echo " kicad_pro_extension = ${kicad_pro_extension}"
 echo " kicad_sch_extension = ${kicad_sch_extension}"
 echo " kicad_pcb_extension = ${kicad_pcb_extension}"
 echo "          output_dir = ${output_dir}"
 
-# Kicad 6 does not have a schematic view working yet
-if [[ "${KICAD_VERSION}" -ge 6 ]]; then
+# Kicad-6 boards do not have a schematic view working yet
+if [[ ${PCBS_VERSION} -ge 20211014 ]]; then
 	START_ON_LAYOUT_VIEW=1
 fi
 
@@ -1489,7 +1527,7 @@ fi
 web_dir="${output_dir}/web/"
 
 echo
-echo -e "${blue}Output folder:${reset} "$(realpath "${OUTPUT_DIR}")
+echo -e "${blue}Output folder:${reset} $(realpath "${OUTPUT_DIR}")"
 
 if [[ ${ARCHIVE} == 1 ]]; then
 	datetime=$(date +"%Y.%m.%d-%Hh%M")
@@ -1498,15 +1536,17 @@ if [[ ${ARCHIVE} == 1 ]]; then
 	tar -cvzf "${tgz_filename}" "${output_dir}" &> /dev/null
 fi
 
-if [[ "${LAUNCH_BROWSER}" != 0 ]]; then
+if [[ "${START_SERVER}" != 0 ]]; then
 	if grep -i -q "Microsoft" "/proc/version" &> /dev/null; then
 		# Webserver alternative for Windows with WSL
 		host=127.0.0.1
 		if [[ "${WEBSERVER_PORT}" == "" ]]; then
 			WEBSERVER_PORT=8080
 		fi
+		if [[ ${LAUNCH_BROWSER} == 1 ]]; then
+			cmd.exe /C start "http://${host}:${WEBSERVER_PORT}" &> /dev/null &
+		fi
 		echo "Starting web-server at http://${host}:${WEBSERVER_PORT}"
-		cmd.exe /C start "http://${host}:${WEBSERVER_PORT}" &> /dev/null &
 		echo "Hit Ctrl+C to end session"
 		if python3 -m http.server -d "${web_dir}/../" -b "${host}" "${WEBSERVER_PORT}" &> /dev/null; then
 			pid=$!
@@ -1521,7 +1561,10 @@ if [[ "${LAUNCH_BROWSER}" != 0 ]]; then
 		if [[ "${WEBSERVER_PORT}" != "" ]]; then
 			WEBSERVER_PORT_PARAM="-p ${WEBSERVER_PORT}"
 		fi
-		if kiri-server "${output_dir}" ${WEBSERVER_PORT_PARAM} 2> /dev/null; then
+		if [[ ${LAUNCH_BROWSER} == 0 ]]; then
+			SERVER_ONLY_FLAG="-S"
+		fi
+		if kiri-server "${output_dir}" ${WEBSERVER_PORT_PARAM} ${SERVER_ONLY_FLAG} 2> /dev/null; then
 			pid=$!
 			kill -9 $pid > /dev/null
 		else
