@@ -38,18 +38,19 @@ def signal_handler(sig, frame):
 def parse_cli_args():
     parser = argparse.ArgumentParser(description="Kicad PCB visual diffs.")
     parser.add_argument(
-        "-d",
-        "--display",
-        type=str,
-        help="Set DISPLAY value, default :1.0",
-        default=":1.0",
+        "-d", "--display", type=str, help="Set DISPLAY value, default :1.0", default=":1.0",
     )
-    parser.add_argument("-n", "--nested", action='store_true', help="Fix paths when it was a nested project")
+    parser.add_argument(
+        "-n", "--nested", action='store_true', help="Fix paths when it was a nested project"
+    )
     parser.add_argument(
         "-p", "--port", type=int, help="Force the weverver on an specific port"
     )
     parser.add_argument(
         "-r", "--port_range", type=int, default=10, help="Port range to try"
+    )
+    parser.add_argument(
+        "-S", "--server-only", action='store_true', help="Port range to try"
     )
     parser.add_argument(
         "-w",
@@ -73,7 +74,7 @@ def parse_cli_args():
 
     return args
 
-def launch_webserver(request_handler, port, kicad_project):
+def launch_webserver(request_handler, port, kicad_project, server_only):
 
     global httpd
     httpd = socketserver.TCPServer(("", port), request_handler)
@@ -92,7 +93,8 @@ def launch_webserver(request_handler, port, kicad_project):
         print("")
         print("Starting webserver at {}".format(url))
         print("(Hit Ctrl+C to exit)")
-        webbrowser.open(url)
+        if not server_only:
+            webbrowser.open(url)
         httpd.serve_forever()
 
 
@@ -148,7 +150,7 @@ if __name__ == "__main__":
 
     if args.port:
         try:
-            launch_webserver(request_handler, args.port, kicad_project)
+            launch_webserver(request_handler, args.port, kicad_project, args.server_only)
         except Exception:
             print("Specified port {port} is in use".format(port=port))
             pass
@@ -156,7 +158,7 @@ if __name__ == "__main__":
         for i in range(args.port_range):
             try:
                 port = default_port + i
-                launch_webserver(request_handler, port, kicad_project)
+                launch_webserver(request_handler, port, kicad_project, args.server_only)
             except Exception:
                 # print("Specified port {port} is in use".format(port=port))
                 pass
