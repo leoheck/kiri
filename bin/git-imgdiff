@@ -18,5 +18,6 @@ echo "Creating $(realpath ${svg1})"
 echo "Creating $(realpath ${svg2})"
 
 # Rename/move file
-mv -f "$a" "$svg1"
-mv -f "$b" "$svg2"
+# Sometimes an empty file is being created
+mv -f "$a" "${svg1}" 2> /dev/null
+mv -f "$b" "${svg2}" 2> /dev/null
