@@ -664,6 +664,8 @@ window.onload = function() {
         show_sch();
     else
         show_pcb();
+
+    check_server_status();
 };
 
 // =======================================
@@ -780,4 +782,32 @@ function imgError(image) {
     parent = document.getElementById(image.id).parentElement
     parent.style.display = 'none';
     return true;
+}
+
+function check_server_status()
+{
+    var img = document.body.appendChild(document.createElement("img"));
+
+    img.onload = function()
+    {
+        server_online();
+    };
+    img.onerror = function()
+    {
+        server_offline();
+    };
+    img.src = "http://127.0.0.1:8080/web/favicon.ico?" + Date.now();
+    img.style.display = "none";
+
+    setTimeout(check_server_status, 5000);
+}
+
+function server_online() {
+    console.log("Server is Online");
+    document.getElementById("server_offline").style.display = "none";
+}
+
+function server_offline() {
+    console.log("Server is Offline");
+    document.getElementById("server_offline").style.display = "block";
 }
