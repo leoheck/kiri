@@ -752,10 +752,10 @@ generate_schematic_artifacts()
 				# Fix problematic last svg tag. But how this was introduced?
 				# sed -i "s|</svg>svg>|</svg>|g" "${svg_file1}" 2> /dev/null
 
-				scour -i "${svg_file1}" -o output.svg --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none &> /dev/null
-				if [[ -f output.svg ]]; then
-					mv output.svg "${svg_file1}"
-				fi
+				# scour -i "${svg_file1}" -o output.svg --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none &> /dev/null
+				# if [[ -f output.svg ]]; then
+				# 	mv output.svg "${svg_file1}"
+				# fi
 				;;
 
 			sch2-*)
@@ -767,10 +767,10 @@ generate_schematic_artifacts()
 				# Fix problematic last svg tag. But how this was introduced?
 				# sed -i "s|</svg>svg>|</svg>|g" "${svg_file2}" 2> /dev/null
 
-				scour -i "${svg_file2}" -o output.svg --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none &> /dev/null
-				if [[ -f output.svg ]]; then
-					mv output.svg "${svg_file2}"
-				fi
+				# scour -i "${svg_file2}" -o output.svg --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none &> /dev/null
+				# if [[ -f output.svg ]]; then
+				# 	mv output.svg "${svg_file2}"
+				# fi
 				;;
 		esac
 
@@ -955,10 +955,11 @@ generate_layout_artifacts()
 			# inkscape --export-type="eps" --export-filename="tmp.eps" --export-area-drawing "${svg_file1}"
 			# inkscape tmp.eps --export-plain-svg --export-filename="${svg_file1}"
 
-			scour -i "${svg_file1}" -o output.svg --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none &> /dev/null
-			if [[ -f output.svg ]]; then
-				mv output.svg "${svg_file1}"
-			fi
+			continue
+			# scour -i "${svg_file1}" -o output.svg --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none &> /dev/null
+			# if [[ -f output.svg ]]; then
+			# 	mv output.svg "${svg_file1}"
+			# fi
 
 		fi
 
@@ -977,10 +978,11 @@ generate_layout_artifacts()
 			# inkscape --export-type="eps" --export-filename="tmp.eps" --export-area-drawing "${svg_file2}"
 			# inkscape tmp.eps --export-plain-svg --export-filename="${svg_file2}"
 
-			scour -i "${svg_file2}" -o output.svg --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none &> /dev/null
-			if [[ -f output.svg ]]; then
-				mv output.svg "${svg_file2}"
-			fi
+			continue
+			# scour -i "${svg_file2}" -o output.svg --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none &> /dev/null
+			# if [[ -f output.svg ]]; then
+			# 	mv output.svg "${svg_file2}"
+			# fi
 
 		fi
 
