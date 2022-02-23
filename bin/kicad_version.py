@@ -51,11 +51,11 @@ if __name__ == "__main__":
         version_patch = int(pcbnew_version.strip("()").split(".")[2].replace("-", "+").split("+")[0])
         extra_version_str = pcbnew_version.replace("{}.{}.{}".format(version_major, version_minor, version_patch), "")
     else:
-        pcbnew_version = 5
-        version_major = 0
+        pcbnew_version = "5.x.x (Unknown)"
+        version_major = 5
         version_minor = 0
         version_patch = 0
-        extra_version_str = "(unknown)"
+        extra_version_str = ""
 
     if args.major:
         print(version_major)
