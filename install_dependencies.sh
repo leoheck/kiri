@@ -15,19 +15,19 @@ os=$(get_os_name)
 
 # Basic dependencies for Linux/WSL
 if [[ $os == "LINUX" ]]; then
-
+	sudo apt update
 	sudo apt install -y git
 	sudo apt install -y libgmp-dev
 	sudo apt install -y pkg-config
 	sudo apt install -y opam
 	sudo apt install -y python3-pip
-	sudo apt install -y python3-tk
 	sudo apt install -y kicad
 	sudo apt install -y dos2unix
 	sudo apt install -y coreutils
 	sudo apt install -y zenity
 	sudo apt install -y dune
 	sudo apt install -y scour
+	sudo apt install -y librsvg2-bin
 fi
 
 if [[ $os == "OSX" ]]; then
@@ -64,12 +64,13 @@ if [[ $os == "OSX" ]]; then
 	brew install dos2unix
 	brew install coreutils
 	brew install scour
+	brew install wxpython
+	brew install wxwidgets
+	brew install librsvg
 fi
 
 # Kicad-Diff dependencies
-pip3 install pygubu
 pip3 install python_dateutil
-pip3 install tk
 
 # Initialize Opam
 if [[ ! -d "$HOME/.opam/4.09.1" ]]; then
