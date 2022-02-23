@@ -4,9 +4,14 @@ show_help()
 {
 	IFS= read -r -d '' HELP_MESSAGE <<-EOM
 
-	USAGE :
+	USAGE:
 
 	    kiri [OPTIONS] [KICAD_PROJECT]
+
+	DESCRIPTION:
+
+		Kiri is a proof of concept script to automate the usage of
+		plotkicadsch (plotgitsch) and Kicad-Diff (kidiff) in a single easy-to-use tool.
 
 	OPTIONS:
 
@@ -21,6 +26,7 @@ show_help()
 
 	     -s|--skip-cache  Skip usage of -chache.lib on plotgitsch
 	     -u|--layout      Start with Layout view selected
+	     -f|--page-frame  Show whole page frame for PCB
 
 	     -d|--output-dir  Change output folder path/name
 	     -r|--remove      Remove generated folder before running it
@@ -881,7 +887,11 @@ generate_layout_artifacts()
 			# cd "${kicad_pro_subpath}" || exit
 		# fi
 
-		cmd="kidiff ${kicad_pcb} --webserver-disable -b ${commit1} -a ${commit2} -o \"${output_dir}\" ${STDOUT_KIDIFF}"
+		if [[ ${PAGE_FRAME} == "1" ]]; then
+			page_frame_parameter="-f"
+		fi
+
+		cmd="kidiff ${kicad_pcb} --webserver-disable -b ${commit1} -a ${commit2} -o \"${output_dir}\" ${page_frame_parameter} ${STDOUT_KIDIFF}"
 		if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_KIDIFF}" = "1" ]]; then
 			echo -e "   ${green}${cmd}${reset}"
 		fi
@@ -1267,6 +1277,7 @@ export OUTPUT_DIR=.kiri
 export SHOW_LAST_N_COMMITS=
 export SKIP_CACHE_LIB=0
 export START_ON_LAYOUT_VIEW=0
+export PAGE_FRAME=0
 
 while [[ $# -gt 0 ]]
 do
@@ -1375,6 +1386,11 @@ do
 
 	-u|--layout)
 		START_ON_LAYOUT_VIEW=1
+		shift
+		;;
+
+	-f|--frame)
+		PAGE_FRAME=1
 		shift
 		;;
 
