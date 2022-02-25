@@ -1,7 +1,12 @@
 
 // Default variables
+// These variables are updated by Kiri script
 var default_view = "schematic";
 var board_name = "board";
+var port = 8080;
+
+var server_status = 1;
+var old_server_status = -1;
 
 //
 // Attempt to fix the:
@@ -792,22 +797,32 @@ function check_server_status()
     {
         server_online();
     };
+
     img.onerror = function()
     {
         server_offline();
     };
-    img.src = "http://127.0.0.1:8080/web/favicon.ico?" + Date.now();
+
+    img.src = "http://127.0.0.1:" + port + "/web/favicon.ico?" + Date.now();
     img.style.display = "none";
 
     setTimeout(check_server_status, 5000);
 }
 
 function server_online() {
-    console.log("Server is Online");
+    server_status = 1;
     document.getElementById("server_offline").style.display = "none";
+    if (server_status != old_server_status) {
+        old_server_status = server_status;
+        console.log("Server is Online");
+    }
 }
 
 function server_offline() {
-    console.log("Server is Offline");
+    server_status = 0;
     document.getElementById("server_offline").style.display = "block";
+    if (server_status != old_server_status) {
+        old_server_status = server_status;
+        console.log("Server is Offline");
+    }
 }
