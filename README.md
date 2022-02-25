@@ -11,7 +11,7 @@ Previously known as KDiff, it was renamed KiRI since the old name was pretty clo
 
 To install this tool with on any Operating System, open a terminal and execute the following commands:
 
-> Windows users must use WSL/WSL2. See, [Environment preparation on Windows][Environment preparation on Windows] section.
+> Windows users must use WSL/WSL2. See, [Environment preparation on Windows](#Environment-preparation-on-Windows) section.
 
 
 ```bash
@@ -47,7 +47,7 @@ Set-Location C:\ubuntu-2004
 & .\ubuntu2004.exe
 ```
 
-After, install dependencies and Kiri by running script in the [Installing][Installing] section
+After, install dependencies and Kiri by running script in the [Installing](#Installing) section
 
 ## Loading KiRI environment
 
