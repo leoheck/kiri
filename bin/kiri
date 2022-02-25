@@ -583,7 +583,7 @@ insert_layers()
 	rm -rf .script.sed
 }
 
-generate_schematic_artifacts_sch2svg()
+generate_sch_artifacts_sch2svg()
 {
 	repo_path=${1}
 	kicad_pro_subpath=${2}
@@ -660,7 +660,7 @@ generate_schematic_artifacts_sch2svg()
 	fi
 }
 
-generate_schematic_artifacts()
+generate_sch_artifacts()
 {
 	repo_path=${1}
 	kicad_pro_subpath=${2}
@@ -867,7 +867,7 @@ create_list_of_pages()
 }
 
 
-generate_layout_artifacts()
+generate_pcb_artifacts()
 {
 	kicad_pro_subpath=${1}
 	kicad_pro_filename=${2}
@@ -989,7 +989,7 @@ generate_layout_artifacts()
 	done
 }
 
-generate_artifacts()
+generate_scm_artifacts()
 {
 	script_path=${1}
 	repo_path=${2}
@@ -1140,14 +1140,13 @@ generate_artifacts()
 				fi
 
 				# Kicad-6 boards do not have a schematic view working yet, so skip plotgitsch
-				if [[ ${PCBS_VERSION} -ge 20211014 ]]; then
-					continue
-					# generate_schematic_artifacts_sch2svg "${repo_path}" "${kicad_pro_subpath}" "${kicad_pro_filename}" "${sch_page_names}" "${i}" "${j}" "${output_dir}"
-				else
-					generate_schematic_artifacts "${repo_path}" "${kicad_pro_subpath}" "${kicad_pro_filename}" "${sch_page_names}" "${i}" "${j}" "${output_dir}"
+				if [[ ${PCBS_VERSION} -gt 20211014 ]]; then
+					generate_sch_artifacts "${repo_path}" "${kicad_pro_subpath}" "${kicad_pro_filename}" "${sch_page_names}" "${i}" "${j}" "${output_dir}"
+				# else
+					# generate_sch_artifacts_sch2svg "${repo_path}" "${kicad_pro_subpath}" "${kicad_pro_filename}" "${sch_page_names}" "${i}" "${j}" "${output_dir}"
 				fi
 
-				generate_layout_artifacts "${kicad_pro_subpath}" "${kicad_pro_filename}" "${kicad_pcb}" "${i}" "${j}" "${output_dir}"
+				generate_pcb_artifacts "${kicad_pro_subpath}" "${kicad_pro_filename}" "${kicad_pcb}" "${i}" "${j}" "${output_dir}"
 
 				if [[ "${VERBOSE}" == "1" ]]; then
 					echo
@@ -1190,32 +1189,36 @@ generate_artifacts()
 
 	# Set-Project title (folder name)
 	PROJECT_TITLE=$(basename "${repo_path}")
+	echo "- Setting project title: ${PROJECT_TITLE}"
 	sed -i "s|\[PROJECT_TITLE\]|${PROJECT_TITLE}|g" "${web_dir}/${main_html}"
 
 	# Update board title
-	echo "- Setting sch/pcb titles"
 	sch_title=$(grep -i "title " "${kicad_pro_subpath}/${kicad_pro_filename}.${kicad_sch_extension}" 2> /dev/null | sed "s/^[ \t]\+//g" | cut -d" " -f 2- | sed "s/[)\"]//g")
 	pcb_title=$(grep -i "(title .*)" "${kicad_pcb}" 2> /dev/null | sed "s/^[ \t]\+//g" | cut -d" " -f 2- | sed "s/[)\"]//g")
 	if [[ "${sch_title}" == "" ]]; then sch_title="{SCH_Title}"; fi
 	if [[ "${pcb_title}" == "" ]]; then pcb_title="{PCB_Title}"; fi
+	echo "- Setting sch page title: ${sch_title}"
+	echo "- Setting pcb page title: ${pcb_title}"
 	sed -i "s|\[SCH_TITLE\]|Sch \| ${sch_title}|g" "${web_dir}/${main_html}"
 	sed -i "s|\[PCB_TITLE\]|PCB \| ${pcb_title}|g" "${web_dir}/${main_html}"
 
 	# Update board revision
-	echo "- Setting sch/pcb revision"
 	sch_revision=$(grep -i "Rev" "${kicad_pro_subpath}/${kicad_pro_filename}.${kicad_sch_extension}" 2> /dev/null | sed "s/^[ \t]\+//g" | sed "s/[()]//g" | cut -d" " -f2- | sed "s/\"//g")
 	pcb_revision=$(grep "(rev " "${kicad_pcb}" 2> /dev/null | sed "s/^[ \t]\+//g" | sed "s/[()]//g" | cut -d" " -f2- | sed "s/\"//g")
 	if [[ "${pcb_revision}" == "" ]]; then pcb_revision="{sch_rev}"; fi
 	if [[ "${sch_revision}" == "" ]]; then sch_revision="{pcb_rev}"; fi
+	echo "- Setting sch revision: ${sch_revision}"
+	echo "- Setting pcb revision: ${pcb_revision}"
 	sed -i "s|\[SCH_REVISION\]|${sch_revision}|g" "${web_dir}/${main_html}"
 	sed -i "s|\[PCB_REVISION\]|${pcb_revision}|g" "${web_dir}/${main_html}"
 
 	# Update board date
-	echo "- Setting sch/pcb date"
 	sch_date=$(grep -i "date" "${kicad_pro_subpath}/${kicad_pro_filename}.${kicad_sch_extension}" 2> /dev/null | sed "s/^[ \t]\+//g" | sed "s/[()]//g" | cut -d" " -f2 | sed "s/\"//g")
 	pcb_date=$(grep "(date " "${kicad_pcb}" 2> /dev/null | sed "s/^[ \t]\+//g" | sed "s/[()]//g" | cut -d" " -f2 | sed "s/\"//g")
 	if [[ "${sch_date}" == "" ]]; then sch_date="{sch_date}"; fi
 	if [[ "${pcb_date}" == "" ]]; then pcb_date="{pcb_date}"; fi
+	echo "- Setting sch date: ${sch_date}"
+	echo "- Setting pcb date: ${pcb_date}"
 	sed -i "s|\[PCB_DATE\]|${pcb_date}|g" "${web_dir}/${main_html}"
 	sed -i "s|\[SCH_DATE\]|${sch_date}|g" "${web_dir}/${main_html}"
 
@@ -1227,22 +1230,30 @@ generate_artifacts()
 	commit2=$(echo "${commits}" | head -n$(("${commit2_idx}"+1)) | tail -n1 | cut -d" " -f1)
 
 	# Initial commit legend
-	echo "- Setting initial commits"
+	echo "- Setting initial selected commits: ${commit1}, ${commit2}"
 	sed -i "s|\[COMMIT_1_HASH\]|${commit1}|g" "${web_dir}/${main_html}"
 	sed -i "s|\[COMMIT_2_HASH\]|${commit2}|g" "${web_dir}/${main_html}"
 
 	# Update initial schematic images
+	sch_img_1="../${commit1}/sch-${kicad_pro_filename}.svg"
+	sch_img_2="../${commit2}/sch-${kicad_pro_filename}.svg"
 	echo "- Setting initial schematics"
-	sed -i "s|\[INITIAL_COMMIT_1_SCH\]|../${commit1}/sch-${kicad_pro_filename}.svg|g" "${web_dir}/${main_html}"
-	sed -i "s|\[INITIAL_COMMIT_2_SCH\]|../${commit2}/sch-${kicad_pro_filename}.svg|g" "${web_dir}/${main_html}"
+	echo "  Img1: ${sch_img_1}"
+	echo "  Img2: ${sch_img_2}"
+	sed -i "s|\[INITIAL_COMMIT_1_SCH\]|${sch_img_1}|g" "${web_dir}/${main_html}"
+	sed -i "s|\[INITIAL_COMMIT_2_SCH\]|${sch_img_2}|g" "${web_dir}/${main_html}"
 
 	# Update initial layout images
-	echo "- Setting initial layouts"
 	usedboard_layers=$(find "${output_dir}" -name "layers" -exec cat {} \; | sort | uniq)
 	initial_layer_id=$(printf "%02d" $(echo -e "${usedboard_layers}" | head -1 | cut -d " " -f1 | tr "." "_"))
-	initial_layer_name=$(echo -e "${usedboard_layers}" | head -1 | cut -d " " -f2 | tr "." "_")
-	sed -i "s|\[INITIAL_COMMIT_1_PCB\]|../${commit1}/${kicad_pro_filename}-${initial_layer_id}-${initial_layer_name}.svg|g" "${web_dir}/${main_html}"
-	sed -i "s|\[INITIAL_COMMIT_2_PCB\]|../${commit2}/${kicad_pro_filename}-${initial_layer_id}-${initial_layer_name}.svg|g" "${web_dir}/${main_html}"
+	initial_layer_name=$(echo -e "${usedboard_layers}" | sed '/^$/d' | head -1 | cut -d " " -f2 | tr "." "_")
+	pcb_img_1="../${commit1}/${kicad_pro_filename}-${initial_layer_id}-${initial_layer_name}.svg"
+	pcb_img_2="../${commit2}/${kicad_pro_filename}-${initial_layer_id}-${initial_layer_name}.svg"
+	echo "- Setting initial layouts: ${initial_layer_id} ${initial_layer_name}"
+	echo "  Img1: ${pcb_img_1}"
+	echo "  Img2: ${pcb_img_2}"
+	sed -i "s|\[INITIAL_COMMIT_1_PCB\]|${pcb_img_1}|g" "${web_dir}/${main_html}"
+	sed -i "s|\[INITIAL_COMMIT_2_PCB\]|${pcb_img_2}|g" "${web_dir}/${main_html}"
 
 	# Change initial view to layout
 	if [[ "${START_ON_LAYOUT_VIEW}" == 1 ]]; then
@@ -1481,9 +1492,16 @@ fi
 kicad_sch="${kicad_pro_filename}.${kicad_sch_extension}"
 kicad_pcb="${kicad_pro_filename}.${kicad_pcb_extension}"
 
-# (kicad_pcb (version 20171130) (host pcbnew 5.1.6+dfsg1-1)
-# (kicad_pcb (version 20171130) (host pcbnew 5.1.12-84ad8e8a86~92~ubuntu21.10.1)
-# (kicad_pcb (version 20211014) (generator pcbnew)
+# (kicad_pcb (version 4) (host kicad "dummy file") )
+# (kicad_pcb (version 20171130) (host pcbnew "(5.0.0-rc2-76-gb5f63567d)")
+# (kicad_pcb (version 20171130) (host pcbnew "(5.1.6)-1")
+# (kicad_pcb (version 20171130) (host pcbnew 5.0.0-rc3-unknown-eaf938c~65~ubuntu18.04.1)
+# (kicad_pcb (version 20171130) (host pcbnew 5.0.1-33cea8e~67~ubuntu18.04.1)
+# (kicad_pcb (version 20171130) (host pcbnew 5.1.5+dfsg1-2~bpo10+1)
+# (kicad_pcb (version 20171130) (host pcbnew 5.1.6-c6e7f7d~86~ubuntu20.04.1)
+# (kicad_pcb (version 20171130) (host pcbnew 6.0.0-rc1-unknown-da35b16~65~ubuntu18.04.1)
+# (kicad_pcb (version 20200104) (host pcbnew "(5.99.0-879-ga0698723b)")
+# (kicad_pcb (version 20210606) (generator pcbnew)
 PCBS_VERSION=$(head -n1 "${kicad_pcb}" | sed "s/[()]//g" | cut -f3 -d" ")
 
 echo
@@ -1541,7 +1559,7 @@ if [[ ! -f "${kicad_pro_subpath}/${kicad_pcb}.bkp" ]]; then
 fi
 dos2unix "${kicad_pcb}" &> /dev/null
 
-generate_artifacts "${script_path}" "${repo_path}" "${kicad_pro_subpath}" "${kicad_sch}" "${kicad_pcb}" "${kicad_pro_filename}" "${output_dir}"
+generate_scm_artifacts "${script_path}" "${repo_path}" "${kicad_pro_subpath}" "${kicad_sch}" "${kicad_pcb}" "${kicad_pro_filename}" "${output_dir}"
 
 # Restore board
 if [[ -f "${kicad_pro_subpath}/${kicad_pcb}.bkp" ]]; then
