@@ -1238,8 +1238,8 @@ generate_scm_artifacts()
 	sch_img_1="../${commit1}/sch-${kicad_pro_filename}.svg"
 	sch_img_2="../${commit2}/sch-${kicad_pro_filename}.svg"
 	echo "- Setting initial schematics"
-	echo "  Sch1: ${sch_img_1}"
-	echo "  Sch2: ${sch_img_2}"
+	echo "  Sch1: ${web_dir}/${sch_img_1}"
+	echo "  Sch2: ${web_dir}/${sch_img_2}"
 	sed -i "s|\[INITIAL_COMMIT_1_SCH\]|${sch_img_1}|g" "${web_dir}/${main_html}"
 	sed -i "s|\[INITIAL_COMMIT_2_SCH\]|${sch_img_2}|g" "${web_dir}/${main_html}"
 
@@ -1250,8 +1250,8 @@ generate_scm_artifacts()
 	pcb_img_1="../${commit1}/${kicad_pro_filename}-${initial_layer_id}-${initial_layer_name}.svg"
 	pcb_img_2="../${commit2}/${kicad_pro_filename}-${initial_layer_id}-${initial_layer_name}.svg"
 	echo "- Setting initial layouts: ${initial_layer_id} ${initial_layer_name}"
-	echo "  PCB1: ${pcb_img_1}"
-	echo "  PCB2: ${pcb_img_2}"
+	echo "  PCB1: ${web_dir}/${pcb_img_1}"
+	echo "  PCB2: ${web_dir}/${pcb_img_2}"
 	sed -i "s|\[INITIAL_COMMIT_1_PCB\]|${pcb_img_1}|g" "${web_dir}/${main_html}"
 	sed -i "s|\[INITIAL_COMMIT_2_PCB\]|${pcb_img_2}|g" "${web_dir}/${main_html}"
 
