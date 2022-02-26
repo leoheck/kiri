@@ -1140,7 +1140,7 @@ generate_scm_artifacts()
 				fi
 
 				# Kicad-6 boards do not have a schematic view working yet, so skip plotgitsch
-				if [[ ${PCBS_VERSION} -gt 20211014 ]]; then
+				if [[ ${PCBS_VERSION} -lt 20211014 ]]; then
 					generate_sch_artifacts "${repo_path}" "${kicad_pro_subpath}" "${kicad_pro_filename}" "${sch_page_names}" "${i}" "${j}" "${output_dir}"
 				# else
 					# generate_sch_artifacts_sch2svg "${repo_path}" "${kicad_pro_subpath}" "${kicad_pro_filename}" "${sch_page_names}" "${i}" "${j}" "${output_dir}"
