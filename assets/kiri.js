@@ -6,9 +6,19 @@ var board_name = "board";
 var port = 8080;
 
 var server_status = 1;
-var old_server_status = -1;
+var old_server_status = 1;
 
-//
+// This comes from data.js
+const data = JSON.parse(data_json);
+
+// Test data.js format
+for (const [commit, commit_data] of Object.entries(data)) {
+    console.log("commit", commit);
+    for (const [layer_id, layer_name] of Object.entries(commit_data.layers)) {
+        console.log("layer = id:", layer_id, "- name:", layer_name, "- img:", commit_data.layer_imgs[layer_id]);
+    }
+}
+
 // Attempt to fix the:
 // [Violation] Added non-passive event listener to a scroll-blocking
 
@@ -131,6 +141,7 @@ window.onkeydown = function(e) {
 
             document.getElementById("show_slide_lbl").classList.add('active');
             document.getElementById("show_slide").checked = true;
+
         } else {
             next_view_type = "show_onion";
 
@@ -462,7 +473,42 @@ function if_url_exists(url, callback) {
     request.send('');
 };
 
+function mergeArrays(...arrays) {
+    let jointArray = []
+
+    arrays.forEach(array => {
+        jointArray = [...jointArray, ...array]
+    })
+    const uniqueArray = jointArray.reduce((newArray, item) =>{
+        if (newArray.includes(item)){
+            return newArray
+        } else {
+            return [...newArray, item]
+        }
+    }, [])
+    return uniqueArray
+}
+
+function generate_layers_list(commit1, commit2) {
+    var keys1 = Object.keys(data[commit1].layers);
+    var keys2 = Object.keys(data[commit2].layers);
+    var keys = mergeArrays(keys1, keys2);
+    // console.log("keys1: ", keys1);
+    // console.log("keys2: ", keys2);
+    // console.log("keys : ", keys);
+    var layers="";
+    for (var i = 0; i < keys.length; i++) {
+        console.log(keys[i], data[commit1].layers[keys[i]], data[commit2].layers[keys[i]]);
+    }
+    return layers;
+}
+
+function update_layers_list(layers) {
+    console.log(layers);
+}
+
 function update_commits() {
+
     var commits = $("#commits_form input:checkbox[name='commit']");
     var hashes = [];
 
@@ -493,6 +539,10 @@ function update_commits() {
 
     change_page(commit1, commit2);
     change_layer(commit1, commit2);
+
+    // ===================================
+    // layers = generate_layers_list(commit1, commit2);
+    // update_layers_list(layers);
 }
 
 function change_page(commit1="", commit2="") {

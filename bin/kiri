@@ -583,6 +583,95 @@ insert_layers()
 	rm -rf .script.sed
 }
 
+
+# Recreate data.js file with right data
+data_json()
+{
+	#
+	# TODO: CHECK PATHS USED HERE #########################
+	#
+
+	output_dir="${1}"
+	layer_files=$(find -mindepth 3 -name layers)
+
+	echo "const data_json = '{ \\"
+
+	IFS=$'\n'
+
+	n_lines=$(echo "$layer_files" | wc -l)
+	n_line=0
+
+	for layer_file in $layer_files; do
+
+		n_line=$((n_line + 1))
+
+		commit_folder=$(dirname "$layer_file")
+		commit=$(basename ${commit_folder})
+
+		# Commits
+		echo -e "\t\"$commit\": \\"
+		echo -e "\t{ \\"
+
+		# Layer names
+		echo -e "\t\t\"layers\": \\"
+		echo -e "\t\t{ \\"
+		cat "${layer_file}" | sed 's/[^ ][^ ]*/"&"/g' | sed "s/ /: /g" | sed '$!s/$/,/' | sed "s/\$/ \\\/g" | sed "s/^/\t\t\t/g"
+		echo -e "\t\t}, \\"
+
+		# Layer images
+		kiri_output_folder=$(basename ${output_dir})
+		layer_files=$(find ${commit_folder} -name "*[0-9][0-9]-*.svg" | sort | sed "s/.*${kiri_output_folder}/../g")
+		echo -e "\t\t\"layer_imgs\": \\"
+		echo -e "\t\t{ \\"
+		laye_id_imgs=
+		for layer_img in ${layer_files}; do
+			layer_id=$(printf "%d" $(echo ${layer_img} | sed "s/.*-\([0-9][0-9]\)-.*/\1/g"))
+			if [[ $laye_id_imgs == "" ]]; then
+				laye_id_imgs="${layer_id} ${layer_img}"
+			else
+				laye_id_imgs="${laye_id_imgs}\n${layer_id} ${layer_img}"
+			fi
+		done
+		echo -e "${laye_id_imgs}" | sed 's/[^ ][^ ]*/"&"/g' | sed "s/ /: /g" | sed '$!s/$/,/' | sed "s/\$/ \\\/g" | sed "s/^/\t\t\t/g"
+		echo -e "\t\t} \\"
+
+		# Decide it last comma is added or not
+		if [[ $n_line == $n_lines ]];then
+			echo -e "\t} \\"
+		else
+			echo -e "\t}, \\"
+		fi
+	done
+
+	echo "}';"
+}
+
+layers_summary()
+{
+	# Get all used layers
+	all_used_layers=$(find -mindepth 3 -name layers -exec cat {} \; | sort | uniq | sed '/^$/d')
+
+	# Group layers by name
+	previows_layer_id=-1
+
+	IFS=$'\n'
+	layers_summary=""
+	for line in ${all_used_layers}; do
+		layer_id=$(echo "$line" | cut -d" " -f1)
+		layer_names=$(echo -e "${all_used_layers}" | grep "^${layer_id} " | cut -d " " -f2 | tr "\n" " ")
+		if [[ "${layer_id}" != "${previows_layer_id}" ]]; then
+			if [[ $layers_summary == "" ]]; then
+				layers_summary="${layer_id} ${layer_names}"
+			else
+				layers_summary="${layers_summary}\n${layer_id} ${layer_names}"
+			fi
+			previows_layer_id=${layer_id}
+		fi
+	done
+
+	echo -e "${layers_summary}"
+}
+
 generate_sch_artifacts_sch2svg()
 {
 	repo_path=${1}
@@ -794,6 +883,10 @@ create_list_of_layers()
 	_board_path=$(dirname "${_kicad_pcb}")
 	layers_file=${_board_path}/layers
 
+	# FORMAT: https://dev-docs.kicad.org/en/file-formats/sexpr-pcb/#_layers_section
+	# (layers (ORDINAL "CANONICAL_NAME" TYPE ["USER_NAME"])
+	# Type: jumper, mixed, power, signal, user
+
 	if [[ ${PCBS_VERSION} -lt 20211014 ]]; then
 		# Format = (2 Pwr power)
 		_usedboard_layers=$(sed -n '/^  (layers/,/  )$/{/^  (layers/!{/  )$/!p}}' "${_kicad_pcb}" | sed "s/^[ \t]\+//g" | sed "s/[()]//g" | cut -d" " -f-2 | sed "s/\r$//g" | sed "s/\"//g" | sed '/^[[:space:]]*$/d')
@@ -801,17 +894,20 @@ create_list_of_layers()
 		# Format = (2 "In2.Cu" power "Pwr")
 		_usedboard_layers=$(sed -n '/^  (layers/,/  )$/{/^  (layers/!{/  )$/!p}}' "${_kicad_pcb}" | sed "s/^[ \t]\+//g" | sed "s/[()]//g" | sed "s/\r$//g" | sed "s/\"//g" | sed '/^[[:space:]]*$/d')
 		# transform on v5 format for now
-		fixed_usedboard_layers=
+		fixed_usedboard_layers=""
 		for line in ${_usedboard_layers}; do
 			original_layer_name=$(echo "${line}" | cut -d" " -f2)
-			custom_layer_name=$(echo "${line}" | cut -d" " -f4)
+			custom_layer_name=$(echo "${line}" | sed "s/ hide//g" | sed -r "s/(jumper|mixed|power|signal|user)/TYPE/g" | cut -d" " -f4)
 			if [[ ${custom_layer_name} != "" ]]; then
 				line=$(echo "${line}" | sed "s/ ${custom_layer_name} / tmp_${custom_layer_name} /g")
 				line=$(echo "${line}" | sed "s/ ${original_layer_name} / ${custom_layer_name} /g")
 				line=$(echo "${line}" | sed "s/ tmp_${custom_layer_name} / ${original_layer_name} /g")
 			fi
-			fixed_usedboard_layers="${fixed_usedboard_layers}\n${line}"
-			custom_layer_name=
+			if [[ ${fixed_usedboard_layers} == "" ]]; then
+				fixed_usedboard_layers="${line}"
+			else
+				fixed_usedboard_layers="${fixed_usedboard_layers}\n${line}"
+			fi
 		done
 		_usedboard_layers="$(echo -e "${fixed_usedboard_layers}" | cut -d" " -f-2)"
 		#============================
@@ -866,6 +962,31 @@ create_list_of_pages()
 	fi
 }
 
+pages_summary()
+{
+	# Get all used pages
+	all_used_pages=$(find -mindepth 3 -name pages -exec cat {} \; | sort | uniq | sed '/^$/d')
+
+	# Group pages by name
+	previows_layer_id=-1
+
+	IFS=$'\n'
+	pages_summary=""
+	for line in ${all_used_pages}; do
+		layer_id=$(echo "$line" | cut -d" " -f1)
+		layer_names=$(echo -e "${all_used_pages}" | grep "^${layer_id} " | cut -d " " -f2 | tr "\n" " ")
+		if [[ "${layer_id}" != "${previows_layer_id}" ]]; then
+			if [[ $pages_summary == "" ]]; then
+				pages_summary="${layer_id} ${layer_names}"
+			else
+				pages_summary="${pages_summary}\n${layer_id} ${layer_names}"
+			fi
+			previows_layer_id=${layer_id}
+		fi
+	done
+
+	echo -e "${pages_summary}"
+}
 
 generate_pcb_artifacts()
 {
@@ -918,7 +1039,7 @@ generate_pcb_artifacts()
 		if [[ "${commit2}" == "${kicad_pcb}" ]]; then commit2="local"; fi
 	fi
 
-	# Save layer's list
+	# Generate a list of layers of each commit
 	kicad_pcb_name=$(basename "${kicad_pcb}")
 	if [[ ! -f "${output_dir}/${commit1}/layers" ]]; then
 		create_list_of_layers "${output_dir}/${commit1}/${kicad_pcb_name}"
@@ -1169,6 +1290,7 @@ generate_scm_artifacts()
 	main_html=index.html
 	cp -f "${script_path}/../assets/${main_html}"  "${web_dir}/"
 	cp -f "${script_path}/../assets/kiri.js"       "${web_dir}/"
+	cp -f "${script_path}/../assets/data.js"       "${web_dir}/"
 	cp -f "${script_path}/../assets/kiri.css"      "${web_dir}/"
 	cp -f "${script_path}/../assets/blank.svg"     "${web_dir}/"
 	cp -f "${script_path}/../assets/favicon.ico"   "${web_dir}/"
@@ -1238,20 +1360,29 @@ generate_scm_artifacts()
 	sch_img_1="../${commit1}/sch-${kicad_pro_filename}.svg"
 	sch_img_2="../${commit2}/sch-${kicad_pro_filename}.svg"
 	echo "- Setting initial schematics"
-	echo "  Sch1: ${web_dir}/${sch_img_1}"
-	echo "  Sch2: ${web_dir}/${sch_img_2}"
+	echo "  | Sch1: ${web_dir}/${sch_img_1}"
+	echo "  | Sch2: ${web_dir}/${sch_img_2}"
 	sed -i "s|\[INITIAL_COMMIT_1_SCH\]|${sch_img_1}|g" "${web_dir}/${main_html}"
 	sed -i "s|\[INITIAL_COMMIT_2_SCH\]|${sch_img_2}|g" "${web_dir}/${main_html}"
 
+	# Generate layers summary
+	echo "- Generating pages summary"
+	pages_summary > "${web_dir}/../pages"
+	echo "- Generating layers summary"
+	layers_summary > "${web_dir}/../layers"
+	echo "- Generating data.js"
+	data_json "${output_dir}" > "${web_dir}/data.js"
+
 	# Update initial layout images
-	usedboard_layers=$(find "${output_dir}" -name "layers" -exec cat {} \; | sort | uniq)
+	# usedboard_layers=$(find "${output_dir}" -name "layers" -exec cat {} \; | sort | uniq)
+	usedboard_layers=$(cat ${web_dir}/../layers)
 	initial_layer_id=$(printf "%02d" $(echo -e "${usedboard_layers}" | head -1 | cut -d " " -f1 | tr "." "_"))
 	initial_layer_name=$(echo -e "${usedboard_layers}" | sed '/^$/d' | head -1 | cut -d " " -f2 | tr "." "_")
 	pcb_img_1="../${commit1}/${kicad_pro_filename}-${initial_layer_id}-${initial_layer_name}.svg"
 	pcb_img_2="../${commit2}/${kicad_pro_filename}-${initial_layer_id}-${initial_layer_name}.svg"
-	echo "- Setting initial layouts: ${initial_layer_id} ${initial_layer_name}"
-	echo "  PCB1: ${web_dir}/${pcb_img_1}"
-	echo "  PCB2: ${web_dir}/${pcb_img_2}"
+	echo "- Setting initial layer: ${initial_layer_id}, ${initial_layer_name}"
+	echo "  | PCB1: ${web_dir}/${pcb_img_1}"
+	echo "  | PCB2: ${web_dir}/${pcb_img_2}"
 	sed -i "s|\[INITIAL_COMMIT_1_PCB\]|${pcb_img_1}|g" "${web_dir}/${main_html}"
 	sed -i "s|\[INITIAL_COMMIT_2_PCB\]|${pcb_img_2}|g" "${web_dir}/${main_html}"
 
