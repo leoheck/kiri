@@ -3,7 +3,7 @@
 KiRI is small tool to experiment having a visual diff tool for Kicad.
 It uses [Kicad-Diff](https://github.com/Gasman2014/KiCad-Diff) to generate layout diffs and [Plotgitsch](https://github.com/jnavila/plotkicadsch) to generate schematic diffs.
 
-It currently supports Kicad 5.* projects that use Git as source management.
+It currently supports `Kicad 5.*` projects that use Git as source management. The `Kicad 6.*` support is stil limited to layout since there is no way to export svg images from the schematics for the new `.kicad_sch` file format.
 
 Previously known as KDiff, it was renamed KiRI since the old name was pretty close to the KiDiff or Kicad-Diff, one of the projects referred to above.
 
