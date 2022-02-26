@@ -24,4 +24,5 @@ if [[ -d "$HOME/.local/share/kicad/6.0/" ]]; then
 	mkdir -p "${KICAD_PLUGINS_PATH}"
 	rm -rf "${KICAD_PLUGINS_PATH}/kiri"
 	cp -r "${KIRI_REPO_PATH}/kicad/plugin/kiri_v6" "${KICAD_PLUGINS_PATH}/kiri"
+	echo "Installed kiri plugin in ${KICAD_PLUGINS_PATH}/kiri"
 fi
