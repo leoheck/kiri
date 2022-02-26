@@ -6,9 +6,9 @@
 KIRI_REPO_PATH=$1
 
 if [ -z "${KIRI_REPO_PATH}" ]; then
-	REPO_PATH=.
+	KIRI_REPO_PATH=.
 else
-	REPO_PATH="${KIRI_REPO_PATH}"
+	KIRI_REPO_PATH="${KIRI_REPO_PATH}"
 fi
 
 case $OSTYPE in
@@ -20,7 +20,7 @@ case $OSTYPE in
 		;;
 esac
 
-if [[ -d ${HOME}/$HOME/.local/share/kicad/6.0/ ]]; then
+if [[ -d "$HOME/.local/share/kicad/6.0/" ]]; then
 	mkdir -p "${KICAD_PLUGINS_PATH}"
 	rm -rf "${KICAD_PLUGINS_PATH}/kiri"
 	cp -r "${KIRI_REPO_PATH}/kicad/plugin/kiri_v6" "${KICAD_PLUGINS_PATH}/kiri"
