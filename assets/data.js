@@ -1,11 +1,24 @@
 
-// This file should be recreated with the kiri script
-// This is just a template
+// This file will be recreated with the KiRi script
+// This is just an initial template
 
-const data_json = '{ \
-	"local": \
+const data_json = ' \
+{ \
+	"hash": \
 	{ \
-		"description": "This commit does this.", \
+		"description": "Info about the commit", \
+		"autor": "Leandro Heck", \
+		"data": "2020-12-22", \
+		"sch_title":   "Schematic Title", \
+		"sch_data":    "Schematic Data", \
+		"sch_rev":     "Schematic Rev", \
+		"sch_changes": True, \
+		"sch_files":   ["board.sch"], \
+		"pcb_title":   "Layout Title", \
+		"pcb_data":    "Layout Data", \
+		"pcb_rev":     "Layout Rev", \
+		"pcb_changes": True, \
+		"pcb_files":   ["board.kicad_pcb"], \
 		"pages": \
 		{ \
 			"board": "board.sch" \
