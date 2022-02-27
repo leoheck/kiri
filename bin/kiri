@@ -774,7 +774,7 @@ generate_sch_artifacts()
 			nested_project_param="-r ${kicad_pro_subpath}"
 		fi
 
-		if [[ ${SKIP_CACHE_LIB} == 0 ]]; then
+		if [[ ${SKIP_CACHE_LIB} == 0 ]] && [[ -f ${kicad_pro_subpath}/${kicad_pro_filename}-cache.lib ]]; then
 			cache_lib_param="-l ${kicad_pro_subpath}/${kicad_pro_filename}-cache.lib"
 		fi
 
@@ -833,46 +833,25 @@ generate_sch_artifacts()
 		case "${sch_page_svg}" in
 
 			sch1-*)
+
 				new_sch_name=${sch_page_svg//sch1/sch}
 				svg_file1="${output_dir}/${commit1}/${new_sch_name}"
-
 				mv -f "${sch_page_svg}" "${svg_file1}" 2> /dev/null
 
-				# Fix problematic last svg tag. But how this was introduced?
-				# sed -i "s|</svg>svg>|</svg>|g" "${svg_file1}" 2> /dev/null
+				plotgitsch_svg_tweaks "${svg_file1}"
 
-				# scour -i "${svg_file1}" -o output.svg --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none &> /dev/null
-				# if [[ -f output.svg ]]; then
-				# 	mv output.svg "${svg_file1}"
-				# fi
 				;;
 
 			sch2-*)
+
 				new_sch_name=${sch_page_svg//sch2/sch}
 				svg_file2="${output_dir}/${commit2}/${new_sch_name}"
-
 				mv -f "${sch_page_svg}" "${svg_file2}" 2> /dev/null
 
-				# Fix problematic last svg tag. But how this was introduced?
-				# sed -i "s|</svg>svg>|</svg>|g" "${svg_file2}" 2> /dev/null
+				plotgitsch_svg_tweaks "${svg_file2}"
 
-				# scour -i "${svg_file2}" -o output.svg --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none &> /dev/null
-				# if [[ -f output.svg ]]; then
-				# 	mv output.svg "${svg_file2}"
-				# fi
 				;;
 		esac
-
-		if [ ! -s "${svg_file1}" ]; then
-			echo "Removing empty file ${svg_file1}"
-			rm -rf "${svg_file1}"
-		fi
-
-		if [ ! -s "${svg_file2}" ]; then
-			echo "Removing empty file ${svg_file2}"
-			rm -rf "${svg_file2}"
-		fi
-
 	done
 }
 
@@ -1012,7 +991,7 @@ generate_pcb_artifacts()
 			page_frame_parameter="-f"
 		fi
 
-		cmd="kidiff ${kicad_pcb} --webserver-disable -b ${commit1} -a ${commit2} -o \"${output_dir}\" ${page_frame_parameter} ${STDOUT_KIDIFF}"
+		cmd="kidiff -n ${kicad_pcb} --webserver-disable -b ${commit1} -a ${commit2} -o \"${output_dir}\" ${page_frame_parameter} ${STDOUT_KIDIFF}"
 		if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_KIDIFF}" = "1" ]]; then
 			echo -e "   ${green}${cmd}${reset}"
 		fi
@@ -1048,7 +1027,7 @@ generate_pcb_artifacts()
 		create_list_of_layers "${output_dir}/${commit2}/${kicad_pcb_name}"
 	fi
 
-	usedboard_layers=$(cat "${output_dir}/${commit1}/layers" "${output_dir}/${commit2}/layers" | sort | uniq )
+	usedboard_layers=$(cat "${output_dir}/${commit1}/layers" "${output_dir}/${commit2}/layers" | sort | uniq)
 
 	IFS=$'\n'
 	for layer in ${usedboard_layers}; do
@@ -1058,8 +1037,11 @@ generate_pcb_artifacts()
 
 		layer_name=$(echo "${layer}" | cut -d " " -f2 | sed "s/\./_/g")
 
-		svg_file1="${output_dir}/${commit1}/${kicad_pro_filename}-${layer_id}-${layer_name}.svg"
-		svg_file2="${output_dir}/${commit2}/${kicad_pro_filename}-${layer_id}-${layer_name}.svg"
+		# svg_file1="${output_dir}/${commit1}/${kicad_pro_filename}-${layer_id}-${layer_name}.svg"
+		# svg_file2="${output_dir}/${commit2}/${kicad_pro_filename}-${layer_id}-${layer_name}.svg"
+
+		svg_file1="${output_dir}/${commit1}/${kicad_pro_filename}-${layer_id}.svg"
+		svg_file2="${output_dir}/${commit2}/${kicad_pro_filename}-${layer_id}.svg"
 
 		# Create blank svgs if some is missing
 		if [[ ! -f "${svg_file1}" ]]; then
@@ -1261,11 +1243,11 @@ generate_scm_artifacts()
 				fi
 
 				# Kicad-6 boards do not have a schematic view working yet, so skip plotgitsch
-				if [[ ${PCBS_VERSION} -lt 20211014 ]]; then
+				# if [[ ${PCBS_VERSION} -lt 20211014 ]]; then
 					generate_sch_artifacts "${repo_path}" "${kicad_pro_subpath}" "${kicad_pro_filename}" "${sch_page_names}" "${i}" "${j}" "${output_dir}"
 				# else
 					# generate_sch_artifacts_sch2svg "${repo_path}" "${kicad_pro_subpath}" "${kicad_pro_filename}" "${sch_page_names}" "${i}" "${j}" "${output_dir}"
-				fi
+				# fi
 
 				generate_pcb_artifacts "${kicad_pro_subpath}" "${kicad_pro_filename}" "${kicad_pcb}" "${i}" "${j}" "${output_dir}"
 
@@ -1378,8 +1360,10 @@ generate_scm_artifacts()
 	usedboard_layers=$(cat ${web_dir}/../layers)
 	initial_layer_id=$(printf "%02d" $(echo -e "${usedboard_layers}" | head -1 | cut -d " " -f1 | tr "." "_"))
 	initial_layer_name=$(echo -e "${usedboard_layers}" | sed '/^$/d' | head -1 | cut -d " " -f2 | tr "." "_")
-	pcb_img_1="../${commit1}/${kicad_pro_filename}-${initial_layer_id}-${initial_layer_name}.svg"
-	pcb_img_2="../${commit2}/${kicad_pro_filename}-${initial_layer_id}-${initial_layer_name}.svg"
+	# pcb_img_1="../${commit1}/${kicad_pro_filename}-${initial_layer_id}-${initial_layer_name}.svg"
+	# pcb_img_2="../${commit2}/${kicad_pro_filename}-${initial_layer_id}-${initial_layer_name}.svg"
+	pcb_img_1="../${commit1}/${kicad_pro_filename}-${initial_layer_id}.svg"
+	pcb_img_2="../${commit2}/${kicad_pro_filename}-${initial_layer_id}.svg"
 	echo "- Setting initial layer: ${initial_layer_id}, ${initial_layer_name}"
 	echo "  | PCB1: ${pcb_img_1}"
 	echo "  | PCB2: ${pcb_img_2}"
