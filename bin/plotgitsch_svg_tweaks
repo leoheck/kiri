@@ -1,0 +1,43 @@
+#!/bin/bash
+
+svg="$1"
+
+sed_()
+{
+	case ${OSTYPE} in
+		darwin*)
+			gsed "$@"
+			;;
+		*)
+			command sed "$@"
+			;;
+	esac
+}
+
+# Scour
+scour -i "${svg}" -o output.svg --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none &> /dev/null
+if [[ -f output.svg ]]; then
+	mv output.svg "${svg}"
+fi
+
+# viewBox="0 0 1964 1388"
+# min-x, min-y, width and height
+# w=$(grep -E -o "viewBox=\"[0-9]+ [0-9]+ [0-9]+ [0-9]+\"" ${svg} | tr '"' ' ' | cut -d" " -f4)
+# h=$(grep -E -o "viewBox=\"[0-9]+ [0-9]+ [0-9]+ [0-9]+\"" ${svg} | tr '"' ' ' | cut -d" " -f5)
+# w1=$(echo "$w * 2" | bc)
+# h1=$(echo "$h * 2" | bc)
+# viewBox="viewBox=\"$w2 $h2 $w1 $h1\""
+# sed_ -i "s/viewBox=\"[0-9]\+ [0-9]\+ [0-9]\+ [0-9]\+\"/${viewBox}/g" "${svg}"
+
+# Improves viewbox
+rsvg-convert -a --dpi-x=90 --dpi-y=90 -w 500 -f svg "${svg}" > .tmp.svg
+mv .tmp.svg "${svg}"
+
+# Inkscape (works)
+inkscape --export-type="eps" --export-filename="tmp.eps" --export-area-drawing "${svg}"
+inkscape "tmp.eps" --export-plain-svg --export-filename="${svg}"
+
+if [[ ! -s "${svg}" ]]; then
+	echo ">>>>>> Removing empty file svg_file1=${svg}"
+	rm -rf "${svg}"
+fi
