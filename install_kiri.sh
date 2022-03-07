@@ -50,7 +50,7 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/leoheck/kiri/main/instal
 
 read -r -d '' ENV_SETUP_NOTE <<EOM
 
-${cinfo}${cbold}Finish the setup by adding the following lines to your ~/.bashrc or ~/.zshrc${crst}
+${cinfo}${cbold}Finish the setup by adding the following lines in the end of your ~/.bashrc or ~/.zshrc${crst}
 
 # Kiri environment setup
 eval \$(opam env)
