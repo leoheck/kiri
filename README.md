@@ -9,7 +9,7 @@ Previously known as KDiff, it was renamed KiRI since the old name was pretty clo
 
 ## Installing
 
-To install this tool with on any Operating System, open a terminal and execute the following commands:
+To install this tool with on any Operating System (Windows, macOS, and debian-based Linux), open a terminal and execute the following commands:
 
 > Windows users must use WSL/WSL2. See, [Environment preparation on Windows](#Environment-preparation-on-Windows) section.
 
