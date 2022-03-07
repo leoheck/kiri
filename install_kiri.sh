@@ -7,8 +7,8 @@ cinfo=$(tput setaf 3)
 cbold=$(tput bold)
 crst=$(tput sgr0)
 
-if [[ -n ${KIRI_INSTALL_PATH} ]]; then
-	INSTALL_PATH="${KIRI_INSTALL_PATH}"
+if [[ -s ${KIRI_HOME} ]]; then
+	INSTALL_PATH="${KIRI_HOME}"
 else
 	INSTALL_PATH="${HOME}/.local/share"
 fi
@@ -50,7 +50,7 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/leoheck/kiri/main/instal
 
 read -r -d '' ENV_SETUP_NOTE <<EOM
 
-${cinfo}${cbold}Finish the setup by adding the following lines to your ~/.bashrc or ~/.zshrc${crst}
+${cinfo}${cbold}Finish the setup by adding the following lines in the end of your ~/.bashrc or ~/.zshrc${crst}
 
 # Kiri environment setup
 eval \$(opam env)
