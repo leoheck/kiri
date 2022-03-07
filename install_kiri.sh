@@ -7,8 +7,8 @@ cinfo=$(tput setaf 3)
 cbold=$(tput bold)
 crst=$(tput sgr0)
 
-if [[ -n ${KIRI_INSTALL_PATH} ]]; then
-	INSTALL_PATH="${KIRI_INSTALL_PATH}"
+if [[ -n ${KIRI_HOME} ]]; then
+	INSTALL_PATH="${KIRI_HOME}"
 else
 	INSTALL_PATH="${HOME}/.local/share"
 fi
