@@ -1,4 +1,3 @@
-
 // Default variables
 // These variables are updated by Kiri script
 var default_view = "schematic";
@@ -443,7 +442,7 @@ function img_timestamp() {
 }
 
 function if_url_exists(url, callback) {
-    let request = new XMLHttpRequest;
+    let request = new XMLHttpRequest();
     request.open('GET', url, true);
     request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
     request.setRequestHeader('Accept', '*/*');
@@ -457,10 +456,10 @@ function if_url_exists(url, callback) {
             default:
                 request.abort();
                 return callback(false);
-        };
+        }
     };
     request.send('');
-};
+}
 
 function update_commits() {
     var commits = $("#commits_form input:checkbox[name='commit']");
@@ -481,7 +480,7 @@ function update_commits() {
     var commit1 = hashes[0].replace(/\s+/g, '');
     var commit2 = hashes[1].replace(/\s+/g, '');
 
-    console.log("")
+    console.log("");
     console.log("=======================================");
     console.log("=======================================");
     console.log("  board_name =", board_name);
@@ -501,10 +500,10 @@ function change_page(commit1="", commit2="") {
     var page_name = pages[selected_page].id;
 
     if (commit1 == ""){
-        var commit1 = document.getElementById("diff-xlink-1-sch").href.baseVal.split("/")[1];
+        commit1 = document.getElementById("diff-xlink-1-sch").href.baseVal.split("/")[1];
     }
     if (commit2 == ""){
-        var commit2 = document.getElementById("diff-xlink-2-sch").href.baseVal.split("/")[1];
+        commit2 = document.getElementById("diff-xlink-2-sch").href.baseVal.split("/")[1];
     }
 
     var image_path_1 = "../" + commit1 + "/" + "sch-" + page_name + ".svg";
@@ -551,10 +550,10 @@ function change_layer(commit1="", commit2="") {
     var layer_name = layers[selected_layer].value.split("-")[1];
 
     if (commit1 == ""){
-        var commit1 = document.getElementById("diff-xlink-1-pcb").href.baseVal.split("/")[1];
+        commit1 = document.getElementById("diff-xlink-1-pcb").href.baseVal.split("/")[1];
     }
     if (commit2 == ""){
-        var commit2 = document.getElementById("diff-xlink-2-pcb").href.baseVal.split("/")[1];
+        commit2 = document.getElementById("diff-xlink-2-pcb").href.baseVal.split("/")[1];
     }
 
     var image_path_1 = "../" + commit1 + "/" + board_name + "-" + layer_id + "-" + layer_name + ".svg";
@@ -778,16 +777,16 @@ function change_layer_onclick(obj) {
     change_layer();
 }
 
-// #===========================
-
 // Hide missing images
 function imgError(image) {
     console.log("Image Error (missing or problematic) =", image.href.baseVal);
     image.onerror = null;
-    parent = document.getElementById(image.id).parentElement
+    parent = document.getElementById(image.id).parentElement;
     parent.style.display = 'none';
     return true;
 }
+
+// #===========================
 
 function check_server_status()
 {
