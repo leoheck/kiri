@@ -16,7 +16,7 @@
 	</head>
 	<body>
 
-		<div id="server_offline" style="display: 'none';">
+		<div id="server_offline" style="display: none;">
 		</div>
 
 		<div class="container fill no-gutters" style="background-color: #333; overflow-y: hidden; overflow-x: hidden; padding: 0px 10px 0px 10px; margin: 0px;">
@@ -58,16 +58,16 @@
 
 						<div class="container no-gutters" style="width: 100%; flex: 1; padding: 0px 0px 0px 0px; margin: 0px;">
 
-							<div class="row no-gutters" style="width: 100%; marign: 0px 50px 10px 10px;">
+							<div class="row no-gutters" style="width: 100%; margin: 0px 50px 10px 10px;">
 
 								<form class="inline" style="padding: 0px 0px 0px 0px; margin: 20px 0px 0px 15px;">
 									<div id="view_mode" class="form-group row btn-group btn-group-toggle" data-toggle="buttons" role="group" aria-label="View Mode">
 										<label id="show_sch_lbl" title="Schematic View" class="btn btn-secondary active" onclick="show_sch()">
-											<input id="show_sch" type="radio" name="view_mode" value="show_sch" data="show_sch" checked>
+											<input id="show_sch" type="radio" name="view_mode" value="show_sch" checked>
 											<span class="iconify" style="width: 20px; height: 20px;" data-icon="carbon:schematics" data-inline="false"></span>
 										</label>
 										<label id="show_pcb_lbl" title="Layout View" class="btn btn-secondary" onclick="show_pcb()">
-											<input id="show_pcb" type="radio" name="view_mode" value="show_pcb" data="show_pcb">
+											<input id="show_pcb" type="radio" name="view_mode" value="show_pcb" >
 											<span class="iconify" style="width: 20px; height: 20px;" data-icon="codicon:circuit-board" data-inline="false"></span>
 										</label>
 									</div>
@@ -135,7 +135,7 @@
 												</filter>
 											</defs>
 											<image id="diff-xlink-1-sch" x="0" y="0" height="100%" width="100%" filter="url(#f1_sch)"
-												onerror="imgError(this);"
+												onerror="this.onerror=null; imgError(this);"
 												href="[INITIAL_COMMIT_1_SCH]"
 												xlink:href="[INITIAL_COMMIT_1_SCH]"/>
 										</svg>
@@ -152,7 +152,7 @@
 												</filter>
 											</defs>
 											<image id="diff-xlink-2-sch" x="0" y="0" height="100%" width="100%" filter="url(#f2_sch)"
-												onerror="imgError(this);"
+												onerror="this.onerror=null; imgError(this);"
 												href="[INITIAL_COMMIT_2_SCH]"
 												xlink:href="[INITIAL_COMMIT_2_SCH]"/>
 										</svg>
@@ -178,7 +178,7 @@
 													</filter>
 											</defs>
 											<image id="diff-xlink-1-pcb" x="0" y="0" height="100%" width="100%" filter="url(#f1_pcb)"
-												onerror="imgError(this);"
+												onerror="this.onerror=null; imgError(this);"
 												href="[INITIAL_COMMIT_1_PCB]"
 												xlink:href="[INITIAL_COMMIT_1_PCB]"/>
 										</svg>
@@ -195,7 +195,7 @@
 												</filter>
 											</defs>
 											<image id="diff-xlink-2-pcb" x="0" y="0" height="100%" width="100%" filter="url(#f2_pcb)"
-												onerror="imgError(this);"
+												onerror="this.onerror=null; imgError(this);"
 												href="[INITIAL_COMMIT_2_PCB]"
 												xlink:href="[INITIAL_COMMIT_2_PCB]"/>
 										</svg>
