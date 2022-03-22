@@ -26,7 +26,7 @@ show_help()
 
 	     -s|--skip-cache  Skip usage of -chache.lib on plotgitsch
 	     -u|--layout      Start with Layout view selected
-	     -f|--page-frame  Show whole page frame for PCB
+	     -f|--page-frame  Disable page frame for PCB
 
 	     -d|--output-dir  Change output folder path/name
 	     -r|--remove      Remove generated folder before running it
@@ -64,10 +64,14 @@ show_help()
 # Colors
 bold=$(printf "\e[1m")
 inv=$(printf "\e[7")
-red=$(printf "\e[31m")
-green=$(printf "\e[32m")
-yellow=$(printf "\e[33m")
-blue=$(printf "\e[34m")
+gray=$(printf "\e[37m")    # light
+red=$(printf "\e[91m")     # light
+green=$(printf "\e[92m")   # light
+yellow=$(printf "\e[93m")  # light
+blue=$(printf "\e[94m")    # light
+magenta=$(printf "\e[95m") # light
+cyan=$(printf "\e[96m")    # light
+
 reset=$(printf "\e[0m")
 
 kidiff_version()
@@ -691,10 +695,13 @@ generate_sch_artifacts()
 
 		cmd="plotgitsch ${nested_project_param} ${cache_lib_param} -k -m -c ${removed_color}:${added_color}:${unchanged_color}:${background_color} ${commit1} ${commit2} ${STDOUT_PLOTGITSCH}"
 		if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
-			echo -e "   ${green}${cmd}${reset}"
+			echo -e "   ${yellow}${cmd}${reset}"
 		fi
 		if [[ "${DRY_RUN}" == "0" ]]; then
-			eval "${cmd}"
+			eval "${cmd}" | sed "s/^/   ${gray}| /g" | sed "s/$/${reset}/g"
+			if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
+				echo
+			fi
 			ret=$?
 			if [[ "${VERBOSE}" == "1" ]]; then
 				if [[ "${ret}" -gt "0" ]]; then
@@ -746,45 +753,35 @@ generate_sch_artifacts()
 			sch1-*)
 				new_sch_name=${sch_page_svg//sch1/sch}
 				svg_file1="${output_dir}/${commit1}/${new_sch_name}"
-
 				mv -f "${sch_page_svg}" "${svg_file1}" 2> /dev/null
-
-				# Fix problematic last svg tag. But how this was introduced?
-				# sed -i "s|</svg>svg>|</svg>|g" "${svg_file1}" 2> /dev/null
-
-				# scour -i "${svg_file1}" -o output.svg --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none &> /dev/null
-				# if [[ -f output.svg ]]; then
-				# 	mv output.svg "${svg_file1}"
-				# fi
 				;;
 
 			sch2-*)
 				new_sch_name=${sch_page_svg//sch2/sch}
 				svg_file2="${output_dir}/${commit2}/${new_sch_name}"
-
 				mv -f "${sch_page_svg}" "${svg_file2}" 2> /dev/null
-
-				# Fix problematic last svg tag. But how this was introduced?
-				# sed -i "s|</svg>svg>|</svg>|g" "${svg_file2}" 2> /dev/null
-
-				# scour -i "${svg_file2}" -o output.svg --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none &> /dev/null
-				# if [[ -f output.svg ]]; then
-				# 	mv output.svg "${svg_file2}"
-				# fi
 				;;
 		esac
 
 		if [ ! -s "${svg_file1}" ]; then
-			echo "Removing empty file ${svg_file1}"
+			if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]] || [[ "${DEBUG_KIDIFF}" == "1" ]]; then
+				echo "   Removing empty file ${svg_file1}"
+			fi
 			rm -rf "${svg_file1}"
 		fi
 
 		if [ ! -s "${svg_file2}" ]; then
-			echo "Removing empty file ${svg_file2}"
+			if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]] || [[ "${DEBUG_KIDIFF}" == "1" ]]; then
+				echo "   Removing empty file ${svg_file2}"
+			fi
 			rm -rf "${svg_file2}"
 		fi
 
 	done
+
+	if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]] || [[ "${DEBUG_KIDIFF}" == "1" ]]; then
+		echo
+	fi
 }
 
 create_list_of_layers()
@@ -892,11 +889,14 @@ generate_pcb_artifacts()
 		fi
 
 		cmd="kidiff ${kicad_pcb} --webserver-disable -b ${commit1} -a ${commit2} -o \"${output_dir}\" ${page_frame_parameter} ${STDOUT_KIDIFF}"
-		if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_KIDIFF}" = "1" ]]; then
+		if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]] || [[ "${DEBUG_KIDIFF}" == "1" ]]; then
 			echo -e "   ${green}${cmd}${reset}"
 		fi
 		if [[ "${DRY_RUN}" == "0" ]]; then
-			eval "${cmd}"
+			eval "${cmd}" | sed "s/^/   ${gray}| /g" | sed "s/$/${reset}/g"
+			if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]] || [[ "${DEBUG_KIDIFF}" == "1" ]]; then
+				echo
+			fi
 			ret=$?
 			if [[ "${VERBOSE}" == "1" ]]; then
 				if [[ "${ret}" -gt "0" ]]; then
@@ -1076,13 +1076,13 @@ generate_scm_artifacts()
 	${commits}
 	EOM
 
-	hashs=$(echo "${commits}" | tac_ | cut -d' '  -f1);
+	hashs=$(echo "${commits}" | tac_ | cut -d' '  -f1 | tac);
 	n_hashs=$(echo "${hashs}" | wc -w | sed "s/^[ \t]\+//g")
 	n_comparisons=$(echo "${n_hashs} * (${n_hashs} - 1) " | bc)
 
 	# THESE 2 LINES SHOULD BE REMOVED
 	sch_page_names=$(get_pages "${kicad_pro_filename}" "${kicad_pro_subpath}/${kicad_sch}" | cut -d"|" -f2 | sed "s/\r$//g")
-	# usedboard_layers=$(sed -n '/^  (layers/,/  )$/{/^  (layers/!{/  )$/!p}}' "${kicad_pro_subpath}/${kicad_pcb}" | sed "s/^[ \t]\+//g" | sed "s/[()]//g" | cut -d" " -f-2 | sed "s/\r$//g" | sed "s/\"//g")
+	usedboard_layers=$(sed -n '/^  (layers/,/  )$/{/^  (layers/!{/  )$/!p}}' "${kicad_pro_subpath}/${kicad_pcb}" | sed "s/^[ \t]\+//g" | sed "s/[()]//g" | cut -d" " -f-2 | sed "s/\r$//g" | sed "s/\"//g")
 
 	echo
 	echo -e "${blue}Generating artifacts${reset}"
@@ -1103,21 +1103,35 @@ generate_scm_artifacts()
 				k=$((k+1))
 				n=$((n+1))
 
-				# Check if diff file exists
+				# # Check if diff file exists
 				if [[ -d "${output_dir}/${j}" ]]; then
 					continue
 				fi
 
-				if [[ -d "${output_dir}/${j}" ]]; then
-					skipping=", skipping..."
-				else
-					skipping=""
-				fi
+				date_time=""
+				date_time_sep=""
 
 				if [[ ${k} == 1 ]]; then
-					printf "%4d. %s - %s%s\n" "${n}" "${i}" "${j}" "${skipping}"
+					if [[ ${i} != "local" ]]; then
+						date_time=$(git show ${i} --date=format:'%Y-%m-%d %H:%M:%S' | grep "Date:" | cut -d" " -f4-)
+						date_time_sep="-"
+					fi
+					printf "%4d. %s %s %s\n" "${n}" "${i}" "${date_time_sep}" "${date_time}"
+
+					n=$((n+1))
+					if [[ ${j} != "local" ]]; then
+						date_time=$(git show ${j} --date=format:'%Y-%m-%d %H:%M:%S' | grep "Date:" | cut -d" " -f4-)
+						date_time_sep="-"
+					fi
+					printf "%4d. %s %s %s\n" "${n}" "${j}" "${date_time_sep}" "${date_time}"
+
 				else
-					printf "%4d. %s - %s%s \n" "${n}" "       " "${j}" "${skipping}"
+					if [[ ${j} != "local" ]]; then
+						date_time=$(git show ${j} --date=format:'%Y-%m-%d %H:%M:%S' | grep "Date:" | cut -d" " -f4-)
+						date_time_sep="-"
+					fi
+					printf "%4d. %s %s %s\n" "${n}" "${j}" "${date_time_sep}" "${date_time}"
+
 				fi
 
 				mkdir -p "${output_dir}/${i}/"
@@ -1189,41 +1203,41 @@ generate_scm_artifacts()
 
 	# Set-Project title (folder name)
 	PROJECT_TITLE=$(basename "${repo_path}")
-	echo "- Setting project title: ${PROJECT_TITLE}"
+	echo "- Setting project title: ${bold}${blue}${PROJECT_TITLE}${reset}"
 	sed -i "s|\[PROJECT_TITLE\]|${PROJECT_TITLE}|g" "${web_dir}/${main_html}"
 
 	# Update board title
 	sch_title=$(grep -i "title " "${kicad_pro_subpath}/${kicad_pro_filename}.${kicad_sch_extension}" 2> /dev/null | sed "s/^[ \t]\+//g" | cut -d" " -f 2- | sed "s/[)\"]//g")
 	pcb_title=$(grep -i "(title .*)" "${kicad_pcb}" 2> /dev/null | sed "s/^[ \t]\+//g" | cut -d" " -f 2- | sed "s/[)\"]//g")
-	if [[ "${sch_title}" == "" ]]; then sch_title="{SCH_Title}"; fi
-	if [[ "${pcb_title}" == "" ]]; then pcb_title="{PCB_Title}"; fi
-	echo "- Setting sch page title: ${sch_title}"
-	echo "- Setting pcb page title: ${pcb_title}"
+	if [[ "${sch_title}" == "" ]]; then sch_title="${bold}${red}{SCH_Title}${reset}"; fi
+	if [[ "${pcb_title}" == "" ]]; then pcb_title="${bold}${red}{PCB_Title}${reset}"; fi
+	echo "- Setting Sch page title: ${bold}${magenta}${sch_title}${reset}"
+	echo "- Setting PCB page title: ${bold}${cyan}${pcb_title}${reset}"
 	sed -i "s|\[SCH_TITLE\]|Sch \| ${sch_title}|g" "${web_dir}/${main_html}"
 	sed -i "s|\[PCB_TITLE\]|PCB \| ${pcb_title}|g" "${web_dir}/${main_html}"
 
 	# Update board revision
 	sch_revision=$(grep -i "Rev" "${kicad_pro_subpath}/${kicad_pro_filename}.${kicad_sch_extension}" 2> /dev/null | sed "s/^[ \t]\+//g" | sed "s/[()]//g" | cut -d" " -f2- | sed "s/\"//g")
 	pcb_revision=$(grep "(rev " "${kicad_pcb}" 2> /dev/null | sed "s/^[ \t]\+//g" | sed "s/[()]//g" | cut -d" " -f2- | sed "s/\"//g")
-	if [[ "${pcb_revision}" == "" ]]; then pcb_revision="{sch_rev}"; fi
-	if [[ "${sch_revision}" == "" ]]; then sch_revision="{pcb_rev}"; fi
-	echo "- Setting sch revision: ${sch_revision}"
-	echo "- Setting pcb revision: ${pcb_revision}"
+	if [[ "${pcb_revision}" == "" ]]; then pcb_revision="${bold}${red}{pcb_rev}${reset}"; fi
+	if [[ "${sch_revision}" == "" ]]; then sch_revision="${bold}${red}{sch_rev}${reset}"; fi
+	echo "- Setting Sch revision: ${bold}${magenta}${sch_revision}${reset}"
+	echo "- Setting PCB revision: ${bold}${cyan}${pcb_revision}${reset}"
 	sed -i "s|\[SCH_REVISION\]|${sch_revision}|g" "${web_dir}/${main_html}"
 	sed -i "s|\[PCB_REVISION\]|${pcb_revision}|g" "${web_dir}/${main_html}"
 
 	# Update board date
 	sch_date=$(grep -i "date" "${kicad_pro_subpath}/${kicad_pro_filename}.${kicad_sch_extension}" 2> /dev/null | sed "s/^[ \t]\+//g" | sed "s/[()]//g" | cut -d" " -f2 | sed "s/\"//g")
 	pcb_date=$(grep "(date " "${kicad_pcb}" 2> /dev/null | sed "s/^[ \t]\+//g" | sed "s/[()]//g" | cut -d" " -f2 | sed "s/\"//g")
-	if [[ "${sch_date}" == "" ]]; then sch_date="{sch_date}"; fi
-	if [[ "${pcb_date}" == "" ]]; then pcb_date="{pcb_date}"; fi
-	echo "- Setting sch date: ${sch_date}"
-	echo "- Setting pcb date: ${pcb_date}"
+	if [[ "${sch_date}" == "" ]]; then sch_date="${bold}${red}{sch_date}${reset}"; fi
+	if [[ "${pcb_date}" == "" ]]; then pcb_date="${bold}${red}{pcb_date}${reset}"; fi
+	echo "- Setting Sch date: ${bold}${magenta}${sch_date}${reset}"
+	echo "- Setting PCB date: ${bold}${cyan}${pcb_date}${reset}"
 	sed -i "s|\[PCB_DATE\]|${pcb_date}|g" "${web_dir}/${main_html}"
 	sed -i "s|\[SCH_DATE\]|${sch_date}|g" "${web_dir}/${main_html}"
 
 	# Update board's name
-	echo "- Setting board's name: ${kicad_pro_filename}"
+	echo "- Setting board's name: ${bold}${blue}${kicad_pro_filename}${reset}"
 	sed -i "s|var board_name =.*|var board_name = \"${kicad_pro_filename}\"; // updated by kiri script|g" "${web_dir}/kiri.js"
 
 	commit1=$(echo "${commits}" | head -n$(("${commit1_idx}"+1)) | tail -n1 | cut -d" " -f1)
@@ -1238,20 +1252,20 @@ generate_scm_artifacts()
 	sch_img_1="../${commit1}/sch-${kicad_pro_filename}.svg"
 	sch_img_2="../${commit2}/sch-${kicad_pro_filename}.svg"
 	echo "- Setting initial schematics"
-	echo "  Sch1: ${web_dir}/${sch_img_1}"
-	echo "  Sch2: ${web_dir}/${sch_img_2}"
+	echo "  Sch1: ${bold}${magenta}$(readlink -f ${web_dir}/${sch_img_1})${reset}"
+	echo "  Sch2: ${bold}${cyan}$(readlink -f ${web_dir}/${sch_img_2})${reset}"
 	sed -i "s|\[INITIAL_COMMIT_1_SCH\]|${sch_img_1}|g" "${web_dir}/${main_html}"
 	sed -i "s|\[INITIAL_COMMIT_2_SCH\]|${sch_img_2}|g" "${web_dir}/${main_html}"
 
 	# Update initial layout images
-	usedboard_layers=$(find "${output_dir}" -name "layers" -exec cat {} \; | sort | uniq)
+	# usedboard_layers=$(find "${output_dir}" -name "layers" -exec cat {} \; | sort | uniq)
 	initial_layer_id=$(printf "%02d" $(echo -e "${usedboard_layers}" | head -1 | cut -d " " -f1 | tr "." "_"))
 	initial_layer_name=$(echo -e "${usedboard_layers}" | sed '/^$/d' | head -1 | cut -d " " -f2 | tr "." "_")
 	pcb_img_1="../${commit1}/${kicad_pro_filename}-${initial_layer_id}-${initial_layer_name}.svg"
 	pcb_img_2="../${commit2}/${kicad_pro_filename}-${initial_layer_id}-${initial_layer_name}.svg"
-	echo "- Setting initial layouts: ${initial_layer_id} ${initial_layer_name}"
-	echo "  PCB1: ${web_dir}/${pcb_img_1}"
-	echo "  PCB2: ${web_dir}/${pcb_img_2}"
+	echo "- Setting initial layer: ${initial_layer_id} ${initial_layer_name}"
+	echo "  PCB1: ${bold}${magenta}$(readlink -f ${web_dir}/${pcb_img_1})${reset}"
+	echo "  PCB2: ${bold}${cyan}$(readlink -f ${web_dir}/${pcb_img_2})${reset}"
 	sed -i "s|\[INITIAL_COMMIT_1_PCB\]|${pcb_img_1}|g" "${web_dir}/${main_html}"
 	sed -i "s|\[INITIAL_COMMIT_2_PCB\]|${pcb_img_2}|g" "${web_dir}/${main_html}"
 
@@ -1297,7 +1311,7 @@ export OUTPUT_DIR=.kiri
 export SHOW_LAST_N_COMMITS=
 export SKIP_CACHE_LIB=0
 export START_ON_LAYOUT_VIEW=0
-export PAGE_FRAME=0
+export PAGE_FRAME=1
 
 while [[ $# -gt 0 ]]
 do
@@ -1410,7 +1424,7 @@ do
 		;;
 
 	-f|--frame)
-		PAGE_FRAME=1
+		PAGE_FRAME=0
 		shift
 		;;
 
