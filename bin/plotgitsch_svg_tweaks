@@ -1,0 +1,39 @@
+#!/bin/bash
+
+svg="$1"
+
+sed_()
+{
+	case ${OSTYPE} in
+		darwin*)
+			gsed "$@"
+			;;
+		*)
+			command sed "$@"
+			;;
+	esac
+}
+
+# Fix a bug with plotgitsh that adds a bunch of <0x00> charactes in the svg
+sed -i 's/\x0//g' "${svg}" &> /dev/null
+
+# Background has to be transparent
+sed -i 's/fill="#FFFFFF"/fill="#FFFFFF00"/g' "${svg}" &> /dev/null
+sed -i 's/fill="#222222"/fill="#22222200"/g' "${svg}" &> /dev/null
+
+# Schematic elements have to be black
+sed -i 's/fill="#FF0000"/fill="#000000FF"/g' "${svg}" &> /dev/null
+sed -i 's/fill="#00FF00"/fill="#000000FF"/g' "${svg}" &> /dev/null
+sed -i 's/stroke="#800000"/stroke="#000000FF"/g' "${svg}" &> /dev/null
+
+rsvg-convert -a -w 500 -f svg "${svg}" > .tmp.svg
+
+if [[ -f .tmp.svg ]]; then
+	mv -f .tmp.svg "${svg}" 2> /dev/null
+fi
+
+if [ ! -s "${svg}" ]; then
+	rm -rf .tmp.svg 2> /dev/null
+	rm -rf "${svg}" 2> /dev/null
+fi
+

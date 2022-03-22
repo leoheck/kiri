@@ -17,6 +17,9 @@ echo ""
 echo "Creating $(realpath ${svg1})"
 echo "Creating $(realpath ${svg2})"
 
+plotgitsch_svg_tweaks $a 2> /dev/null
+plotgitsch_svg_tweaks $b 2> /dev/null
+
 # Rename/move file
 # Sometimes an empty file is being created
 mv -f "$a" "${svg1}" 2> /dev/null
