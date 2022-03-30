@@ -1,0 +1,40 @@
+#!/usr/bin/python
+
+import pathlib
+import wx
+
+def action_cancel(self, e):
+    self.EndModal(wx.ID_CANCEL)
+
+def open_project_dialog(current_path):
+
+    title = "KiRI - Select Kicad Project"
+
+    file_wildcards = "Kicad Project (*.pro;*.kicad_pro)|*.pro;*.kicad_pro|All files (*)|*"
+
+    with wx.FileDialog(frame, title, "", "", file_wildcards,
+        wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) as fileDialog:
+
+        if fileDialog.ShowModal() == wx.ID_CANCEL:
+            return
+        else:
+            kicad_project_path = fileDialog.GetPath()
+            fileDialog.Destroy()
+            return kicad_project_path
+
+
+if __name__ == "__main__":
+
+    app = wx.App()
+    frame = wx.Frame(None, -1, 'win.py')
+    frame.SetSize(0, 0, 200, 50)
+
+    current_path = pathlib.Path().absolute()
+
+    kicad_project_path = open_project_dialog(current_path)
+
+    if not kicad_project_path:
+        exit(1)
+    else:
+        print(kicad_project_path)
+        exit(0)
