@@ -547,7 +547,6 @@ function change_layer(commit1="", commit2="") {
     var layers = $("#layers_list input:radio[name='layers']");
     var selected_layer = layers.index(layers.filter(':checked'));
     var layer_id   = layers[selected_layer].id.split("-")[1];
-    var layer_name = layers[selected_layer].value.split("-")[1];
 
     if (commit1 == ""){
         commit1 = document.getElementById("diff-xlink-1-pcb").href.baseVal.split("/")[1];
@@ -556,12 +555,11 @@ function change_layer(commit1="", commit2="") {
         commit2 = document.getElementById("diff-xlink-2-pcb").href.baseVal.split("/")[1];
     }
 
-    var image_path_1 = "../" + commit1 + "/" + board_name + "-" + layer_id + "-" + layer_name + ".svg";
-    var image_path_2 = "../" + commit2 + "/" + board_name + "-" + layer_id + "-" + layer_name + ".svg";
+    var image_path_1 = "../" + commit1 + "/" + board_name + "-" + layer_id + ".svg";
+    var image_path_2 = "../" + commit2 + "/" + board_name + "-" + layer_id + ".svg";
 
     console.log("+++++++++++++++++++++++++++");
     console.log("          layer_id =", layer_id);
-    console.log("        layer_name =", layer_name);
     console.log("[PCB] image_path_1 =", image_path_1);
     console.log("[PCB] image_path_2 =", image_path_2);
 
