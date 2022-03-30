@@ -1,17 +1,559 @@
 #!/bin/bash
 
+export SHELLCHECK_OPTS="--exclude SC2001" # (style): See if you can use ${variable//search/replace} instead.
+export SHELLCHECK_OPTS="--exclude SC2005" # (style): Useless echo? Instead of 'echo $(cmd)', just use 'cmd'.
+export SHELLCHECK_OPTS="--exclude SC2027" # (warning): The surrounding quotes actually unquote this. Remove or escape them.
+export SHELLCHECK_OPTS="--exclude SC2034" #
+export SHELLCHECK_OPTS="--exclude SC2046" #
+export SHELLCHECK_OPTS="--exclude SC2086" #
+export SHELLCHECK_OPTS="--exclude SC2103" #
+export SHELLCHECK_OPTS="--exclude SC2119" #
+export SHELLCHECK_OPTS="--exclude SC2120" #
+export SHELLCHECK_OPTS="--exclude SC2124" #
+export SHELLCHECK_OPTS="--exclude SC2154" #
+export SHELLCHECK_OPTS="--exclude SC2155" # Warning = Declare and assign separately to avoid masking return values.
+export SHELLCHECK_OPTS="--exclude SC2164"
+export SHELLCHECK_OPTS="--exclude SC2194"
+export SHELLCHECK_OPTS="--exclude SC2221"
+export SHELLCHECK_OPTS="--exclude SC2222"
+export SHELLCHECK_OPTS="--exclude SC2236"
+export SHELLCHECK_OPTS="--exclude SC2295"
+
+
+insert_commits_html()
+{
+	# GIT COMMITS FORMAT
+	# local   | 2021-01-22 17:21:39 | Leandro Heck | Local changes
+	# fcd81ef | 2021-01-22 17:21:39 | Leandro Heck | Initial version
+	# d20b900 | 2021-01-22 16:59:29 | Leandro Heck | Initial commit
+
+	local html_path="${1}"
+	local commit1_i="${2}"
+	local commit2_i="${3}"
+
+	local commit_html
+	local commits_html
+
+	local empty_img='<span class="iconify" style="padding-left: 0px; padding-right: 0px; width: 14px; height: 14px; color: #ff0000;" data-inline="false"; data-icon="bx:bx-x"></span>'
+	local   sch_img='<span class="iconify" style="padding-left: 0px; padding-right: 0px; width: 14px; height: 14px; color: #A6E22E;" data-inline="false"; data-icon="carbon:schematics"></span>'
+	local   pcb_img='<span class="iconify" style="padding-left: 0px; padding-right: 0px; width: 14px; height: 14px; color: #F92672;" data-inline="false"; data-icon="codicon:circuit-board"></span>'
+	local   txt_img='<span class="iconify" style="padding-left: 0px; padding-right: 0px; width: 14px; height: 14px; color: #888888;" data-inline="false"; data-icon="bi:file-earmark-text"></span>'
+
+	local i=0
+	IFS=$'\n'
+	for commit in ${COMMITS}; do
+
+		local kicad_pro=$(get_kicad_pro "${OUTPUT_DIR_PATH}/${KICAD_PROJ_NESTED_PATH}/${hash}")
+		local kicad_pro_extension=$(get_file_extension "${kicad_pro}")
+		local kicad_proj_name=$(get_file_without_extention "${kicad_pro}")
+		local kicad_sch=$(get_kicad_sch "${KICAD_PROJ_ABSOLUTE_PATH}" "${kicad_proj_name}" "${kicad_pro_extension}")
+		local kicad_pcb=$(get_kicad_pcb "${KICAD_PROJ_ABSOLUTE_PATH}" "${kicad_proj_name}")
+		local kicad_sch_extra=$(get_kicad_sch_extra "${KICAD_PROJ_ABSOLUTE_PATH}/${kicad_sch}")
+		local kicad_cache_lib=$(get_kicad_cache_lib "${KICAD_PROJ_ABSOLUTE_PATH}" "${kicad_proj_name}")
+		# show_project_files "${OUTPUT_DIR_PATH}/${KICAD_PROJ_NESTED_PATH}/${hash}" "${kicad_pro}" "${kicad_sch}" "${kicad_pcb}" "${kicad_cache_lib}"
+
+		local hash=$(echo "${commit}" | cut -d'|' -f1 | sed "s/^ //g" | sed "s/[ t]\+//g" )
+		local date=$(echo "${commit}" | cut -d'|' -f2 | cut -d' ' -f1-2 | sed "s/^ //g" )
+		local user=$(echo "${commit}" | cut -d'|' -f3 | sed "s/^ //g" )
+		local text=$(echo "${commit}" | cut -d'|' -f4 | sed "s/^ //g" )
+
+		if [[ "${hash}" != "local" ]]; then
+
+			# Check for changes in ".sch|.kicad_sch" files
+			if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${KICAD_PROJ_NESTED_PATH}" | cat | grep -q -s -E "${kicad_sch// /|}${kicad_sch_extra}"; then
+				sch_icon="${sch_img}"
+			else
+				sch_icon="${empty_img}"
+			fi
+
+			# Check for changes in .kicad_pcb files
+			if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${KICAD_PROJ_NESTED_PATH}" | cat | grep -q -s "${kicad_pcb}"; then
+				pcb_icon="${pcb_img}"
+			else
+				pcb_icon="${empty_img}"
+			fi
+
+			# Check for changes in textual files only
+			if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${KICAD_PROJ_NESTED_PATH}" | cat | grep -q -s -vE "${kicad_sch// /|}${kicad_sch_extra}${kicad_pcb}"; then
+				txt_icon="${txt_img}"
+			else
+				txt_icon="${empty_img}"
+			fi
+
+			if [[ "${i}" == "${commit1_i}" ]] || [[ "${i}" == "${commit2_i}" ]]; then
+				checked="checked='checked'"
+			else
+				checked=""
+			fi
+
+			hash_label="${hash}"
+			class="text-info"
+
+		else
+
+			# Check for changes in ".sch|.kicad_sch" files
+			if git status -uno  | grep -q -s -E "${kicad_pro}${kicad_sch// /|}${kicad_pcb}${kicad_sch_extra}"; then
+				sch_icon="${sch_img}"
+			else
+				sch_icon="${empty_img}"
+			fi
+
+			# Check for changes in .kicad_pcb files
+			if git status -uno  | grep -q -s -E "${kicad_pcb}"; then
+				pcb_icon="${pcb_img}"
+			else
+				pcb_icon="${empty_img}"
+			fi
+
+			# Check for changes in textual files only
+			if git status -uno  | grep -q -s -vE "${kicad_pro}${kicad_sch// /|}${kicad_pcb}${kicad_sch_extra}"; then
+				txt_icon="${txt_img}"
+			else
+				txt_icon="${empty_img}"
+			fi
+
+			if [[ "${i}" == "${commit1_i}" ]] || [[ "${i}" == "${commit2_i}" ]]; then
+				checked="checked='checked'"
+			else
+				checked=""
+			fi
+
+			hash_label="_${hash}_"
+			class="text-warning"
+		fi
+
+		# IFS= read -r -d '' commit_html <<-EOM
+		read -r -d '' commit_html <<-EOM
+	    <input class="chkGroup" type="checkbox" id="${hash}" name="commit" value="${hash}" ${checked} onchange="update_commits()"/>
+	    <label class="text-sm-left list-group-item" style="display: block; width: 480px" for="${hash}">
+	      <table style="width:100%">
+	        <tr>
+	          <td rowspan=2 style="vertical-align: top; width: 1.8em;">
+	            <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" width="15" height="15">
+	              <path d="M7.5 10.5a3 3 0 010-6m0 6a3 3 0 000-6m0 6V15m0-10.5V0" stroke="currentColor"></path>
+	            </svg>
+	          </td>
+	          <td><em class="${class}" style=" line-height: 0.7;">${text}</em></td>
+	        </tr>
+	        <tr>
+	          <td style="white-space:nowrap; overflow: hidden;"><span class="text-success font-weight-normal">${hash_label}</span> <span class="text-muted"> | </span> ${sch_icon} ${pcb_icon} ${txt_icon} <span class="text-muted font-weight-normal"> | ${date} | ${user}</span></td>
+	        </tr>
+	      </table>
+	    </label>
+		EOM
+
+		i=$((i + 1))
+		commits_html="${commits_html}${commit_html}\n"
+
+	done
+
+	commits_html="$(echo ${commits_html} | sed "s/@/-/g")"
+	echo 's@<!-- FILL_COMMITS_HERE -->@'"${commits_html}"'@g' > /tmp/script.sed
+	sed -i -f /tmp/script.sed "${html_path}"
+	rm -rf /tmp/script.sed
+}
+
+insert_pages_html()
+{
+	local html_path="${1}"
+	local commit_hash_1="${2}"
+	local commit_hash_2="${3}"
+
+	local page_html
+	local pages_html
+
+	if ! diff -q "${OUTPUT_DIR_PATH}/${commit_hash_1}/pages" "${OUTPUT_DIR_PATH}/${commit_hash_2}/pages" > /dev/null; then
+		local pages=$(cat "${OUTPUT_DIR_PATH}/${commit_hash_1}/pages")
+	else
+		# TODO: If page files differ  do somenthing here
+		local pages=$(cat "${OUTPUT_DIR_PATH}/${commit_hash_1}/pages")
+		# pages=$(cat "${OUTPUT_DIR_PATH}/${commit1_2}/pages")
+		echo "TODO: This needs attention, pages lists differ"
+	fi
+
+	local i=0
+	IFS=$'\n'
+	for page in ${pages}; do
+
+		local page_name=$(echo "${page}" | cut -d'|' -f1 | sed "s/[ \t]\+//g")
+		local page_filename=$(echo "${page}" | cut -d'|' -f2 | sed "s/[ \t]\+//g")
+		page_filename="$(get_file_without_extention "${page_filename}")"
+
+		if [[ "${i}" == "0" ]]; then
+			checked='checked="checked"'
+		else
+			checked=""
+		fi
+
+		IFS= read -r -d '' page_html <<-EOM
+		    <input id="${page_filename}" title="${page_name}" type="radio" value="${page_filename}" name="pages" ${checked} onchange="change_page()"/>
+		    <label for="${page_filename}" title="${page_name}" id="label-${page}" class="rounded text-sm-left list-group-item radio-box" onclick="change_page_onclick()" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+		    <span title="${page_name}" style="margin-left:0.5em; margin-right:0.1em;" class="iconify" data-icon="gridicons:pages" data-inline="false"></span>
+			    ${page_name}
+		    </label>
+		EOM
+
+		i=$((i + 1))
+		pages_html="${pages_html}\n${page_html}"
+
+	done
+
+	pages_html=$(echo ${pages_html} | sed "s/@/-/g")
+	echo 's@<!-- FILL_PAGES_HERE -->@'"${pages_html}"'@g' > .script.sed
+	sed -i -f .script.sed "${html_path}"
+	rm -rf .script.sed
+}
+
+get_unified_layers_list()
+{
+	local layers_list=$(find "${OUTPUT_DIR_PATH}" -mindepth 2 -maxdepth 2 -name "layers" -exec cat {} \; | sort | uniq)
+	local layer_ids=$(echo "${layers_list}" | cut -d" " -f1 | sort | uniq)
+
+	local layers
+
+	IFS=$'\n'
+	for layer_id in ${layer_ids}; do
+		layer_name=$(echo "${layers_list}" | grep "^${layer_id} " | cut -d" " -f2 | tr "\n" " ")
+		line="${layer_id} ${layer_name}"
+		layers="${layers}${line}\n"
+	done
+
+	echo -e "${layers}" | sed '/^$/d' | tee "${OUTPUT_DIR_PATH}/layers"
+}
+
+get_layer_color()
+{
+	local layer_id="${1}"
+
+	# Layer IDs
+
+	     F_Cu=0
+	   In1_Cu=1
+	   In2_Cu=2
+	   In3_Cu=3
+	   In4_Cu=4
+	     B_Cu=31
+	  B_Adhes=32
+	  F_Adhes=33
+	  B_Paste=34
+	  F_Paste=35
+	  B_SilkS=36
+	  F_SilkS=37
+	   B_Mask=38
+	   F_Mask=39
+	Dwgs_User=40
+	Cmts_User=41
+	Eco1_User=42
+	Eco2_User=43
+	Edge_Cuts=44
+	   Margin=45
+	  B_CrtYd=46
+	  F_CrtYd=47
+	    B_Fab=48
+	    F_Fab=49
+
+	case "${layer_id}" in
+		"${B_Adhes}")    layer_color="#3545A8" ;;
+		"${B_CrtYd}")    layer_color="#D3D04B" ;;
+		"${B_Cu}")       layer_color="#359632" ;;
+		"${B_Fab}")      layer_color="#858585" ;;
+		"${B_Mask}")     layer_color="#943197" ;;
+		"${B_Paste}")    layer_color="#969696" ;;
+		"${B_SilkS}")    layer_color="#481649" ;;
+		"${Cmts_User}")  layer_color="#7AC0F4" ;;
+		"${Dwgs_User}")  layer_color="#0364D3" ;;
+		"${Eco1_User}")  layer_color="#008500" ;;
+		"${Eco2_User}")  layer_color="#008500" ;;
+		"${Edge_Cuts}")  layer_color="#C9C83B" ;;
+		"${F_Adhes}")    layer_color="#A74AA8" ;;
+		"${F_CrtYd}")    layer_color="#A7A7A7" ;;
+		"${F_Cu}")       layer_color="#952927" ;;
+		"${F_Fab}")      layer_color="#C2C200" ;;
+		"${F_Mask}")     layer_color="#943197" ;;
+		"${F_Paste}")    layer_color="#3DC9C9" ;;
+		"${F_SilkS}")    layer_color="#339697" ;;
+		"${In1_Cu}")     layer_color="#C2C200" ;;
+		"${In2_Cu}")     layer_color="#C200C2" ;;
+		"${In3_Cu}")     layer_color="#C20000" ;;
+		"${In4_Cu}")     layer_color="#0000C2" ;;
+		"${Margin}")     layer_color="#D357D2" ;;
+		*)               layer_color="" ;;
+	esac
+
+	echo "${layer_color}"
+}
+
+insert_layers_html()
+{
+	local html_path="${1}"
+
+	local layer
+	local layers
+
+	local checked
+
+	local layer_html
+	local layers_html
+
+	if ! diff -q "${OUTPUT_DIR_PATH}/${commit_hash_1}/layers" "${OUTPUT_DIR_PATH}/${commit_hash_2}/layers" > /dev/null; then
+		layers=$(cat "${OUTPUT_DIR_PATH}/${commit_hash_1}/layers")
+	else
+		# TODO: If page files differ  do somenthing here
+		layers=$(cat "${OUTPUT_DIR_PATH}/${commit_hash_1}/layers")
+		# layers=$(cat "${OUTPUT_DIR_PATH}/${commit1_2}/layers")
+		echo "TODO: This needs attention, layers lists differ"
+	fi
+
+	i=0
+	IFS=$'\n'
+	for layer in ${layers}; do
+
+		local layer_id=$(echo "${layer}" | cut -d "|" -f1)
+		local layer_id_padding=$(printf "%02d" "$layer_id")
+		local layer_name=$(echo "${layer}" | cut -d "|" -f2 | sed "s/\./_/g")
+		local layer_color=$(get_layer_color "${layer_id}")
+
+		if [[ "${i}" == "0" ]]; then
+			checked="checked='checked'"
+		else
+			checked=""
+		fi
+
+		IFS= read -r -d '' layer_html <<-EOM
+		    <input  id="layer-${layer_id_padding}" value="layer-${layer_name}" type="radio" name="layers" onchange="change_layer()" ${checked}/>
+		    <label for="layer-${layer_id_padding}" id="label-${layer_id_padding}" title="Layer ID: ${layer_id}" class="rounded text-sm-left list-group-item radio-box" onclick="change_layer_onclick()">
+		        <span style="margin-left:0.5em; margin-right:0.1em; color: ${layer_color}" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+		        ${layer_name}
+		    </label>
+		EOM
+
+		i=$((i + 1))
+		layers_html="${layers_html}\n${layer_html}"
+
+	done
+
+	layers_html=$(echo ${layers_html} | sed "s/@/-/g")
+	echo 's|<!-- FILL_LAYERS_HERE -->|'"${layers_html}"'|g' > .script.sed
+	sed -i -f .script.sed "${html_path}"
+	rm -rf .script.sed
+}
+
+generate_schematic_artifacts_gui_sch2svg()
+{
+	commit_hash_1=${1}
+	commit_hash_2=${2}
+
+	sch_page_names=$(parse_schematic_pages "${KICAD_PROJ_NESTED_PATH}/${kicad_sch}" | cut -d"|" -f2 | sed "s/\r$//g")
+
+	kicad_sch=$(echo "${sch_page_names}" | cut -d" " -f1).${kicad_sch_extension}
+
+	if [[ ! -f "${OUTPUT_DIR_PATH}/${commit_hash_1}/${kicad_sch}" ]]; then
+		mkdir -p "${OUTPUT_DIR_PATH}/${commit_hash_1}"
+
+		# Export main schematic page from each version
+		if [[ ${commit_hash_1} == "local" ]]; then
+			cp "${KICAD_PROJ_NESTED_PATH}/${kicad_sch}" "${OUTPUT_DIR_PATH}/${commit_hash_1}/${kicad_sch}"
+			cp "${KICAD_PROJ_NESTED_PATH}/board-cache.lib" "${OUTPUT_DIR_PATH}/${commit_hash_1}/board-cache.lib"
+		else
+			git show "${commit_hash_1}:${KICAD_PROJ_NESTED_PATH}/${kicad_sch}" > "${OUTPUT_DIR_PATH}/${commit_hash_1}/${kicad_sch}"
+			git show "${commit_hash_1}:${KICAD_PROJ_NESTED_PATH}/board-cache.lib" > "${OUTPUT_DIR_PATH}/${commit_hash_1}/board-cache.lib"
+		fi
+
+		cmd="sch2svg \"${OUTPUT_DIR_PATH}/${commit_hash_1}/${kicad_sch}\" \"${OUTPUT_DIR_PATH}/${commit_hash_1}/\""
+		if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_KIDIFF}" = "1" ]]; then
+			echo -e "   ${LGR}${cmd}${RCO}"
+		fi
+		if [[ "${DRY_RUN}" == "0" ]]; then
+			eval "${cmd}"
+			ret=$?
+			if [[ "${VERBOSE}" == "1" ]]; then
+				if [[ "${ret}" -gt "0" ]]; then
+					echo -e "${LRE}${BTE}   Status: ${ret}${RCO}"
+				fi
+			fi
+		fi
+		# if [[ ${ret} == 0 ]]; then
+			cd "${OUTPUT_DIR_PATH}/${commit_hash_1}" || exit
+			rename "s/^/sch-/g" ./*.svg
+			cd - || exit
+		# fi
+	fi
+
+	if [[ ! -f "${OUTPUT_DIR_PATH}/${commit_hash_2}/${kicad_sch}" ]]; then
+		mkdir -p "${OUTPUT_DIR_PATH}/${commit_hash_2}"
+
+		# Export main schematic page from each version
+		if [[ ${commit_hash_2} == "local" ]]; then
+			cp "${KICAD_PROJ_NESTED_PATH}/${kicad_sch}" "${OUTPUT_DIR_PATH}/${commit_hash_2}/${kicad_sch}"
+			cp "${KICAD_PROJ_NESTED_PATH}/board-cache.lib" "${OUTPUT_DIR_PATH}/${commit_hash_2}/board-cache.lib"
+		else
+			git show "${commit_hash_2}:${KICAD_PROJ_NESTED_PATH}/${kicad_sch}" > "${OUTPUT_DIR_PATH}/${commit_hash_2}/${kicad_sch}"
+			git show "${commit_hash_2}:${KICAD_PROJ_NESTED_PATH}/board-cache.lib" > "${OUTPUT_DIR_PATH}/${commit_hash_2}/board-cache.lib"
+		fi
+
+		cmd="sch2svg \"${OUTPUT_DIR_PATH}/${commit_hash_2}/${kicad_sch}\" \"${OUTPUT_DIR_PATH}/${commit_hash_1}/\""
+		if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_KIDIFF}" = "1" ]]; then
+			echo -e "   ${LGR}${cmd}${RCO}"
+		fi
+		if [[ "${DRY_RUN}" == "0" ]]; then
+			eval "${cmd}"
+			ret=$?
+			if [[ "${VERBOSE}" == "1" ]]; then
+				if [[ "${ret}" -gt "0" ]]; then
+					echo -e "${LRE}${BTE}   Status: ${ret}${RCO}"
+				fi
+			fi
+		fi
+		# if [[ ${ret} == 0 ]]; then
+			cd "${OUTPUT_DIR_PATH}/${commit_hash_2}" || exit
+			rename "s/^/sch-/g" ./*.svg
+			cd - || exit
+		# fi
+	fi
+}
+
+# ==========================================================================================
+# ==========================================================================================
+# ==========================================================================================
+# ==========================================================================================
+#
+# NEW OR ORGANIZED CODE
+#
+# ==========================================================================================
+# ==========================================================================================
+# ==========================================================================================
+# ==========================================================================================
+
+# GLOBAL VARIABLES
+export KIRI_PID
+export KIRI_LAUNCH_PATH="$(realpath "$(pwd)")"
+export KIRI_HOME_PATH
+export KICAD_VESION
+export KICAD_PRO_ABSOLUTE_PATH
+export REPO_ABSOLUTE_PATH
+export KICAD_PROJ_ABSOLUTE_PATH
+export KICAD_PROJ_NAME
+export OUTPUT_DIR_PATH
+export WEB_DIR_PATH
+export COMMITS
+
+# GLOBAL FLAGS WITH DEFAULT OPTIONS
+export ALL_COMMITS=0
+export ARCHIVE_PROJECT=0
+export DEBUG=0
+export DEBUG_KIDIFF=0
+export DEBUG_PLOTGITSCH=0
+export DRY_RUN=0
+export LAUNCH_BROWSER=1
+export NEWER_COMMIT
+export OLDER_COMMIT
+export PAGE_FRAME=1
+export REMOVE_KIRI_FOLDER=0
+export SELECT_LAST_N_COMMITS
+export SKIP_CACHE_LIB=0
+export START_ON_LAYOUT_VIEW=0
+export START_SERVER=1
+export VERBOSE=0
+export WEBSERVER_PORT
+export PLOTGITSCH_MISSING
+export KIDIFF_MISSING
+
+# RAW COLORS
+readonly RCO=$(printf "\e[0m")  # Reset COlors
+readonly BTE=$(printf "\e[1m")  # Bolt TExt
+readonly LGY=$(printf "\e[37m") # Light GraY
+readonly LRE=$(printf "\e[91m") # Light REd
+readonly LGR=$(printf "\e[92m") # Light GReen
+readonly LYE=$(printf "\e[93m") # Light YEllow
+readonly LBL=$(printf "\e[94m") # Light BLue
+readonly LMA=$(printf "\e[95m") # Light MAgenta
+readonly LCY=$(printf "\e[96m") # Light CYan
+
+# STATUS COLORS
+# readonly INFO=${LBL}
+# readonly ERRO=${LRE}
+# readonly WARN=${LYE}
+
+find()
+{
+	case ${OSTYPE} in
+		darwin*)
+			gfind "$@"
+			;;
+		*)
+			command find "$@"
+			;;
+	esac
+}
+
+readlink()
+{
+	case ${OSTYPE} in
+		darwin*)
+			greadlink "$@"
+			;;
+		*)
+			command readlink "$@"
+			;;
+	esac
+}
+
+sed()
+{
+	case ${OSTYPE} in
+		darwin*)
+			gsed "$@"
+			;;
+		*)
+			command sed "$@"
+			;;
+	esac
+}
+
+tac()
+{
+	case ${OSTYPE} in
+		darwin*)
+			tail -r
+			;;
+		*)
+			command tac
+			;;
+	esac
+}
+
+# Handle Ctrl-C
+cleanup_on_exit()
+{
+	# Restore board bkps
+	if [[ -f "${kicad_pcb}.bkp" ]]; then
+		mv -f "${kicad_pcb}.bkp" "${kicad_pcb}" &> /dev/null
+	fi
+
+	# Remove some leftovers
+	# rm -rf ${OUTPUT_DIR_PATH}
+	rm -rf sch[12]-*.svg
+
+	exit 1
+}
+
+kiri_kill()
+{
+	# Auxiliar function to exit form inside functions
+	kill -s TERM ${KIRI_PID}
+}
+
 show_help()
 {
 	IFS= read -r -d '' HELP_MESSAGE <<-EOM
-
 	USAGE:
 
 	    kiri [OPTIONS] [KICAD_PROJECT]
 
 	DESCRIPTION:
 
-		Kiri is a proof of concept script to automate the usage of
-		plotkicadsch (plotgitsch) and Kicad-Diff (kidiff) in a single easy-to-use tool.
+	    Kiri is a proof of concept script to automate the usage of
+	    plotkicadsch (plotgitsch) and Kicad-Diff (kidiff) in a single easy-to-use tool.
 
 	OPTIONS:
 
@@ -55,686 +597,786 @@ show_help()
 	    kiri board.pro
 
 	    # Nested project (with verbose and starting fresh)
-	    kiri nested-project/board.pro -r -V
+	    kiri nested-project/board.pro -r -D
+
+	    # Nested project (Debugging issues)
+	    kiri board.kicad_pro -r -D
 	EOM
 
-	echo -e "${HELP_MESSAGE}"
+	printf "\n%s\n" "${HELP_MESSAGE}" | less
 }
 
-# Colors
-bold=$(printf "\e[1m")
-inv=$(printf "\e[7")
-gray=$(printf "\e[37m")    # light
-red=$(printf "\e[91m")     # light
-green=$(printf "\e[92m")   # light
-yellow=$(printf "\e[93m")  # light
-blue=$(printf "\e[94m")    # light
-magenta=$(printf "\e[95m") # light
-cyan=$(printf "\e[96m")    # light
-
-reset=$(printf "\e[0m")
-
-kidiff_version()
+is_tool_avail()
 {
-	tool_path=$(dirname "$(which kidiff)")
+	local tool=${1}
+	local no_exit=${2}
 
-	if [[ -d "${tool_path}/../.git/" ]]; then
+	if ! command -v "${tool}" &> /dev/null; then
+		if [[ "${no_exit}" != 1 ]]; then
+			echo "ERROR: ${tool} could not be found" 1>&2
+			exit 1
+		else
+			echo "${LBL}INFO: ${tool} is missing, skipping its use${RCO}" 1>&2
+			return 1
+		fi
+	else
+		return 0
+	fi
+}
 
-		last_commit_hash=$(git --git-dir "${tool_path}/../.git/" rev-parse --short HEAD)
-		last_commit_date=$(git --git-dir "${tool_path}/../.git/" log -1 --format="%at" | xargs -I{} date -d @{} +"%Y/%m/%d %Hh%M")
+check_required_tools()
+{
+	local no_exit=1
 
+	readonly PLOTGITSCH_MISSING=$(is_tool_avail "plotgitsch" ${no_exit})
+	readonly KIDIFF_MISSING=$(is_tool_avail "kidiff" ${no_exit})
+
+	is_tool_avail "dos2unix"
+
+	case ${OSTYPE} in
+		darwin*)
+			is_tool_avail "gsed"
+			is_tool_avail "gfind"
+			is_tool_avail "greadlink"
+			;;
+	esac
+}
+
+launch_project_selector_gui()
+{
+	local file_path
+
+	if [[ -n ${DISPLAY} ]]; then
+		export DISPLAY=:0.0
+	fi
+
+	if ! file_path=$(kiri-file-picker); then
+		return $?
+	fi
+
+	echo "${file_path}"
+}
+
+get_project_repo_abspath()
+{
+	local aux_path=$(echo $(dirname "${KICAD_PRO_ABSOLUTE_PATH}"))
+	cd "${aux_path}" &> /dev/null || exit
+	echo "$(git rev-parse --show-toplevel)"
+}
+
+get_project_nested_path()
+{
+	echo "$(dirname ${KICAD_PRO_ABSOLUTE_PATH#${REPO_ABSOLUTE_PATH}/})"
+}
+
+command_line_parse()
+{
+	local output_dir=".kiri"
+
+	while [[ ${#} -gt 0 ]]; do
+
+		local key="${1}"
+
+		case "${key}" in
+
+			-a|--all)
+				ALL_COMMITS=1
+				shift
+				;;
+
+			-d|--output-dir)
+				local output_dir=${2}
+				shift 2
+				;;
+
+			-y|--dry-run)
+				DRY_RUN=1
+				START_SERVER=0
+				VERBOSE=1
+				shift
+				;;
+
+			-h|--help)
+				show_help
+				exit 0
+				;;
+
+			-l|--no-server)
+				START_SERVER=0
+				shift
+				;;
+
+			-n|--newer)
+				NEWER_COMMIT="${2}"
+				shift 2
+				;;
+
+			-t|--last)
+				local param="${1}"
+				SELECT_LAST_N_COMMITS="${2}"
+				shift 2
+
+				# Check if it is positive number
+				# regexp='^[0-9]+$'
+				# if [[ ! ${SELECT_LAST_N_COMMITS} =~ ${regexp} ]] ; then
+				#    echo "Error: Parameter \"${param}\" is not a positive number (\"${SELECT_LAST_N_COMMITS}\")" >&2
+				#    kiri_kill
+				# fi
+
+				;;
+
+			-o|--older)
+				OLDER_COMMIT="${2}"
+				shift 2
+				;;
+
+			-r|--remove)
+				REMOVE_KIRI_FOLDER=1
+				shift
+				;;
+
+			-p|--port)
+				WEBSERVER_PORT="${2}"
+				shift 2
+				;;
+
+			-V|--verbose)
+				VERBOSE=1
+				shift
+				;;
+
+			-v|--version)
+				show_tools_versions
+				exit 0
+				;;
+
+			-D|--debug)
+				DEBUG=1
+				DEBUG_KIDIFF=1
+				DEBUG_PLOTGITSCH=1
+				shift
+				;;
+
+			-Dp|-DP|-dp|--debug-plotgitsch)
+				DEBUG_PLOTGITSCH=1
+				shift
+				;;
+
+			-Dk|-DK|-dk|--debug-kidiff)
+				DEBUG_KIDIFF=1
+				shift
+				;;
+
+			-x|--archive)
+				ARCHIVE_PROJECT=1
+				START_SERVER=0
+				shift
+				;;
+
+			-s|--skip-cache)
+				SKIP_CACHE_LIB=1
+				shift
+				;;
+
+			-S|--server-only)
+				LAUNCH_BROWSER=0
+				shift
+				;;
+
+			-u|--layout)
+				START_ON_LAYOUT_VIEW=1
+				shift
+				;;
+
+			-f|--frame)
+				PAGE_FRAME=0
+				shift
+				;;
+
+			-*|--*)
+				echo "Unknown argument '${1}'"
+				exit 1
+				;;
+
+			*)
+				local kicad_pro_path="${1}"
+				shift
+				;;
+		esac
+	done
+
+	# Select Kicad project with GUI if it was not passed
+	if [[ -n "${kicad_pro_path}" ]]; then
+		kicad_pro_path="$(launch_project_selector_gui)"
+	fi
+
+	readonly KICAD_PRO_ABSOLUTE_PATH=$(realpath "${kicad_pro_path/#\~/$HOME}")
+	readonly REPO_ABSOLUTE_PATH="$(get_project_repo_abspath)"
+	readonly KICAD_PROJ_NESTED_PATH="$(get_project_nested_path)"
+
+	if [[ ! -f ${KICAD_PRO_ABSOLUTE_PATH} ]]; then
+		printf "ERROR: Kicad's project file (.pro, .kicad_pro) \"%s\" is missing.\n\n" "${KICAD_PRO_ABSOLUTE_PATH}"
+		exit 1
+	fi
+
+	readonly KICAD_PROJ_ABSOLUTE_PATH="${REPO_ABSOLUTE_PATH}/${KICAD_PROJ_NESTED_PATH}"
+	cd "${KICAD_PROJ_ABSOLUTE_PATH}" || exit
+
+	if [[ -n ${output_dir} ]]; then
+		readonly OUTPUT_DIR_PATH=$(realpath "${output_dir}")
+		mkdir -p "${OUTPUT_DIR_PATH}"
+	else
+		printf "ERROR: Output folder is empty\n"
+		exit 1
+	fi
+
+	readonly WEB_DIR_PATH="${OUTPUT_DIR_PATH}/web/"
+}
+
+get_kicad_version()
+{
+	kicad_version.py "$@"
+}
+
+get_kidiff_version()
+{
+	local kidiff_repo_path
+	local kidiff_git_path
+	local super_git_path
+	local last_commit_hash
+	local last_commit_date
+	local submodule_version
+
+	kidiff_repo_path=$(dirname $(dirname "$(which kidiff)"))
+	git_toplevel=$(git --git-dir "${kidiff_repo_path}/.git" rev-parse --show-toplevel)
+
+	super_git_path="${kidiff_repo_path}/.git"
+	submodule_git_path="${git_toplevel}/.git"
+
+	# Using standalone cloned KiDiff project
+	if [[ "${kidiff_repo_path}" == "${git_toplevel}" ]]; then
+		last_commit_hash=$(git --git-dir "${super_git_path}" rev-parse --short HEAD)
+		last_commit_date=$(git --git-dir "${super_git_path}" log -1 --format="%at" | xargs -I{} date -d @{} +"%Y/%m/%d %Hh%M")
 		echo "${last_commit_hash} ${last_commit_date}"
 	else
-
-		if [[ -d "${tool_path}/../../../.git/" ]]; then
-
-			submodule_version=$(git --git-dir "${tool_path}/../../../.git/" submodule | grep -i KiCad-Diff)
-
-			echo "${submodule_version}"
+		# Using cloned KiDiff as KiRI submodule
+		if [[ -d "${submodule_git_path}" ]]; then
+		submodule_version=$(git --git-dir "${submodule_git_path}" submodule status -- "submodules/KiCad-Diff" | sed "s/^[ ]\+//g")
+		echo "${submodule_version}"
+		# Kidiff was not cloned from git so it does not have version
 		else
-
-			echo "Unknown"
+			echo "(unknown version)"
 		fi
 	fi
 }
 
-kiri_version()
+get_kiri_version()
 {
-	tool_path=$(dirname "$(which kiri)")
+	local tool_path
+	local git_dir_path
+	local last_commit_hash
+	local last_commit_date
 
-	if [[ -d "${tool_path}/../.git/" ]]; then
+	tool_path=$(dirname $(dirname "$(which kiri)"))
+	git_dir_path="${tool_path}/.git"
 
-		last_commit_hash=$(git --git-dir "${tool_path}/../.git/" rev-parse --short HEAD)
-		last_commit_date=$(git --git-dir "${tool_path}/../.git/" log -1 --format="%at" | xargs -I{} date -d @{} +"%Y/%m/%d %Hh%M")
-
+	if [[ -d "${git_dir_path}" ]]; then
+		last_commit_hash=$(git --git-dir "${git_dir_path}" rev-parse --short HEAD)
+		last_commit_date=$(git --git-dir "${git_dir_path}" log -1 --format="%at" | xargs -I{} date -d @{} +"%Y/%m/%d %Hh%M")
 		echo "${last_commit_hash} ${last_commit_date}"
 	else
 		echo "Unknown"
 	fi
 }
 
-show_version()
+show_tools_versions()
 {
 	IFS= read -r -d '' VERSION <<-EOM
-
 	    plotgitsch $(plotgitsch --version)
-	    kidiff $(kidiff_version)
-	    $(basename "${0}") $(kiri_version)
+	    kidiff $(get_kidiff_version)
+	    $(basename "${0}") $(get_kiri_version)
 	EOM
 
-	echo -e "$VERSION"
+	printf "\n%s\n" "$VERSION"
 }
 
-ctrl_c()
+get_file_without_extention()
 {
-	echo
-	echo "** Trapped CTRL-C"
-	echo "Cleaning up and leaving"
+	local filename="$(basename "${1}")"
+	echo "${filename%.*}"
+}
 
-	# Restore board bkp
-	if [[ -f "${kicad_pcb}.bkp" ]]; then
-		mv -f "${kicad_pcb}.bkp" "${kicad_pcb}" &> /dev/null
+get_file_extension()
+{
+	echo "${1##*.}"
+}
+
+get_schematic_vesion()
+{
+	local kicad_sch="${1}"
+	local file_extension=$(get_file_extension "${kicad_sch}")
+
+	case ${file_extension} in
+
+		sch)
+			# Format:
+			# EESchema Schematic File Version 4
+			grep -i "File Version" "${kicad_sch}" -m 1 | cut -d" " -f5
+			;;
+
+		kicad_sch)
+			# Format
+			# (kicad_sch (version 20211123) (generator eeschema)
+			grep -i "kicad_sch" "${kicad_sch}" -m 1 | sed "s/[()]//g" | cut -d" " -f3
+			;;
+	esac
+}
+
+get_layout_version()
+{
+	# (kicad_pcb (version 4) (host kicad "dummy file") )
+	# (kicad_pcb (version 20171130) (host pcbnew "(5.0.0-rc2-76-gb5f63567d)")
+	# (kicad_pcb (version 20171130) (host pcbnew "(5.1.6)-1")
+	# (kicad_pcb (version 20171130) (host pcbnew 5.0.0-rc3-unknown-eaf938c~65~ubuntu18.04.1)
+	# (kicad_pcb (version 20171130) (host pcbnew 5.0.1-33cea8e~67~ubuntu18.04.1)
+	# (kicad_pcb (version 20171130) (host pcbnew 5.1.5+dfsg1-2~bpo10+1)
+	# (kicad_pcb (version 20171130) (host pcbnew 5.1.6-c6e7f7d~86~ubuntu20.04.1)
+	# (kicad_pcb (version 20171130) (host pcbnew 6.0.0-rc1-unknown-da35b16~65~ubuntu18.04.1)
+	# (kicad_pcb (version 20200104) (host pcbnew "(5.99.0-879-ga0698723b)")
+	# (kicad_pcb (version 20210606) (generator pcbnew)
+
+	local kicad_pcb="${1}"
+	echo $(head -n1 "${kicad_pcb}" | sed "s/[()]//g" | cut -d" " -f3)
+}
+
+set_default_html_view()
+{
+	local kicad_pro="${1}"
+	local kicad_version="${2}"
+	local file_extension=$(get_file_extension "${kicad_sch}")
+
+	case ${file_extension} in
+		"sch")
+			# Format:
+			# EESchema Schematic File Version 4
+			grep -i "File Version" "${kicad_sch}" | cut -d" " -f5
+			;;
+		"kicad_sch")
+			# Format
+			# (kicad_sch (version 20211123) (generator eeschema)
+			grep -i "kicad_sch" "${kicad_sch}" -m 1 | sed "s/[()]//g" | cut -d" " -f3
+			;;
+	esac
+
+	# Kicad-6 boards do not have a schematic view working yet
+	if [[ ${PCBS_VERSION} -ge 20211014 ]]; then
+		START_ON_LAYOUT_VIEW=1
 	fi
-
-	# Remove leftovers
-	# rm -rf ${OUTPUT_DIR}
-	rm -rf sch[12]-*.svg
-
-	exit 1
 }
 
-check_tool()
+get_git_commits()
 {
-	tool=${1}
-	exit=${2}
+	local files="$@"
+	local current_git_branch=$(git rev-parse --abbrev-ref HEAD)
+	local command="git log --date=format:'%Y-%m-%d %H:%M:%S' --pretty='format:%h | %ad | %an | %s' ${current_git_branch} -- ${files}"
+	if [[ "${DEBUG}" == "1" ]]; then
+		echo -e "\n${LBL}Get commits command:${RCO}" 1>&2
+		echo -e "${LGR}${command}${RCO}\n" 1>&2
+	fi
+	eval "${command}"
+	local ret=$?
+	if [[ "${ret}" -gt "0" ]]; then
+		echo -e "${LRE}Cmd Status:${RCO} ${ret}\n" 1>&2
+	fi
+}
 
-	if ! command -v "${tool}" &> /dev/null; then
-		if [[ "${exit}" != "" ]]; then
-			echo "${tool} could not be found"
-			exit 1
+# TODO: ADAPT FOR MACOS
+# THIS MAY NOTE WORK THERE
+full_user_name() {
+	getent passwd "${1:-$USER}" | cut -d: -f5 | cut -d, -f1;
+}
+
+has_files_changes()
+{
+	local files="$@"
+	local has_changes=false
+	local ret=0
+	local file
+	for file in ${files}; do
+		if git diff --exit-code "${file}" > /dev/null; then
+			if [[ "${DEBUG}" == "1" ]]; then
+				echo "Info: ${file} does not have changes" 2>&1
+			fi
+		else
+			if [[ "${DEBUG}" == "1" ]]; then
+				echo "Info: ${file} has changes" 2>&1
+			fi
+			has_changes=true
+			ret=1
 		fi
-		return 1
+	done
+	if [[ "${DEBUG}" == "1" ]]; then
+		echo "${LBL}At least one file has changes? ${LRE}${has_changes}${RCO}" 2>&1
+		echo 2>&1
+	fi
+	return ${ret}
+}
+
+parse_commits_list()
+{
+	local kicad_sch="${1}"
+	local kicad_sch="${2}"
+	local kicad_pcb="${3}"
+	local extra_sch_files="${4}"
+
+	if [[ "${ALL_COMMITS}" == "1" ]]; then
+		COMMITS=$(get_git_commits)
 	else
-		return 0
+		COMMITS=$(get_git_commits "${kicad_sch}" "${extra_sch_files}" "${kicad_pcb}")
+	fi
+
+	if [[ ! -z "${OLDER_COMMIT}" ]]; then
+		if [[ "${VERBOSE}" == "1" ]]; then
+			echo "  Older commit: ${OLDER_COMMIT}"
+		fi
+		COMMITS=$(echo "${COMMITS}" | sed "/^${OLDER_COMMIT}/q")
+	fi
+
+	if [[ ! -z "${NEWER_COMMIT}" ]]; then
+		if [[ "${VERBOSE}" == "1" ]]; then
+			echo "  Newer commit: ${NEWER_COMMIT}"
+			echo
+		fi
+		COMMITS=$(echo "${COMMITS}" | sed -n "/^${NEWER_COMMIT}/,\$p")
+	fi
+
+	if [[ ! -z "${SELECT_LAST_N_COMMITS}" ]]; then
+		COMMITS=$(echo "${COMMITS}" | head -n "${SELECT_LAST_N_COMMITS}")
+	fi
+
+	# Append local files only if they have changes
+	if has_files_changes "${kicad_sch}" "${extra_sch_files}" "${kicad_pcb}"; then
+		# Do not have changes
+		IFS= read -r -d '' COMMITS <<-EOM
+		${COMMITS}
+		EOM
+	else
+		# Have changes
+		IFS= read -r -d '' COMMITS <<-EOM
+		local | $(date "+%Y-%m-%d %H:%M:%S") | $(full_user_name) | Local changes
+		${COMMITS}
+		EOM
+	fi
+
+	# Commits list has to have 2 commits at least
+	if [[ $(echo "${COMMITS}" | wc -l ) -lt 2 ]]; then
+		echo "Leaving, less than 2 commits found"
+		exit 0
+	fi
+
+	if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]]; then
+		echo -e "\n${LBL}Commits list:${RCO}"
+		echo "${COMMITS}" | column -t -s "|" | nl | cut -c -$(($(tput cols)-4))
 	fi
 }
 
-# ==============================================
-# Redefine functions for making Linux/OSX smooth
-# ==============================================
-
-readlink_osx()
+retrieve_kicad_files_from_git()
 {
-	target_file="${1}"
-	dir_name=$(dirname "${target_file}")
+	local commit_hash="${1}"
 
-	cd "${dir_name}" || exit
-	target_file=$(basename "${target_file}")
+	if [[ "${DEBUG}" == "1" ]]; then
+		# echo -e "\nCommit Hash = ${commit_hash}"
+		echo -e "\n${OUTPUT_DIR_PATH}/${commit_hash}"
+	fi
 
-	# Iterate down a (possible) chain of symlinks
-	while [ -L "${target_file}" ]
-	do
-		target_file=$(readlink "${target_file}")
-		cd "$(dirname "${target_file}")" || exit
-		target_file=$(basename "${target_file}")
-	done
+	if [[ "${commit_hash}" == "local" ]]; then
+		local git_hash="HEAD"
+	else
+		local git_hash="${commit_hash}"
+	fi
 
-	# Compute the canonicalized name by finding the physical path
-	# for the directory we're in and appending the target file.
-	phys_dir=$(pwd -P)
-
-	result="${phys_dir}/${target_file}"
-
-	echo "${result}"
-}
-
-readlink_()
-{
-	case ${OSTYPE} in
-		darwin*)
-			readlink_osx "${1}"
+	local kicad_pro=$(git ls-tree --name-only "${git_hash}" "${REPO_ABSOLUTE_PATH}/${KICAD_PROJ_NESTED_PATH}" | grep "^.*\.pro$\|^.*\.kicad_pro$")
+	local kicad_pro_name=$(get_file_without_extention "${kicad_pro}")
+	local kicad_pro_extension=$(get_file_extension "${kicad_pro}")
+	case "${kicad_pro_extension}" in
+		pro)
+			local kicad_sch=$(git ls-tree --name-only "${git_hash}" "${REPO_ABSOLUTE_PATH}/${KICAD_PROJ_NESTED_PATH}" | grep "${kicad_pro_name}\.sch$")
+			local kicad_lib=$(git ls-tree --name-only "${git_hash}" "${REPO_ABSOLUTE_PATH}/${KICAD_PROJ_NESTED_PATH}" | grep "${kicad_pro_name}-cache\.lib$")
 			;;
-		*)
-			readlink -f "${1}"
+		kicad_pro)
+			local kicad_sch=$(git ls-tree --name-only "${git_hash}" "${REPO_ABSOLUTE_PATH}/${KICAD_PROJ_NESTED_PATH}" | grep "${kicad_pro_name}\.kicad_sch$")
 			;;
 	esac
-}
+	local kicad_pcb=$(git ls-tree --name-only "${git_hash}" "${REPO_ABSOLUTE_PATH}/${KICAD_PROJ_NESTED_PATH}" | grep "${kicad_pro_name}\.kicad_pcb$")
 
-tac_()
-{
-	case ${OSTYPE} in
-		darwin*)
-			tail -r
-		;;
-		*)
-			tac
-		;;
-	esac
-}
+	IFS= read -r -d '' kicad_files <<-EOM
+	${kicad_pro}
+	${kicad_sch}
+	${kicad_lib}
+	${kicad_pcb}
+	EOM
 
-sed()
-{
-	case ${OSTYPE} in
-		darwin*)
-			gsed "$@"
-			;;
-		*)
-			command sed "$@"
-			;;
-	esac
-}
-
-find_()
-{
-	case ${OSTYPE} in
-		darwin*)
-			gfind "$@"
-			;;
-		*)
-			find "$@"
-			;;
-	esac
-}
-
-# ======================
-# ======================
-
-get_pages()
-{
-	board_name=${1}
-	main_schematic=${2}
-
-	# First page is this one
-	pages="${board_name}|${board_name}"
-
-	pagenames=$(sed "s/\r$//g" "${main_schematic}" | grep "^F0 " | cut -d" " -f2 | tr "\n" "|" | sed "s/\"//g" | sed "s/|$//g" | tr "|" "\n")
-	pagepaths=$(sed "s/\r$//g" "${main_schematic}" | grep "^F1 " | cut -d" " -f2 | tr "\n" "|" | sed "s/\"//g" | sed "s/|$//g" | tr "|" "\n")
+	kicad_files=$(echo "${kicad_files}" | sed '/^$/d')
 
 	IFS=$'\n'
-	n=0
-	for pagename in ${pagenames}; do
-
-		n=$((n+1))
-
-		pagename=$(echo "${pagename}" | sed "s/^ //g" | sed "s/ $//g")
-		pagepath=$(echo "${pagepaths}" | sed -n ${n}p)
-		filename=$(basename "${pagepath}" | sed "s/\.${kicad_sch_extension}//g")
-
-		page="${pagename}|${filename}"
-		pages="${pages}\n${page}"
-
-	done
-
-	echo -e "${pages}"
-}
-
-insert_commits()
-{
-	html="${1}"
-	commits="${2}"
-	commit1_idx="${3}"
-	commit2_idx="${4}"
-	project="${5}"
-	kicad_pcb="${6}"
-	sch_files=$(echo "${7}" | sed "s/^[ \t]\+//g" | sed "s/[ \t]$\+//g")
-
-	# GIT COMMITS FORMAT
-	#
-	# fcd81ef | 2021-01-22 17:21:39 -0300 | Leandro Heck | Initial version
-	# d20b900 | 2021-01-22 16:59:29 -0300 | Leandro Heck | Initial commit
-
-	n=0
-
-	COMMITS_LIST_HTML=""
-
-	empty_icon='<span class="iconify" style="padding-left: 0px; padding-right: 0px; width: 14px; height: 14px; color: rgba(255, 0, 0, 0.5);" data-icon="bx:bx-x" data-inline="false"></span>'
-
-	IFS=$'\n'
-	for commit in ${commits}; do
-
-		if [[ "${commit}" != "local" ]]; then
-
-			hash=$(echo "${commit}" | cut -d'|' -f1 | sed "s/^ //g" | sed "s/[ t]\+//g" )
-			date=$(echo "${commit}" | cut -d'|' -f2 | cut -d' ' -f1-2 | sed "s/^ //g" )
-			user=$(echo "${commit}" | cut -d'|' -f3 | sed "s/^ //g" )
-			 msg=$(echo "${commit}" | cut -d'|' -f4 | sed "s/^ //g" )
-
-
-			# check for changes in ".sch|.kicad_sch" files
-			if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${project}" | cat | grep -s -E "${sch_files// /|}" &> /dev/null; then
-				sch_icon='<span class="iconify" style="padding-left: 0px; padding-right: 0px; width: 14px; height: 14px; color: #A6E22E;" data-icon="carbon:schematics" data-inline="false"></span>'
-			else
-				sch_icon="${empty_icon}"
-			fi
-
-			# check for changes in .kicad_pcb files
-			if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${project}" | cat | grep -s "${kicad_pcb}" &> /dev/null; then
-				layout_icon='<span class="iconify" style="padding-left: 0px; padding-right: 0px; width: 14px; height: 14px; color: #F92672;" data-icon="codicon:circuit-board" data-inline="false"></span>'
-			else
-				layout_icon="${empty_icon}"
-			fi
-
-			# Check for changes in textual files only
-			if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${project}" | cat | grep -s -vE "${sch_files// /|}${kicad_pcb}" &> /dev/null; then
-				text_icon='<span class="iconify" style="padding-left: 0px; padding-right: 0px; width: 14px; height: 14px; color: #888888;" data-icon="bi:file-earmark-text" data-inline="false"></span>'
-			else
-				text_icon="${empty_icon}"
-			fi
-
-			if [[ "${n}" == "${commit1_idx}" ]] || [[ "${n}" == "${commit2_idx}" ]]; then
-				checked="checked='checked'"
-			else
-				checked=""
-			fi
-
-			IFS= read -r -d '' COMMIT_HTML <<-EOM
-			    <input class="chkGroup" type="checkbox" id="${hash}" name="commit" value="${hash}" ${checked} onchange="update_commits()"/>
-				<label class="text-sm-left list-group-item" style="display: block; width: 480px" for="${hash}">
-			      <table style="width:100%">
-			        <tr>
-			          <td rowspan=2 style="vertical-align: top; width: 1.8em;">
-			            <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" width="15" height="15">
-			              <path d="M7.5 10.5a3 3 0 010-6m0 6a3 3 0 000-6m0 6V15m0-10.5V0" stroke="currentColor"></path>
-			            </svg>
-			          </td>
-			          <td><em class="text-info" style="  line-height: 0.7;">${msg}</em></td>
-			        </tr>
-			        <tr>
-			          <td style="white-space:nowrap; overflow: hidden;"><span class="text-success font-weight-normal">${hash}</span> <span class="text-muted"> | </span> ${sch_icon} ${layout_icon} ${text_icon} <span class="text-muted font-weight-normal"> | ${date} | ${user}</span></td>
-			        </tr>
-			      </table>
-			    </label>
-			EOM
-
-		else
-
-			hash="local"
-			date="$(date +'%Y-%m-%d')"
-			user="${USER}"
-			 msg="Local changes"
-
-			sch_icon="${empty_icon}"
-			layout_icon="${empty_icon}"
-			text_icon="${empty_icon}"
-
-			if [[ "${n}" == "${commit1_idx}" ]] || [[ "${n}" == "${commit2_idx}" ]]; then
-				checked="checked='checked'"
-			else
-				checked=""
-			fi
-
-			IFS= read -r -d '' COMMIT_HTML <<-EOM
-			    <input class="chkGroup" type="checkbox" id="${hash}" name="commit" value="${hash}" ${checked} onchange="update_commits()"/>
-			    <label class="text-sm-left list-group-item" style="display: block; width: 480px" for="${hash}">
-			      <table style="width:100%">
-			        <tr>
-			          <td style="vertical-align: top; width: 1.8em;">
-			            <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" width="15" height="15">
-			              <path d="M7.5 10.5a3 3 0 010-6m0 6a3 3 0 000-6m0 6V15m0-10.5V0" stroke="currentColor"></path>
-			            </svg>
-			          </td>
-			          <td><em class="text-warning" style=" line-height: 0.7;">${msg}</em></td>
-			        </tr>
-			      </table>
-			    </label>
-			EOM
-
+	for file in ${kicad_files}; do
+		if [[ "${DEBUG}" == "1" ]]; then
+			echo "- Exporting: ${file}"
 		fi
-
-		n=$((n+1))
-
-		COMMITS_LIST_HTML="${COMMITS_LIST_HTML}${COMMIT_HTML}"
-
+		mkdir -p "${OUTPUT_DIR_PATH}/${commit_hash}"
+		git show ${git_hash}:"${file}" >> "${OUTPUT_DIR_PATH}/${commit_hash}/${file}"
 	done
 
-	# Disables check since it does not work with quotes
-	# shellcheck disable=SC2086
-	COMMITS_LIST_HTML=$(echo ${COMMITS_LIST_HTML} | sed "s/@/-/g")
-	echo 's@<!-- FILL_COMMITS_HERE -->@'"${COMMITS_LIST_HTML}"'@g' > .script.sed
-	sed -i -f .script.sed "${html}"
-	rm -rf .script.sed
-}
-
-insert_pages()
-{
-	html="${1}"
-	pages="${2}"
-
-	# FORMAT
-	# pagename|pagepath(.sch|.kicad_sch)
-
-	n=0
-
-	PAGES_LIST_HTML=""
-
-	IFS=$'\n'
-	for page in ${pages}; do
-
-		page_name=$(echo "${page}" | cut -d'|' -f1 | sed "s/[ \t]\+//g")
-		page_filename=$(echo "${page}" | cut -d'|' -f2 | sed "s/[ \t]\+//g" | sed "s/${kicad_sch_extension}//g")
-
-		if [[ "${n}" == "0" ]]; then
-			checked='checked="checked"'
-		else
-			checked=""
-		fi
-
-		IFS= read -r -d '' HTML_SNIPPET <<-EOM
-		    <input  id="${page_filename}" title="${page_name}" type="radio" value="${page_filename}" name="pages" ${checked} onchange="change_page()"/>
-		    <label for="${page_filename}" title="${page_name}" id="label-${page}" class="rounded text-sm-left list-group-item radio-box" onclick="change_page_onclick()" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-		    <span title="${page_name}" style="margin-left:0.5em; margin-right:0.1em;" class="iconify" data-icon="gridicons:pages" data-inline="false"></span>
-			    ${page_name}
-		    </label>
-		EOM
-
-		n=$((n+1))
-
-		PAGES_LIST_HTML="${PAGES_LIST_HTML}${HTML_SNIPPET}"
-
-	done
-
-	# Disables check since it does not work with quotes
-	# shellcheck disable=SC2086
-	PAGES_LIST_HTML=$(echo ${PAGES_LIST_HTML} | sed "s/@/-/g")
-	echo 's@<!-- FILL_PAGES_HERE -->@'"${PAGES_LIST_HTML}"'@g' > .script.sed
-	sed -i -f .script.sed "${html}"
-	rm -rf .script.sed
-}
-
-# Fix layer names when using Kicad v6 on old projects (v5)
-fix_layer_names()
-{
-	_layers="$1"
-
-	_layers_new=
-	if [[ ${KICAD_VERSION} == 6 ]] && [[ ${PCBS_VERSION} -lt 20211014 ]]; then
-
-		IFS=$'\n'
-		for layer in ${_layers}; do
-			layer_id=$(echo "${layer}" | cut -d" " -f1)
-			layer_name=$(echo "${layer}" | cut -d" " -f2)
-			case "${layer_name}" in
-				B.Adhes)   new_layer_name="B.Adhesive" ;;
-				F.Adhes)   new_layer_name="F.Adhesive" ;;
-				Cmts.User) new_layer_name="User.Comments" ;;
-				Dwgs.User) new_layer_name="User.Drawings" ;;
-				Eco1.User) new_layer_name="User.Eco1" ;;
-				Eco2.User) new_layer_name="User.Eco2" ;;
-				B.SilkS)   new_layer_name="B.Silkscreen" ;;
-				F.SilkS)   new_layer_name="F.Silkscreen" ;;
-				B.CrtYd)   new_layer_name="B.Courtyard" ;;
-				F.CrtYd)   new_layer_name="F.Courtyard" ;;
-				*)         new_layer_name=${layer_name}  ;;
-			esac
-			if [[ ${_layers_new} == "" ]]; then
-				_layers_new="${layer_id} ${new_layer_name}"
-			else
-				_layers_new="${_layers_new}\n${layer_id} ${new_layer_name}"
+	local extra_sch_files=$(get_kicad_sch_extra "${OUTPUT_DIR_PATH}/${commit_hash}/${kicad_sch}")
+	if [[ -n ${extra_sch_files} ]]; then
+		for file in ${extra_sch_files}; do
+			if [[ "${DEBUG}" == "1" ]]; then
+				echo "- Exporting: ${file}"
 			fi
+			mkdir -p $(dirname "${OUTPUT_DIR_PATH}/${commit_hash}/${file}")
+			git show ${git_hash}:"${file}" >> "${OUTPUT_DIR_PATH}/${commit_hash}/${file}"
 		done
+	fi
 
-		echo -e "${_layers_new}"
-	else
-		echo -e "${_layers}"
+	if [[ "${DEBUG}" == "1" ]]; then
+		echo
 	fi
 }
 
-insert_layers()
+# Maybe duplicated
+get_kicad_pro_extension()
 {
-	output_dir="${1}"
-	html="${2}"
-	layers="${3}"
+	local kicad_project_path="${1}"
 
-	# FORMAT
-	# LAYER_ID LAYER_NAME
-
-	n=0
-
-	LAYERS_LIST_HTML=""
-
-	# All used layers (from all commits)
-	# layers=$(find "${output_dir}" -name "layers" -exec cat {} \; | sort | uniq)
-	# layers=$(fix_layer_names "${layers}")
-
-	IFS=$'\n'
-	for layer in ${layers}; do
-
-		layer_id=$(echo "${layer}" | cut -d " " -f1)
-		layer_id_padding=$(printf "%02d" "$layer_id")
-
-		layer_name=$(grep -m1 "${layer_id}" <<< "${layers}" | cut -d" " -f2 | sed "s/\./_/g")
-
-		# Layers
-	     F_Cu=0
-	   In1_Cu=1
-	   In2_Cu=2
-	   In3_Cu=3
-	   In4_Cu=4
-	     B_Cu=31
-	  B_Adhes=32
-	  F_Adhes=33
-	  B_Paste=34
-	  F_Paste=35
-	  B_SilkS=36
-	  F_SilkS=37
-	   B_Mask=38
-	   F_Mask=39
-	Dwgs_User=40
-	Cmts_User=41
-	Eco1_User=42
-	Eco2_User=43
-	Edge_Cuts=44
-	   Margin=45
-	  B_CrtYd=46
-	  F_CrtYd=47
-	    B_Fab=48
-	    F_Fab=49
-
-		# Coloring by ID
-		case "${layer_id}" in
-			"${B_Adhes}")    layer_color="#3545A8" ;;
-			"${B_CrtYd}")    layer_color="#D3D04B" ;;
-			"${B_Cu}")       layer_color="#359632" ;;
-			"${B_Fab}")      layer_color="#858585" ;;
-			"${B_Mask}")     layer_color="#943197" ;;
-			"${B_Paste}")    layer_color="#969696" ;;
-			"${B_SilkS}")    layer_color="#481649" ;;
-			"${Cmts_User}")  layer_color="#7AC0F4" ;;
-			"${Dwgs_User}")  layer_color="#0364D3" ;;
-			"${Eco1_User}")  layer_color="#008500" ;;
-			"${Eco2_User}")  layer_color="#008500" ;;
-			"${Edge_Cuts}")  layer_color="#C9C83B" ;;
-			"${F_Adhes}")    layer_color="#A74AA8" ;;
-			"${F_CrtYd}")    layer_color="#A7A7A7" ;;
-			"${F_Cu}")       layer_color="#952927" ;;
-			"${F_Fab}")      layer_color="#C2C200" ;;
-			"${F_Mask}")     layer_color="#943197" ;;
-			"${F_Paste}")    layer_color="#3DC9C9" ;;
-			"${F_SilkS}")    layer_color="#339697" ;;
-			"${In1_Cu}")     layer_color="#C2C200" ;;
-			"${In2_Cu}")     layer_color="#C200C2" ;;
-			"${In3_Cu}")     layer_color="#C20000" ;;
-			"${In4_Cu}")     layer_color="#0000C2" ;;
-			"${Margin}")     layer_color="#D357D2" ;;
-			*)             layer_color="" ;;
-		esac
-
-		if [[ "${n}" == "0" ]]; then
-			checked="checked='checked'"
-		else
-			checked=""
-		fi
-
-		IFS= read -r -d '' HTML_SNIPPET <<-EOM
-		    <input  id="layer-${layer_id_padding}" value="layer-${layer_name}" type="radio" name="layers" onchange="change_layer()" ${checked}/>
-		    <label for="layer-${layer_id_padding}" id="label-${layer_id_padding}" class="rounded text-sm-left list-group-item radio-box" onclick="change_layer_onclick()">
-		        <span style="margin-left:0.5em; margin-right:0.1em; color: ${layer_color}" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
-		        ${layer_name}
-		    </label>
-		EOM
-
-		n=$((n+1))
-
-		LAYERS_LIST_HTML="${LAYERS_LIST_HTML}${HTML_SNIPPET}"
-
-	done
-
-	# Disables check since it does not work with quotes
-	# shellcheck disable=SC2086
-	LAYERS_LIST_HTML=$(echo ${LAYERS_LIST_HTML} | sed "s/@/-/g")
-	echo 's@<!-- FILL_LAYERS_HERE -->@'"${LAYERS_LIST_HTML}"'@g' > .script.sed
-	sed -i -f .script.sed "${html}"
-	rm -rf .script.sed
-}
-
-generate_sch_artifacts_sch2svg()
-{
-	repo_path=${1}
-	kicad_pro_subpath=${2}
-	kicad_pro_filename=${3}
-	sch_page_names=${4}
-	commit1=${5}
-	commit2=${6}
-	output_dir=${7}
-
-	kicad_sch=$(echo "${sch_page_names}" | cut -d" " -f1).${kicad_sch_extension}
-
-	if [[ ! -f "${output_dir}/${commit1}/${kicad_sch}" ]]; then
-		mkdir -p "${output_dir}/${commit1}"
-
-		# Export main schematic page from each version
-		if [[ ${commit1} == "local" ]]; then
-			cp "${kicad_pro_subpath}/${kicad_sch}" "${output_dir}/${commit1}/${kicad_sch}"
-			cp "${kicad_pro_subpath}/board-cache.lib" "${output_dir}/${commit1}/board-cache.lib"
-		else
-			git show "${commit1}:${kicad_pro_subpath}/${kicad_sch}" > "${output_dir}/${commit1}/${kicad_sch}"
-			git show "${commit1}:${kicad_pro_subpath}/board-cache.lib" > "${output_dir}/${commit1}/board-cache.lib"
-		fi
-
-		cmd="sch2svg \"${output_dir}/${commit1}/${kicad_sch}\" \"${output_dir}/${commit1}/\""
-		if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_KIDIFF}" = "1" ]]; then
-			echo -e "   ${green}${cmd}${reset}"
-		fi
-		if [[ "${DRY_RUN}" == "0" ]]; then
-			eval "${cmd}"
-			ret=$?
-			if [[ "${VERBOSE}" == "1" ]]; then
-				if [[ "${ret}" -gt "0" ]]; then
-					echo -e "${red}${bold}   Status: ${ret}${reset}"
-				fi
-			fi
-		fi
-		# if [[ ${ret} == 0 ]]; then
-			cd "${output_dir}/${commit1}" || exit
-			rename "s/^/sch-/g" ./*.svg
-			cd - || exit
-		# fi
+	# Find's project version on that commit
+	kicad_pro=$(find "${OUTPUT_DIR_PATH}/${commit_hash}/" -name "*.kicad_pro")
+	if [[ -z ${kicad_pro} ]]; then
+		kicad_pro=$(find "${OUTPUT_DIR_PATH}/${commit_hash}/" -name "*.pro")
 	fi
 
-	if [[ ! -f "${output_dir}/${commit2}/${kicad_sch}" ]]; then
-		mkdir -p "${output_dir}/${commit2}"
-
-		# Export main schematic page from each version
-		if [[ ${commit2} == "local" ]]; then
-			cp "${kicad_pro_subpath}/${kicad_sch}" "${output_dir}/${commit2}/${kicad_sch}"
-			cp "${kicad_pro_subpath}/board-cache.lib" "${output_dir}/${commit2}/board-cache.lib"
-		else
-			git show "${commit2}:${kicad_pro_subpath}/${kicad_sch}" > "${output_dir}/${commit2}/${kicad_sch}"
-			git show "${commit2}:${kicad_pro_subpath}/board-cache.lib" > "${output_dir}/${commit2}/board-cache.lib"
-		fi
-
-		cmd="sch2svg \"${output_dir}/${commit2}/${kicad_sch}\" \"${output_dir}/${commit1}/\""
-		if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_KIDIFF}" = "1" ]]; then
-			echo -e "   ${green}${cmd}${reset}"
-		fi
-		if [[ "${DRY_RUN}" == "0" ]]; then
-			eval "${cmd}"
-			ret=$?
-			if [[ "${VERBOSE}" == "1" ]]; then
-				if [[ "${ret}" -gt "0" ]]; then
-					echo -e "${red}${bold}   Status: ${ret}${reset}"
-				fi
-			fi
-		fi
-		# if [[ ${ret} == 0 ]]; then
-			cd "${output_dir}/${commit2}" || exit
-			rename "s/^/sch-/g" ./*.svg
-			cd - || exit
-		# fi
-	fi
+	get_file_extension "${kicad_pro}"
 }
 
-generate_sch_artifacts()
+# Maybe duplicated
+get_kicad_pro_filename()
 {
-	repo_path=${1}
-	kicad_pro_subpath=${2}
-	kicad_pro_filename=${3}
-	sch_page_names=${4}
-	commit1=${5}
-	commit2=${6}
-	output_dir=${7}
+	local kicad_project_path="${1}"
 
-	removed_color="FF0000"
-	added_color="008FFF"
-	unchanged_color="FFFFFF"
-	background_color="222222"
+	# Find's project version on that commit
+	local kicad_pro=$(find "${OUTPUT_DIR_PATH}/${commit_hash}/" -name "*.kicad_pro")
+	if [[ -z ${kicad_pro} ]]; then
+		local kicad_pro=$(find "${OUTPUT_DIR_PATH}/${commit_hash}/" -name "*.pro")
+	fi
 
-	# Temporarily change local commits
-	if [[ "${commit1}" == "local" ]]; then commit1=""; fi
-	if [[ "${commit2}" == "local" ]]; then commit2=""; fi
+	get_file_without_extention "${kicad_pro}"
+}
+
+parse_schematic_pages()
+{
+	# Parse a list of schematic pages from the main Kicad's schematic
+	# Format: ${schematic_page_title}|${nested_schematic_path}
+
+	local kicad_sch="${1}"
+	local main_page_name="$(get_file_without_extention "${kicad_sch}")"
+	local main_page_path="$(basename "${kicad_sch}")"
+	local first_entry="${main_page_name}|${main_page_path}"
+
+	local sch_extension="$(get_file_extension "${kicad_sch}")"
+	case ${sch_extension} in
+		kicad_sch)
+			# Kicad .kicad_sch format:
+			# (property "Sheet name" "power_supply" (id 0) (at 101.6 26.4664 0)...
+			# (property "Sheet file" "sch/power_supply.kicad_sch" (id 1) (at 101.6 43.8662 0)...
+			local page_names=$(sed "s/\r$//g" "${kicad_sch}" | grep 'Sheet name' | sed "s/^[ ]\+//g" | cut -d"\"" -f4)
+			local page_paths=$(sed "s/\r$//g" "${kicad_sch}" | grep 'Sheet file' | sed "s/^[ ]\+//g" | cut -d"\"" -f4) # | sed "s/\.kicad_sch//g" | xargs -I"{}" basename {})
+		;;
+
+		sch|*)
+			# Kicad .sch format:
+			# F0 "page_name" 60
+			# F1 "./path/file_name.sch" 60
+			local page_names=$(sed "s/\r$//g" "${kicad_sch}" | grep "^F0 " | cut -d" " -f2 | sed "s/\"//g")
+			local page_paths=$(sed "s/\r$//g" "${kicad_sch}" | grep "^F1 " | cut -d" " -f2 | sed "s/\"//g") # | sed "s/\.sch//g" | xargs -I"{}" basename {})
+			;;
+	esac
+
+	local extra_schematic_pages=$(paste -d"|" <(printf "%s" "${page_names}") <(printf "%s" "${page_paths}"))
+	printf "%s\n%s\n" "${first_entry}" "${extra_schematic_pages}"
+}
+
+create_list_of_pages()
+{
+	# This creates the "pages" with the format:
+	# PAGE_TITLE|NESTED_SCHEMATIC_PATH
+
+	local commit_hash="${1}"
+	local kicad_sch="${2}"
+	local pages_file="pages"
+
+	local pages=$(parse_schematic_pages "${kicad_sch}")
+	if [[ "${DEBUG}" == "1" ]]; then
+		echo -e "\n${kicad_sch}"
+		echo -e "${LBL}Pages:${RCO}"
+		echo -e "${pages}\n" | nl -s": "
+	fi
+
+	printf "%s\n" "${pages}" > "${OUTPUT_DIR_PATH}/${commit_hash}/${pages_file}"
+}
+
+parse_layout_layers()
+{
+	# Parse a list of layers used in the main Kicad's layout
+	# Format: LAYER_ID|CUSTOM_NAME_OR_DEFAULT_LAYER_NAME
+
+	local kicad_pcb="${1}"
+
+	# Kicad .kicad_pcb format:
+	# (2 "In2.Cu" power|signal|user hide "Pwr")
+
+	local layers=$( \
+		sed -n '/^  (layers/,/  )$/{/^  (layers/!{/  )$/!p}}' "${kicad_pcb}" | \
+		sed "s/^[ \t]\+//g" | \
+		sed "s/[()]//g" | \
+		sed "s/\r$//g" | \
+		sed "s/\"//g" | \
+		sed '/^[[:space:]]*$/d' | \
+		sed -r "s/ (signal|user|power|hide)//g" | \
+		awk -F '[ ]' '{if ($3) {printf "%s|%s\n", $1, $3} else {printf "%s|%s\n", $1, $2}}')
+
+	printf "%s\n" "${layers}"
+}
+
+create_list_of_layers()
+{
+	# This creates the "pages" with the format:
+	# PAGE_TITLE|NESTED_SCHEMATIC_PATH
+
+	local commit_hash="${1}"
+	local kicad_pcb="${2}"
+	local layers_file="layers"
+
+	local layers=$(parse_layout_layers "${kicad_pcb}")
+	if [[ "${DEBUG}" == "1" ]]; then
+		echo -e "\n${kicad_pcb}"
+		echo -e "${LBL}Layers:${RCO}"
+		echo -e "${layers}\n" | column -t | nl -s": "
+	fi
+
+	printf "%s\n" "${layers}" > "${OUTPUT_DIR_PATH}/${commit_hash}/${layers_file}"
+}
+
+generate_schematic_artifacts()
+{
+	local commit_hash_1=${1}
+	local commit_hash_2=${2}
+	local kicad_sch_1=${3}
+	local kicad_sch_2=${4}
+	local kicad_cache_lib_1=${5}
+	local kicad_cache_lib_2=${6}
+
+	local skip
+
+	if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]] || [[ "${DEBUG_KIDIFF}" == "1" ]]; then
+		echo
+	fi
+
+	local command_end="&> /dev/null"
+	if [[ "${DEBUG}" == 1 ]] || [[ "${DEBUG_PLOTGITSCH}" == 1 ]]; then
+		command_end=""
+	fi
+
+	# plotgitsch requires an empty string to plot local changes
+	commit_label_1=${commit_hash_1}
+	commit_label_2=${commit_hash_2}
+	if [[ "${commit_hash_1}" == "local" ]]; then commit_hash_1=""; commit_label_1="local"; fi
+	if [[ "${commit_hash_2}" == "local" ]]; then commit_hash_2=""; commit_label_2="local"; fi
 
 	if [[ ! "${PLOTGITSCH_MISSING}" == 1 ]]; then
 
-		if [[ ${kicad_pro_subpath} != "." ]]; then
-			nested_project_param="-r ${kicad_pro_subpath}"
+		# Plotting files individually
+		# =============================
+
+		if [[ $(get_file_extension "${kicad_sch_1}") == "kicad_sch" ]]; then
+			echo -e "   ${LMA}PLOTGITSCH: Skipping ${commit_label_1}, plotgitsch cannot plot \"${kicad_sch_1}\" yet${RCO}"
+			skip=1;
+		else
+			cd "${OUTPUT_DIR_PATH}/${commit_hash_1}/" &> /dev/null
+			if [[ -f "${kicad_sch_1}" ]]; then
+				if [[ -f "${kicad_cache_lib_1}" ]]; then
+					echo "Ploting ${commit_label_1}"
+					cmd="plotkicadsch -f \"${kicad_sch_1}\" -l \"${kicad_cache_lib_1}\" ${command_end}"
+					echo -e "   ${LYE}${cmd}${RCO}" | fmt -u -w $(tput cols) | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
+					eval "${cmd}" | sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
+				fi
+			fi
+			cd - &> /dev/null
 		fi
 
-		if [[ ${SKIP_CACHE_LIB} == 0 ]]; then
-			cache_lib_param="-l ${kicad_pro_subpath}/${kicad_pro_filename}-cache.lib"
+		if [[ $(get_file_extension "${kicad_sch_2}") == "kicad_sch" ]]; then
+			echo -e "   ${LMA}PLOTGITSCH: Skipping ${commit_label_2}, plotgitsch cannot plot \"${kicad_sch_2}\" yet${RCO}"
+			skip=1;
+		else
+			cd "${OUTPUT_DIR_PATH}/${commit_hash_2}/" &> /dev/null
+			if [[ -f "${kicad_sch_2}" ]]; then
+				if [[ -f "${kicad_cache_lib_2}"  ]]; then
+					echo "Ploting ${commit_label_2}"
+					cmd="plotkicadsch -f \"${kicad_sch_2}\" -l \"${kicad_cache_lib_2}\" ${command_end}"
+					echo -e "   ${LYE}${cmd}${RCO}" | fmt -u -w $(tput cols) | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
+					eval "${cmd}" | sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
+				fi
+			fi
+			cd - &> /dev/null
 		fi
 
-		cmd="plotgitsch ${nested_project_param} ${cache_lib_param} -k -m -c ${removed_color}:${added_color}:${unchanged_color}:${background_color} ${commit1} ${commit2} ${STDOUT_PLOTGITSCH}"
+		if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]] || [[ "${DEBUG_KIDIFF}" == "1" ]]; then
+			echo
+		fi
+
+		# =============================
+
+		# EXIT SINCE IT CANNOT PLOT KICAD_SCH and one of the files
+		if [[ ${skip} == 1 ]]; then echo; return 1; fi
+
+
+### TODO: TO SKIP PLOTGITSH COMPLETELLY, IT NEED A FUNCTION TO CLEAN/PREAPRE GENERATED SVG FILES
+
+		local removed_color="FF0000"
+		local added_color="008FFF"
+		local unchanged_color="FFFFFF"
+		local background_color="222222"
+
+		if [[ ${KICAD_PROJ_NESTED_PATH} != "." ]]; then
+			nested_project_param="-r ${KICAD_PROJ_NESTED_PATH}"
+		fi
+
+		if [[ ! ${SKIP_CACHE_LIB} == 1 ]]; then
+			if [[ ! -z ${kicad_cache_lib_1} ]] && [[ ! -z ${kicad_cache_lib_2} ]]; then
+				# TODO: kicad_cache_lib_1 and kicad_cache_lib_2 may differ
+				cache_lib_param="-l ${kicad_cache_lib_1}"
+			fi
+		fi
+
+		cmd="plotgitsch ${nested_project_param} ${cache_lib_param} -k -m -c ${removed_color}:${added_color}:${unchanged_color}:${background_color} ${commit_hash_1} ${commit_hash_2} ${command_end}"
 		if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
-			echo -e "   ${yellow}${cmd}${reset}"
+			echo -e "   ${LYE}${cmd}${RCO}" | fmt -u -w $(tput cols) | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
 		fi
 		if [[ "${DRY_RUN}" == "0" ]]; then
-			eval "${cmd}" | sed "s/^/   ${gray}| /g" | sed "s/$/${reset}/g"
+			eval "${cmd}" | sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
 			if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
 				echo
 			fi
 			ret=$?
-			if [[ "${VERBOSE}" == "1" ]]; then
+			if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
 				if [[ "${ret}" -gt "0" ]]; then
-					echo -e "${red}${bold}   Status: ${ret}${reset}"
+					echo -e "${LRE}${BTE}   Status: ${ret}${RCO}"
 				fi
 			fi
 		fi
 	fi
 
-	# IFS=$'\n'
-	# for sch_page_name in ${sch_page_names}; do
-	# 	# Create blank svg when it is missing
-	# 	if [[ ! -f "sch1-${sch_page_name}.svg" ]]; then
-	# 		if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
-	# 			echo -e "   ${red}Recreating missing sch1-${sch_page_name}.svg${reset}"
-	# 		fi
-	# 		cp "${script_path}/../assets/blank.svg" "sch1-${sch_page_name}.svg"
-	# 	fi
-	# 	# Create blank svg when it is missing
-	# 	if [[ ! -f "sch2-${sch_page_name}.svg" ]]; then
-	# 		if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
-	# 			echo -e "   ${red}Recreating missing sch2-${sch_page_name}.svg${reset}"
-	# 		fi
-	# 		cp "${script_path}/../assets/blank.svg" "sch1-${sch_page_name}.svg"
-	# 	fi
-	# done
-
-	# Revert back
-	if [[ "${commit1}" == "" ]]; then commit1="local"; fi
-	if [[ "${commit2}" == "" ]]; then commit2="local"; fi
-
-	create_list_of_pages "${commit1}" "${output_dir}"
-	create_list_of_pages "${commit2}" "${output_dir}"
+	# Restore commit hashes
+	if [[ "${commit_hash_1}" == "" ]]; then commit_hash_1="local"; fi
+	if [[ "${commit_hash_2}" == "" ]]; then commit_hash_2="local"; fi
 
 	IFS=$'\n'
 	for sch_page_svg in *.svg; do
@@ -752,30 +1394,16 @@ generate_sch_artifacts()
 
 			sch1-*)
 				new_sch_name=${sch_page_svg//sch1/sch}
-				svg_file1="${output_dir}/${commit1}/${new_sch_name}"
+				svg_file1="${OUTPUT_DIR_PATH}/${commit_hash_1}/${new_sch_name}"
 				mv -f "${sch_page_svg}" "${svg_file1}" 2> /dev/null
 				;;
 
 			sch2-*)
 				new_sch_name=${sch_page_svg//sch2/sch}
-				svg_file2="${output_dir}/${commit2}/${new_sch_name}"
+				svg_file2="${OUTPUT_DIR_PATH}/${commit_hash_2}/${new_sch_name}"
 				mv -f "${sch_page_svg}" "${svg_file2}" 2> /dev/null
 				;;
 		esac
-
-		if [ ! -s "${svg_file1}" ]; then
-			if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]] || [[ "${DEBUG_KIDIFF}" == "1" ]]; then
-				echo "   Removing empty file ${svg_file1}"
-			fi
-			rm -rf "${svg_file1}"
-		fi
-
-		if [ ! -s "${svg_file2}" ]; then
-			if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]] || [[ "${DEBUG_KIDIFF}" == "1" ]]; then
-				echo "   Removing empty file ${svg_file2}"
-			fi
-			rm -rf "${svg_file2}"
-		fi
 
 	done
 
@@ -784,850 +1412,503 @@ generate_sch_artifacts()
 	fi
 }
 
-create_list_of_layers()
+generate_layout_artifacts()
 {
-	_kicad_pcb="$1"
+	local commit_hash_1="${1}"
+	local commit_hash_2="${2}"
+	local kicad_pcb_1="${3}"
+	local kicad_pcb_2="${4}"
 
-	_board_path=$(dirname "${_kicad_pcb}")
-	layers_file=${_board_path}/layers
-
-	if [[ ${PCBS_VERSION} -lt 20211014 ]]; then
-		# Format = (2 Pwr power)
-		_usedboard_layers=$(sed -n '/^  (layers/,/  )$/{/^  (layers/!{/  )$/!p}}' "${_kicad_pcb}" | sed "s/^[ \t]\+//g" | sed "s/[()]//g" | cut -d" " -f-2 | sed "s/\r$//g" | sed "s/\"//g" | sed '/^[[:space:]]*$/d')
-	else
-		# Format = (2 "In2.Cu" power "Pwr")
-		_usedboard_layers=$(sed -n '/^  (layers/,/  )$/{/^  (layers/!{/  )$/!p}}' "${_kicad_pcb}" | sed "s/^[ \t]\+//g" | sed "s/[()]//g" | sed "s/\r$//g" | sed "s/\"//g" | sed '/^[[:space:]]*$/d')
-		# transform on v5 format for now
-		fixed_usedboard_layers=
-		for line in ${_usedboard_layers}; do
-			original_layer_name=$(echo "${line}" | cut -d" " -f2)
-			custom_layer_name=$(echo "${line}" | cut -d" " -f4)
-			if [[ ${custom_layer_name} != "" ]]; then
-				line=$(echo "${line}" | sed "s/ ${custom_layer_name} / tmp_${custom_layer_name} /g")
-				line=$(echo "${line}" | sed "s/ ${original_layer_name} / ${custom_layer_name} /g")
-				line=$(echo "${line}" | sed "s/ tmp_${custom_layer_name} / ${original_layer_name} /g")
-			fi
-			fixed_usedboard_layers="${fixed_usedboard_layers}\n${line}"
-			custom_layer_name=
-		done
-		_usedboard_layers="$(echo -e "${fixed_usedboard_layers}" | cut -d" " -f-2)"
-		#============================
-		# fi
+	local command_end="&> /dev/null"
+	if [[ "${DEBUG}" == 1 ]] || [[ "${DEBUG_KIDIFF}" == 1 ]]; then
+		command_end=""
 	fi
 
-	if [[ "${VERBOSE}" == "1" ]]; then
-		echo
-		echo -e "${blue}Board: ${reset}${_kicad_pcb}"
-		echo -e "${blue}Used layers:${reset}"
-		echo -e "${_usedboard_layers}" | column -t | nl -s": "
-		echo
-	fi
-
-	echo -e "${_usedboard_layers}" > "${layers_file}"
-
-	# Fix layers name on icad 6 for older projects
-	if [[ ${KICAD_VERSION} == 6 ]] && [[ ${PCBS_VERSION} -lt 20211014 ]]; then
-		_layers=$(cat "${layers_file}")
-		_layers=$(fix_layer_names "${_layers}")
-		echo -e "${_layers}" > "${layers_file}"
-	fi
-}
-
-create_list_of_pages()
-{
-	commit_hash="$1"
-	output_dir="$2"
-	pages_file="${output_dir}/${commit_hash}/pages"
-
-	if [[ ! -f ${pages_file} ]]
-	then
-
-		# Export main schematic page from each version
-		if [[ ${commit_hash} == "local" ]]; then
-			cp "${kicad_pro_subpath}/${kicad_sch}" "${output_dir}/${commit_hash}/${kicad_sch}"
-		else
-			git show "${commit_hash}:${kicad_pro_subpath}/${kicad_sch}" > "${output_dir}/${commit_hash}/${kicad_sch}"
-		fi
-
-		sch_page_names=$(get_pages "${kicad_pro_filename}" "${output_dir}/${commit_hash}/${kicad_sch}" | cut -d"|" -f2 | sed "s/\r$//g")
-
-		if [[ "${VERBOSE}" == "1" ]]; then
-			echo
-			echo -e "${blue}Schematic: ${reset}${output_dir}/${commit_hash}/${kicad_sch}"
-			echo -e "${blue}Pages:${reset}"
-			echo "${sch_page_names}" | nl -s": "
-			echo
-		fi
-
-		echo -e "${sch_page_names}" > "${pages_file}"
-	fi
-}
-
-
-generate_pcb_artifacts()
-{
-	kicad_pro_subpath=${1}
-	kicad_pro_filename=${2}
-	kicad_pcb=${3}
-	commit1=${4}
-	commit2=${5}
-	output_dir="${6}"
-
-	# Temporarily change local commits
-	if [[ "${commit1}" == "local" ]]; then commit1="${kicad_pcb}"; fi
-	if [[ "${commit2}" == "local" ]]; then commit2="${kicad_pcb}"; fi
+	# Kidiff does local diff using ${kicad_pcb} name, so update it here
+	if [[ "${commit_hash_1}" == "local" ]]; then commit_hash_1="${kicad_pcb_1}"; fi
+	if [[ "${commit_hash_2}" == "local" ]]; then commit_hash_2="${kicad_pcb_2}"; fi
 
 	if [[ ! "${KIDIFF_MISSING}" == 1 ]]; then
-
-		# WORKAROUND IT DOES NOT RUN FROM EXTERNAL FOLDER OR REPO ROOT PATH
-		# if [[ "${kicad_pro_subpath}" != "." ]]; then
-			# cd "${kicad_pro_subpath}" || exit
-		# fi
 
 		if [[ ${PAGE_FRAME} == "1" ]]; then
 			page_frame_parameter="-f"
 		fi
 
-		cmd="kidiff ${kicad_pcb} --webserver-disable -b ${commit1} -a ${commit2} -o \"${output_dir}\" ${page_frame_parameter} ${STDOUT_KIDIFF}"
+		local cmd="kidiff \"${kicad_pcb}\" -n --webserver-disable -a ${commit_hash_1} -b ${commit_hash_2} -o \"${OUTPUT_DIR_PATH}\" ${page_frame_parameter} ${command_end}"
+
 		if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]] || [[ "${DEBUG_KIDIFF}" == "1" ]]; then
-			echo -e "   ${green}${cmd}${reset}"
+			echo -e "   ${LGR}${cmd}${RCO}" | fmt -u -w $(tput cols) | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
 		fi
 		if [[ "${DRY_RUN}" == "0" ]]; then
-			eval "${cmd}" | sed "s/^/   ${gray}| /g" | sed "s/$/${reset}/g"
+			eval "${cmd}" | sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
 			if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]] || [[ "${DEBUG_KIDIFF}" == "1" ]]; then
 				echo
 			fi
 			ret=$?
-			if [[ "${VERBOSE}" == "1" ]]; then
+			if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]] || [[ "${DEBUG_KIDIFF}" == "1" ]]; then
 				if [[ "${ret}" -gt "0" ]]; then
-					echo -e "${red}${bold}   Status: ${ret}${reset}"
+					echo -e "${LRE}${BTE}   Status: ${ret}${RCO}"
 				fi
 			fi
 		fi
 
-		# WORKAROUND IT DOES NOT RUN FROM EXTERNAL FOLDER OR REPO ROOT PATH
-		cd - &> /dev/null || exit
-
-		# Discard textual diffs
-		if [ -f "${output_dir}/diff.txt" ]; then
-			rm -rf "${output_dir}/diff.txt"
+		# TODO: It may be better to do it myself if needed
+		# Store/kidiff textual diffs (check if they are good)
+		if [[ -f "${OUTPUT_DIR_PATH}/diff.txt" ]]; then
+			cp -f "${OUTPUT_DIR_PATH}/diff.txt" "${OUTPUT_DIR_PATH}/${commit_hash_1}/pcb-diff-${commit_hash_2}.diff" 2>/dev/null
+			mv -f "${OUTPUT_DIR_PATH}/diff.txt" "${OUTPUT_DIR_PATH}/${commit_hash_2}/pcb-diff-${commit_hash_1}.diff" 2>/dev/null
 		fi
-
-		# Restore names
-		if [[ "${commit1}" == "${kicad_pcb}" ]]; then commit1="local"; fi
-		if [[ "${commit2}" == "${kicad_pcb}" ]]; then commit2="local"; fi
 	fi
-
-	# Save layer's list
-	kicad_pcb_name=$(basename "${kicad_pcb}")
-	if [[ ! -f "${output_dir}/${commit1}/layers" ]]; then
-		create_list_of_layers "${output_dir}/${commit1}/${kicad_pcb_name}"
-	fi
-	if [[ ! -f "${output_dir}/${commit2}/layers" ]]; then
-		create_list_of_layers "${output_dir}/${commit2}/${kicad_pcb_name}"
-	fi
-
-	usedboard_layers=$(cat "${output_dir}/${commit1}/layers" "${output_dir}/${commit2}/layers" | sort | uniq )
-
-	IFS=$'\n'
-	for layer in ${usedboard_layers}; do
-
-		layer_id=$(echo "${layer}" | cut -d " " -f1)
-		layer_id=$(printf "%02d" "${layer_id}")
-
-		layer_name=$(echo "${layer}" | cut -d " " -f2 | sed "s/\./_/g")
-
-		svg_file1="${output_dir}/${commit1}/${kicad_pro_filename}-${layer_id}-${layer_name}.svg"
-		svg_file2="${output_dir}/${commit2}/${kicad_pro_filename}-${layer_id}-${layer_name}.svg"
-
-		# Create blank svgs if some is missing
-		if [[ ! -f "${svg_file1}" ]]; then
-
-			continue
-
-			# if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_KIDIFF}" = "1" ]]; then
-			# 	echo -e "   ${red}Recreating missing file: ${svg_file1}${reset}"
-			# fi
-			# cp "${script_path}/../assets/blank.svg" "${output_dir}/${i}/${kicad_pro_filename}-${layer_id}-${layer_name}.svg"
-
-		else
-			# echo "Inkscaping ${svg_file1}"
-			# inkscape --export-type="eps" --export-filename="tmp.eps" --export-area-drawing "${svg_file1}"
-			# inkscape tmp.eps --export-plain-svg --export-filename="${svg_file1}"
-
-			continue
-			# scour -i "${svg_file1}" -o output.svg --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none &> /dev/null
-			# if [[ -f output.svg ]]; then
-			# 	mv output.svg "${svg_file1}"
-			# fi
-
-		fi
-
-		# Create blank svgs if some is missing
-		if [[ ! -f "${svg_file2}" ]]; then
-
-			continue
-
-			# if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_KIDIFF}" = "1" ]]; then
-			# 	echo -e "   ${red}Recreating missing file: ${svg_file2}${reset}"
-			# fi
-			# cp "${script_path}/../assets/blank.svg" "${output_dir}/${j}/${kicad_pro_filename}-${layer_id}-${layer_name}.svg"
-
-		else
-			# echo "Inkscaping ${svg_file2}"
-			# inkscape --export-type="eps" --export-filename="tmp.eps" --export-area-drawing "${svg_file2}"
-			# inkscape tmp.eps --export-plain-svg --export-filename="${svg_file2}"
-
-			continue
-			# scour -i "${svg_file2}" -o output.svg --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none &> /dev/null
-			# if [[ -f output.svg ]]; then
-			# 	mv output.svg "${svg_file2}"
-			# fi
-
-		fi
-
-	done
 }
 
-generate_scm_artifacts()
+generate_diffs()
 {
-	script_path=${1}
-	repo_path=${2}
-	kicad_pro_subpath=${3}
-	kicad_sch=${4}
-	kicad_pcb=${5}
-	kicad_pro_filename=${6}
-	output_dir=${7}
-
-	echo -e "\n${blue}Output folder:${reset} ${output_dir}"
-	if [[ "${REMOVE_KIRI_FOLDER}" == "1" ]]; then
-		echo -e "${red}Removing leftovers from the previous run${reset}"
-		rm -rf "${output_dir}"
-	fi
-
-	web_dir="${output_dir}/web/"
-	mkdir -p "${web_dir}/"
-
-	sch_files=$(git ls-files . | grep "\.${kicad_sch_extension}")
-
-	if [[ "${VERBOSE}" == "1" ]]; then
-		echo
-		echo "        kicad_pcb: ${kicad_pro_subpath}/${kicad_pcb}"
-		echo "        kicad_sch: ${kicad_sch}"
-		echo "        sch_files: $(echo "${sch_files}" | sed 's/ /\n                   /g')"
-		echo "       output_dir: ${output_dir}"
-		echo "          web_dir: ${web_dir}"
-		echo
-	fi
-
-	git_branch=$(git rev-parse --abbrev-ref HEAD)
-
-	if [[ "$ALL_COMMITS" == "1" ]]; then
-		cmd="kiri-git-log ${git_branch} -- ${kicad_pro_subpath}"
-		if [[ "${VERBOSE}" == "1" ]]; then
-			echo
-			echo "${green}${cmd}${reset}"
-			echo
-		fi
-		commits=$(eval "${cmd}")
-	else
-		cmd="kiri-git-log ${git_branch} -- ${sch_files} ${kicad_pro_subpath}/${kicad_pcb}"
-		if [[ "${VERBOSE}" == "1" ]]; then
-			echo -e "${blue}Getting commits:${reset}"
-			echo -e "${green}${cmd}${reset}"
-			echo
-		fi
-		commits=$(eval "${cmd}")
-	fi
-
-	if [[ "${OLDER_COMMIT}" != "" ]]; then
-		if [[ "${VERBOSE}" == "1" ]]; then
-			echo "  Older commit: ${OLDER_COMMIT}"
-		fi
-		commits=$(echo "${commits}" | sed "/^${OLDER_COMMIT}/q")
-	fi
-
-	if [[ "${NEWER_COMMIT}" != "" ]]; then
-		if [[ "${VERBOSE}" == "1" ]]; then
-			echo "  Newer commit: ${NEWER_COMMIT}"
-			echo
-		fi
-		commits=$(echo "${commits}" | sed -n "/^${NEWER_COMMIT}/,\$p")
-	fi
-
-	if [[ "${SHOW_LAST_N_COMMITS}" != "" ]]; then
-		commits=$(echo "${commits}" | head -n "${SHOW_LAST_N_COMMITS}")
-	fi
-
-	if [[ "${VERBOSE}" == "1" ]]; then
-		echo -e "${blue}Commits list:${reset}"
-		echo "${commits}" | nl -s": " | cut -c -$(($(tput cols)-2))
-	fi
-
-	# Commits list has to have 2 commits at least
-	if [[ $(echo "${commits}" | wc -l | sed "s/^[ \t]\+//g") -lt "1" ]]; then
-		echo "Leaving, less than 2 commits found"
-		exit 0
-	fi
-
-	# Add local file to be compared against other commits
-	IFS= read -r -d '' commits <<-EOM
-	local
-	${commits}
-	EOM
-
-	hashs=$(echo "${commits}" | tac_ | cut -d' '  -f1 | tac);
+	hashs=$(echo "${COMMITS}" | tac | cut -d' '  -f1 | tac);
 	n_hashs=$(echo "${hashs}" | wc -w | sed "s/^[ \t]\+//g")
-	n_comparisons=$(echo "${n_hashs} * (${n_hashs} - 1) " | bc)
+	n_comparisons=$(echo "${n_hashs} * $((n_hashs-1)) " | bc)
 
-	# THESE 2 LINES SHOULD BE REMOVED
-	sch_page_names=$(get_pages "${kicad_pro_filename}" "${kicad_pro_subpath}/${kicad_sch}" | cut -d"|" -f2 | sed "s/\r$//g")
-	usedboard_layers=$(sed -n '/^  (layers/,/  )$/{/^  (layers/!{/  )$/!p}}' "${kicad_pro_subpath}/${kicad_pcb}" | sed "s/^[ \t]\+//g" | sed "s/[()]//g" | cut -d" " -f-2 | sed "s/\r$//g" | sed "s/\"//g")
+	# Check for local changes
+	if echo "${COMMITS}" | cut -d' '  -f1 | grep "local" -q; then
+		echo -e "${LBL}Generating artifacts${RCO}"
+		echo -e "$((n_hashs-1)) commits and local changes, totaling $((n_comparisons+1)) comparisons\n"
+	else
+		echo -e "\n${LBL}Generating artifacts${RCO}"
+		echo -e "${n_hashs} commits, totaling ${n_comparisons} comparisons\n"
+	fi
 
-	echo
-	echo -e "${blue}Generating artifacts${reset}"
-	echo "${n_hashs} commits, totaling ${n_comparisons} comparisons"
-	echo
-
-	n=0
-
+	local i=0
 	IFS=$'\n'
-	for i in ${hashs}; do
+	for hash_1 in ${hashs}; do
 
-		k=0
+		local j=0
+		for hash_2 in ${hashs}; do
 
-		for j in ${hashs}; do
+			if [[ "${hash_1}" != "${hash_2}" ]]; then
 
-			if [[ "${i}" != "${j}" ]]; then
+				i=$((i+1))
+				j=$((j+1))
 
-				k=$((k+1))
-				n=$((n+1))
-
-				# # Check if diff file exists
-				if [[ -d "${output_dir}/${j}" ]]; then
+				if [[ -d "${OUTPUT_DIR_PATH}/${hash_2}" ]]; then
 					continue
 				fi
 
-				date_time=""
-				date_time_sep=""
-
-				if [[ ${k} == 1 ]]; then
-					if [[ ${i} != "local" ]]; then
-						date_time=$(git show ${i} --date=format:'%Y-%m-%d %H:%M:%S' | grep "Date:" | cut -d" " -f4-)
-						date_time_sep="-"
-					fi
-					printf "%4d. %s %s %s\n" "${n}" "${i}" "${date_time_sep}" "${date_time}"
-
-					n=$((n+1))
-					if [[ ${j} != "local" ]]; then
-						date_time=$(git show ${j} --date=format:'%Y-%m-%d %H:%M:%S' | grep "Date:" | cut -d" " -f4-)
-						date_time_sep="-"
-					fi
-					printf "%4d. %s %s %s\n" "${n}" "${j}" "${date_time_sep}" "${date_time}"
-
+				if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]] || [[ "${DEBUG_PLOTGITSCH}" == "1" ]] || [[ "${DEBUG_KIDIFF}" == "1" ]]; then
+					local padding=0
+					local total="/${n_comparisons}"
 				else
-					if [[ ${j} != "local" ]]; then
-						date_time=$(git show ${j} --date=format:'%Y-%m-%d %H:%M:%S' | grep "Date:" | cut -d" " -f4-)
-						date_time_sep="-"
-					fi
-					printf "%4d. %s %s %s\n" "${n}" "${j}" "${date_time_sep}" "${date_time}"
-
+					local padding=$(($(python -c "import math; print(int(math.log10(${n_comparisons}))+1)")-1))
+					local total=""
 				fi
 
-				mkdir -p "${output_dir}/${i}/"
-				mkdir -p "${output_dir}/${j}/"
-
-				STDOUT_PLOTGITSCH="&> /dev/null"
-				STDOUT_KIDIFF="&> /dev/null"
-
-				if [[ "${DEBUG}" == 1 ]]; then
-					STDOUT_PLOTGITSCH=""
-					STDOUT_KIDIFF=""
+				if [[ ${j} == 1 ]]; then
+					# Commit 1
+					item=$(echo "$COMMITS" | grep "^${hash_1}")
+					printf "%${padding}d${total} %s\n" "${i}" ${item} | cut -c -$(($(tput cols)-4))
+					# Commit 2
+					i=$((i+1))
+					item=$(echo "$COMMITS" | grep "^${hash_2}")
+					printf "%${padding}d${total} %s\n" "${i}" ${item} | cut -c -$(($(tput cols)-4))
+				else
+					item=$(echo "$COMMITS" | grep "^${hash_2}")
+					printf "%${padding}d${total} %s\n" "${i}" ${item} | cut -c -$(($(tput cols)-4))
 				fi
 
-				if [[ "${DEBUG_PLOTGITSCH}" == 1 ]]; then
-					STDOUT_PLOTGITSCH=""
+				if [[ ${j} == 1 ]]; then
+					mkdir -p "${OUTPUT_DIR_PATH}/${hash_1}/"
+					retrieve_kicad_files_from_git "${hash_1}"
 				fi
+				mkdir -p "${OUTPUT_DIR_PATH}/${hash_2}/"
+				retrieve_kicad_files_from_git "${hash_2}"
 
-				if [[ "${DEBUG_KIDIFF}" == 1 ]]; then
-					STDOUT_KIDIFF=""
-				fi
 
-				# Kicad-6 boards do not have a schematic view working yet, so skip plotgitsch
-				if [[ ${PCBS_VERSION} -lt 20211014 ]]; then
-					generate_sch_artifacts "${repo_path}" "${kicad_pro_subpath}" "${kicad_pro_filename}" "${sch_page_names}" "${i}" "${j}" "${output_dir}"
-				# else
-					# generate_sch_artifacts_sch2svg "${repo_path}" "${kicad_pro_subpath}" "${kicad_pro_filename}" "${sch_page_names}" "${i}" "${j}" "${output_dir}"
-				fi
-
-				generate_pcb_artifacts "${kicad_pro_subpath}" "${kicad_pro_filename}" "${kicad_pcb}" "${i}" "${j}" "${output_dir}"
-
-				if [[ "${VERBOSE}" == "1" ]]; then
+				if [[ ${j} == 1 ]]; then
+					local kicad_pro_1=$(get_kicad_pro "${OUTPUT_DIR_PATH}/${hash_1}")
+					local kicad_pro_extension_1=$(get_file_extension "${kicad_pro_1}")
+					local kicad_project_name_1=$(get_file_without_extention "${kicad_pro_1}")
+					local kicad_sch_1=$(get_kicad_sch "${OUTPUT_DIR_PATH}/${hash_1}" "${kicad_project_name_1}" "${kicad_pro_extension_1}")
+					local kicad_pcb_1=$(get_kicad_pcb "${OUTPUT_DIR_PATH}/${hash_1}" "${kicad_project_name_1}")
+					# local kicad_sch_extra_1=$(get_kicad_sch_extra "${OUTPUT_DIR_PATH}/${hash_1}/${kicad_sch_1}")
+					local kicad_cache_lib_1=$(get_kicad_cache_lib "${OUTPUT_DIR_PATH}/${hash_1}" "${kicad_project_name_1}")
 					echo
+					show_project_files "${OUTPUT_DIR_PATH}/${hash_1}" "${kicad_pro_1}" "${kicad_sch_1}" "${kicad_pcb_1}" "${kicad_cache_lib_1}"
 				fi
+				local kicad_pro_2=$(get_kicad_pro "${OUTPUT_DIR_PATH}/${hash_2}")
+				local kicad_pro_extension_2=$(get_file_extension "${kicad_pro_2}")
+				local kicad_project_name_2=$(get_file_without_extention "${kicad_pro_2}")
+				local kicad_sch_2=$(get_kicad_sch "${OUTPUT_DIR_PATH}/${hash_2}" "${kicad_project_name_2}" "${kicad_pro_extension_2}")
+				local kicad_pcb_2=$(get_kicad_pcb "${OUTPUT_DIR_PATH}/${hash_2}" "${kicad_project_name_2}")
+				# local kicad_sch_extra_2=$(get_kicad_sch_extra "${OUTPUT_DIR_PATH}/${hash_2}/${kicad_sch_2}")
+				local kicad_cache_lib_2=$(get_kicad_cache_lib "${OUTPUT_DIR_PATH}/${hash_2}" "${kicad_project_name_2}")
+				show_project_files "${OUTPUT_DIR_PATH}/${hash_2}" "${kicad_pro_2}" "${kicad_sch_2}" "${kicad_pcb_2}" "${kicad_cache_lib_2}"
+
+				if [[ ${j} == 1 ]]; then
+					create_list_of_pages "${hash_1}" "${OUTPUT_DIR_PATH}/${hash_1}/${kicad_sch_1}"
+					create_list_of_layers "${hash_1}" "${OUTPUT_DIR_PATH}/${hash_1}/${kicad_pcb_1}"
+				fi
+				create_list_of_pages "${hash_2}" "${OUTPUT_DIR_PATH}/${hash_2}/${kicad_sch_2}"
+				create_list_of_layers "${hash_2}" "${OUTPUT_DIR_PATH}/${hash_2}/${kicad_pcb_2}"
+
+				# generate_schematic_artifacts_gui_sch2svg "${hash_1}" "${hash_2}" ${kicad_pro_1} ${kicad_pro_2}
+				generate_schematic_artifacts "${hash_1}" "${hash_2}" "${kicad_sch_1}" "${kicad_sch_2}" "${kicad_cache_lib_1}" "${kicad_cache_lib_2}"
+				generate_layout_artifacts "${hash_1}" "${hash_2}" "${kicad_pcb_1}" "${kicad_pcb_2}"
 			fi
 		done
-
 	done
+}
 
-	# Remove unecessary Kidiff triptych folder
-	rm -rf "${web_dir}/triptych"
+build_main_html()
+{
+	local kicad_pro=$(get_kicad_pro "${KICAD_PROJ_ABSOLUTE_PATH}")
+	local kicad_pro_extension=$(get_file_extension "${kicad_pro}")
+	local kicad_proj_name=$(get_file_without_extention "${kicad_pro}")
+	local kicad_sch=$(get_kicad_sch "${KICAD_PROJ_ABSOLUTE_PATH}" "${kicad_proj_name}" "${kicad_pro_extension}")
+	local kicad_pcb=$(get_kicad_pcb "${KICAD_PROJ_ABSOLUTE_PATH}" "${kicad_proj_name}")
+	local kicad_sch_extra=$(get_kicad_sch_extra "${KICAD_PROJ_ABSOLUTE_PATH}/${kicad_sch}")
+	local kicad_cache_lib=$(get_kicad_cache_lib "${KICAD_PROJ_ABSOLUTE_PATH}" "${kicad_proj_name}")
+	show_project_files "${KICAD_PROJ_ABSOLUTE_PATH}" "${kicad_pro}" "${kicad_sch}" "${kicad_pcb}" "${kicad_cache_lib}"
 
-	if [[ "${VERBOSE}" == "0" ]]; then
-		echo
-	fi
-	echo -e "${blue}Assembling the HTML${reset}"
+	mkdir -p "${WEB_DIR_PATH}/"
 
+	# Remove Kidiff leftovers
+	rm -rf "${WEB_DIR_PATH}/triptych"
+
+	echo -e "${LBL}Assembling the HTML${RCO}"
 
 	# Copy assets
 	main_html=index.html
-	cp -f "${script_path}/../assets/${main_html}"  "${web_dir}/"
-	cp -f "${script_path}/../assets/kiri.js"       "${web_dir}/"
-	cp -f "${script_path}/../assets/kiri.css"      "${web_dir}/"
-	cp -f "${script_path}/../assets/blank.svg"     "${web_dir}/"
-	cp -f "${script_path}/../assets/favicon.ico"   "${web_dir}/"
-	cp -f "${script_path}/../assets/redirect.html" "${web_dir}/../index.html"
-	cp -f "${script_path}/../bin/kiri-server"      "${output_dir}/"
+	cp -f "${KIRI_HOME_PATH}/assets/${main_html}"  "${WEB_DIR_PATH}/"
+	cp -f "${KIRI_HOME_PATH}/assets/kiri.js"       "${WEB_DIR_PATH}/"
+	cp -f "${KIRI_HOME_PATH}/assets/kiri.css"      "${WEB_DIR_PATH}/"
+	cp -f "${KIRI_HOME_PATH}/assets/blank.svg"     "${WEB_DIR_PATH}/"
+	cp -f "${KIRI_HOME_PATH}/assets/favicon.ico"   "${WEB_DIR_PATH}/"
+	cp -f "${KIRI_HOME_PATH}/assets/redirect.html" "${WEB_DIR_PATH}/../index.html"
+	cp -f "${KIRI_HOME_PATH}/bin/kiri-server"      "${OUTPUT_DIR_PATH}/"
 
-	# Selected commit index
-	commit1_idx=0
-	commit2_idx=1
+	# Index of the initial commits (in the COMMITS list)
+	commit1_i=0
+	commit2_i=1
+
+	# Select initial commits
+	local commit_hash_1=$(echo "${COMMITS}" | head -n$((commit1_i + 1)) | tail -n1 | cut -d" " -f1)
+	local commit_hash_2=$(echo "${COMMITS}" | head -n$((commit2_i + 1)) | tail -n1 | cut -d" " -f1)
+
+	local layers=$(get_unified_layers_list)
 
 	# Insert commits list
-	echo "- Adding commits list to the page"
-	insert_commits "${web_dir}/${main_html}" "${commits}" "${commit1_idx}" "${commit2_idx}" "${kicad_pro_subpath}" "${kicad_pcb}" "${sch_files}"
+	echo "- Adding commits list in ${main_html}"
+	insert_commits_html "${WEB_DIR_PATH}/${main_html}" "${commit1_i}" "${commit2_i}"
 
 	# Insert pages list
-	echo "- Adding schematic pages list to the page"
-	insert_pages "${web_dir}/${main_html}" "${sch_page_names}"
-
-	# Set-Project title (folder name)
-	PROJECT_TITLE=$(basename "${repo_path}")
-	echo "- Setting project title: ${bold}${blue}${PROJECT_TITLE}${reset}"
-	sed -i "s|\[PROJECT_TITLE\]|${PROJECT_TITLE}|g" "${web_dir}/${main_html}"
-
-	# Update board title
-	sch_title=$(grep -i "title " "${kicad_pro_subpath}/${kicad_pro_filename}.${kicad_sch_extension}" 2> /dev/null | sed "s/^[ \t]\+//g" | cut -d" " -f 2- | sed "s/[)\"]//g")
-	pcb_title=$(grep -i "(title .*)" "${kicad_pcb}" 2> /dev/null | sed "s/^[ \t]\+//g" | cut -d" " -f 2- | sed "s/[)\"]//g")
-	if [[ "${sch_title}" == "" ]]; then sch_title="${bold}${red}{SCH_Title}${reset}"; fi
-	if [[ "${pcb_title}" == "" ]]; then pcb_title="${bold}${red}{PCB_Title}${reset}"; fi
-	echo "- Setting Sch page title: ${bold}${magenta}${sch_title}${reset}"
-	echo "- Setting PCB page title: ${bold}${cyan}${pcb_title}${reset}"
-	sed -i "s|\[SCH_TITLE\]|Sch \| ${sch_title}|g" "${web_dir}/${main_html}"
-	sed -i "s|\[PCB_TITLE\]|PCB \| ${pcb_title}|g" "${web_dir}/${main_html}"
-
-	# Update board revision
-	sch_revision=$(grep -i "Rev" "${kicad_pro_subpath}/${kicad_pro_filename}.${kicad_sch_extension}" 2> /dev/null | sed "s/^[ \t]\+//g" | sed "s/[()]//g" | cut -d" " -f2- | sed "s/\"//g")
-	pcb_revision=$(grep "(rev " "${kicad_pcb}" 2> /dev/null | sed "s/^[ \t]\+//g" | sed "s/[()]//g" | cut -d" " -f2- | sed "s/\"//g")
-	if [[ "${pcb_revision}" == "" ]]; then pcb_revision="${bold}${red}{pcb_rev}${reset}"; fi
-	if [[ "${sch_revision}" == "" ]]; then sch_revision="${bold}${red}{sch_rev}${reset}"; fi
-	echo "- Setting Sch revision: ${bold}${magenta}${sch_revision}${reset}"
-	echo "- Setting PCB revision: ${bold}${cyan}${pcb_revision}${reset}"
-	sed -i "s|\[SCH_REVISION\]|${sch_revision}|g" "${web_dir}/${main_html}"
-	sed -i "s|\[PCB_REVISION\]|${pcb_revision}|g" "${web_dir}/${main_html}"
-
-	# Update board date
-	sch_date=$(grep -i "date" "${kicad_pro_subpath}/${kicad_pro_filename}.${kicad_sch_extension}" 2> /dev/null | sed "s/^[ \t]\+//g" | sed "s/[()]//g" | cut -d" " -f2 | sed "s/\"//g")
-	pcb_date=$(grep "(date " "${kicad_pcb}" 2> /dev/null | sed "s/^[ \t]\+//g" | sed "s/[()]//g" | cut -d" " -f2 | sed "s/\"//g")
-	if [[ "${sch_date}" == "" ]]; then sch_date="${bold}${red}{sch_date}${reset}"; fi
-	if [[ "${pcb_date}" == "" ]]; then pcb_date="${bold}${red}{pcb_date}${reset}"; fi
-	echo "- Setting Sch date: ${bold}${magenta}${sch_date}${reset}"
-	echo "- Setting PCB date: ${bold}${cyan}${pcb_date}${reset}"
-	sed -i "s|\[PCB_DATE\]|${pcb_date}|g" "${web_dir}/${main_html}"
-	sed -i "s|\[SCH_DATE\]|${sch_date}|g" "${web_dir}/${main_html}"
-
-	# Update board's name
-	echo "- Setting board's name: ${bold}${blue}${kicad_pro_filename}${reset}"
-	sed -i "s|var board_name =.*|var board_name = \"${kicad_pro_filename}\"; // updated by kiri script|g" "${web_dir}/kiri.js"
-
-	commit1=$(echo "${commits}" | head -n$(("${commit1_idx}"+1)) | tail -n1 | cut -d" " -f1)
-	commit2=$(echo "${commits}" | head -n$(("${commit2_idx}"+1)) | tail -n1 | cut -d" " -f1)
-
-	# Initial commit legend
-	echo "- Setting initial selected commits: ${commit1}, ${commit2}"
-	sed -i "s|\[COMMIT_1_HASH\]|${commit1}|g" "${web_dir}/${main_html}"
-	sed -i "s|\[COMMIT_2_HASH\]|${commit2}|g" "${web_dir}/${main_html}"
-
-	# Update initial schematic images
-	sch_img_1="../${commit1}/sch-${kicad_pro_filename}.svg"
-	sch_img_2="../${commit2}/sch-${kicad_pro_filename}.svg"
-	echo "- Setting initial schematics"
-	echo "  Sch1: ${bold}${magenta}$(readlink -f ${web_dir}/${sch_img_1})${reset}"
-	echo "  Sch2: ${bold}${cyan}$(readlink -f ${web_dir}/${sch_img_2})${reset}"
-	sed -i "s|\[INITIAL_COMMIT_1_SCH\]|${sch_img_1}|g" "${web_dir}/${main_html}"
-	sed -i "s|\[INITIAL_COMMIT_2_SCH\]|${sch_img_2}|g" "${web_dir}/${main_html}"
-
-	# Update initial layout images
-	# usedboard_layers=$(find "${output_dir}" -name "layers" -exec cat {} \; | sort | uniq)
-	initial_layer_id=$(printf "%02d" $(echo -e "${usedboard_layers}" | head -1 | cut -d " " -f1 | tr "." "_"))
-	initial_layer_name=$(echo -e "${usedboard_layers}" | sed '/^$/d' | head -1 | cut -d " " -f2 | tr "." "_")
-	pcb_img_1="../${commit1}/${kicad_pro_filename}-${initial_layer_id}-${initial_layer_name}.svg"
-	pcb_img_2="../${commit2}/${kicad_pro_filename}-${initial_layer_id}-${initial_layer_name}.svg"
-	echo "- Setting initial layer: ${initial_layer_id} ${initial_layer_name}"
-	echo "  PCB1: ${bold}${magenta}$(readlink -f ${web_dir}/${pcb_img_1})${reset}"
-	echo "  PCB2: ${bold}${cyan}$(readlink -f ${web_dir}/${pcb_img_2})${reset}"
-	sed -i "s|\[INITIAL_COMMIT_1_PCB\]|${pcb_img_1}|g" "${web_dir}/${main_html}"
-	sed -i "s|\[INITIAL_COMMIT_2_PCB\]|${pcb_img_2}|g" "${web_dir}/${main_html}"
-
-	# Change initial view to layout
-	if [[ "${START_ON_LAYOUT_VIEW}" == 1 ]]; then
-		echo "- Setting initial view to layout"
-		sed -i "s/default_view = \"schematic\";/default_view = \"layout\";/g" "${web_dir}/kiri.js"
-	fi
+	echo "- Adding schematic pages list in ${main_html}"
+	insert_pages_html "${WEB_DIR_PATH}/${main_html}" "${commit_hash_1}" "${commit_hash_2}"
 
 	# Insert layers list
-	echo "- Adding layers list to the page"
-	insert_layers "${output_dir}" "${web_dir}/${main_html}" "${usedboard_layers}"
+	echo "- Adding layers list in ${main_html}"
+	insert_layers_html "${WEB_DIR_PATH}/${main_html}"
 
-	# Adjust server's port
+# ======
+# TODO: These parsing text needs to work for .sch and .kicad_sch
+
+	# Set project title with kicad project folder name
+	project_title=$(basename "${REPO_ABSOLUTE_PATH}")
+	echo "- Setting project title: ${BTE}${LBL}${project_title}${RCO}"
+	sed -i "s|\[PROJECT_TITLE\]|${project_title}|g" "${WEB_DIR_PATH}/${main_html}"
+
+	# Set Kicad project's name
+	echo "- Project's name: ${BTE}${LBL}${kicad_proj_name}${RCO}"
+	sed -i "s|var board_name =.*|var board_name = \"${kicad_proj_name}\"; // updated by kiri script|g" "${WEB_DIR_PATH}/kiri.js"
+
+	# Set schematic and board titles
+	local sch_title=$(grep -i "title " "${kicad_sch}" -m1 2> /dev/null | sed "s/^[ \t]\+//g" | cut -d" " -f 2- | sed "s/[)\"]//g")
+	local sch_label="${sch_title}"
+	local pcb_title=$(grep -i "(title .*)" "${kicad_pcb}" -m1 2> /dev/null | sed "s/^[ \t]\+//g" | cut -d" " -f 2- | sed "s/[)\"]//g")
+	local pcb_label="${pcb_title}"
+	if [[ -z "${sch_title}" ]]; then sch_title="{sch_title}"; sch_label="${BTE}${LRE}[missing]${RCO}"; fi
+	if [[ -z "${pcb_title}" ]]; then pcb_title="{pcb_title}"; pcb_label="${BTE}${LRE}[missing]${RCO}"; fi
+	echo "- Sch Title: ${BTE}${LMA}${sch_label}${RCO}"
+	echo "- PCB Title: ${BTE}${LCY}${pcb_label}${RCO}"
+	sed -i "s|\[SCH_TITLE\]|Sch \| ${sch_title}|g" "${WEB_DIR_PATH}/${main_html}"
+	sed -i "s|\[PCB_TITLE\]|PCB \| ${pcb_title}|g" "${WEB_DIR_PATH}/${main_html}"
+
+	# Set schematic and board revision
+	local sch_revision=$(grep -i "Rev" "${kicad_sch}" -m1 2> /dev/null | sed "s/^[ \t]\+//g" | sed "s/[()]//g" | cut -d" " -f2- | sed "s/\"//g")
+	local sch_label="${sch_revision}"
+	local pcb_revision=$(grep "(rev " "${kicad_pcb}" -m1 2> /dev/null | sed "s/^[ \t]\+//g" | sed "s/[()]//g" | cut -d" " -f2- | sed "s/\"//g")
+	local pcb_label="${pcb_revision}"
+	if [[ -z "${pcb_revision}" ]]; then pcb_revision="{pcb_rev}"; pcb_label="${BTE}${LRE}[missing]${RCO}"; fi
+	if [[ -z "${sch_revision}" ]]; then sch_revision="{sch_rev}"; sch_label="${BTE}${LRE}[missing]${RCO}"; fi
+	echo "- Sch Revision: ${BTE}${LMA}${sch_label}${RCO}"
+	echo "- PCB Revision: ${BTE}${LCY}${pcb_label}${RCO}"
+	sed -i "s|\[SCH_REVISION\]|${sch_revision}|g" "${WEB_DIR_PATH}/${main_html}"
+	sed -i "s|\[PCB_REVISION\]|${pcb_revision}|g" "${WEB_DIR_PATH}/${main_html}"
+
+	# Set schematic and board date
+	local sch_date=$(grep -i "date" "${kicad_sch}" -m1 2> /dev/null | sed "s/^[ \t]\+//g" | sed "s/[()]//g" | cut -d" " -f2 | sed "s/\"//g")
+	local sch_label="${sch_date}"
+	local pcb_date=$(grep "(date " "${kicad_pcb}" -m1 2> /dev/null | sed "s/^[ \t]\+//g" | sed "s/[()]//g" | cut -d" " -f2 | sed "s/\"//g")
+	local pcb_label="${pcb_date}"
+	if [[ -z "${sch_date}" ]]; then sch_date="{sch_date}"; sch_label="${BTE}${LRE}[missing]${RCO}"; fi
+	if [[ -z "${pcb_date}" ]]; then pcb_date="{pcb_date}"; pcb_label="${BTE}${LRE}[missing]${RCO}"; fi
+	echo "- Sch Date: ${BTE}${LMA}${sch_label}${RCO}"
+	echo "- PCB Date: ${BTE}${LCY}${pcb_label}${RCO}"
+	sed -i "s|\[PCB_DATE\]|${pcb_date}|g" "${WEB_DIR_PATH}/${main_html}"
+	sed -i "s|\[SCH_DATE\]|${sch_date}|g" "${WEB_DIR_PATH}/${main_html}"
+
+	# Initial commit
+	echo "- Initial selected commits: ${commit_hash_1}, ${commit_hash_2}"
+	sed -i "s|\[COMMIT_1_HASH\]|${commit_hash_1}|g" "${WEB_DIR_PATH}/${main_html}"
+	sed -i "s|\[COMMIT_2_HASH\]|${commit_hash_2}|g" "${WEB_DIR_PATH}/${main_html}"
+
+	# Update initial schematic images
+	local sch_img_1="../${commit_hash_1}/sch-${kicad_proj_name}.svg"
+	local sch_img_2="../${commit_hash_2}/sch-${kicad_proj_name}.svg"
+	echo "- Initial schematic images:"
+	echo "  Sch 1: ${BTE}${LMA}$(readlink -f ${WEB_DIR_PATH}/${sch_img_1})${RCO}"
+	echo "  Sch 2: ${BTE}${LCY}$(readlink -f ${WEB_DIR_PATH}/${sch_img_2})${RCO}"
+	sed -i "s|\[INITIAL_COMMIT_1_SCH\]|${sch_img_1}|g" "${WEB_DIR_PATH}/${main_html}"
+	sed -i "s|\[INITIAL_COMMIT_2_SCH\]|${sch_img_2}|g" "${WEB_DIR_PATH}/${main_html}"
+
+	# Update initial layout images
+	local initial_layer_id="$(printf "%02d" $(echo -e "${layers}" | head -1 | cut -d "|" -f1 | tr "." "_"))"
+	local initial_layer_name="$(echo -e "${layers}" | sed '/^$/d' | head -1 | cut -d "|" -f2 | tr "." "_")"
+	local pcb_img_1="../${commit_hash_1}/${kicad_proj_name}-${initial_layer_id}.svg"
+	local pcb_img_2="../${commit_hash_2}/${kicad_proj_name}-${initial_layer_id}.svg"
+	echo "- Inicial layer: ${initial_layer_id} - ${initial_layer_name}"
+	echo "- Initial layer images:"
+	echo "  PCB 1: ${BTE}${LMA}$(readlink -f ${WEB_DIR_PATH}/${pcb_img_1})${RCO}"
+	echo "  PCB 2: ${BTE}${LCY}$(readlink -f ${WEB_DIR_PATH}/${pcb_img_2})${RCO}"
+	sed -i "s|\[INITIAL_COMMIT_1_PCB\]|${pcb_img_1}|g" "${WEB_DIR_PATH}/${main_html}"
+	sed -i "s|\[INITIAL_COMMIT_2_PCB\]|${pcb_img_2}|g" "${WEB_DIR_PATH}/${main_html}"
+
+	# Change initial view to layout
+	set_default_html_view
+	if [[ "${START_ON_LAYOUT_VIEW}" == 1 ]]; then
+		echo "- Setting initial view to layout"
+		sed -i "s/default_view = \"schematic\";/default_view = \"layout\";/g" "${WEB_DIR_PATH}/kiri.js"
+	fi
+
+	# Update server's port
 	if [[ "${WEBSERVER_PORT}" != "" ]]; then
 		echo "- Setting server's port: ${WEBSERVER_PORT}"
-		sed -i "s|var port =.*|var port = ${WEBSERVER_PORT}; // updated by kiri script|g" "${web_dir}/kiri.js"
+		sed -i "s|var port =.*|var port = ${WEBSERVER_PORT}; // updated by kiri script|g" "${WEB_DIR_PATH}/kiri.js"
 	fi
 }
 
+archive_kiri_website()
+{
+	# If directory exists and it is not empty
+	if [[ -d "${OUTPUT_DIR_PATH}" ]] && [[ ! "$(ls -A ${OUTPUT_DIR_PATH})" ]]; then
+		local datetime=$(date +"%Y.%m.%d-%Hh%M")
+		local package="$(basename "${OUTPUT_DIR_PATH}")-${datetime}.tgz"
+		echo -e "${LBL}Archiving generated files in${RCO} ${package}"
+		tar -cvzf "${package}" "${OUTPUT_DIR_PATH}" &> /dev/null
+	fi
+}
 
-# ====================================================================
-# ====================================================================
+launch_webserver()
+{
+	# I should just use Kiri server for everything...
 
-trap ctrl_c INT
+	if [[ "${START_SERVER}" != 0 ]]; then
+		if grep -i -q "Microsoft" "/proc/version" &> /dev/null; then
+			# Webserver alternative for Windows with WSL
+			local host=127.0.0.1
+			if [[ "${WEBSERVER_PORT}" == "" ]]; then
+				WEBSERVER_PORT=8080
+			fi
+			if [[ ${LAUNCH_BROWSER} == 1 ]]; then
+				cmd.exe /C start "http://${host}:${WEBSERVER_PORT}" &> /dev/null &
+			fi
+			echo "Starting web-server at http://${host}:${WEBSERVER_PORT}"
+			echo "Hit Ctrl+C to end session"
+			if python3 -m http.server -d "${WEB_DIR_PATH}/../" -b "${host}" "${WEBSERVER_PORT}" &> /dev/null; then
+				pid=$!
+				kill -9 $pid > /dev/null
+			else
+				echo
+				echo -e "Error: Web-server's port ${WEBSERVER_PORT} already in use."
+				echo -e "Close older kiri sessions or change the port with '-p [PORT]'"
+				exit 1
+			fi
+		else
+			if [[ "${WEBSERVER_PORT}" != "" ]]; then
+				local webserver_port_param="-p ${WEBSERVER_PORT}"
+			fi
+			if [[ ${LAUNCH_BROWSER} == 0 ]]; then
+				server_only_flag="-S"
+			fi
+			if kiri-server "${OUTPUT_DIR_PATH}" ${webserver_port_param} ${server_only_flag} 2> /dev/null; then
+				pid=$!
+				kill -9 $pid > /dev/null
+			else
+				echo -e "Something went wrong with kiri-server, try to force the port with '-p'"
+				exit 1
+			fi
+		fi
+	fi
+}
 
-script_path=$(readlink_ "$0")
-script_path=$(dirname "${script_path}")
+# ====================================================================================================
+# ====================================================================================================
+# ====================================================================================================
 
-export ALL_COMMITS=0
-export DEBUG=0
-export DEBUG_PLOTGITSCH=0
-export DEBUG_KIDIFF=0
-export DRY_RUN=0
-export START_SERVER=1
-export LAUNCH_BROWSER=1
-export NEWER_COMMIT=""
-export OLDER_COMMIT=""
-export REMOVE_KIRI_FOLDER=0
-export VERBOSE=0
-export WEBSERVER_PORT=
-export OUTPUT_DIR=.kiri
-export SHOW_LAST_N_COMMITS=
-export SKIP_CACHE_LIB=0
-export START_ON_LAYOUT_VIEW=0
-export PAGE_FRAME=1
+get_kicad_pro()
+{
+	local kicad_proj_path="${1}"
 
-while [[ $# -gt 0 ]]
-do
-	key="${1}"
+	local kicad_pro="$(find "${kicad_proj_path}" -maxdepth 1 -name "*.kicad_pro")"
+	if [[ -z "${kicad_pro}" ]]; then
+		kicad_pro="$(find "${kicad_proj_path}" -maxdepth 1 -name "*.pro")"
+	fi
 
-	case ${key} in
-	-a|--all)
-		ALL_COMMITS=1
-		shift
-		;;
+	basename "${kicad_pro}"
+}
 
-	-d|--output-dir)
-		OUTPUT_DIR=${2}
-		shift
-		shift
-		;;
+get_kicad_sch()
+{
+	local kicad_proj_path="${1}"
+	local kicad_proj_name="${2}"
+	local kicad_pro_extension="${3}"
+	local kicad_sch
+	case "${kicad_pro_extension}" in
+		pro)
+			basename "$(find "${kicad_proj_path}" -maxdepth 1 -name "${kicad_proj_name}\.sch")"
+			;;
+		kicad_pro)
+			basename "$(find "${kicad_proj_path}" -maxdepth 1 -name "${kicad_proj_name}\.kicad_sch")"
+			;;
+	esac
+}
 
-	-y|--dry-run)
-		DRY_RUN=1
-		START_SERVER=0
-		VERBOSE=1
-		shift
-		;;
+get_kicad_sch_extra()
+{
+	# Parse a list of schematic pages from the main Kicad's schematic
+	# Format: schematic_page_name|filename_without_extension
 
-	-h|--help)
-		show_help
-		exit 0
-		;;
+	local kicad_sch="${1}"
+	local sch_extension=$(get_file_extension "${kicad_sch}")
+	case "${sch_extension}" in
+		sch)
+			# Kicad .sch format:
+			# F1 "./path/file_name.sch" 60
+			grep "^F1 " "${kicad_sch}" | cut -d" " -f2 | sed "s/\"//g"
+			;;
 
-	-l|--no-server)
-		START_SERVER=0
-		shift
-		;;
-
-	-n|--newer)
-		NEWER_COMMIT="${2}"
-		shift
-		shift
-		;;
-
-	-t|--last)
-		SHOW_LAST_N_COMMITS="${2}"
-		shift
-		shift
-		;;
-
-	-o|--older)
-		OLDER_COMMIT="${2}"
-		shift
-		shift
-		;;
-
-	-r|--remove)
-		REMOVE_KIRI_FOLDER=1
-		shift
-		;;
-
-	-p|--port)
-		WEBSERVER_PORT="${2}"
-		shift
-		shift
-		;;
-
-	-V|--verbose)
-		VERBOSE=1
-		shift
-		;;
-
-	-v|--version)
-		show_version
-		exit 0
-		;;
-
-	-D|--debug)
-		DEBUG=1
-		DEBUG_KIDIFF=1
-		DEBUG_PLOTGITSCH=1
-		shift
-		;;
-
-	-Dp|-DP|-dp|--debug-plotgitsch)
-		DEBUG_PLOTGITSCH=1
-		shift
-		;;
-
-	-Dk|-DK|-dk|--debug-kidiff)
-		DEBUG_KIDIFF=1
-		shift
-		;;
-
-	-x|--archive)
-		ARCHIVE=1
-		START_SERVER=0
-		shift
-		;;
-
-	-s|--skip-cache)
-		SKIP_CACHE_LIB=1
-		shift
-		;;
-
-	-S|--server-only)
-		LAUNCH_BROWSER=0
-		shift
-		;;
-
-	-u|--layout)
-		START_ON_LAYOUT_VIEW=1
-		shift
-		;;
-
-	-f|--frame)
-		PAGE_FRAME=0
-		shift
-		;;
-
-	*)
-		kicad_pro="${1}"
-		shift
+		kicad_sch)
+			# Kicad .kicad_sch format:
+			# (property "Sheet file" "sch/power_supply.kicad_sch" (id 1) (at 101.6 43.8662 0)...
+			grep 'Sheet file' "${kicad_sch}" | sed "s/^[ ]\+//g" | cut -d"\"" -f4
 		;;
 	esac
-done
+}
 
-if [[ "${kicad_pro}" == "" ]]; then
-	if check_tool "zenity" &> /dev/null; then
+get_kicad_cache_lib()
+{
+	local kicad_proj_path="${1}"
+	local kicad_proj_name="${2}"
+	basename "$(find "${kicad_proj_path}" -maxdepth 1 -name "${kicad_proj_name}-cache.lib")" 2> /dev/null
+}
 
-		if [[ ${DISPLAY} == "" ]]; then
-			export DISPLAY=:0.0
+get_kicad_pcb()
+{
+	local kicad_proj_path="${1}"
+	local kicad_proj_name="${2}"
+	basename "$(find "${kicad_proj_path}" -maxdepth 1 -name "${kicad_proj_name}.kicad_pcb")" 2> /dev/null
+}
+
+show_project_files()
+{
+	local kicad_project_path="${1}"
+	local kicad_pro="${2}"
+	local kicad_sch="${3}"
+	local kicad_pcb="${4}"
+	local kicad_cache_lib="${5}"
+
+	local kicad_sch_extra="$(get_kicad_sch_extra "${kicad_project_path}/${kicad_sch}")"
+
+	if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]] || [[ "${DEBUG_PLOTGITSCH}" == "1" ]] || [[ "${DEBUG_KIDIFF}" == "1" ]]; then
+		echo "     project_path: ${kicad_project_path}"
+		echo "          project: ${kicad_pro}"
+		echo "        schematic: ${kicad_sch}"
+		if [[ -n "${kicad_sch_extra}" ]]; then
+			padding=$(printf ' %.0s' {1..19})
+			echo -e "  extra_sch_files: $(echo -e "${kicad_sch_extra}" | sed "s/^/${padding}/g" | sed '1s/[ ]\+//')"
 		fi
-
-		kicad_pro=$(\
-			zenity \
-				--filename="$(pwd)"/ \
-				--title "Select Kicad project" \
-				--file-selection \
-				--file-filter="Kicad Project | *.kicad_pro | *.pro" \
-				--file-filter='All files | *')
-		ret=$?
-	else
-		kicad_pro=$(kiri-file-picker)
-	fi
-fi
-
-if [[ $ret -gt 0 ]]; then
-	exit 1
-fi
-
-if [[ ! -f "${kicad_pro}" ]]; then
-	echo "Kicad project \"${kicad_pro}\" does not exit"
-	exit 1
-fi
-
-if [[ ${OUTPUT_DIR} != "" ]]; then
-	output_dir=$(realpath "${OUTPUT_DIR}")
-	mkdir -p "${output_dir}"
-else
-	echo "output_dir is missing"
-	exit 1
-fi
-
-# DISCOVER REPO_PATH
-kicad_pro_dirpath=$(dirname "${kicad_pro}")
-pushd "${kicad_pro_dirpath}" &> /dev/null || exit
-repo_path="$(git rev-parse --show-toplevel)"
-
-# THESE ARE ALL THE PATHS NEEDED (WORKS FROM EVERYWHERE)
-kicad_pro_path=$(realpath "${kicad_pro}")
-repo_path=$(realpath "${repo_path}")
-kicad_pro_subpath=$(dirname "${kicad_pro_path}" | sed "s|${repo_path}||g" | sed "s|^/||g")
-kicad_pro=$(basename "${kicad_pro}")
-kicad_pro_filename=${kicad_pro%.*}
-kicad_pro_extension=${kicad_pro##*.}
-
-if [[ "${kicad_pro_subpath}" == "" ]]; then
-	kicad_pro_subpath="."
-fi
-
-pushd "${repo_path}" &> /dev/null || exit
-
-KICAD_VERSION=$(kicad_version.py --major)
-export KICAD_VERSION
-
-kicad_pcb_extension="kicad_pcb"
-if [[ ${kicad_pro_extension} == "kicad_pro" ]]; then
-	echo "Kicad >= 5.99 project"
-	# source "${script_path}/env-nightly.sh"
-	export kicad_sch_extension="kicad_sch"
-else
-	export kicad_sch_extension="sch"
-fi
-
-kicad_sch="${kicad_pro_filename}.${kicad_sch_extension}"
-kicad_pcb="${kicad_pro_filename}.${kicad_pcb_extension}"
-
-# (kicad_pcb (version 4) (host kicad "dummy file") )
-# (kicad_pcb (version 20171130) (host pcbnew "(5.0.0-rc2-76-gb5f63567d)")
-# (kicad_pcb (version 20171130) (host pcbnew "(5.1.6)-1")
-# (kicad_pcb (version 20171130) (host pcbnew 5.0.0-rc3-unknown-eaf938c~65~ubuntu18.04.1)
-# (kicad_pcb (version 20171130) (host pcbnew 5.0.1-33cea8e~67~ubuntu18.04.1)
-# (kicad_pcb (version 20171130) (host pcbnew 5.1.5+dfsg1-2~bpo10+1)
-# (kicad_pcb (version 20171130) (host pcbnew 5.1.6-c6e7f7d~86~ubuntu20.04.1)
-# (kicad_pcb (version 20171130) (host pcbnew 6.0.0-rc1-unknown-da35b16~65~ubuntu18.04.1)
-# (kicad_pcb (version 20200104) (host pcbnew "(5.99.0-879-ga0698723b)")
-# (kicad_pcb (version 20210606) (generator pcbnew)
-PCBS_VERSION=$(head -n1 "${kicad_pcb}" | sed "s/[()]//g" | cut -f3 -d" ")
-
-echo
-echo "        CURRENT_PATH = $(pwd)"
-echo "      kicad_pro_path = $kicad_pro_path"
-echo "           repo_path = $repo_path"
-echo "   kicad_pro_subpath = ${kicad_pro_subpath}"
-echo "           kicad_pro = ${kicad_pro}"
-echo "           kicad_sch = ${kicad_sch}"
-echo "           kicad_pcb = ${kicad_pcb}"
-echo "       KICAD_VERSION = ${KICAD_VERSION}"
-echo "   KICAD_PCB_VERSION = ${PCBS_VERSION}"
-echo "  kicad_pro_filename = ${kicad_pro_filename}"
-echo " kicad_pro_extension = ${kicad_pro_extension}"
-echo " kicad_sch_extension = ${kicad_sch_extension}"
-echo " kicad_pcb_extension = ${kicad_pcb_extension}"
-echo "          output_dir = ${output_dir}"
-
-# Kicad-6 boards do not have a schematic view working yet
-if [[ ${PCBS_VERSION} -ge 20211014 ]]; then
-	START_ON_LAYOUT_VIEW=1
-fi
-
-PLOTGITSCH_MISSING=$(check_tool plotgitsch)
-export PLOTGITSCH_MISSING
-
-KIDIFF_MISSING=$(check_tool kidiff)
-export KIDIFF_MISSING
-
-# Check required tools
-if [[ "${DRY_RUN}" = 0 ]]; then
-
-	if [[ "${PLOTGITSCH_MISSING}" = 1 ]]; then
-		echo "INFO: plotgitsch is missing, skipping schematic diffs"
-	fi
-
-	if [[ "${KIDIFF_MISSING}" = 1 ]]; then
-		echo "INFO: kidiff is missing, skipping layout diffs"
-	fi
-
-fi
-
-if ! check_tool "dos2unix" &> /dev/null; then "dos2unix is missing"; exit; fi
-
-case ${OSTYPE} in
-	darwin*)
-		if ! check_tool "gsed"  &> /dev/null; then "gsed is missing"; exit; fi
-		if ! check_tool "gfind" &> /dev/null; then "gfind is missing"; exit; fi
-		;;
-esac
-
-# Workaround to fix windows line-endings
-if [[ ! -f "${kicad_pro_subpath}/${kicad_pcb}.bkp" ]]; then
-	cp "${kicad_pro_subpath}/${kicad_pcb}" "${kicad_pro_subpath}/${kicad_pcb}.bkp" 2> /dev/null
-fi
-dos2unix "${kicad_pcb}" &> /dev/null
-
-generate_scm_artifacts "${script_path}" "${repo_path}" "${kicad_pro_subpath}" "${kicad_sch}" "${kicad_pcb}" "${kicad_pro_filename}" "${output_dir}"
-
-# Restore board
-if [[ -f "${kicad_pro_subpath}/${kicad_pcb}.bkp" ]]; then
-	mv -f "${kicad_pro_subpath}/${kicad_pcb}.bkp" "${kicad_pro_subpath}/${kicad_pcb}" &> /dev/null
-fi
-
-# =======================
-
-web_dir="${output_dir}/web/"
-
-echo
-echo -e "${blue}Output folder:${reset} $(realpath "${OUTPUT_DIR}")"
-
-if [[ ${ARCHIVE} == 1 ]]; then
-	datetime=$(date +"%Y.%m.%d-%Hh%M")
-	tgz_filename="$(basename "${OUTPUT_DIR}")-${datetime}.tgz"
-	echo -e "${blue}Archiving generated files:${reset} ${tgz_filename}"
-	tar -cvzf "${tgz_filename}" "${output_dir}" &> /dev/null
-fi
-
-if [[ "${START_SERVER}" != 0 ]]; then
-	if grep -i -q "Microsoft" "/proc/version" &> /dev/null; then
-		# Webserver alternative for Windows with WSL
-		host=127.0.0.1
-		if [[ "${WEBSERVER_PORT}" == "" ]]; then
-			WEBSERVER_PORT=8080
+		if [[ -n "${kicad_cache_lib}" ]]; then
+			echo -e "        cache.lib: ${kicad_cache_lib}"
 		fi
-		if [[ ${LAUNCH_BROWSER} == 1 ]]; then
-			cmd.exe /C start "http://${host}:${WEBSERVER_PORT}" &> /dev/null &
-		fi
-		echo "Starting web-server at http://${host}:${WEBSERVER_PORT}"
-		echo "Hit Ctrl+C to end session"
-		if python3 -m http.server -d "${web_dir}/../" -b "${host}" "${WEBSERVER_PORT}" &> /dev/null; then
-			pid=$!
-			kill -9 $pid > /dev/null
-		else
+		echo "           layout: ${kicad_pcb}"
+		echo
+	fi
+}
+
+show_main_global_variables()
+{
+	if [[ "${VERBOSE}" == 1 ]] || [[ "${DEBUG}" == 1 ]] || [[ "${DEBUG_KIDIFF}" == 1 ]] || [[ "${DEBUG_PLOTGITSCH}" == 1 ]]; then
+		(
 			echo
-			echo -e "Error: Web-server's port ${WEBSERVER_PORT} already in use."
-			echo -e "Close older kiri sessions or change the port with '-p [PORT]'"
-			exit 1
-		fi
-	else
-		if [[ "${WEBSERVER_PORT}" != "" ]]; then
-			WEBSERVER_PORT_PARAM="-p ${WEBSERVER_PORT}"
-		fi
-		if [[ ${LAUNCH_BROWSER} == 0 ]]; then
-			SERVER_ONLY_FLAG="-S"
-		fi
-		if kiri-server "${output_dir}" ${WEBSERVER_PORT_PARAM} ${SERVER_ONLY_FLAG} 2> /dev/null; then
-			pid=$!
-			kill -9 $pid > /dev/null
-		else
-			echo -e "Something went wrong with kiri-server, try to force the port with '-p'"
-			exit 1
-		fi
+			echo "          KIRI_HOME_PATH = ${KIRI_HOME_PATH}"
+			echo "           KICAD_VERSION = $(get_kicad_version)"
+			echo "            CURRENT_PATH = ${KIRI_LAUNCH_PATH}"
+			echo " KICAD_PRO_ABSOLUTE_PATH = ${KICAD_PRO_ABSOLUTE_PATH}"
+			echo "      REPO_ABSOLUTE_PATH = ${REPO_ABSOLUTE_PATH}"
+			echo "  KICAD_PROJ_NESTED_PATH = ${KICAD_PROJ_NESTED_PATH}"
+			echo "KICAD_PROJ_ABSOLUTE_PATH = ${KICAD_PROJ_ABSOLUTE_PATH}"
+			echo "         OUTPUT_DIR_PATH = ${OUTPUT_DIR_PATH}"
+			echo "            WEB_DIR_PATH = ${WEB_DIR_PATH}"
+			echo
+		) | cut -c -$(($(tput cols)-3)) | sed "s/\(.\{$(($(tput cols)-3))\}\)/\1.../"
 	fi
-fi
+}
+
+main()
+{
+	export KIRI_PID=$$
+
+	trap "exit 1" TERM
+	trap cleanup_on_exit INT
+
+	readonly KIRI_HOME_PATH="$(dirname $(dirname "${1}"))"
+
+	check_required_tools
+	command_line_parse "${@}"
+
+	show_main_global_variables
+
+	local kicad_pro=$(get_kicad_pro "${KICAD_PROJ_ABSOLUTE_PATH}")
+	local kicad_pro_extension=$(get_file_extension "${kicad_pro}")
+	local kicad_proj_name=$(get_file_without_extention "${kicad_pro}")
+	local kicad_sch="$(get_kicad_sch "${KICAD_PROJ_ABSOLUTE_PATH}" "${kicad_proj_name}" "${kicad_pro_extension}")"
+	local kicad_pcb="$(get_kicad_pcb "${KICAD_PROJ_ABSOLUTE_PATH}" "${kicad_proj_name}")"
+	local kicad_sch_extra="$(get_kicad_sch_extra "${KICAD_PROJ_ABSOLUTE_PATH}/${kicad_sch}")"
+	local kicad_cache_lib="$(get_kicad_cache_lib "${KICAD_PROJ_ABSOLUTE_PATH}" "${kicad_proj_name}")"
+	show_project_files "${KICAD_PROJ_ABSOLUTE_PATH}" "${kicad_pro}" "${kicad_sch}" "${kicad_pcb}" "${kicad_cache_lib}"
+
+	echo -e "${LBL}Output folder:${RCO} ${OUTPUT_DIR_PATH}"
+
+	if [[ "${REMOVE_KIRI_FOLDER}" == 1 ]]; then
+		echo -e "${LRE}Removing leftovers from the previous run${RCO}"
+		rm -rf "${OUTPUT_DIR_PATH}"
+	fi
+
+	parse_commits_list "${kicad_pro}" "${kicad_sch}" "${kicad_pcb}" "${extra_kicad_sch}"
+	echo
+
+	generate_diffs
+	build_main_html
+
+	echo -e "\n${LBL}Output folder:${RCO} $(realpath "${OUTPUT_DIR_PATH}")"
+
+	if [[ ${ARCHIVE_PROJECT} == 1 ]]; then
+		archive_kiri_website
+	fi
+
+	launch_webserver
+}
+
+main "${0}" "$@"
+
+
+# echo -e "\n==============================================="
+# echo -e "EXITING on ${FUNCNAME[0]} after build_main_html..."
+# kiri_kill
