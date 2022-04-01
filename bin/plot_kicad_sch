@@ -23,23 +23,9 @@
 # ydotoold/jammy 0.1.8-3 amd64
 #   Command-line automation tool - daemon
 
-readonly TIME=0.2
 
-get_disaply_server()
-{
-    # Check the display server in use (x11 or wayland)
-    # loginctl show-session $(awk '/tty/ {print $1}' <(loginctl)) -p Type | awk -F= '{print $2}'
-    echo ${XDG_SESSION_TYPE}
-}
-
-cleanup_remove_me()
-{
-    # rm -rf ${1}/*.svg
-    killall Xvfb &> /dev/null
-    killall eeschema &> /dev/null
-    # export DISPLAY=":99"
-    # export XAUTHORITY=~/.Xauthority
-}
+readonly TIME=0.1
+readonly PLOT_TIME=1
 
 forced_exit()
 {
@@ -48,10 +34,11 @@ forced_exit()
     exit 1
 }
 
-on_exit()
+get_disaply_server()
 {
-    kill -9 ${XVFB_PID} &> /dev/null
-    kill -9 ${EESCHEMA_PID} &> /dev/null
+    # Check the display server in use (x11 or wayland)
+    # loginctl show-session $(awk '/tty/ {print $1}' <(loginctl)) -p Type | awk -F= '{print $2}'
+    echo ${XDG_SESSION_TYPE}
 }
 
 launch_eeschema()
@@ -75,7 +62,7 @@ launch_eeschema()
 
     # Waiting for eeschema to launch
     while [ "${EESCHEMA_WIDS}" = "" ]; do
-        sleep ${TIME} # TODO REPLACE THIS WITH THE TEST OF THE SCHEMATIC LOADED TITLE "board [board/] — Schematic Editor"
+        sleep 0.2 # TODO REPLACE THIS WITH THE TEST OF THE SCHEMATIC LOADED TITLE "board [board/] — Schematic Editor"
         EESCHEMA_WIDS=($(xdotool search --onlyvisible --sync --classname "Eeschema"))
     done
 
@@ -103,18 +90,12 @@ dissmiss_cache_lib_warning()
     sleep ${TIME}
     xdotool key --window ${wid} Return
     sleep ${TIME}
-
-    # # Close any possible window
-    # xdotool key --window ${wid} Escape
-    # sleep ${TIME}
-    # xdotool key --window ${wid} Escape
-    # sleep ${TIME}
-    # xdotool key --window ${wid} Escape
-    # sleep ${TIME}
 }
 
 treat_initial_popups()
 {
+    local project_name="${1}"
+
     for win_id in ${EESCHEMA_WIDS}; do
 
         # xwininfo -tree -id ${win_id}
@@ -124,8 +105,10 @@ treat_initial_popups()
             Warning)
                 dissmiss_cache_lib_warning ${win_id}
                 ;;
-            *Schematic*)
-                eeschema_wid=$id
+            # ${project_name} [${project_name}${}/] — Schematic Editor)
+            *)
+                echo "[${win_id}] Title: \"${win_title}\""
+
         esac
 
     done
@@ -168,18 +151,23 @@ configure_and_plot()
     xdotool key --window ${win_id} "BackSpace"
     sleep ${TIME}
 
-    # Plot all pages
-    xdotool key --window ${win_id} "Tab"
+    # Set color mode as black and white
+    xdotool key --repeat 4 --delay {TIME} "Tab"
     sleep ${TIME}
     xdotool key --window ${win_id} "Return"
     sleep ${TIME}
+    xdotool key --window ${win_id} "Page_Down"
     sleep ${TIME}
+    xdotool key --window ${win_id} "Page_Down"
     sleep ${TIME}
+    xdotool key --window ${win_id} "Return"
     sleep ${TIME}
 
-    # read
-    # xdotool key --window ${win_id} "Escape"
-    # sleep ${TIME}
+    # Plot all pages
+    xdotool key --repeat 11 --delay {TIME} "Tab"
+    sleep ${TIME}
+    xdotool key --window ${win_id} "Return"
+    sleep ${PLOT_TIME}
 }
 
 main()
@@ -187,12 +175,17 @@ main()
     trap "exit 1" TERM
     trap forced_exit INT
 
+    if [[ "$(get_disaply_server)" != "x11" ]]; then
+        echo "Error: plot_kicad_sch works only on x11, current display server is $(get_disaply_server)"
+        exit 1
+    fi
+
     local schematic_file_path="${1}"
     local output_dir_path="${2}"
 
     if [[ ! -f "${schematic_file_path}" ]]; then
         echo "Missing .kicad_sch file"
-        exit 0
+        exit 1
     fi
 
     if [[ "${#}" -lt 2 ]]; then
@@ -201,6 +194,7 @@ main()
         output_dir_path="${2}"
         if [[ ! -d "${output_dir_path}" ]]; then
             echo "Error: \"${output_dir_path}\" does not exist"
+            exit 1
         fi
     fi
 
@@ -209,22 +203,20 @@ main()
 
     local temp_dir="sch"
     local output_temp_dir_path="${output_dir_path}/${temp_dir}"
+    mkdir -p "${output_temp_dir_path}" & > /dev/null
 
-    cleanup_remove_me "${output_dir_path}"
+    launch_eeschema "${schematic_file_path}" &> /dev/null
+    # echo -e "\n   eeschema_pid = ${EESCHEMA_PID}"
+    # echo -e "main_window_ids = ${EESCHEMA_WIDS}"
+    # echo -e " main_window_id = ${EESCHEMA_WIDS}"
 
-    launch_eeschema "${schematic_file_path}"
-    echo -e "\n   eeschema_pid = ${EESCHEMA_PID}"
-    echo -e "main_window_ids = ${EESCHEMA_WIDS}"
-    echo -e " main_window_id = ${EESCHEMA_WIDS}"
-
-    debug_eeschema_popups
+    # debug_eeschema_popups
     treat_initial_popups
 
-    launch_plot_window ${EESCHEMA_WID}
-    configure_and_plot ${EESCHEMA_WID} "${output_temp_dir_path}"
+    launch_plot_window ${EESCHEMA_WID} 2> /dev/null
+    configure_and_plot ${EESCHEMA_WID} "${output_temp_dir_path}" 2> /dev/null
 
     kill -9 ${EESCHEMA_PID}  &> /dev/null
-
 
     # Organize generated files for KiRI
     svg_file_paths=$(find "${output_temp_dir_path}" -name "*.svg")
@@ -232,9 +224,11 @@ main()
     IFS=$'\n'
     for svg_file in "${svg_file_paths}"; do
         new_file=$(echo "${svg_file}" | sed "s|${temp_dir}/|sch-|g" )
-        mv "${svg_file}" "${new_file}"
-        rm -rf "${temp_dir}"
+        echo "- Exporting: ${new_file}"
+        mv "${svg_file}" "${new_file}" 2> /dev/null
     done
+
+    rm -rf "${temp_dir}"
 
 }
 
