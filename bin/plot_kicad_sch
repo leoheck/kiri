@@ -29,209 +29,209 @@ readonly PLOT_TIME=0.5
 
 forced_exit()
 {
-    kill -9 "${XVFB_PID}" &> /dev/null
-    kill -9 "${EESCHEMA_PID}" &> /dev/null
-    exit 1
+	kill -9 "${XVFB_PID}" &> /dev/null
+	kill -9 "${EESCHEMA_PID}" &> /dev/null
+	exit 1
 }
 
 get_disaply_server()
 {
-    # Check the display server in use (x11 or wayland)
-    # loginctl show-session $(awk '/tty/ {print $1}' <(loginctl)) -p Type | awk -F= '{print $2}'
-    echo "${XDG_SESSION_TYPE}"
+	# Check the display server in use (x11 or wayland)
+	# loginctl show-session $(awk '/tty/ {print $1}' <(loginctl)) -p Type | awk -F= '{print $2}'
+	echo "${XDG_SESSION_TYPE}"
 }
 
 launch_eeschema()
 {
-    schematic_file_path="${1}"
+	schematic_file_path="${1}"
 
-    export EESCHEMA_PID
-    export EESCHEMA_WIDS
+	export EESCHEMA_PID
+	export EESCHEMA_WIDS
 
-    # Xvfb ${DISPLAY} &
-    # Xvfb :1 -screen 0 1024x768x16 -dpi 96 &
-    # Xvfb -screen 0 1280x800x24 -ac -dpi 96 +extension RANDR :1 &
-    # export XVFB_PID=$!
+	# Xvfb ${DISPLAY} &
+	# Xvfb :1 -screen 0 1024x768x16 -dpi 96 &
+	# Xvfb -screen 0 1280x800x24 -ac -dpi 96 +extension RANDR :1 &
+	# export XVFB_PID=$!
 
-    eeschema "${schematic_file_path}" &
-    EESCHEMA_PID=${!}
+	eeschema "${schematic_file_path}" &
+	EESCHEMA_PID=${!}
 
-    # =================================
+	# =================================
 
-    setxkbmap us
+	setxkbmap us
 
-    # Waiting for eeschema to launch
-    while [ "${EESCHEMA_WIDS}" = "" ]; do
-        sleep 0.2 # TODO REPLACE THIS WITH THE TEST OF THE SCHEMATIC LOADED TITLE "board [board/] — Schematic Editor"
-        EESCHEMA_WIDS=($(xdotool search --onlyvisible --sync --classname "Eeschema"))
-    done
+	# Waiting for eeschema to launch
+	while [ "${EESCHEMA_WIDS}" = "" ]; do
+		sleep 0.2 # TODO REPLACE THIS WITH THE TEST OF THE SCHEMATIC LOADED TITLE "board [board/] — Schematic Editor"
+		EESCHEMA_WIDS=($(xdotool search --onlyvisible --sync --classname "Eeschema"))
+	done
 
-    export EESCHEMA_WID=${EESCHEMA_WIDS[0]}
+	export EESCHEMA_WID=${EESCHEMA_WIDS[0]}
 }
 
 debug_eeschema_popups()
 {
-    IFS=$'\n'
-    for win_id in "${EESCHEMA_WIDS[@]}"; do
-        # xwininfo -tree -id ${id}
-        win_title=$(xwininfo -tree -id "${win_id}" | grep "xwininfo:" | cut -d" " -f5- | sed "s/\"//g")
-        echo "- [${win_id}] Title: \"${win_title}\""
-    done
+	IFS=$'\n'
+	for win_id in "${EESCHEMA_WIDS[@]}"; do
+		# xwininfo -tree -id ${id}
+		win_title=$(xwininfo -tree -id "${win_id}" | grep "xwininfo:" | cut -d" " -f5- | sed "s/\"//g")
+		echo "- [${win_id}] Title: \"${win_title}\""
+	done
 }
 
 # When opening Kicad 5 files
 dissmiss_cache_lib_warning()
 {
-    local win_id="${1}"
+	local win_id="${1}"
 
-    # Dismiss warning about missing -cache.lib file
-    xdotool key --window "${win_id}" Tab
-    sleep "${TIME}"
-    xdotool key --window "${win_id}" Tab
-    sleep "${TIME}"
-    xdotool key --window "${win_id}" Return
-    sleep "${TIME}"
+	# Dismiss warning about missing -cache.lib file
+	xdotool key --window "${win_id}" Tab
+	sleep "${TIME}"
+	xdotool key --window "${win_id}" Tab
+	sleep "${TIME}"
+	xdotool key --window "${win_id}" Return
+	sleep "${TIME}"
 }
 
 treat_initial_popups()
 {
-    local project_name="${1}"
+	local project_name="${1}"
 
-    IFS=$'\n'
-    for win_id in ${EESCHEMA_WIDS}; do
+	IFS=$'\n'
+	for win_id in ${EESCHEMA_WIDS}; do
 
-        # xwininfo -tree -id "${win_id}"
-        win_title=$(xwininfo -tree -id "${win_id}" | grep "xwininfo:" | cut -d" " -f5- | sed "s/\"//g")
+		# xwininfo -tree -id "${win_id}"
+		win_title=$(xwininfo -tree -id "${win_id}" | grep "xwininfo:" | cut -d" " -f5- | sed "s/\"//g")
 
-        case ${win_title} in
-            Warning)
-                dissmiss_cache_lib_warning "${win_id}"
-                ;;
-            # ${project_name} [${project_name}${}/] — Schematic Editor)
-            *)
-                echo "[${win_id}] Title: \"${win_title}\""
+		case ${win_title} in
+			Warning)
+				dissmiss_cache_lib_warning "${win_id}"
+				;;
+			# ${project_name} [${project_name}${}/] — Schematic Editor)
+			*)
+				echo "[${win_id}] Title: \"${win_title}\""
 
-        esac
+		esac
 
-    done
+	done
 }
 
 launch_plot_window()
 {
-    # Open Menu File > Plot
+	# Open Menu File > Plot
 
-    local win_id="${1}"
+	local win_id="${1}"
 
-    xdotool key --window "${win_id}" "alt+f"
-    sleep "${TIME}"
-    xdotool key --window "${win_id}" "Up"
-    sleep "${TIME}"
-    xdotool key --window "${win_id}" "Up"
-    sleep "${TIME}"
-    xdotool key --window "${win_id}" "Return"
-    sleep "${TIME}"
+	xdotool key --window "${win_id}" "alt+f"
+	sleep "${TIME}"
+	xdotool key --window "${win_id}" "Up"
+	sleep "${TIME}"
+	xdotool key --window "${win_id}" "Up"
+	sleep "${TIME}"
+	xdotool key --window "${win_id}" "Return"
+	sleep "${TIME}"
 }
 
 configure_and_plot()
 {
-    local win_id="${1}"
-    local output_dir_path="${2}"
+	local win_id="${1}"
+	local output_dir_path="${2}"
 
-    # Set output directory
-    xdotool type --window "${win_id}" --delay 1 "${output_dir_path}"
-    sleep "${TIME}"
+	# Set output directory
+	xdotool type --window "${win_id}" --delay 1 "${output_dir_path}"
+	sleep "${TIME}"
 
-    # Change ouput format to svg
-    xdotool key --window "${win_id}" "Tab"
-    sleep "${TIME}"
-    xdotool key --window "${win_id}" "Tab"
-    sleep "${TIME}"
-    xdotool key --window "${win_id}" "Up"
-    sleep "${TIME}"
-    xdotool key --window "${win_id}" "Up"
-    sleep "${TIME}"
-    xdotool key --window "${win_id}" "BackSpace"
-    sleep "${TIME}"
+	# Change ouput format to svg
+	xdotool key --window "${win_id}" "Tab"
+	sleep "${TIME}"
+	xdotool key --window "${win_id}" "Tab"
+	sleep "${TIME}"
+	xdotool key --window "${win_id}" "Up"
+	sleep "${TIME}"
+	xdotool key --window "${win_id}" "Up"
+	sleep "${TIME}"
+	xdotool key --window "${win_id}" "BackSpace"
+	sleep "${TIME}"
 
-    # Set color mode as black and white
-    xdotool key --repeat 4 --delay "${TIME}" "Tab"
-    sleep "${TIME}"
-    xdotool key --window "${win_id}" "Page_Down"
-    sleep "${TIME}"
-    xdotool key --repeat 2 --delay "${TIME}" "Return"
-    sleep "${TIME}"
+	# Set color mode as black and white
+	xdotool key --repeat 4 --delay "${TIME}" "Tab"
+	sleep "${TIME}"
+	xdotool key --window "${win_id}" "Page_Down"
+	sleep "${TIME}"
+	xdotool key --repeat 2 --delay "${TIME}" "Return"
+	sleep "${TIME}"
 
 # read
 
-    # Plot all pages
-    xdotool key --repeat 11 --delay "${TIME}" "Tab"
-    sleep "${TIME}"
-    xdotool key --window "${win_id}" "Return"
-    sleep ${PLOT_TIME}
+	# Plot all pages
+	xdotool key --repeat 11 --delay "${TIME}" "Tab"
+	sleep "${TIME}"
+	xdotool key --window "${win_id}" "Return"
+	sleep ${PLOT_TIME}
 }
 
 main()
 {
-    trap "exit 1" TERM
-    trap forced_exit INT
+	trap "exit 1" TERM
+	trap forced_exit INT
 
-    if [[ "$(get_disaply_server)" != "x11" ]]; then
-        echo "Error: plot_kicad_sch works only on x11, current display server is $(get_disaply_server)"
-        exit 1
-    fi
+	if [[ "$(get_disaply_server)" != "x11" ]]; then
+		echo "Error: plot_kicad_sch works only on x11, current display server is $(get_disaply_server)"
+		exit 1
+	fi
 
-    local schematic_file_path="${1}"
-    local output_dir_path="${2}"
+	local schematic_file_path="${1}"
+	local output_dir_path="${2}"
 
-    file_name=$(basename -- "${schematic_file_path}")
-    project_name="${file_name%.*}"
+	file_name=$(basename -- "${schematic_file_path}")
+	project_name="${file_name%.*}"
 
-    if [[ ! -f "${schematic_file_path}" ]]; then
-        echo "Missing .kicad_sch file"
-        exit 1
-    fi
+	if [[ ! -f "${schematic_file_path}" ]]; then
+		echo "Missing .kicad_sch file"
+		exit 1
+	fi
 
-    if [[ "${#}" -lt 2 ]]; then
-        output_dir_path="."
-    else
-        output_dir_path="${2}"
-        if [[ ! -d "${output_dir_path}" ]]; then
-            echo "Error: \"${output_dir_path}\" does not exist"
-            exit 1
-        fi
-    fi
+	if [[ "${#}" -lt 2 ]]; then
+		output_dir_path="."
+	else
+		output_dir_path="${2}"
+		if [[ ! -d "${output_dir_path}" ]]; then
+			echo "Error: \"${output_dir_path}\" does not exist"
+			exit 1
+		fi
+	fi
 
-    echo -e "\nSchematic_path = ${schematic_file_path}"
-    echo -e "   Output_path = ${output_dir_path}"
+	echo -e "\nSchematic_path = ${schematic_file_path}"
+	echo -e "   Output_path = ${output_dir_path}"
 
-    local temp_dir="sch"
-    local output_temp_dir_path="${output_dir_path}/${temp_dir}"
-    mkdir -p "${output_temp_dir_path}" &> /dev/null
+	local temp_dir="sch"
+	local output_temp_dir_path="${output_dir_path}/${temp_dir}"
+	mkdir -p "${output_temp_dir_path}" &> /dev/null
 
-    launch_eeschema "${schematic_file_path}" &> /dev/null
-    # echo -e "\n   eeschema_pid = ${EESCHEMA_PID}"
-    # echo -e "main_window_ids = ${EESCHEMA_WIDS[@]}"
-    # echo -e " main_window_id = ${EESCHEMA_WID}"
+	launch_eeschema "${schematic_file_path}" &> /dev/null
+	# echo -e "\n   eeschema_pid = ${EESCHEMA_PID}"
+	# echo -e "main_window_ids = ${EESCHEMA_WIDS[@]}"
+	# echo -e " main_window_id = ${EESCHEMA_WID}"
 
-    # debug_eeschema_popups
-    treat_initial_popups "${project_name}"
+	# debug_eeschema_popups
+	treat_initial_popups "${project_name}"
 
-    launch_plot_window "${EESCHEMA_WID}" 2> /dev/null
-    configure_and_plot "${EESCHEMA_WID}" "${output_temp_dir_path}" 2> /dev/null
+	launch_plot_window "${EESCHEMA_WID}" 2> /dev/null
+	configure_and_plot "${EESCHEMA_WID}" "${output_temp_dir_path}" 2> /dev/null
 
-    kill -9 "${EESCHEMA_PID}" &> /dev/null
+	kill -9 "${EESCHEMA_PID}" &> /dev/null
 
-    # Organize generated files for KiRI
-    svg_file_paths=$(find "${output_temp_dir_path}" -name "*.svg")
+	# Organize generated files for KiRI
+	svg_file_paths=$(find "${output_temp_dir_path}" -name "*.svg")
 
-    IFS=$'\n'
-    for svg_file in "${svg_file_paths}"; do
-        new_file=$(echo "${svg_file}" | sed "s|${temp_dir}/|sch-|g" )
-        echo "- Exporting: ${new_file}"
-        mv "${svg_file}" "${new_file}" 2> /dev/null
-    done
+	IFS=$'\n'
+	for svg_file in "${svg_file_paths}"; do
+		new_file=$(echo "${svg_file}" | sed "s|${temp_dir}/|sch-|g" )
+		echo "- Exporting: ${new_file}"
+		mv "${svg_file}" "${new_file}" 2> /dev/null
+	done
 
-    rm -rf "${temp_dir}"
+	rm -rf "${temp_dir}"
 
 }
 
