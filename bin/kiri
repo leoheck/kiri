@@ -1265,29 +1265,26 @@ generate_schematic_artifacts()
 			local color_scheme="-c ${removed_color}:${added_color}:${unchanged_color}:${background_color} ${commit_hash_aux_1} ${commit_hash_aux_2}"
 
 			if [[ "${KICAD_PROJ_NESTED_PATH}" != "." ]]; then
-				relative_path="--relative=${KICAD_PROJ_NESTED_PATH}"
+				relative_path="-r ${KICAD_PROJ_NESTED_PATH}"
 			fi
 
 			if [[ ! ${SKIP_CACHE_LIB} == 1 ]]; then
 				# TODO: kicad_cache_lib_1 and kicad_cache_lib_2 may differ
-				if [[ -n "${kicad_cache_lib_1}" ]]; then
-					cache_lib="-lib=${kicad_cache_lib_1}"
+				if [[ -f "${kicad_cache_lib_1}" ]]; then
+					cache_lib="-l ${kicad_cache_lib_1}"
 				else
-					if [[ -n ${kicad_cache_lib_2} ]]; then
-						cache_lib="-lib=${kicad_cache_lib_2}"
+					if [[ -f "${kicad_cache_lib_2}" ]]; then
+						cache_lib="-l ${kicad_cache_lib_2}"
 					fi
 				fi
 			fi
-
-			# Configure git-imagediff used by plotgitsch
-			export IMGDIFF_SVG1_DIR_PATH="${OUTPUT_DIR_PATH}/${commit_hash_1}"
-			export IMGDIFF_SVG2_DIR_PATH="${OUTPUT_DIR_PATH}/${commit_hash_2}"
 
 			cmd="plotgitsch --keep --allow_missing ${relative_path} ${cache_lib} ${color_scheme} ${command_end}"
 			if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
 				echo -e "   ${LYE}${cmd}${RCO}" | fmt -u -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
 			fi
 			if [[ "${DRY_RUN}" == "0" ]]; then
+				# Configure git-imagediff used by plotgitsch
 				export IMGDIFF_SVG1_DIR_PATH="${OUTPUT_DIR_PATH}/${commit_hash_1}"
 				export IMGDIFF_SVG2_DIR_PATH="${OUTPUT_DIR_PATH}/${commit_hash_2}"
 				eval "${cmd}" | sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
