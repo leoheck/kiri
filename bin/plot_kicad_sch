@@ -110,9 +110,7 @@ treat_initial_popups()
 			# ${project_name} [${project_name}${}/] — Schematic Editor)
 			*)
 				echo "[${win_id}] Title: \"${win_title}\""
-
 		esac
-
 	done
 }
 
