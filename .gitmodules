@@ -2,6 +2,6 @@
 	path = submodules/plotkicadsch
 	url = https://github.com/jnavila/plotkicadsch.git
 	branch = master
-[submodule "submodules/KiCad-Diff"]
+[submodule "KiCad-Diff"]
 	path = submodules/KiCad-Diff
 	url = https://github.com/leoheck/KiCad-Diff/
