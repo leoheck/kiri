@@ -321,80 +321,6 @@ insert_layers_html()
 	rm -rf .script.sed
 }
 
-# generate_schematic_artifacts_gui_sch2svg()
-# {
-# 	commit_hash_1=${1}
-# 	commit_hash_2=${2}
-
-# 	sch_page_names=$(parse_schematic_pages "${KICAD_PROJ_NESTED_PATH}/${kicad_sch}" | cut -d"|" -f2 | sed "s/\r$//g")
-
-# 	kicad_sch=$(echo "${sch_page_names}" | cut -d" " -f1).${kicad_sch_extension}
-
-# 	if [[ ! -f "${OUTPUT_DIR_PATH}/${commit_hash_1}/${kicad_sch}" ]]; then
-# 		mkdir -p "${OUTPUT_DIR_PATH}/${commit_hash_1}"
-
-# 		# Export main schematic page from each version
-# 		if [[ ${commit_hash_1} == "local" ]]; then
-# 			cp "${KICAD_PROJ_NESTED_PATH}/${kicad_sch}" "${OUTPUT_DIR_PATH}/${commit_hash_1}/${kicad_sch}"
-# 			cp "${KICAD_PROJ_NESTED_PATH}/board-cache.lib" "${OUTPUT_DIR_PATH}/${commit_hash_1}/board-cache.lib"
-# 		else
-# 			git show "${commit_hash_1}:${KICAD_PROJ_NESTED_PATH}/${kicad_sch}" > "${OUTPUT_DIR_PATH}/${commit_hash_1}/${kicad_sch}"
-# 			git show "${commit_hash_1}:${KICAD_PROJ_NESTED_PATH}/board-cache.lib" > "${OUTPUT_DIR_PATH}/${commit_hash_1}/board-cache.lib"
-# 		fi
-
-# 		cmd="sch2svg \"${OUTPUT_DIR_PATH}/${commit_hash_1}/${kicad_sch}\" \"${OUTPUT_DIR_PATH}/${commit_hash_1}/\""
-# 		if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_KIDIFF}" = "1" ]]; then
-# 			echo -e "   ${LGR}${cmd}${RCO}"
-# 		fi
-# 		if [[ "${DRY_RUN}" == "0" ]]; then
-# 			eval "${cmd}"
-# 			ret=$?
-# 			if [[ "${VERBOSE}" == "1" ]]; then
-# 				if [[ "${ret}" -gt "0" ]]; then
-# 					echo -e "${LRE}${BTE}   Status: ${ret}${RCO}"
-# 				fi
-# 			fi
-# 		fi
-# 		# if [[ ${ret} == 0 ]]; then
-# 			cd "${OUTPUT_DIR_PATH}/${commit_hash_1}" || exit
-# 			rename "s/^/sch-/g" ./*.svg
-# 			cd - || exit
-# 		# fi
-# 	fi
-
-# 	if [[ ! -f "${OUTPUT_DIR_PATH}/${commit_hash_2}/${kicad_sch}" ]]; then
-# 		mkdir -p "${OUTPUT_DIR_PATH}/${commit_hash_2}"
-
-# 		# Export main schematic page from each version
-# 		if [[ ${commit_hash_2} == "local" ]]; then
-# 			cp "${KICAD_PROJ_NESTED_PATH}/${kicad_sch}" "${OUTPUT_DIR_PATH}/${commit_hash_2}/${kicad_sch}"
-# 			cp "${KICAD_PROJ_NESTED_PATH}/board-cache.lib" "${OUTPUT_DIR_PATH}/${commit_hash_2}/board-cache.lib"
-# 		else
-# 			git show "${commit_hash_2}:${KICAD_PROJ_NESTED_PATH}/${kicad_sch}" > "${OUTPUT_DIR_PATH}/${commit_hash_2}/${kicad_sch}"
-# 			git show "${commit_hash_2}:${KICAD_PROJ_NESTED_PATH}/board-cache.lib" > "${OUTPUT_DIR_PATH}/${commit_hash_2}/board-cache.lib"
-# 		fi
-
-# 		cmd="sch2svg \"${OUTPUT_DIR_PATH}/${commit_hash_2}/${kicad_sch}\" \"${OUTPUT_DIR_PATH}/${commit_hash_1}/\""
-# 		if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_KIDIFF}" = "1" ]]; then
-# 			echo -e "   ${LGR}${cmd}${RCO}"
-# 		fi
-# 		if [[ "${DRY_RUN}" == "0" ]]; then
-# 			eval "${cmd}"
-# 			ret=$?
-# 			if [[ "${VERBOSE}" == "1" ]]; then
-# 				if [[ "${ret}" -gt "0" ]]; then
-# 					echo -e "${LRE}${BTE}   Status: ${ret}${RCO}"
-# 				fi
-# 			fi
-# 		fi
-# 		# if [[ ${ret} == 0 ]]; then
-# 			cd "${OUTPUT_DIR_PATH}/${commit_hash_2}" || exit
-# 			rename "s/^/sch-/g" ./*.svg
-# 			cd - || exit
-# 		# fi
-# 	fi
-# }
-
 # ==========================================================================================
 # ==========================================================================================
 # ==========================================================================================
@@ -1239,10 +1165,14 @@ manual_plot_using_plotkicadsch()
 		command_end=""
 	fi
 
+	cd "${OUTPUT_DIR_PATH}/${commit_hash}/" &> /dev/null || exit
+
 	if [[ "$(get_file_extension "${kicad_sch}")" == "kicad_sch" ]]; then
-		echo -e "   ${LMA}PLOTKICADSCH: Skipping ${commit_hash}, plotgitsch cannot plot \"${kicad_sch}\" yet${RCO}"
+		echo -e "   ${LMA}TESTING: Plotting with xdotool ${commit_hash}${RCO}"
+		plot_kicad_sch ${kicad_sch}
+		# echo -e "   ${LMA}PLOTKICADSCH: Skipping ${commit_hash}, plotgitsch cannot plot \"${kicad_sch}\" yet${RCO}"
+
 	else
-		cd "${OUTPUT_DIR_PATH}/${commit_hash}/" &> /dev/null || exit
 		if [[ -f "${kicad_sch}" ]]; then
 
 			if [[ ! ${SKIP_CACHE_LIB} == 1 ]]; then
@@ -1269,8 +1199,9 @@ manual_plot_using_plotkicadsch()
 				fi
 			fi
 		fi
-		cd - &> /dev/null || exit
 	fi
+
+	cd - &> /dev/null || exit
 }
 
 generate_schematic_artifacts()
