@@ -64,7 +64,7 @@ main()
 	process_svg 1 "${svg_file_path_1}" "${IMGDIFF_SVG1_DIR_PATH}"
 
 	# Sometimes the second parameter is missing
-	if [[ "${#}" -gt 2 ]]; then
+	if [[ "${#}" -ge 2 ]]; then
 		local svg_file_path_2="${2}"
 		process_svg 2 "${svg_file_path_2}" "${IMGDIFF_SVG2_DIR_PATH}"
 	fi
