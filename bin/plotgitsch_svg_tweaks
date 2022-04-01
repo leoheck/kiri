@@ -1,8 +1,8 @@
 #!/bin/bash
 
-svg="$1"
+# Some routines to improve svg files exported from plotgitsch
 
-sed_()
+sed()
 {
 	case ${OSTYPE} in
 		darwin*)
@@ -14,26 +14,26 @@ sed_()
 	esac
 }
 
-# Fix a bug with plotgitsh that adds a bunch of <0x00> charactes in the svg
-sed -i 's/\x0//g' "${svg}" &> /dev/null
+main()
+{
+	svg_path="${1}"
 
-# Background has to be transparent
-sed -i 's/fill="#FFFFFF"/fill="#FFFFFF00"/g' "${svg}" &> /dev/null
-sed -i 's/fill="#222222"/fill="#22222200"/g' "${svg}" &> /dev/null
+	# Fix a bug with plotgitsh that adds a bunch of <0x00> charactes in the svg
+	sed -i 's/\x0//g' "${svg_path}" &> /dev/null
 
-# Schematic elements have to be black
-sed -i 's/fill="#FF0000"/fill="#000000FF"/g' "${svg}" &> /dev/null
-sed -i 's/fill="#00FF00"/fill="#000000FF"/g' "${svg}" &> /dev/null
-sed -i 's/stroke="#800000"/stroke="#000000FF"/g' "${svg}" &> /dev/null
+	# Background has to be transparent
+	sed -i 's/fill="#FFFFFF"/fill="#FFFFFF00"/g' "${svg_path}" &> /dev/null
+	sed -i 's/fill="#222222"/fill="#22222200"/g' "${svg_path}" &> /dev/null
 
-rsvg-convert -a -w 500 -f svg "${svg}" > .tmp.svg
+	# Schematic elements have to be black
+	sed -i 's/fill="#FF0000"/fill="#000000FF"/g' "${svg_path}" &> /dev/null
+	sed -i 's/fill="#00FF00"/fill="#000000FF"/g' "${svg_path}" &> /dev/null
 
-if [[ -f .tmp.svg ]]; then
-	mv -f .tmp.svg "${svg}" 2> /dev/null
-fi
+	# Stroke
+	sed -i 's/stroke="#800000"/stroke="#000000FF"/g' "${svg_path}" &> /dev/null
 
-if [ ! -s "${svg}" ]; then
-	rm -rf .tmp.svg 2> /dev/null
-	rm -rf "${svg}" 2> /dev/null
-fi
+	cp -f "${svg_path}" "${svg_path}.orig.svg"
+	rsvg-convert -a -w 500 -f svg "${svg_path}.orig.svg" > "${svg_path}"
+}
 
+main "${@}"
