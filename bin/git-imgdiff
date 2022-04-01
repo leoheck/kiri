@@ -56,6 +56,13 @@ process_svg()
 		echo "File ${new_svg_path} is empty"
 		rm -rf "${new_svg_path}" 2> /dev/null
 	fi
+
+    # Image teaks
+    svg_file_paths=$(find "${new_svg_path}" -name "sch-*.svg")
+    IFS=$'\n'
+    for svg_file in "${svg_file_paths}"; do
+        plotgitsch_svg_tweaks "${svg_file}"
+    done
 }
 
 main()
