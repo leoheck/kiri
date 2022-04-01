@@ -24,8 +24,8 @@
 #   Command-line automation tool - daemon
 
 
-readonly TIME=0.1
-readonly PLOT_TIME=1
+readonly TIME=0.01
+readonly PLOT_TIME=0.5
 
 forced_exit()
 {
@@ -158,11 +158,13 @@ configure_and_plot()
     sleep "${TIME}"
     xdotool key --window "${win_id}" "Page_Down"
     sleep "${TIME}"
-    xdotool key --window "${win_id}" "Return"
+    xdotool key --repeat 2 --delay "${TIME}" "Return"
     sleep "${TIME}"
 
+# read
+
     # Plot all pages
-    xdotool key --repeat 13 --delay "${TIME}" "Tab"
+    xdotool key --repeat 11 --delay "${TIME}" "Tab"
     sleep "${TIME}"
     xdotool key --window "${win_id}" "Return"
     sleep ${PLOT_TIME}
