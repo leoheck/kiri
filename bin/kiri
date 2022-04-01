@@ -1168,9 +1168,20 @@ manual_plot_using_plotkicadsch()
 	cd "${OUTPUT_DIR_PATH}/${commit_hash}/" &> /dev/null || exit
 
 	if [[ "$(get_file_extension "${kicad_sch}")" == "kicad_sch" ]]; then
-		echo -e "   ${LMA}TESTING: Plotting with xdotool ${commit_hash}${RCO}"
-		plot_kicad_sch ${kicad_sch}
-		# echo -e "   ${LMA}PLOTKICADSCH: Skipping ${commit_hash}, plotgitsch cannot plot \"${kicad_sch}\" yet${RCO}"
+		cmd="plot_kicad_sch ${kicad_sch} ${command_end}"
+		if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
+			# echo -e "\n   ${LMA}PLOTKICADSCH: Skipping ${commit_hash}, plotgitsch cannot plot \"${kicad_sch}\" yet${RCO}"
+			echo -e "\n   ${LMA}[TESTING] Plotting with xdotool ${commit_hash}${RCO}"
+			echo -e "   ${LYE}${cmd}${RCO}" | fmt -u -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
+		fi
+		eval "${cmd}" | sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
+		ret=${?}
+		if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
+			echo
+			if [[ "${ret}" -gt "0" ]]; then
+				echo -e "${LRE}${BTE}   Status: ${ret}${RCO}"
+			fi
+		fi
 
 	else
 		if [[ -f "${kicad_sch}" ]]; then
@@ -1187,8 +1198,15 @@ manual_plot_using_plotkicadsch()
 				echo -e "   PLOTKICADSCH: Ploting ${commit_hash}, ${OUTPUT_DIR_PATH}/${commit_hash}/"
 				echo -e "   ${LYE}${cmd}${RCO}" | fmt -u -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
 				eval "${cmd}" | sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
+				ret=${?}
+				if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
+					echo
+					if [[ "${ret}" -gt "0" ]]; then
+						echo -e "${LRE}${BTE}   Status: ${ret}${RCO}"
+					fi
+				fi
 
-				# TODO: Needs tests, since it may not be generating other pages, 
+				# TODO: Needs tests, since it may not be generating other pages,
 				# or they may need to have names improved
 				local board_name=$(get_file_without_extention ${kicad_sch})
 				if [[ -f "${board_name}.svg" ]]; then
@@ -1273,11 +1291,9 @@ generate_schematic_artifacts()
 				export IMGDIFF_SVG1_DIR_PATH="${OUTPUT_DIR_PATH}/${commit_hash_1}"
 				export IMGDIFF_SVG2_DIR_PATH="${OUTPUT_DIR_PATH}/${commit_hash_2}"
 				eval "${cmd}" | sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
+				ret=${?}
 				if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
 					echo
-				fi
-				ret=$?
-				if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
 					if [[ "${ret}" -gt "0" ]]; then
 						echo -e "${LRE}${BTE}   Status: ${ret}${RCO}"
 					fi
