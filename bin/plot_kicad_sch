@@ -29,8 +29,8 @@ readonly PLOT_TIME=1
 
 forced_exit()
 {
-    kill -9 ${XVFB_PID} &> /dev/null
-    kill -9 ${EESCHEMA_PID} &> /dev/null
+    kill -9 "${XVFB_PID}" &> /dev/null
+    kill -9 "${EESCHEMA_PID}" &> /dev/null
     exit 1
 }
 
@@ -38,7 +38,7 @@ get_disaply_server()
 {
     # Check the display server in use (x11 or wayland)
     # loginctl show-session $(awk '/tty/ {print $1}' <(loginctl)) -p Type | awk -F= '{print $2}'
-    echo ${XDG_SESSION_TYPE}
+    echo "${XDG_SESSION_TYPE}"
 }
 
 launch_eeschema()
@@ -71,9 +71,10 @@ launch_eeschema()
 
 debug_eeschema_popups()
 {
-    for win_id in ${EESCHEMA_WIDS}; do
+    IFS=$'\n'
+    for win_id in "${EESCHEMA_WIDS[@]}"; do
         # xwininfo -tree -id ${id}
-        win_title=$(xwininfo -tree -id ${win_id} | grep "xwininfo:" | cut -d" " -f5- | sed "s/\"//g")
+        win_title=$(xwininfo -tree -id "${win_id}" | grep "xwininfo:" | cut -d" " -f5- | sed "s/\"//g")
         echo "- [${win_id}] Title: \"${win_title}\""
     done
 }
@@ -84,26 +85,27 @@ dissmiss_cache_lib_warning()
     local win_id="${1}"
 
     # Dismiss warning about missing -cache.lib file
-    xdotool key --window ${wid} Tab
-    sleep ${TIME}
-    xdotool key --window ${wid} Tab
-    sleep ${TIME}
-    xdotool key --window ${wid} Return
-    sleep ${TIME}
+    xdotool key --window "${win_id}" Tab
+    sleep "${TIME}"
+    xdotool key --window "${win_id}" Tab
+    sleep "${TIME}"
+    xdotool key --window "${win_id}" Return
+    sleep "${TIME}"
 }
 
 treat_initial_popups()
 {
     local project_name="${1}"
 
+    IFS=$'\n'
     for win_id in ${EESCHEMA_WIDS}; do
 
-        # xwininfo -tree -id ${win_id}
-        win_title=$(xwininfo -tree -id ${win_id} | grep "xwininfo:" | cut -d" " -f5- | sed "s/\"//g")
+        # xwininfo -tree -id "${win_id}"
+        win_title=$(xwininfo -tree -id "${win_id}" | grep "xwininfo:" | cut -d" " -f5- | sed "s/\"//g")
 
         case ${win_title} in
             Warning)
-                dissmiss_cache_lib_warning ${win_id}
+                dissmiss_cache_lib_warning "${win_id}"
                 ;;
             # ${project_name} [${project_name}${}/] — Schematic Editor)
             *)
@@ -120,14 +122,14 @@ launch_plot_window()
 
     local win_id="${1}"
 
-    xdotool key --window ${win_id} "alt+f"
-    sleep ${TIME}
-    xdotool key --window ${win_id} "Up"
-    sleep ${TIME}
-    xdotool key --window ${win_id} "Up"
-    sleep ${TIME}
-    xdotool key --window ${win_id} "Return"
-    sleep ${TIME}
+    xdotool key --window "${win_id}" "alt+f"
+    sleep "${TIME}"
+    xdotool key --window "${win_id}" "Up"
+    sleep "${TIME}"
+    xdotool key --window "${win_id}" "Up"
+    sleep "${TIME}"
+    xdotool key --window "${win_id}" "Return"
+    sleep "${TIME}"
 }
 
 configure_and_plot()
@@ -136,37 +138,37 @@ configure_and_plot()
     local output_dir_path="${2}"
 
     # Set output directory
-    xdotool type --window ${win_id} --delay 1 "${output_dir_path}"
-    sleep ${TIME}
+    xdotool type --window "${win_id}" --delay 1 "${output_dir_path}"
+    sleep "${TIME}"
 
     # Change ouput format to svg
-    xdotool key --window ${win_id} "Tab"
-    sleep ${TIME}
-    xdotool key --window ${win_id} "Tab"
-    sleep ${TIME}
-    xdotool key --window ${win_id} "Up"
-    sleep ${TIME}
-    xdotool key --window ${win_id} "Up"
-    sleep ${TIME}
-    xdotool key --window ${win_id} "BackSpace"
-    sleep ${TIME}
+    xdotool key --window "${win_id}" "Tab"
+    sleep "${TIME}"
+    xdotool key --window "${win_id}" "Tab"
+    sleep "${TIME}"
+    xdotool key --window "${win_id}" "Up"
+    sleep "${TIME}"
+    xdotool key --window "${win_id}" "Up"
+    sleep "${TIME}"
+    xdotool key --window "${win_id}" "BackSpace"
+    sleep "${TIME}"
 
     # Set color mode as black and white
-    xdotool key --repeat 4 --delay {TIME} "Tab"
-    sleep ${TIME}
-    xdotool key --window ${win_id} "Return"
-    sleep ${TIME}
-    xdotool key --window ${win_id} "Page_Down"
-    sleep ${TIME}
-    xdotool key --window ${win_id} "Page_Down"
-    sleep ${TIME}
-    xdotool key --window ${win_id} "Return"
-    sleep ${TIME}
+    xdotool key --repeat 4 --delay "${TIME}" "Tab"
+    sleep "${TIME}"
+    xdotool key --window "${win_id}" "Return"
+    sleep "${TIME}"
+    xdotool key --window "${win_id}" "Page_Down"
+    sleep "${TIME}"
+    xdotool key --window "${win_id}" "Page_Down"
+    sleep "${TIME}"
+    xdotool key --window "${win_id}" "Return"
+    sleep "${TIME}"
 
     # Plot all pages
-    xdotool key --repeat 11 --delay {TIME} "Tab"
-    sleep ${TIME}
-    xdotool key --window ${win_id} "Return"
+    xdotool key --repeat 11 --delay "${TIME}" "Tab"
+    sleep "${TIME}"
+    xdotool key --window "${win_id}" "Return"
     sleep ${PLOT_TIME}
 }
 
@@ -182,6 +184,9 @@ main()
 
     local schematic_file_path="${1}"
     local output_dir_path="${2}"
+
+    file_name=$(basename -- "${schematic_file_path}")
+    project_name="${file_name%.*}"
 
     if [[ ! -f "${schematic_file_path}" ]]; then
         echo "Missing .kicad_sch file"
@@ -203,20 +208,20 @@ main()
 
     local temp_dir="sch"
     local output_temp_dir_path="${output_dir_path}/${temp_dir}"
-    mkdir -p "${output_temp_dir_path}" & > /dev/null
+    mkdir -p "${output_temp_dir_path}" &> /dev/null
 
     launch_eeschema "${schematic_file_path}" &> /dev/null
     # echo -e "\n   eeschema_pid = ${EESCHEMA_PID}"
-    # echo -e "main_window_ids = ${EESCHEMA_WIDS}"
-    # echo -e " main_window_id = ${EESCHEMA_WIDS}"
+    # echo -e "main_window_ids = ${EESCHEMA_WIDS[@]}"
+    # echo -e " main_window_id = ${EESCHEMA_WID}"
 
     # debug_eeschema_popups
-    treat_initial_popups
+    treat_initial_popups "${project_name}"
 
-    launch_plot_window ${EESCHEMA_WID} 2> /dev/null
-    configure_and_plot ${EESCHEMA_WID} "${output_temp_dir_path}" 2> /dev/null
+    launch_plot_window "${EESCHEMA_WID}" 2> /dev/null
+    configure_and_plot "${EESCHEMA_WID}" "${output_temp_dir_path}" 2> /dev/null
 
-    kill -9 ${EESCHEMA_PID}  &> /dev/null
+    kill -9 "${EESCHEMA_PID}" &> /dev/null
 
     # Organize generated files for KiRI
     svg_file_paths=$(find "${output_temp_dir_path}" -name "*.svg")
