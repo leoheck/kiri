@@ -156,17 +156,13 @@ configure_and_plot()
     # Set color mode as black and white
     xdotool key --repeat 4 --delay "${TIME}" "Tab"
     sleep "${TIME}"
-    xdotool key --window "${win_id}" "Return"
-    sleep "${TIME}"
-    xdotool key --window "${win_id}" "Page_Down"
-    sleep "${TIME}"
     xdotool key --window "${win_id}" "Page_Down"
     sleep "${TIME}"
     xdotool key --window "${win_id}" "Return"
     sleep "${TIME}"
 
     # Plot all pages
-    xdotool key --repeat 11 --delay "${TIME}" "Tab"
+    xdotool key --repeat 13 --delay "${TIME}" "Tab"
     sleep "${TIME}"
     xdotool key --window "${win_id}" "Return"
     sleep ${PLOT_TIME}
