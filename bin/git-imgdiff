@@ -1,26 +1,73 @@
 #!/bin/bash
 
-echo
-echo "KiRI Command: $(basename $0) $@"
+# This script should replace the original "git-imgdiff" that comes with plotgitsch
+# It is used inside the plotgitsch tool so we don't have access to its call
+# Customisaton has happened through environment variables.
 
-a="$1"
-b="$2"
+# Environment variables to change the image paths of the exported images
+# IMGDIFF_SVG1_DIR_PATH
+# IMGDIFF_SVG2_DIR_PATH
 
-if [[ "$2" != "" ]]; then
-	b="$2"
-fi
+readonly removed_color="FF0000"
+readonly added_color="008FFF"
+readonly unchanged_color="FFFFFF"
+readonly background_color="222222"
 
-svg1=$(basename "$a" | sed "s|from_|sch1-|g")
-svg2=$(basename "$b" | sed "s|to_|sch2-|g")
+sed()
+{
+	case ${OSTYPE} in
+		darwin*)
+			gsed "$@"
+			;;
+		*)
+			command sed "$@"
+			;;
+	esac
+}
 
-echo ""
-echo "Creating $(realpath ${svg1})"
-echo "Creating $(realpath ${svg2})"
+process_svg()
+{
+	local id="${1}"
+	local svg_file_path="${2}"
+	local svg_dir_path="${3}"
 
-plotgitsch_svg_tweaks $a 2> /dev/null
-plotgitsch_svg_tweaks $b 2> /dev/null
+	# Improve the original filename a bit
+	case ${id} in
+		1)
+			new_svg_path="$(basename "${svg_file_path}" | sed "s/from_/sch-/g")"
+			;;
+		2)
+			new_svg_path="$(basename "${svg_file_path}" | sed "s/to_/sch-/g")"
+			;;
+	esac
 
-# Rename/move file
-# Sometimes an empty file is being created
-mv -f "$a" "${svg1}" 2> /dev/null
-mv -f "$b" "${svg2}" 2> /dev/null
+	# Exported file name comes from environemnt variables
+	if [[ -n "${svg_dir_path}" ]]; then
+		new_svg_path="${svg_dir_path}/${new_svg_path}"
+	fi
+
+	echo "Creating $(realpath "${new_svg_path}")"
+
+	# Move and rename final svg
+	mv -f "${svg_file_path}" "${new_svg_path}" 2> /dev/null
+
+	# Remove file if it is empty
+	if [ ! -s "${new_svg_path}" ]; then
+		echo "File ${new_svg_path} is empty"
+		rm -rf "${new_svg_path}" 2> /dev/null
+	fi
+}
+
+main()
+{
+	local svg_file_path_1="${1}"
+	process_svg 1 "${svg_file_path_1}" "${IMGDIFF_SVG1_DIR_PATH}"
+
+	# Sometimes the second parameter is missing
+	if [[ "${#}" -gt 2 ]]; then
+		local svg_file_path_2="${2}"
+		process_svg 2 "${svg_file_path_2}" "${IMGDIFF_SVG2_DIR_PATH}"
+	fi
+}
+
+main "${@}"
