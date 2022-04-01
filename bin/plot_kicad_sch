@@ -230,7 +230,6 @@ main()
 	done
 
 	rm -rf "${temp_dir}"
-
 }
 
 main "${@}"
