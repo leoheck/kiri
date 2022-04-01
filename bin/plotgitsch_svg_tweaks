@@ -33,7 +33,8 @@ main()
 	sed -i 's/stroke="#800000"/stroke="#000000FF"/g' "${svg_path}" &> /dev/null
 
 	cp -f "${svg_path}" "${svg_path}.orig.svg"
-	rsvg-convert -a -w 500 -f svg "${svg_path}.orig.svg" > "${svg_path}"
+	rsvg-convert -a -w 1000 -f svg "${svg_path}.orig.svg" -o "${svg_path}" 2>/dev/null
+	rm -rf "${svg_path}.orig.svg"
 }
 
 main "${@}"
