@@ -18,23 +18,26 @@ main()
 {
 	svg_path="${1}"
 
-	# Fix a bug with plotgitsh that adds a bunch of <0x00> charactes in the svg
-	sed -i 's/\x0//g' "${svg_path}" &> /dev/null
+	if [[ -f "${svg_path}" ]]; then
 
-	# Background has to be transparent
-	sed -i 's/fill="#FFFFFF"/fill="#FFFFFF00"/g' "${svg_path}" &> /dev/null
-	sed -i 's/fill="#222222"/fill="#22222200"/g' "${svg_path}" &> /dev/null
+		# Fix a bug with plotgitsh that adds a bunch of <0x00> charactes in the svg
+		sed -i 's/\x0//g' "${svg_path}" &> /dev/null
 
-	# Schematic elements have to be black
-	sed -i 's/fill="#FF0000"/fill="#000000FF"/g' "${svg_path}" &> /dev/null
-	sed -i 's/fill="#00FF00"/fill="#000000FF"/g' "${svg_path}" &> /dev/null
+		# Background has to be transparent
+		sed -i 's/fill="#FFFFFF"/fill="#FFFFFF00"/g' "${svg_path}" &> /dev/null
+		sed -i 's/fill="#222222"/fill="#22222200"/g' "${svg_path}" &> /dev/null
 
-	# Stroke
-	sed -i 's/stroke="#800000"/stroke="#000000FF"/g' "${svg_path}" &> /dev/null
+		# Schematic elements have to be black
+		sed -i 's/fill="#FF0000"/fill="#000000FF"/g' "${svg_path}" &> /dev/null
+		sed -i 's/fill="#00FF00"/fill="#000000FF"/g' "${svg_path}" &> /dev/null
 
-	cp -f "${svg_path}" "${svg_path}.orig.svg"
-	rsvg-convert -a -w 1000 -f svg "${svg_path}.orig.svg" -o "${svg_path}" 2>/dev/null
-	rm -rf "${svg_path}.orig.svg"
+		# Stroke
+		sed -i 's/stroke="#800000"/stroke="#000000FF"/g' "${svg_path}" &> /dev/null
+
+		cp -f "${svg_path}" "${svg_path}.orig.svg"
+		rsvg-convert -a -w 1000 -f svg "${svg_path}.orig.svg" -o "${svg_path}" 2>/dev/null
+		rm -rf "${svg_path}.orig.svg"
+	fi
 }
 
 main "${@}"
