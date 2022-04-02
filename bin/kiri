@@ -358,8 +358,6 @@ export DEBUG_KIDIFF=0
 export DEBUG_PLOTGITSCH=0
 export DRY_RUN=0
 export LAUNCH_BROWSER=1
-export NEWER_COMMIT
-export OLDER_COMMIT
 export PAGE_FRAME=1
 export REMOVE_KIRI_FOLDER=0
 export SELECT_LAST_N_COMMITS
@@ -367,6 +365,10 @@ export SKIP_CACHE_LIB=0
 export START_ON_LAYOUT_VIEW=0
 export START_SERVER=1
 export VERBOSE=0
+export SKIP_KICAD_6=0
+
+export NEWER_COMMIT
+export OLDER_COMMIT
 export WEBSERVER_PORT
 export PLOTGITSCH_MISSING
 export KIDIFF_MISSING
@@ -480,7 +482,8 @@ show_help()
 	     -p|--port PORT   Set webserver port. By default it will try to use an available port.
 
 	     -s|--skip-cache  Skip usage of -chache.lib on plotgitsch
-	     -u|--layout      Start with Layout view selected
+	     -6|--skip-kicad6 Skip ploting Kicad 6 schematics (.kicad.sch)
+	     -u|--layout      Force starting with the Layout view selected
 	     -f|--page-frame  Disable page frame for PCB
 
 	     -d|--output-dir  Change output folder path/name
@@ -694,6 +697,11 @@ command_line_parse()
 
 			-f|--frame)
 				PAGE_FRAME=0
+				shift
+				;;
+
+			-6|--skip-kicad6)
+				SKIP_KICAD_6=1
 				shift
 				;;
 
@@ -1168,7 +1176,7 @@ create_list_of_layers()
 	printf "%s\n" "${layers}" > "${OUTPUT_DIR_PATH}/${commit_hash}/${layers_file}"
 }
 
-manual_plot_using_plotkicadsch()
+manual_schematic_plot()
 {
 	local commit_hash="${1}"
 	local kicad_sch="${2}"
@@ -1183,18 +1191,25 @@ manual_plot_using_plotkicadsch()
 
 	if [[ "$(get_file_extension "${kicad_sch}")" == "kicad_sch" ]]; then
 
-		cmd="plot_kicad_sch ${kicad_sch} ${command_end}"
-		if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
-			echo -e "\n   ${LMA}Plotting ${commit_hash}, ${OUTPUT_DIR_PATH}/${commit_hash}/${RCO}"
-			echo -e "   ${LYE}${cmd}${RCO}" | fmt -u -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
-		fi
-		eval "${cmd}" | sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
-		ret="${PIPESTATUS[0]}"
-		if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
-			if [[ "${ret}" -gt "0" ]]; then
-				echo -e "${LRE}${BTE}   Status: ${ret}${RCO}"
+		if [[ "${SKIP_KICAD_6}" == "0" ]]; then
+
+			cmd="plot_kicad_sch ${kicad_sch} ${command_end}"
+			if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
+				echo -e "\n   ${LMA}Plotting ${commit_hash}, ${OUTPUT_DIR_PATH}/${commit_hash}/${RCO}"
+				echo -e "   ${LYE}${cmd}${RCO}" | fmt -u -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
 			fi
-			echo
+			eval "${cmd}" | sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
+			ret="${PIPESTATUS[0]}"
+			if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
+				if [[ "${ret}" -gt "0" ]]; then
+					echo -e "${LRE}${BTE}   Status: ${ret}${RCO}"
+				fi
+				echo
+			fi
+		else
+
+			echo -e "   ${LBL}Skiping schematic plot for ${commit_hash}"
+
 		fi
 
 	else
@@ -1209,12 +1224,12 @@ manual_plot_using_plotkicadsch()
 				if [[ ! ${SKIP_CACHE_LIB} == 1 ]]; then
 					# TODO: kicad_cache_lib_1 and kicad_cache_lib_2 may differ
 					if [[ -n "${kicad_cache_lib}" ]]; then
-						local cache_lib="-l ${kicad_cache_lib}"
+						local cache_lib_param="-l ${kicad_cache_lib}"
 					fi
 				fi
 
 				if [[ -f "${kicad_cache_lib}" ]]; then
-					cmd="plotkicadsch -f ${kicad_sch_aux} ${cache_lib} -o ${OUTPUT_DIR_PATH}/${commit_hash} 2>&1 ${command_end}"
+					cmd="plotkicadsch -f ${kicad_sch_aux} ${cache_lib_param} -o \"${OUTPUT_DIR_PATH}/${commit_hash}\" 2>&1 ${command_end}"
 					echo -e "   ${LMA}Ploting ${commit_hash}, ${OUTPUT_DIR_PATH}/${commit_hash}/${RCO}"
 					echo -e "   ${LYE}${cmd}${RCO}" | fmt -u -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
 					eval "${cmd}" | sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
@@ -1239,27 +1254,30 @@ manual_plot_using_plotkicadsch()
 
 					else
 
-						echo -e "\n   ${LRE}Plotkicadsch has failed, using GUI instead."
+						if [[ "${SKIP_KICAD_6}" == "0" ]]; then
 
-						# TESTING: Plokicadsch has failed, then usig GUI
-						# IF THIS IS GOOD. Then it is better to organize this function main_if order here to avoid repetition
-						cmd="plot_kicad_sch ${kicad_sch} ${command_end}"
-						ret=${?}
-						if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
-							echo -e "   ${LMA}Plotting ${commit_hash}, ${OUTPUT_DIR_PATH}/${commit_hash}/${RCO}"
-							echo -e "   ${LYE}${cmd}${RCO}" | fmt -u -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
-						fi
-						eval "${cmd}" | sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
-						ret="${?}"
-						if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
-							echo
-							if [[ "${ret}" -gt "0" ]]; then
-								echo -e "${LRE}${BTE}   Status: ${ret}${RCO}"
+							echo -e "\n   ${LRE}Plotkicadsch has failed, using GUI instead."
+
+							# TESTING: Plokicadsch has failed, then usig GUI
+							# IF THIS IS GOOD. Then it is better to organize this function main_if order here to avoid repetition
+							cmd="plot_kicad_sch ${kicad_sch} ${command_end}"
+							ret=${?}
+							if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
+								echo -e "   ${LMA}Plotting ${commit_hash}, ${OUTPUT_DIR_PATH}/${commit_hash}/${RCO}"
+								echo -e "   ${LYE}${cmd}${RCO}" | fmt -u -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
 							fi
-						fi
+							eval "${cmd}" | sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
+							ret="${?}"
+							if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
+								echo
+								if [[ "${ret}" -gt "0" ]]; then
+									echo -e "${LRE}${BTE}   Status: ${ret}${RCO}"
+								fi
+							fi
 
-						# plot_kicad_sch plots everything, then break
-						break
+							# plot_kicad_sch plots everything, then break
+							break
+						fi
 					fi
 				fi
 			done
@@ -1348,9 +1366,9 @@ generate_schematic_artifacts()
 
 			# This is needed only once since it is always the same
 			if [[ "${i}" == "2" ]]; then
-				manual_plot_using_plotkicadsch ${commit_hash_1} "${kicad_sch_1}" "${kicad_cache_lib_1}"
+				manual_schematic_plot ${commit_hash_1} "${kicad_sch_1}" "${kicad_cache_lib_1}"
 			fi
-			manual_plot_using_plotkicadsch ${commit_hash_2} "${kicad_sch_2}" "${kicad_cache_lib_2}"
+			manual_schematic_plot ${commit_hash_2} "${kicad_sch_2}" "${kicad_cache_lib_2}"
 
 		fi
 	fi
