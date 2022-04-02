@@ -1,10 +1,11 @@
 #! /bin/bash
 
 # This tool works with Kicad 6
-# Requires: xdootool
+# Tested on 6.0.4-6f826c9f35~116~ubuntu22.04.1
+# Requires: xdootool, xvfb
 
 readonly TIME=0.1
-readonly PLOT_TIME=2
+readonly PLOT_TIME=1
 
 forced_exit()
 {
@@ -13,11 +14,34 @@ forced_exit()
 	exit 1
 }
 
-get_disaply_server()
+get_current_display_server()
 {
 	# Check the display server in use (x11 or wayland)
 	# loginctl show-session $(awk '/tty/ {print $1}' <(loginctl)) -p Type | awk -F= '{print $2}'
 	echo "${XDG_SESSION_TYPE}"
+}
+
+launch_virtual_display()
+{
+	export n=":0"
+
+	# killall Xvfb &>/dev/null
+	# rm -rf "/tmp/.X${n}-lock"
+	# rm -rf "/tmp/.X${n}-unix/X1"
+	# rm -rf "/tmp/.X${n}*"
+	# rm -rf "/tmp/xvfb-run.*"
+
+	export DISPLAY=":${n}.0"
+	# xdpyinfo -display ${DISPLAY} > /dev/null
+
+	# Xvfb -f ${DISPLAY} -screen 1 1280x800x24 &
+	# Xvfb -f ${DISPLAY} -fbdir /var/tmp 1280x800x24 -dpi 96 &
+	# Xvfb -f ${DISPLAY} -screen 0 640x480x8 -nolisten tcp &
+	# Xvfb -f ${DISPLAY} -screen 0 1024x768x16 -dpi 96 &
+	# Xvfb -f ${DISPLAY} -screen 0 1280x800x24 -ac -dpi 96 +extension RANDR :1 &
+	# export XVFB_PID=${!}
+
+	# echo "xvfb-run"
 }
 
 get_filename()
@@ -29,7 +53,7 @@ get_filename()
 get_window_tile()
 {
 	local win_id="${1}"
-	xwininfo -tree -id "${win_id}" | grep "xwininfo:" | cut -d" " -f5- | sed "s/\"//g"
+	xwininfo -tree -id "${win_id}" 2> /dev/null | grep "xwininfo:" | cut -d" " -f5- | sed "s/\"//g"
 }
 
 launch_eeschema()
@@ -40,22 +64,20 @@ launch_eeschema()
 	export EESCHEMA_PID
 	export EESCHEMA_WIDS
 
-
-	# VIRTUAL DISPLAY (NO VISIBLE OPERATION)
-	# Xvfb ${DISPLAY} &
-	# Xvfb :1 -screen 0 1024x768x16 -dpi 96 &
-	# Xvfb -screen 0 1280x800x24 -ac -dpi 96 +extension RANDR :1 &
-	# export XVFB_PID=$!
-
-	eeschema "${kicad_sch_path}" 2> /dev/null &
+	$(launch_virtual_display) eeschema "${kicad_sch_path}" 2> /dev/null &
 	EESCHEMA_PID=${!}
+
+	# list windows
+	# xwininfo -tree -root
 
 	setxkbmap us
 
-	# Waiting for eeschema to launch
+	# Wait for eeschema to launch the project
 	while [[ "$(is_design_loaded "${kicad_sch_filename}")" -ne "1" ]]; do
 		sleep 0.1
 		EESCHEMA_WIDS=($(xdotool search --onlyvisible --sync --classname "Eeschema" 2> /dev/null))
+		debug_eeschema_popups
+		dismiss_popups
 	done
 
 	export EESCHEMA_WID=${EESCHEMA_WIDS[0]}
@@ -66,7 +88,7 @@ debug_eeschema_popups()
 	IFS=$'\n'
 	for win_id in "${EESCHEMA_WIDS[@]}"; do
 		# xwininfo -tree -id ${id}
-		win_title=$(xwininfo -tree -id "${win_id}" | grep "xwininfo:" | cut -d" " -f5- | sed "s/\"//g")
+		win_title=$(xwininfo -tree -id "${win_id}" 2> /dev/null | grep "xwininfo:" | cut -d" " -f5- | sed "s/\"//g")
 		echo "- [${win_id}] Title: \"${win_title}\""
 	done
 }
@@ -82,40 +104,75 @@ is_design_loaded()
 		win_title=$(get_window_tile "${win_id}")
 
 		case ${win_title} in
-			${project_name}*)
+			*${project_name}*)
 				echo "1"
-				# return 1
 				;;
 			*)
 				echo "0"
-				# return 0
 				;;
 		esac
 	done
 }
 
+dimiss_project_recue_helper_popup()
+{
+	local win_id="${1}"
+	echo "Dismissing: Project Helper Popup (window_id = ${win_id})"
 
-# treat_initial_popups()
-# {
-# 	local project_name="${1}"
+	xdotool key --window "${win_id}" "Escape" &> /dev/null
+	sleep "${TIME}"
+}
 
-# 	IFS=$'\n'
-# 	for win_id in ${EESCHEMA_WIDS}; do
+dimiss_loading_schematic_popup()
+{
+	echo "Dismissing: Loading Schematic Popup (window_id = ${win_id})"
 
-# 		# xwininfo -tree -id "${win_id}"
-# 		win_title=$(xwininfo -tree -id "${win_id}" | grep "xwininfo:" | cut -d" " -f5- | sed "s/\"//g")
+	xdotool key --window "${win_id}" "Escape" &> /dev/null
+	sleep "${TIME}"
+}
 
-# 		case ${win_title} in
-# 			Warning)
-# 				dissmiss_cache_lib_warning "${win_id}"
-# 				;;
-# 			${project_name})
-# 			# *)
-# 				echo "[${win_id}] Title: \"${win_title}\""
-# 				;;
-# 		esac
-# 	done
-# }
+dimiss_generic_error_popup()
+{
+	echo "Dismissing: Generic Error (window_id = ${win_id})"
+
+	xdotool key --window "${win_id}" "Escape" &> /dev/null
+	sleep "${TIME}"
+}
+
+dissmiss_cache_lib_warning()
+{
+	echo "Dismissing: Cache Lib Popup (window_id = ${win_id})"
+
+	xdotool key --window "${win_id}" "Escape" &> /dev/null
+	sleep "${TIME}"
+}
+
+dismiss_popups()
+{
+	IFS=$'\n'
+	for win_id in "${EESCHEMA_WIDS[@]}"; do
+
+		win_title=$(xwininfo -tree -id "${win_id}" 2>/dev/null | grep "xwininfo:" | cut -d" " -f5- | sed "s/\"//g")
+
+		case "${win_title}" in
+			"Project Rescue Helper")
+				dimiss_project_recue_helper_popup "${win_id}"
+				;;
+
+			"Loading Schematic")
+				dimiss_loading_schematic_popup "${win_id}"
+				;;
+
+			"Error")
+				dimiss_generic_error_popup "${win_id}"
+				;;
+
+			Warning*)
+				dissmiss_cache_lib_warning "${win_id}"
+				;;
+		esac
+	done
+}
 
 launch_plot_window()
 {
@@ -174,7 +231,7 @@ main()
 	trap "exit 1" TERM
 	trap forced_exit INT
 
-	if [[ "$(get_disaply_server)" != "x11" ]] && [[ "$(get_disaply_server)" != "wayland" ]]; then
+	if [[ "$(get_current_display_server)" != "x11" ]] && [[ "$(get_current_display_server)" != "wayland" ]]; then
 		echo "Error: Supported display servers: x11, wayland"
 		exit 1
 	fi
@@ -200,7 +257,7 @@ main()
 		fi
 	fi
 
-	echo -e "\nDisplay server = $(get_disaply_server)"
+	echo -e "\nDisplay server = $(get_current_display_server)"
 	echo -e "Schematic_path = ${kicad_sch_path}"
 	echo -e "   Output_path = ${output_dir_path}"
 
@@ -213,9 +270,6 @@ main()
 	# echo -e "main_window_ids = ${EESCHEMA_WIDS[@]}"
 	# echo -e " main_window_id = ${EESCHEMA_WID}"
 
-	# debug_eeschema_popups
-	# treat_initial_popups "${project_name}"
-
 	launch_plot_window "${EESCHEMA_WID}" 2> /dev/null
 	configure_and_plot "${EESCHEMA_WID}" "${output_temp_dir_path}" 2> /dev/null
 
@@ -224,14 +278,16 @@ main()
 	# Organize generated files for KiRI
 	svg_file_paths=$(find "${output_temp_dir_path}" -name "*.svg")
 
-	IFS=$'\n'
-	for svg_file in "${svg_file_paths}"; do
-		new_file=$(echo "${svg_file}" | sed "s|${temp_dir}/|sch-|g" )
-		echo "      Ploting = ${new_file}"
-		mv "${svg_file}" "${new_file}" 2> /dev/null
-	done
+	if [[ -n ${svg_file_paths} ]]; then
+		IFS=$'\n'
+		for svg_file in "${svg_file_paths}"; do
+			new_file=$(echo "${svg_file}" | sed "s|${temp_dir}/|sch-|g" )
+			echo "      Ploting = ${new_file}"
+			mv "${svg_file}" "${new_file}" 2> /dev/null
+		done
+		echo
+	fi
 
-	echo
 	rm -rf "${temp_dir}"
 }
 
