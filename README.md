@@ -120,10 +120,16 @@ Layout view, assets generated using Kicad-Diff
     <img src="misc/kiri_pcb.png" width="820" alt="Layout View">
 </p>
 
-Demo on Youtube (old version)
+Comparing the new `.kicad_sch` file with an old `.sch`
 
 <p align="center">
-<a href="http://www.youtube.com/watch?v=PMC0USSsbDE" target="_blank">
+    <img src="misc/kiri_ach_v6.png" width="820" alt="Layout View">
+</p>
+
+Demo on Youtube
+
+<p align="center">
+<a href="https://youtu.be/zpssGsvCgi0" target="_blank">
     <img src="https://img.youtube.com/vi/PMC0USSsbDE/maxresdefault.jpg" alt="Kicad Revision Inspector Demo" width="820">
 </a>
 </p>
