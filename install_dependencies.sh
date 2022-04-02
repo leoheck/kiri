@@ -109,7 +109,7 @@ macos_install_brew_modules()
 }
 
 # =============================================
-# OS indepentend stuff
+# OS independent stuff
 # =============================================
 
 install_python_modules()
@@ -161,7 +161,7 @@ main()
 			;;
 
 		*)
-			echo "Installer does not hangle \"${operating_system}\" yet."
+			echo "Installer does not handle \"${operating_system}\" yet."
 			exit 1
 			;;
 	esac
