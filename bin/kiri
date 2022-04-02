@@ -885,7 +885,8 @@ get_git_commits()
 
 # TODO: ADAPT FOR MACOS
 # THIS MAY NOTE WORK THERE
-full_user_name() {
+full_user_name()
+{
 	getent passwd "${USER:-Local User}" | cut -d: -f5 | cut -d, -f1;
 }
 
