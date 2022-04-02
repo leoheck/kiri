@@ -1,4 +1,4 @@
-# Kicad Revision Inspector (KiRI)
+q# Kicad Revision Inspector (KiRI)
 
 KiRI is small tool to experiment having a visual diff tool for Kicad.
 It uses [Kicad-Diff](https://github.com/Gasman2014/KiCad-Diff) to generate layout diffs and [Plotgitsch](https://github.com/jnavila/plotkicadsch) to generate schematic diffs.
@@ -48,7 +48,7 @@ Set-Location C:\ubuntu-2004
 ```
 
 For `WSL2`, on a Powershell terminal with admin right, execute the following commands:
-```
+```powershell
 wsl --set-default-version 2
 wsl --install -d ubuntu
 ```
@@ -61,7 +61,7 @@ Setup the environment using the following commands.
 
 > Make sure `KIRI_HOME` is the right path to the installation folder
 
-```
+```bash
 # Kiri environment setup
 eval $(opam env)
 export KIRI_HOME=${HOME}/.local/share/kiri
@@ -71,7 +71,7 @@ export PATH=${KIRI_HOME}/bin:${PATH}
 
 
 # Using KiRI
-```
+```bash
 cd [kicad_git_repo]
 kiri board.pro
 ```
@@ -79,7 +79,7 @@ kiri board.pro
 ## Command line flags (aka Help)
 
 Command line flags can be seen using the `-h` flag
-```
+```bash
 kiri -h
 ```
 
@@ -100,7 +100,7 @@ cp -r kicad_plugin ~/.kicad/scripting/plugins/kiri
 
 There is a possibility to archive generated files. to visualize generated files, unpack the folder anywhere and execute the webserver inside of the folder, as shown below:
 
-```
+```bash
 tar -xvzf kiri-2021.11.18-16h39.tgz
 cd kiri
 ./kiri-webserver.py .
