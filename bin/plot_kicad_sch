@@ -74,10 +74,11 @@ launch_eeschema()
 
 	# Wait for eeschema to launch the project
 	while [[ "$(is_design_loaded "${kicad_sch_filename}")" -ne "1" ]]; do
-		sleep 0.1
+		sleep 0.2
 		EESCHEMA_WIDS=($(xdotool search --onlyvisible --sync --classname "Eeschema" 2> /dev/null))
 		debug_eeschema_popups
 		dismiss_popups
+		# read
 	done
 
 	export EESCHEMA_WID=${EESCHEMA_WIDS[0]}
