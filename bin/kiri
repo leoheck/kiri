@@ -1201,59 +1201,68 @@ manual_plot_using_plotkicadsch()
 
 		if [[ -f "${kicad_sch}" ]]; then
 
-			if [[ ! ${SKIP_CACHE_LIB} == 1 ]]; then
-				# TODO: kicad_cache_lib_1 and kicad_cache_lib_2 may differ
-				if [[ -n "${kicad_cache_lib}" ]]; then
-					local cache_lib="-l ${kicad_cache_lib}"
-				fi
-			fi
+			all_kicad_sch_files=("${kicad_sch}" $(get_kicad_sch_extra "${kicad_sch}"))
 
-			if [[ -f "${kicad_cache_lib}" ]]; then
-				cmd="plotkicadsch -f ${kicad_sch} ${cache_lib} 2>&1 ${command_end}"
-				echo -e "   ${LMA}Ploting ${commit_hash}, ${OUTPUT_DIR_PATH}/${commit_hash}/${RCO}"
-				echo -e "   ${LYE}${cmd}${RCO}" | fmt -u -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
-				eval "${cmd}" | sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
-				ret="${PIPESTATUS[0]}"
-				if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
-					if [[ "${ret}" -gt "0" ]]; then
-						echo -e "${LRE}${BTE}   Status: ${ret}${RCO}"
+			IFS=$'\n'
+			for kicad_sch_aux in "${all_kicad_sch_files[@]}"; do
+
+				if [[ ! ${SKIP_CACHE_LIB} == 1 ]]; then
+					# TODO: kicad_cache_lib_1 and kicad_cache_lib_2 may differ
+					if [[ -n "${kicad_cache_lib}" ]]; then
+						local cache_lib="-l ${kicad_cache_lib}"
 					fi
 				fi
 
-				if [[ "${ret}" == "0" ]]; then
-
-					# TODO: Needs tests, since it may not be generating other pages,
-					# or they may need to have names improved
-					local board_name=$(get_file_without_extention ${kicad_sch})
-					if [[ -f "${board_name}.svg" ]]; then
-						# TODO: How to force fix of the viewbox when the images are off center?
-						plotgitsch_svg_tweaks "${board_name}.svg"| sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
-						cp -f "${board_name}.svg" "from_${board_name}.svg"
-						git-imgdiff "from_${board_name}.svg"| sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
-					fi
-
-				else
-
-					echo -e "\n   ${LRE}Plotkicadsch has failed, using GUI instead."
-
-					# TESTING: Plokicadsch has failed, then usig GUI
-					# IF THIS IS GOOD. Then it is better to organize this function main_if order here to avoid repetition
-					cmd="plot_kicad_sch ${kicad_sch} ${command_end}"
-					ret=${?}
-					if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
-						echo -e "   ${LMA}Plotting ${commit_hash}, ${OUTPUT_DIR_PATH}/${commit_hash}/${RCO}"
-						echo -e "   ${LYE}${cmd}${RCO}" | fmt -u -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
-					fi
+				if [[ -f "${kicad_cache_lib}" ]]; then
+					cmd="plotkicadsch -f ${kicad_sch_aux} ${cache_lib} -o ${OUTPUT_DIR_PATH}/${commit_hash} 2>&1 ${command_end}"
+					echo -e "   ${LMA}Ploting ${commit_hash}, ${OUTPUT_DIR_PATH}/${commit_hash}/${RCO}"
+					echo -e "   ${LYE}${cmd}${RCO}" | fmt -u -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
 					eval "${cmd}" | sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
-					ret="${?}"
+					ret="${PIPESTATUS[0]}"
 					if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
-						echo
 						if [[ "${ret}" -gt "0" ]]; then
 							echo -e "${LRE}${BTE}   Status: ${ret}${RCO}"
 						fi
 					fi
+
+					if [[ "${ret}" == "0" ]]; then
+
+						# TODO: Needs tests, since it may not be generating other pages,
+						# or they may need to have names improved
+						local board_name=$(get_file_without_extention ${kicad_sch_aux})
+						if [[ -f "${board_name}.svg" ]]; then
+							# TODO: How to force fix of the viewbox when the images are off center?
+							plotgitsch_svg_tweaks "${board_name}.svg"| sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
+							cp -f "${board_name}.svg" "from_${board_name}.svg"
+							git-imgdiff "from_${board_name}.svg"| sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
+						fi
+
+					else
+
+						echo -e "\n   ${LRE}Plotkicadsch has failed, using GUI instead."
+
+						# TESTING: Plokicadsch has failed, then usig GUI
+						# IF THIS IS GOOD. Then it is better to organize this function main_if order here to avoid repetition
+						cmd="plot_kicad_sch ${kicad_sch} ${command_end}"
+						ret=${?}
+						if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
+							echo -e "   ${LMA}Plotting ${commit_hash}, ${OUTPUT_DIR_PATH}/${commit_hash}/${RCO}"
+							echo -e "   ${LYE}${cmd}${RCO}" | fmt -u -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
+						fi
+						eval "${cmd}" | sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
+						ret="${?}"
+						if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
+							echo
+							if [[ "${ret}" -gt "0" ]]; then
+								echo -e "${LRE}${BTE}   Status: ${ret}${RCO}"
+							fi
+						fi
+
+						# plot_kicad_sch plots everything, then break
+						break
+					fi
 				fi
-			fi
+			done
 		fi
 	fi
 
