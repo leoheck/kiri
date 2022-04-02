@@ -1,31 +1,10 @@
 #! /bin/bash
 
-# Consider it is using Kicad 6
-# It should work on X11
-# It may not work on Wayland
-
+# This tool works with Kicad 6
 # Requires: xdootool
 
-
-# Full Text Search... Done
-# wtype/jammy 0.4-1 amd64
-#   xdotool type for wayland
-
-# xautomation/jammy 1.09-4 amd64
-#   Control X from the command line, and find things on the screen
-
-# xdotool/jammy 1:3.20160805.1-4 amd64
-#   simulate (generate) X11 keyboard/mouse input events
-
-# ydotool/jammy 0.1.8-3 amd64
-#   Command-line automation tool - cli
-
-# ydotoold/jammy 0.1.8-3 amd64
-#   Command-line automation tool - daemon
-
-
-readonly TIME=0.01
-readonly PLOT_TIME=0.5
+readonly TIME=0.1
+readonly PLOT_TIME=2
 
 forced_exit()
 {
@@ -41,29 +20,42 @@ get_disaply_server()
 	echo "${XDG_SESSION_TYPE}"
 }
 
+get_filename()
+{
+	local filename="$(basename "${1}")"
+	echo "${filename%.*}"
+}
+
+get_window_tile()
+{
+	local win_id="${1}"
+	xwininfo -tree -id "${win_id}" | grep "xwininfo:" | cut -d" " -f5- | sed "s/\"//g"
+}
+
 launch_eeschema()
 {
-	schematic_file_path="${1}"
+	local kicad_sch_path="${1}"
+	local kicad_sch_filename=$(get_filename "${kicad_sch_path}")
 
 	export EESCHEMA_PID
 	export EESCHEMA_WIDS
 
+
+	# VIRTUAL DISPLAY (NO VISIBLE OPERATION)
 	# Xvfb ${DISPLAY} &
 	# Xvfb :1 -screen 0 1024x768x16 -dpi 96 &
 	# Xvfb -screen 0 1280x800x24 -ac -dpi 96 +extension RANDR :1 &
 	# export XVFB_PID=$!
 
-	eeschema "${schematic_file_path}" &
+	eeschema "${kicad_sch_path}" 2> /dev/null &
 	EESCHEMA_PID=${!}
-
-	# =================================
 
 	setxkbmap us
 
 	# Waiting for eeschema to launch
-	while [ "${EESCHEMA_WIDS}" = "" ]; do
-		sleep 0.2 # TODO REPLACE THIS WITH THE TEST OF THE SCHEMATIC LOADED TITLE "board [board/] — Schematic Editor"
-		EESCHEMA_WIDS=($(xdotool search --onlyvisible --sync --classname "Eeschema"))
+	while [[ "$(is_design_loaded "${kicad_sch_filename}")" -ne "1" ]]; do
+		sleep 0.1
+		EESCHEMA_WIDS=($(xdotool search --onlyvisible --sync --classname "Eeschema" 2> /dev/null))
 	done
 
 	export EESCHEMA_WID=${EESCHEMA_WIDS[0]}
@@ -79,21 +71,7 @@ debug_eeschema_popups()
 	done
 }
 
-# When opening Kicad 5 files
-dissmiss_cache_lib_warning()
-{
-	local win_id="${1}"
-
-	# Dismiss warning about missing -cache.lib file
-	xdotool key --window "${win_id}" Tab
-	sleep "${TIME}"
-	xdotool key --window "${win_id}" Tab
-	sleep "${TIME}"
-	xdotool key --window "${win_id}" Return
-	sleep "${TIME}"
-}
-
-treat_initial_popups()
+is_design_loaded()
 {
 	local project_name="${1}"
 
@@ -101,18 +79,43 @@ treat_initial_popups()
 	for win_id in ${EESCHEMA_WIDS}; do
 
 		# xwininfo -tree -id "${win_id}"
-		win_title=$(xwininfo -tree -id "${win_id}" | grep "xwininfo:" | cut -d" " -f5- | sed "s/\"//g")
+		win_title=$(get_window_tile "${win_id}")
 
 		case ${win_title} in
-			Warning)
-				dissmiss_cache_lib_warning "${win_id}"
+			${project_name}*)
+				echo "1"
+				# return 1
 				;;
-			# ${project_name} [${project_name}${}/] — Schematic Editor)
 			*)
-				echo "[${win_id}] Title: \"${win_title}\""
+				echo "0"
+				# return 0
+				;;
 		esac
 	done
 }
+
+
+# treat_initial_popups()
+# {
+# 	local project_name="${1}"
+
+# 	IFS=$'\n'
+# 	for win_id in ${EESCHEMA_WIDS}; do
+
+# 		# xwininfo -tree -id "${win_id}"
+# 		win_title=$(xwininfo -tree -id "${win_id}" | grep "xwininfo:" | cut -d" " -f5- | sed "s/\"//g")
+
+# 		case ${win_title} in
+# 			Warning)
+# 				dissmiss_cache_lib_warning "${win_id}"
+# 				;;
+# 			${project_name})
+# 			# *)
+# 				echo "[${win_id}] Title: \"${win_title}\""
+# 				;;
+# 		esac
+# 	done
+# }
 
 launch_plot_window()
 {
@@ -159,8 +162,6 @@ configure_and_plot()
 	xdotool key --repeat 2 --delay "${TIME}" "Return"
 	sleep "${TIME}"
 
-# read
-
 	# Plot all pages
 	xdotool key --repeat 11 --delay "${TIME}" "Tab"
 	sleep "${TIME}"
@@ -173,18 +174,18 @@ main()
 	trap "exit 1" TERM
 	trap forced_exit INT
 
-	if [[ "$(get_disaply_server)" != "x11" ]]; then
-		echo "Error: plot_kicad_sch works only on x11, current display server is $(get_disaply_server)"
+	if [[ "$(get_disaply_server)" != "x11" ]] && [[ "$(get_disaply_server)" != "wayland" ]]; then
+		echo "Error: Supported display servers: x11, wayland"
 		exit 1
 	fi
 
-	local schematic_file_path="${1}"
+	local kicad_sch_path="${1}"
 	local output_dir_path="${2}"
 
-	file_name=$(basename -- "${schematic_file_path}")
+	file_name=$(basename -- "${kicad_sch_path}")
 	project_name="${file_name%.*}"
 
-	if [[ ! -f "${schematic_file_path}" ]]; then
+	if [[ ! -f "${kicad_sch_path}" ]]; then
 		echo "Missing .kicad_sch file"
 		exit 1
 	fi
@@ -199,20 +200,21 @@ main()
 		fi
 	fi
 
-	echo -e "\nSchematic_path = ${schematic_file_path}"
+	echo -e "\nDisplay server = $(get_disaply_server)"
+	echo -e "Schematic_path = ${kicad_sch_path}"
 	echo -e "   Output_path = ${output_dir_path}"
 
 	local temp_dir="sch"
 	local output_temp_dir_path="${output_dir_path}/${temp_dir}"
 	mkdir -p "${output_temp_dir_path}" &> /dev/null
 
-	launch_eeschema "${schematic_file_path}" &> /dev/null
+	launch_eeschema "${kicad_sch_path}" #&> /dev/null
 	# echo -e "\n   eeschema_pid = ${EESCHEMA_PID}"
 	# echo -e "main_window_ids = ${EESCHEMA_WIDS[@]}"
 	# echo -e " main_window_id = ${EESCHEMA_WID}"
 
 	# debug_eeschema_popups
-	treat_initial_popups "${project_name}"
+	# treat_initial_popups "${project_name}"
 
 	launch_plot_window "${EESCHEMA_WID}" 2> /dev/null
 	configure_and_plot "${EESCHEMA_WID}" "${output_temp_dir_path}" 2> /dev/null
@@ -225,10 +227,11 @@ main()
 	IFS=$'\n'
 	for svg_file in "${svg_file_paths}"; do
 		new_file=$(echo "${svg_file}" | sed "s|${temp_dir}/|sch-|g" )
-		echo "- Exporting: ${new_file}"
+		echo "      Ploting = ${new_file}"
 		mv "${svg_file}" "${new_file}" 2> /dev/null
 	done
 
+	echo
 	rm -rf "${temp_dir}"
 }
 
