@@ -130,6 +130,6 @@ Demo on Youtube
 
 <p align="center">
 <a href="https://youtu.be/zpssGsvCgi0" target="_blank">
-    <img src="https://img.youtube.com/vi/PMC0USSsbDE/maxresdefault.jpg" alt="Kicad Revision Inspector Demo" width="820">
+    <img src="https://img.youtube.com/vi/zpssGsvCgi0/maxresdefault.jpg" alt="Kicad Revision Inspector Demo" width="820">
 </a>
 </p>
