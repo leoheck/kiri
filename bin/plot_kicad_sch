@@ -262,7 +262,7 @@ main()
 	echo -e "Schematic_path = ${kicad_sch_path}"
 	echo -e "   Output_path = ${output_dir_path}"
 
-	local temp_dir="sch"
+	local temp_dir=$(mktemp -d -p "${output_dir_path}")
 	local output_temp_dir_path="${output_dir_path}/${temp_dir}"
 	mkdir -p "${output_temp_dir_path}" &> /dev/null
 
@@ -277,11 +277,11 @@ main()
 	kill -9 "${EESCHEMA_PID}" &> /dev/null
 
 	# Organize generated files for KiRI
-	svg_file_paths=$(find "${output_temp_dir_path}" -name "*.svg")
+	svg_file_paths=($(find "${output_temp_dir_path}" -name "*.svg"))
 
 	if [[ -n ${svg_file_paths} ]]; then
 		IFS=$'\n'
-		for svg_file in "${svg_file_paths}"; do
+		for svg_file in "${svg_file_paths[@]}"; do
 			new_file=$(echo "${svg_file}" | sed "s|${temp_dir}/|sch-|g" )
 			echo "      Ploting = ${new_file}"
 			mv "${svg_file}" "${new_file}" 2> /dev/null
