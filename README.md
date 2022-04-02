@@ -123,7 +123,7 @@ Layout view, assets generated using Kicad-Diff
 Comparing the new `.kicad_sch` file with an old `.sch`
 
 <p align="center">
-    <img src="misc/kiri_ach_v6.png" width="820" alt="Layout View">
+    <img src="misc/kicad_sch_v6.png" width="820" alt="Layout View">
 </p>
 
 Demo on Youtube
