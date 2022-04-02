@@ -291,4 +291,4 @@ main()
 	rm -rf "${temp_dir}"
 }
 
-main "${@}"
+main "${@}" | tee .kiri.log
