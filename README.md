@@ -3,9 +3,7 @@
 KiRI is small tool to experiment having a visual diff tool for Kicad.
 It uses [Kicad-Diff](https://github.com/Gasman2014/KiCad-Diff) to generate layout diffs and [Plotgitsch](https://github.com/jnavila/plotkicadsch) to generate schematic diffs.
 
-It currently supports Kicad 5.* projects that use Git as source management.
-
-Previously known as KDiff, it was renamed KiRI since the old name was pretty close to the KiDiff or Kicad-Diff, one of the projects referred to above.
+It currently supports projects of `Kicad 5.*` and `Kicad 6.*` using `git` for source management.
 
 ## Installing
 
@@ -27,11 +25,13 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/leoheck/kiri/main/instal
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/leoheck/kiri/main/install_kiri.sh)"
 ```
 
+> xdotool, used to plot schematics of Kicad 6 (.kicad_sch) requires a X Window System Server. Some of the alternatives include [Xming](https://sourceforge.net/projects/xming/), [Cygwin](https://x.cygwin.com/), and [Mobaterm](https://mobaxterm.mobatek.net/).
+
 ### Environment preparation on Windows
 
 [Configure WSL](https://www.tenforums.com/tutorials/46769-enable-disable-windows-subsystem-linux-wsl-windows-10-a.html)
 
-On a Powershell terminal with admin right, execute the following commands:
+For `WSL1`, on a Powershell terminal with admin right, execute the following commands:
 
 ```powershell
 # Enable Windows Subsystem for Linux (using Power Shell)
@@ -45,6 +45,12 @@ New-Item -Path C:\ubuntu-2004 -ItemType Directory
 Expand-Archive -Path ~/Downloads/ubuntu-2004.zip C:\ubuntu-2004
 Set-Location C:\ubuntu-2004
 & .\ubuntu2004.exe
+```
+
+For `WSL2`, on a Powershell terminal with admin right, execute the following commands:
+```
+wsl --set-default-version 2
+wsl --install -d ubuntu
 ```
 
 After, install dependencies and Kiri by running script in the [Installing](#Installing) section
