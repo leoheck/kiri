@@ -41,12 +41,12 @@ process_svg()
 			;;
 	esac
 
-	# Exported file name comes from environemnt variables
+	echo "Creating $(realpath "${new_svg_path}")"
+
+	# If exported path name comes from environemnt variables
 	if [[ -n "${svg_dir_path}" ]]; then
 		new_svg_path="${svg_dir_path}/${new_svg_path}"
 	fi
-
-	echo "Creating $(realpath "${new_svg_path}")"
 
 	# Move and rename final svg
 	mv -f "${svg_file_path}" "${new_svg_path}" 2> /dev/null
@@ -55,14 +55,14 @@ process_svg()
 	if [ ! -s "${new_svg_path}" ]; then
 		echo "File ${new_svg_path} is empty"
 		rm -rf "${new_svg_path}" 2> /dev/null
+	else
+	    # Image teaks
+	    svg_file_paths=$(find "${new_svg_path}" -name "sch-*.svg")
+	    IFS=$'\n'
+	    for svg_file in "${svg_file_paths}"; do
+	        plotgitsch_svg_tweaks "${svg_file}"
+	    done
 	fi
-
-    # Image teaks
-    svg_file_paths=$(find "${new_svg_path}" -name "sch-*.svg")
-    IFS=$'\n'
-    for svg_file in "${svg_file_paths}"; do
-        plotgitsch_svg_tweaks "${svg_file}"
-    done
 }
 
 main()
