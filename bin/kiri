@@ -1,5 +1,9 @@
 #!/bin/bash
 
+if [[ -n "${SUPER_DEBUG}" ]]; then
+	set -xe
+fi
+
 insert_commits_html()
 {
 	# GIT COMMITS FORMAT
@@ -892,20 +896,20 @@ has_files_changes()
 	local ret=0
 	local file
 	for file in "${files[@]}"; do
-		if git diff --exit-code -- ${files[@]} > /dev/null; then
+		if git diff --exit-code -- "${KICAD_PROJ_NESTED_PATH}/${file}" > /dev/null; then
 			if [[ "${DEBUG}" == "1" ]]; then
-				echo "Info: ${file} does not have changes" 2>&1
+				echo "Info: ${KICAD_PROJ_NESTED_PATH}/${file} does not have changes" 2>&1
 			fi
 		else
 			if [[ "${DEBUG}" == "1" ]]; then
-				echo "Info: ${file} has changes" 2>&1
+				echo "Info: ${KICAD_PROJ_NESTED_PATH}/${file} has changes" 2>&1
 			fi
 			has_changes=true
 			ret=1
 		fi
 	done
 	if [[ "${DEBUG}" == "1" ]]; then
-		echo "${LBL}At least one file has changes? ${LRE}${has_changes}${RCO}" 2>&1
+		echo "${LBL}At least one file has changes: ${LRE}${has_changes}${RCO}" 2>&1
 		echo 2>&1
 	fi
 	return ${ret}
@@ -1010,20 +1014,20 @@ retrieve_kicad_files_from_git()
 	IFS=$'\n'
 	for file in ${kicad_files}; do
 		if [[ "${DEBUG}" == "1" ]]; then
-			echo "- Exporting: ${file}"
+			echo "- Exporting: ${KICAD_PROJ_NESTED_PATH}/${file}"
 		fi
 		mkdir -p "${OUTPUT_DIR_PATH}/${commit_hash}"
-		git show "${git_hash}":"${file}" >> "${OUTPUT_DIR_PATH}/${commit_hash}/${file}"
+		git show "${git_hash}":"${KICAD_PROJ_NESTED_PATH}/${file}" >> "${OUTPUT_DIR_PATH}/${commit_hash}/${file}"
 	done
 
 	local extra_sch_files=$(get_kicad_sch_extra "${OUTPUT_DIR_PATH}/${commit_hash}/${kicad_sch}")
 	if [[ -n ${extra_sch_files} ]]; then
 		for file in ${extra_sch_files}; do
 			if [[ "${DEBUG}" == "1" ]]; then
-				echo "- Exporting: ${file}"
+				echo "- Exporting: ${KICAD_PROJ_NESTED_PATH}/${file}"
 			fi
 			mkdir -p "$(dirname "${OUTPUT_DIR_PATH}/${commit_hash}/${file}")"
-			git show "${git_hash}":"${file}" >> "${OUTPUT_DIR_PATH}/${commit_hash}/${file}"
+			git show "${git_hash}":"${KICAD_PROJ_NESTED_PATH}/${file}" >> "${OUTPUT_DIR_PATH}/${commit_hash}/${file}"
 		done
 	fi
 
@@ -1170,12 +1174,11 @@ manual_plot_using_plotkicadsch()
 	if [[ "$(get_file_extension "${kicad_sch}")" == "kicad_sch" ]]; then
 		cmd="plot_kicad_sch ${kicad_sch} ${command_end}"
 		if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
-			# echo -e "\n   ${LMA}PLOTKICADSCH: Skipping ${commit_hash}, plotgitsch cannot plot \"${kicad_sch}\" yet${RCO}"
-			echo -e "\n   ${LMA}[TESTING] Plotting with xdotool ${commit_hash}${RCO}"
+			echo -e "\n   ${LMA}Plotting ${commit_hash}, ${OUTPUT_DIR_PATH}/${commit_hash}/${RCO}"
 			echo -e "   ${LYE}${cmd}${RCO}" | fmt -u -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
 		fi
 		eval "${cmd}" | sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
-		ret=${?}
+		ret="${?}"
 		if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
 			echo
 			if [[ "${ret}" -gt "0" ]]; then
@@ -1195,10 +1198,10 @@ manual_plot_using_plotkicadsch()
 
 			if [[ -f "${kicad_cache_lib}" ]]; then
 				cmd="plotkicadsch -f ${kicad_sch} ${cache_lib} ${command_end}"
-				echo -e "   PLOTKICADSCH: Ploting ${commit_hash}, ${OUTPUT_DIR_PATH}/${commit_hash}/"
+				echo -e "   ${LMA}Ploting ${commit_hash}, ${OUTPUT_DIR_PATH}/${commit_hash}/${RCO}"
 				echo -e "   ${LYE}${cmd}${RCO}" | fmt -u -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
 				eval "${cmd}" | sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
-				ret=${?}
+				ret="${?}"
 				if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
 					echo
 					if [[ "${ret}" -gt "0" ]]; then
