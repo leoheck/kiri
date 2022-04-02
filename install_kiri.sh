@@ -1,64 +1,76 @@
 #!/bin/bash
 
 # Install KiRI and Kicad Plugin
-# KiRI must be in PATH for Kicad Plugin work
+# kiri path must be in your environment PATH variable for Kicad Plugin work
 
-cinfo=$(tput setaf 3)
-cbold=$(tput bold)
-crst=$(tput sgr0)
+# Default INSTALL_PATH: ${HOME}/.local/share
 
-if [[ -s ${KIRI_HOME} ]]; then
-	INSTALL_PATH="${KIRI_HOME}"
-else
-	INSTALL_PATH="${HOME}/.local/share"
-fi
+CI=$(tput setaf 3) # Color Info
+CB=$(tput bold)    # Color Bold
+CR=$(tput sgr0)    # Color Reset
 
-# Remove old version if any
-rm -rf "${INSTALL_PATH}/kiri"
+install_kiri()
+{
+	if [[ -s ${KIRI_HOME} ]]; then
+		INSTALL_PATH="${KIRI_HOME}"
+	else
+		INSTALL_PATH="${HOME}/.local/share"
+	fi
 
-# Reload opam making sure it is in the the PATH
-eval "$(opam env)"
+	# Remove previews version, if any
+	rm -rf "${INSTALL_PATH}/kiri"
 
-# Clone Kiri
-if which git &> /dev/null; then
-	git clone --recurse-submodules -j8 https://github.com/leoheck/kiri.git "${INSTALL_PATH}/kiri"
-	cd "${INSTALL_PATH}/kiri/" || exit
-else
-	echo "Git is missing"
-	exit 1
-fi
+	# Reload opam making sure it is in the the PATH
+	eval "$(opam env)"
 
-# ===============
+	# Clone Kiri
+	if which git &> /dev/null; then
+		git clone --recurse-submodules -j8 https://github.com/leoheck/kiri.git "${INSTALL_PATH}/kiri"
+		cd "${INSTALL_PATH}/kiri/" || exit
+	else
+		echo "Git is missing, please use install_dependencies script"
+		exit 1
+	fi
+}
 
-# Install plotkicadsch
-cd "${INSTALL_PATH}/kiri/submodules/plotkicadsch" || exit
-opam pin add -y kicadsch .
-opam pin add -y plotkicadsch .
-opam update -y
-opam install -y plotkicadsch
-cd - || exit
+install_plotgitsch()
+{
+	# Install plotkicadsch
+	cd "${INSTALL_PATH}/kiri/submodules/plotkicadsch" || exit
+	opam pin add -y kicadsch .
+	opam pin add -y plotkicadsch .
+	opam update -y
+	opam install -y plotkicadsch
+	cd - || exit
+}
 
-# ===============
+intall_kicad_plugin()
+{
+	local install_url="https://raw.githubusercontent.com/leoheck/kiri/main/install_plugin.sh"
+	bash -c "$(curl -fsSL ${install_url})" "" "${INSTALL_PATH}/kiri/" > /dev/null
+}
 
-# Kicad v5 plugin
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/leoheck/kiri/main/install_plugin.sh)" "" "${INSTALL_PATH}/kiri/" > /dev/null
+show_env_config_message()
+{
+	read -r -d '' ENV_SETUP_NOTE <<-EOM
+	${CI}${CB}Finish Kiri setup by adding the following lines in the end of your ~/.bashrc or ~/.zshrc${CR}
 
-# Kicad v6 plugin
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/leoheck/kiri/main/install_plugin_v6.sh)" "" "${INSTALL_PATH}/kiri/" > /dev/null
+	# Kiri environment setup
+	eval \$(opam env)
+	export KIRI_HOME=${INSTALL_PATH}/kiri
+	export PATH=\${KIRI_HOME}/submodules/KiCad-Diff/bin:\${PATH}
+	export PATH=\${KIRI_HOME}/bin:\${PATH}
+	EOM
 
-# ===============
+	echo -e "\n\n${ENV_SETUP_NOTE}\n"
+}
 
-read -r -d '' ENV_SETUP_NOTE <<EOM
+main()
+{
+	install_kiri
+	install_plotgitsch
+	intall_kicad_plugin
+	show_env_config_message
+}
 
-${cinfo}${cbold}Finish the setup by adding the following lines in the end of your ~/.bashrc or ~/.zshrc${crst}
-
-# Kiri environment setup
-eval \$(opam env)
-export KIRI_HOME=${INSTALL_PATH}/kiri
-export PATH=\${KIRI_HOME}/submodules/KiCad-Diff/bin:\${PATH}
-export PATH=\${KIRI_HOME}/bin:\${PATH}
-
-
-EOM
-
-echo -e "\n\n${ENV_SETUP_NOTE}\n"
+main
