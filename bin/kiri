@@ -1232,7 +1232,7 @@ manual_plot_using_plotkicadsch()
 						git-imgdiff "from_${board_name}.svg"| sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
 					fi
 
-				else 
+				else
 
 					echo -e "\n   ${LRE}Plotkicadsch has failed, using GUI instead."
 
@@ -1252,7 +1252,7 @@ manual_plot_using_plotkicadsch()
 							echo -e "${LRE}${BTE}   Status: ${ret}${RCO}"
 						fi
 					fi
-				fi 
+				fi
 			fi
 		fi
 	fi
