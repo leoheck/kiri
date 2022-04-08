@@ -14,7 +14,7 @@ detect_operating_system()
 
 detect_linux_pkg_manager()
 {
-	base_distro="$(grep ID_LIKE /etc/os-release)"
+	base_distro="$(grep ID_LIKE /etc/os-release | cut -d= -f2)"
 
 	case "${base_distro}" in
 		"debian") echo "apt"     ;;
