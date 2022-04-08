@@ -47,7 +47,10 @@ linux_install_dependencies()
 
 linux_install_software_with_apt()
 {
+	# Update packages knowledge
 	sudo apt update
+
+	# Install base packages
 	sudo apt install -y git
 	sudo apt install -y libgmp-dev
 	sudo apt install -y pkg-config
@@ -73,7 +76,7 @@ linux_install_software_with_apt()
 
 macos_install_homebrew()
 {
-	# Install homebrew
+	# Install Homebrew
 	if ! which brew &> /dev/null; then
 		/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 	fi
@@ -88,6 +91,10 @@ macos_install_brew_modules()
 {
 	sudo spctl --master-disable
 
+	# Update packages knowledge
+	brew update
+
+	# Base dependencies
 	brew install git
 
 	# Opam dependencies
@@ -132,6 +139,9 @@ init_opam()
 
 install_opam_modules()
 {
+	# Update packages knowledge
+	opam update
+
 	# Plotgitsch dependencies
 	opam install -y digestif
 	opam install -y lwt
