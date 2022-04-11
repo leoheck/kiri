@@ -12,6 +12,8 @@ CI=$(tput setaf 3) # Color Info
 CB=$(tput bold)    # Color Bold
 CR=$(tput sgr0)    # Color Reset
 
+export INSTALL_PATH
+
 install_kiri()
 {
 	if [[ -s ${KIRI_HOME} ]]; then
@@ -60,7 +62,7 @@ intall_kicad_plugin()
 	if [[ -n "${INSTALL_KIRI_REMOTELLY}" ]]; then
 		local install_url="https://raw.githubusercontent.com/leoheck/kiri/main/install_plugin.sh"
 		bash -c "$(curl -fsSL ${install_url})" "" "${INSTALL_PATH}/kiri/" > /dev/null
-	else
+	else	
 		./install_plugin.sh
 	fi
 }
@@ -72,7 +74,7 @@ show_env_config_message()
 
 	# Kiri environment setup
 	eval \$(opam env)
-	export KIRI_HOME=${INSTALL_PATH}/kiri
+	export KIRI_HOME="${INSTALL_PATH}/kiri"
 	export PATH=\${KIRI_HOME}/submodules/KiCad-Diff/bin:\${PATH}
 	export PATH=\${KIRI_HOME}/bin:\${PATH}
 	EOM
