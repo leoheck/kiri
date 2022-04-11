@@ -26,6 +26,7 @@ install_kiri()
 	rm -rf "${INSTALL_PATH}/kiri"
 
 	# Reload opam making sure it is in the the PATH
+	test -r ${HOME}/.opam/opam-init/init.sh && . ${HOME}/.opam/opam-init/init.sh > /dev/null 2> /dev/null || true
 	eval "$(opam env)"
 
 	if [[ -n "${INSTALL_KIRI_REMOTELLY}" ]]; then
@@ -73,6 +74,7 @@ show_env_config_message()
 	${CI}${CB}Finish KiRi setup by adding the following lines in the end of your ~/.bashrc or ~/.zshrc${CR}
 
 	# Kiri environment setup
+	test -r ${HOME}/.opam/opam-init/init.sh && . ${HOME}/.opam/opam-init/init.sh > /dev/null 2> /dev/null || true
 	eval \$(opam env)
 	export KIRI_HOME="${INSTALL_PATH}/kiri"
 	export PATH=\${KIRI_HOME}/submodules/KiCad-Diff/bin:\${PATH}
