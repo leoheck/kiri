@@ -31,7 +31,7 @@ install_kiri()
 		fi
 
 	else
-		cp -rf "../${KIRI_HOME}"
+		cp -rf "../kiri" "${KIRI_HOME}"
 	fi
 }
 
@@ -76,7 +76,7 @@ show_env_config_message()
 
 show_initial_message()
 {
-	if [[ -n ${KIRI_INSTALL_PATH} ]]; then
+	if [[ -n "${KIRI_INSTALL_PATH}" ]]; then
 		KIRI_HOME="${KIRI_INSTALL_PATH}"
 	else
 		KIRI_HOME="${HOME}/.local/share"
