@@ -106,36 +106,43 @@ insert_commits_html()
 			class="text-warning"
 		fi
 
-		# IFS= read -r -d '' commit_html <<-EOM
+		i=$((i + 1))
+
 		read -r -d '' commit_html <<-EOM
-	    <input class="chkGroup" type="checkbox" id="${hash}" name="commit" value="${hash}" ${checked} onchange="update_commits()"/>
-	    <label class="text-sm-left list-group-item" style="display: block; width: 480px" for="${hash}">
-	      <table style="width:100%">
-	        <tr>
-	          <td rowspan=2 style="vertical-align: top; width: 1.8em;">
-	            <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" width="15" height="15">
-	              <path d="M7.5 10.5a3 3 0 010-6m0 6a3 3 0 000-6m0 6V15m0-10.5V0" stroke="currentColor"></path>
-	            </svg>
-	          </td>
-	          <td><em class="${class}" style=" line-height: 0.7;">${text}</em></td>
-	        </tr>
-	        <tr>
-	          <td style="white-space:nowrap; overflow: hidden;"><span class="text-success font-weight-normal">${hash_label}</span> <span class="text-muted"> | </span> ${sch_icon} ${pcb_icon} ${txt_icon} <span class="text-muted font-weight-normal"> | ${date} | ${user}</span></td>
-	        </tr>
-	      </table>
-	    </label>
+		<!-- Commit ${i} -->
+		<input class="chkGroup" type="checkbox" id="${hash}" name="commit" value="${hash}" ${checked} onchange="update_commits()"/>
+		<label class="text-sm-left list-group-item" style="display: block; width: 480px" for="${hash}">
+		    <table style="width:100%">
+		        <tr>
+		            <td rowspan=2 style="vertical-align: top; width: 1.8em;">
+		                <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" width="15" height="15">
+		                    <path d="M7.5 10.5a3 3 0 010-6m0 6a3 3 0 000-6m0 6V15m0-10.5V0" stroke="currentColor"></path>
+		                </svg>
+		            </td>
+		            <td>
+		                <em class="${class}" style=" line-height: 0.7;">${text}</em>
+		            </td>
+		        </tr>
+		        <tr>
+		            <td style="white-space:nowrap; overflow: hidden;">
+		                <span class="text-success font-weight-normal">${hash_label}</span> <span class="text-muted"> | </span> ${sch_icon} ${pcb_icon} ${txt_icon} <span class="text-muted font-weight-normal"> | ${date} | ${user}</span>
+		            </td>
+		        </tr>
+		    </table>
+		</label>
 		EOM
 
-		i=$((i + 1))
 		commits_html="${commits_html}${commit_html}\n"
 
 	done
 
+	ident=$(printf '\t%.0s' {1..8})
+
 	# shellcheck disable=SC2086,SC2001
-	commits_html="$(echo ${commits_html} | sed "s/@/-/g")"
-	echo 's@<!-- FILL_COMMITS_HERE -->@'"${commits_html}"'@g' > /tmp/script.sed
-	sed -i -f /tmp/script.sed "${html_path}"
-	rm -rf /tmp/script.sed
+	commits_html="$(echo -e "${commits_html}" | sed "s|^|${ident}|g" | sed "s|@|-|g" | tee "${OUTPUT_DIR_PATH}/commits.html")"
+
+	line_no=$(($(grep -n "FILL_COMMITS_HERE" "${html_path}" | cut -d":" -f1) + 1))
+	sed -i "${line_no} e cat ${OUTPUT_DIR_PATH}/commits.html" "${html_path}"
 }
 
 insert_pages_html()
@@ -170,24 +177,30 @@ insert_pages_html()
 			checked=""
 		fi
 
-		IFS= read -r -d '' page_html <<-EOM
-		    <input id="${page_filename}" title="${page_name}" type="radio" value="${page_filename}" name="pages" ${checked} onchange="change_page()"/>
-		    <label for="${page_filename}" title="${page_name}" id="label-${page}" class="rounded text-sm-left list-group-item radio-box" onclick="change_page_onclick()" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+		i=$((i + 1))
+
+		# IFS=
+		read -r -d '' page_html <<-EOM
+		<!-- Page ${i} -->
+		<input id="${page_filename}" title="${page_name}" type="radio" value="${page_filename}" name="pages" ${checked} onchange="change_page()"/>
+		<label for="${page_filename}" title="${page_name}" id="label-${page}" class="rounded text-sm-left list-group-item radio-box" onclick="change_page_onclick()" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
 		    <span title="${page_name}" style="margin-left:0.5em; margin-right:0.1em;" class="iconify" data-icon="gridicons:pages" data-inline="false"></span>
-			    ${page_name}
-		    </label>
+		    ${page_name}
+		</label>
 		EOM
 
-		i=$((i + 1))
-		pages_html="${pages_html}\n${page_html}"
+		pages_html="${pages_html}${page_html}\n"
 
 	done
 
+
+	ident=$(printf '\t%.0s' {1..11})
+
 	# shellcheck disable=SC2086,SC2001
-	pages_html="$(echo ${pages_html} | sed "s/@/-/g")"
-	echo 's@<!-- FILL_PAGES_HERE -->@'"${pages_html}"'@g' > .script.sed
-	sed -i -f .script.sed "${html_path}"
-	rm -rf .script.sed
+	pages_html="$(echo -e "${pages_html}" | sed "s|^|${ident}|g" | sed "s|@|-|g" | tee "${OUTPUT_DIR_PATH}/pages.html")"
+
+	line_no=$(($(grep -n "FILL_PAGES_HERE" "${html_path}" | cut -d":" -f1) + 1))
+	sed -i "${line_no} e cat ${OUTPUT_DIR_PATH}/pages.html" "${html_path}"
 }
 
 create_unified_layers_list()
@@ -305,24 +318,28 @@ insert_layers_html()
 			checked=""
 		fi
 
-		IFS= read -r -d '' layer_html <<-EOM
-		    <input  id="layer-${layer_id_padding}" value="layer-${layer_name}" type="radio" name="layers" onchange="change_layer()" ${checked}/>
-		    <label for="layer-${layer_id_padding}" id="label-${layer_id_padding}" title="Layer ID: ${layer_id}" class="rounded text-sm-left list-group-item radio-box" onclick="change_layer_onclick()">
-		        <span style="margin-left:0.5em; margin-right:0.1em; color: ${layer_color}" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
-		        ${layer_name}
-		    </label>
+		i=$((i + 1))
+
+		read -r -d '' layer_html <<-EOM
+		<!-- Layer ${i} -->
+		<input  id="layer-${layer_id_padding}" value="layer-${layer_name}" type="radio" name="layers" onchange="change_layer()" ${checked}/>
+		<label for="layer-${layer_id_padding}" id="label-${layer_id_padding}" title="Layer ID: ${layer_id}" class="rounded text-sm-left list-group-item radio-box" onclick="change_layer_onclick()">
+		    <span style="margin-left:0.5em; margin-right:0.1em; color: ${layer_color}" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+		    ${layer_name}
+		</label>
 		EOM
 
-		i=$((i + 1))
-		layers_html="${layers_html}\n${layer_html}"
+		layers_html="${layers_html}${layer_html}\n"
 
 	done
 
+	ident=$(printf '\t%.0s' {1..11})
+
 	# shellcheck disable=SC2086,SC2001
-	layers_html="$(echo ${layers_html} | sed "s/@/-/g")"
-	echo 's|<!-- FILL_LAYERS_HERE -->|'"${layers_html}"'|g' > .script.sed
-	sed -i -f .script.sed "${html_path}"
-	rm -rf .script.sed
+	layers_html="$(echo -e "${layers_html}" | sed "s|^|${ident}|g" | sed "s|@|-|g" | tee "${OUTPUT_DIR_PATH}/layers.html")"
+
+	line_no=$(($(grep -n "FILL_LAYERS_HERE" "${html_path}" | cut -d":" -f1) + 1))
+	sed -i "${line_no} e cat ${OUTPUT_DIR_PATH}/layers.html" "${html_path}"
 }
 
 # ==========================================================================================
@@ -883,7 +900,7 @@ get_git_commits()
 	local cmd="git log --date=format:'%Y-%m-%d %H:%M:%S' --pretty='format:%h | %ad | %an | %s' ${current_git_branch} -- ${files[@]}"
 	if [[ "${DEBUG}" == "1" ]]; then
 		echo -e "${LBL}Get commits command${RCO}" 1>&2
-		echo -e "   ${LYE}${cmd}${RCO}" | fmt -u -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g' 1>&2
+		echo -e "   ${LYE}${cmd}${RCO}" | fmt -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g' 1>&2
 		echo 1>&2
 	fi
 	eval "$(echo ${cmd} | tr "\n" " ")"
@@ -1196,7 +1213,7 @@ manual_schematic_plot()
 			cmd="plot_kicad_sch ${kicad_sch} ${command_end}"
 			if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
 				echo -e "\n   ${LMA}Plotting ${commit_hash}, ${OUTPUT_DIR_PATH}/${commit_hash}/${RCO}"
-				echo -e "   ${LYE}${cmd}${RCO}" | fmt -u -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
+				echo -e "   ${LYE}${cmd}${RCO}" | fmt -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
 			fi
 			eval "${cmd}" | sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
 			ret="${PIPESTATUS[0]}"
@@ -1231,7 +1248,7 @@ manual_schematic_plot()
 				if [[ -f "${kicad_cache_lib}" ]]; then
 					cmd="plotkicadsch -f ${kicad_sch_aux} ${cache_lib_param} -o \"${OUTPUT_DIR_PATH}/${commit_hash}\" 2>&1 ${command_end}"
 					echo -e "   ${LMA}Ploting ${commit_hash}, ${OUTPUT_DIR_PATH}/${commit_hash}/${RCO}"
-					echo -e "   ${LYE}${cmd}${RCO}" | fmt -u -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
+					echo -e "   ${LYE}${cmd}${RCO}" | fmt -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
 					eval "${cmd}" | sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
 					ret="${PIPESTATUS[0]}"
 					if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
@@ -1264,7 +1281,7 @@ manual_schematic_plot()
 							ret=${?}
 							if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
 								echo -e "   ${LMA}Plotting ${commit_hash}, ${OUTPUT_DIR_PATH}/${commit_hash}/${RCO}"
-								echo -e "   ${LYE}${cmd}${RCO}" | fmt -u -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
+								echo -e "   ${LYE}${cmd}${RCO}" | fmt -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
 							fi
 							eval "${cmd}" | sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
 							ret="${?}"
@@ -1346,7 +1363,7 @@ generate_schematic_artifacts()
 
 			cmd="plotgitsch --keep --allow_missing ${relative_path} ${cache_lib} ${color_scheme} ${command_end}"
 			if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
-				echo -e "   ${LYE}${cmd}${RCO}" | fmt -u -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
+				echo -e "   ${LYE}${cmd}${RCO}" | fmt -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
 			fi
 			if [[ "${DRY_RUN}" == "0" ]]; then
 				# Configure git-imagediff used by plotgitsch
@@ -1403,7 +1420,7 @@ generate_layout_artifacts()
 		local cmd="kidiff \"${kicad_pcb}\" -n --webserver-disable -a ${commit_hash_1} -b ${commit_hash_2} -o \"${OUTPUT_DIR_PATH}\" ${page_frame_parameter} ${command_end}"
 
 		if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]] || [[ "${DEBUG_KIDIFF}" == "1" ]]; then
-			echo -e "   ${LGR}${cmd}${RCO}" | fmt -u -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
+			echo -e "   ${LGR}${cmd}${RCO}" | fmt -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
 		fi
 		if [[ "${DRY_RUN}" == "0" ]]; then
 			eval "${cmd}" | sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
