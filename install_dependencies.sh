@@ -190,7 +190,17 @@ setup_inskape_worakaround()
 	export DISPLAY=\$(grep nameserver /etc/resolv.conf | awk '{print \$2}'):0.0
 	EOM
 
-	echo -e "\n${PROFILE}" >> ~/.profile
+	if [[ -f ${HOME}/.profile ]]; then
+		echo -e "\n${PROFILE}" >> ${HOME}/.profile
+	fi
+
+	if [[ -f ${HOME}/.bashrc ]]; then
+		echo -e "\n${PROFILE}" >> ${HOME}/.bashrc
+	fi
+
+	if [[ -f ${HOME}/.zshrc ]]; then
+		echo -e "\n${PROFILE}" >> ${HOME}/.zshrc
+	fi
 }
 
 # ================================
