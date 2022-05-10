@@ -116,6 +116,7 @@ get_full_kicad_version()
 	xdotool key --window "${win_id}" "alt+c"
 	sleep "${TIME}"
 
+	sleep "0.2"
 	xclip -out -selection clipboard
 }
 
@@ -125,14 +126,13 @@ main()
 	trap forced_exit INT
 
 	if [[ "$(get_current_display_server)" != "x11" ]] && [[ "$(get_current_display_server)" != "wayland" ]]; then
-		echo "Error: Supported display servers: x11, wayland"
-		exit 1
+		echo "Error: Uknown \"$(get_current_display_server)\" display server"
+		echo "Supported display servers: x11, wayland"
+		# exit 1
 	fi
 
 	launch_kicad
-
-	get_full_kicad_version "${KICAD_WID}" | grep "Version:"
-
+	get_full_kicad_version "${KICAD_WID}"
 	kill -9 "${KICAD_PID}" &> /dev/null
 }
 
