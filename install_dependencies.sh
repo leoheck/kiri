@@ -144,8 +144,8 @@ install_python_modules()
 	pip3 install -U "dateutils>=0.6.12"
 	pip3 install -U "python_dateutil>=2.8.1"
 	pip3 install -U "pytz>=2021.1"
-	pip3 install -U pathlib
-	pip3 install -U wxPython
+	pip3 install -U "pathlib>=1.0.1"
+	pip3 install -U "wxpython>=4.0.7"
 }
 
 init_opam()
