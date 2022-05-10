@@ -24,6 +24,9 @@ get_current_display_server()
 launch_virtual_display()
 {
 	export n=":0"
+	if [[ -z "$DISPLAY" ]]; then
+		export DISPLAY=":${n}.0"
+	fi
 
 	# killall Xvfb &>/dev/null
 	# rm -rf "/tmp/.X${n}-lock"
@@ -31,7 +34,6 @@ launch_virtual_display()
 	# rm -rf "/tmp/.X${n}*"
 	# rm -rf "/tmp/xvfb-run.*"
 
-	export DISPLAY=":${n}.0"
 	# xdpyinfo -display ${DISPLAY} > /dev/null
 
 	# Xvfb -f ${DISPLAY} -screen 1 1280x800x24 &
@@ -233,8 +235,9 @@ main()
 	trap forced_exit INT
 
 	if [[ "$(get_current_display_server)" != "x11" ]] && [[ "$(get_current_display_server)" != "wayland" ]]; then
-		echo "Error: Supported display servers: x11, wayland"
-		exit 1
+		echo "Error: Unknown display server \"$(get_current_display_server)\""
+		echo "Only x11, xwayland are currently supported"
+		# exit 1
 	fi
 
 	local kicad_sch_path="${1}"
