@@ -1,18 +1,27 @@
 #!/bin/bash
 
-detect_operating_system()
+identify_linux_or_wsl()
+{
+	if uname -rv | grep -q "Microsoft"; then
+		echo "WSL"
+	else
+		echo "Linux"
+	fi
+}
+
+identify_operating_system()
 {
 	case "${OSTYPE}" in
 		bsd*)     echo "BSD"     ;;
 		darwin*)  echo "macOS"   ;;
-		linux*)   echo "Linux"   ;;
+		linux*)   echo "$(identify_linux_or_wsl)" ;;
 		msys*)    echo "Windows" ;;
 		solaris*) echo "Solaris" ;;
 		*)        echo "Unknown" ;;
 	esac
 }
 
-detect_linux_pkg_manager()
+identify_linux_pkg_manager()
 {
 	base_distro="$(grep ID_LIKE /etc/os-release | cut -d= -f2)"
 
@@ -22,14 +31,13 @@ detect_linux_pkg_manager()
 	esac
 }
 
-
 # =============================================
-# Linux (Apt) Related stuff
+# Linux apt-related stuff
 # =============================================
 
 linux_install_dependencies()
 {
-	case "$(detect_linux_pkg_manager)" in
+	case "$(identify_linux_pkg_manager)" in
 		apt)
 			linux_install_software_with_apt
 			;;
@@ -55,6 +63,7 @@ linux_install_software_with_apt()
 	sudo apt install -y libgmp-dev
 	sudo apt install -y pkg-config
 	sudo apt install -y opam
+	sudo apt install -y python-is-python3
 	sudo apt install -y python3-pip
 	sudo apt install -y kicad
 	sudo apt install -y dos2unix
@@ -63,8 +72,14 @@ linux_install_software_with_apt()
 	sudo apt install -y dune
 	sudo apt install -y scour
 	sudo apt install -y librsvg2-bin
+	sudo apt install -y imagemagick
 	sudo apt install -y xdotool
+	sudo apt install -y ydotool
 }
+
+# =============================================
+# Linux rpm-related stuff
+# =============================================
 
 # linux_install_software_with_rpm()
 # {
@@ -113,6 +128,7 @@ macos_install_brew_modules()
 	brew install wxwidgets
 	brew install librsvg
 	brew install xdotool
+	brew install imagemagick
 }
 
 # =============================================
@@ -122,7 +138,13 @@ macos_install_brew_modules()
 install_python_modules()
 {
 	# Kicad-Diff dependencies
-	pip3 install python_dateutil
+	pip3 install -U "pillow>8.2.0"
+	pip3 install -U "six>=1.15.0"
+	pip3 install -U "dateutils>=0.6.12"
+	pip3 install -U "python_dateutil>=2.8.1"
+	pip3 install -U "pytz>=2021.1"
+	pip3 install -U pathlib
+	pip3 install -U wxPython
 }
 
 init_opam()
@@ -135,7 +157,6 @@ init_opam()
 	opam switch 4.09.1
 	eval "$(opam env)"
 }
-
 
 install_opam_modules()
 {
@@ -153,21 +174,44 @@ install_opam_modules()
 	opam install -y git-unix
 }
 
+# =============================================
+# WSL dependent stuff
+# =============================================
+
+setup_inskape_worakaround()
+{
+	read -r -d '' PROFILE <<-EOM
+	# Inkscape workaround: Temporary workaround for broken libgc
+	if [[ -z "\$_INKSCAPE_GC" ]]; then
+	    export _INKSCAPE_GC=disable
+	fi
+
+	export DISPLAY=\$(grep nameserver /etc/resolv.conf | awk '{print \$2}'):0.0
+	EOM
+
+	echo -e "\n${PROFILE}" >> ~/.profile
+}
+
 # ================================
 
 main()
 {
-	operating_system="$(detect_operating_system)"
+	operating_system="$(identify_operating_system)"
 
 	case "${operating_system}" in
 		"Linux")
-				linux_install_dependencies
+			linux_install_dependencies
 			;;
 
 		"macOS")
-				macos_install_homebrew
-				macos_install_kicad
-				macos_install_brew_modules
+			macos_install_homebrew
+			macos_install_kicad
+			macos_install_brew_modules
+			;;
+
+		"WSL")
+			linux_install_dependencies
+			setup_inskape_worakaround
 			;;
 
 		*)
