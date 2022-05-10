@@ -27,6 +27,7 @@ identify_linux_pkg_manager()
 
 	case "${base_distro}" in
 		"debian") echo "apt"     ;;
+		"fedora") echo "yum"     ;;
 		*)        echo "Unknown" ;;
 	esac
 }
@@ -41,13 +42,13 @@ linux_install_dependencies()
 		apt)
 			linux_install_software_with_apt
 			;;
-		 # rpm)
+		 # yum)
 			# TODO: when someone requests it..
-			# linux_install_software_with_rpm
+			# linux_install_software_with_yum
 		 # 	;;
 		*)
-			echo "Unknown package manager"
-			echo "Ask KiRI dev to adapt the installer"
+			echo "Error: Unknown system"
+			echo "Please, ask KiRI dev to adapt the dependencies installer"
 			exit
 			;;
 	esac
@@ -78,10 +79,10 @@ linux_install_software_with_apt()
 }
 
 # =============================================
-# Linux rpm-related stuff
+# Linux yum-related stuff
 # =============================================
 
-# linux_install_software_with_rpm()
+# linux_install_software_with_yum()
 # {
 # }
 
