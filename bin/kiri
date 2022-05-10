@@ -154,13 +154,16 @@ insert_pages_html()
 	local page_html
 	local pages_html
 
-	if ! diff -q "${OUTPUT_DIR_PATH}/${commit_hash_1}/pages" "${OUTPUT_DIR_PATH}/${commit_hash_2}/pages" > /dev/null; then
-		local pages=$(cat "${OUTPUT_DIR_PATH}/${commit_hash_1}/pages")
+	local pages_commit_1="${OUTPUT_DIR_PATH}/${commit_hash_1}/pages"
+	local pages_commit_2="${OUTPUT_DIR_PATH}/${commit_hash_1}/pages"
+
+	if ! diff -q "${pages_commit_1}" "${pages_commit_2}" > /dev/null; then
+		local pages="${pages_commit_1}"
 	else
-		# TODO: If page files differ  do somenthing here
-		local pages=$(cat "${OUTPUT_DIR_PATH}/${commit_hash_1}/pages")
-		# pages=$(cat "${OUTPUT_DIR_PATH}/${commit1_2}/pages")
-		echo "TODO: This needs attention, pages lists differ"
+		# TODO: If page files differ do somenthing here
+		local  pages="${pages_commit_1}"
+		local pages2="${pages_commit_2}"
+		echo "  > INFO: Pages lists differ on both commits. What should we do?"
 	fi
 
 	local i=0
@@ -294,13 +297,16 @@ insert_layers_html()
 	local layer_html
 	local layers_html
 
-	if ! diff -q "${OUTPUT_DIR_PATH}/${commit_hash_1}/layers" "${OUTPUT_DIR_PATH}/${commit_hash_2}/layers" > /dev/null; then
-		layers=$(cat "${OUTPUT_DIR_PATH}/${commit_hash_1}/layers")
+	local layers_commit_1="${OUTPUT_DIR_PATH}/${commit_hash_1}/layers"
+	local layers_commit_2="${OUTPUT_DIR_PATH}/${commit_hash_2}/layers"
+
+	if ! diff -q "${layers_commit_1}" "${layers_commit_2}" > /dev/null; then
+		local layers=$(cat "${layers_commit_1}")
 	else
-		# TODO: If page files differ  do somenthing here
-		layers=$(cat "${OUTPUT_DIR_PATH}/${commit_hash_1}/layers")
-		# layers=$(cat "${OUTPUT_DIR_PATH}/${commit1_2}/layers")
-		echo "TODO: This needs attention, layers lists differ"
+		# TODO: If page files differ do somenthing here
+		local  layers=$(cat "${layers_commit_1}")
+		local layers2=$(cat "${layers_commit_2}")
+		echo "  > INFO: Layers lists differ on both commits. What should we do?"
 	fi
 
 	i=0
@@ -1653,7 +1659,7 @@ build_main_html()
 	local initial_layer_name="$(echo -e "${layers}" | sed '/^$/d' | head -1 | cut -d "|" -f2 | tr "." "_")"
 	local pcb_img_1="../${commit_hash_1}/${kicad_proj_name}-${initial_layer_id}.svg"
 	local pcb_img_2="../${commit_hash_2}/${kicad_proj_name}-${initial_layer_id}.svg"
-	echo "- Inicial layer: ${initial_layer_id} - ${initial_layer_name}"
+	echo "- Inicial layer: id=${initial_layer_id}, name=${initial_layer_name}"
 	echo "- Initial layer images:"
 	echo "  PCB 1: ${BTE}${LMA}$(realpath "${OUTPUT_DIR_PATH}/${commit_hash_1}/${pcb_img_1}")${RCO}"
 	echo "  PCB 2: ${BTE}${LCY}$(realpath "${OUTPUT_DIR_PATH}/${commit_hash_2}/${pcb_img_2}")${RCO}"
