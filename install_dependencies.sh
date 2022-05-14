@@ -1,5 +1,10 @@
 #!/bin/bash
 
+ctrl_c()
+{
+	exit 1
+}
+
 identify_linux_or_wsl()
 {
 	if uname -rv | grep -q "Microsoft"; then
@@ -100,7 +105,12 @@ macos_install_homebrew()
 
 macos_install_kicad()
 {
-	brew install --cask kicad
+	kicad_5="/Applications/Kicad/Kicad.app"
+	kicad_6="/Applications/KiCad/KiCad.app"
+
+	if [[ ! -d "${kicad_5}" ]] && [[ ! -d "${kicad_6}" ]]; then
+		brew install --cask kicad
+	fi
 }
 
 macos_install_brew_modules()
@@ -207,6 +217,8 @@ setup_inskape_worakaround()
 
 main()
 {
+	trap ctrl_c INT
+
 	operating_system="$(identify_operating_system)"
 
 	case "${operating_system}" in
