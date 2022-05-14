@@ -136,13 +136,13 @@ insert_commits_html()
 
 	done
 
-	ident=$(printf '\t%.0s' {1..8})
+	indent=$(printf '\t%.0s' {1..8})
 
 	# shellcheck disable=SC2086,SC2001
-	commits_html="$(echo -e "${commits_html}" | sed "s|^|${ident}|g" | sed "s|@|-|g" | tee "${OUTPUT_DIR_PATH}/commits.html")"
+	commits_html="$(echo -e "${commits_html}" | sed "s|^|${indent}|g" | sed "s|@|-|g" | tee "${OUTPUT_DIR_PATH}/commits.html")"
 
 	line_no=$(($(grep -n "FILL_COMMITS_HERE" "${html_path}" | cut -d":" -f1) + 1))
-	sed -i "${line_no} e cat ${OUTPUT_DIR_PATH}/commits.html" "${html_path}"
+	sed -i "${line_no} e cat \"${OUTPUT_DIR_PATH}/commits.html\"" "${html_path}"
 }
 
 insert_pages_html()
@@ -155,7 +155,7 @@ insert_pages_html()
 	local pages_html
 
 	local pages_commit_1="${OUTPUT_DIR_PATH}/${commit_hash_1}/pages"
-	local pages_commit_2="${OUTPUT_DIR_PATH}/${commit_hash_1}/pages"
+	local pages_commit_2="${OUTPUT_DIR_PATH}/${commit_hash_2}/pages"
 
 	if ! diff -q "${pages_commit_1}" "${pages_commit_2}" > /dev/null; then
 		local pages="${pages_commit_1}"
@@ -163,16 +163,15 @@ insert_pages_html()
 		# TODO: If page files differ do somenthing here
 		local  pages="${pages_commit_1}"
 		local pages2="${pages_commit_2}"
-		echo "  > INFO: Pages lists differ on both commits. What should we do?"
+		echo -e "  ${LGY}> INFO: Pages lists differ on both commits. What should we do?${RCO}"
 	fi
 
 	local i=0
 	IFS=$'\n'
 	for page in ${pages}; do
 
-		local page_name=$(echo "${page}" | cut -d'|' -f1 | sed "s/[ \t]\+//g")
-		local page_filename=$(echo "${page}" | cut -d'|' -f2 | sed "s/[ \t]\+//g")
-		page_filename="$(get_file_without_extention "${page_filename}")"
+		local page_name=$(cat "${page}" | cut -d'|' -f1 | sed "s/[ \t]\+//g")
+		local page_filename=$(cat "${page}" | cut -d'|' -f2 | sed "s/[ \t]\+//g")
 
 		if [[ "${i}" == "0" ]]; then
 			checked='checked="checked"'
@@ -186,7 +185,7 @@ insert_pages_html()
 		read -r -d '' page_html <<-EOM
 		<!-- Page ${i} -->
 		<input id="${page_filename}" title="${page_name}" type="radio" value="${page_filename}" name="pages" ${checked} onchange="change_page()"/>
-		<label for="${page_filename}" title="${page_name}" id="label-${page}" class="rounded text-sm-left list-group-item radio-box" onclick="change_page_onclick()" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+		<label for="${page_filename}" title="${page_filename}" id="label-${page}" class="rounded text-sm-left list-group-item radio-box" onclick="change_page_onclick()" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
 		    <span title="${page_name}" style="margin-left:0.5em; margin-right:0.1em;" class="iconify" data-icon="gridicons:pages" data-inline="false"></span>
 		    ${page_name}
 		</label>
@@ -197,13 +196,13 @@ insert_pages_html()
 	done
 
 
-	ident=$(printf '\t%.0s' {1..11})
+	indent=$(printf '\t%.0s' {1..11})
 
 	# shellcheck disable=SC2086,SC2001
-	pages_html="$(echo -e "${pages_html}" | sed "s|^|${ident}|g" | sed "s|@|-|g" | tee "${OUTPUT_DIR_PATH}/pages.html")"
+	pages_html="$(echo -e "${pages_html}" | sed "s|^|${indent}|g" | sed "s|@|-|g" | tee "${OUTPUT_DIR_PATH}/pages.html")"
 
 	line_no=$(($(grep -n "FILL_PAGES_HERE" "${html_path}" | cut -d":" -f1) + 1))
-	sed -i "${line_no} e cat ${OUTPUT_DIR_PATH}/pages.html" "${html_path}"
+	sed -i "${line_no} e cat \"${OUTPUT_DIR_PATH}/pages.html\"" "${html_path}"
 }
 
 create_unified_layers_list()
@@ -306,7 +305,7 @@ insert_layers_html()
 		# TODO: If page files differ do somenthing here
 		local  layers=$(cat "${layers_commit_1}")
 		local layers2=$(cat "${layers_commit_2}")
-		echo "  > INFO: Layers lists differ on both commits. What should we do?"
+		echo -e "  ${LGY}> INFO: Layers lists differ on both commits. What should we do?${RCO}"
 	fi
 
 	i=0
@@ -339,13 +338,13 @@ insert_layers_html()
 
 	done
 
-	ident=$(printf '\t%.0s' {1..11})
+	indent=$(printf '\t%.0s' {1..11})
 
 	# shellcheck disable=SC2086,SC2001
-	layers_html="$(echo -e "${layers_html}" | sed "s|^|${ident}|g" | sed "s|@|-|g" | tee "${OUTPUT_DIR_PATH}/layers.html")"
+	layers_html="$(echo -e "${layers_html}" | sed "s|^|${indent}|g" | sed "s|@|-|g" | tee "${OUTPUT_DIR_PATH}/layers.html")"
 
 	line_no=$(($(grep -n "FILL_LAYERS_HERE" "${html_path}" | cut -d":" -f1) + 1))
-	sed -i "${line_no} e cat ${OUTPUT_DIR_PATH}/layers.html" "${html_path}"
+	sed -i "${line_no} e cat \"${OUTPUT_DIR_PATH}/layers.html\"" "${html_path}"
 }
 
 # ==========================================================================================
@@ -420,6 +419,18 @@ find()
 			;;
 		*)
 			command find "$@"
+			;;
+	esac
+}
+
+fmt()
+{
+	case ${OSTYPE} in
+		darwin*)
+			gfmt "$@"
+			;;
+		*)
+			command fmt "$@"
 			;;
 	esac
 }
@@ -555,7 +566,7 @@ is_tool_avail()
 			echo "ERROR: ${tool} could not be found" 1>&2
 			exit 1
 		else
-			echo "${LBL}INFO: ${tool} is missing, skipping its use${RCO}" 1>&2
+			echo "${LBL}INFO: ${tool} is missing, skiping its use${RCO}" 1>&2
 			return 1
 		fi
 	else
@@ -1214,7 +1225,7 @@ manual_schematic_plot()
 
 	if [[ "$(get_file_extension "${kicad_sch}")" == "kicad_sch" ]]; then
 
-		if [[ "${SKIP_KICAD_6}" == "0" ]]; then
+		if [[ ! "${SKIP_KICAD_6}" == "1" ]] && [[ "${OSTYPE}" =~ "darwin*" ]]; then
 
 			cmd="plot_kicad_sch ${kicad_sch} ${command_end}"
 			if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
@@ -1277,7 +1288,7 @@ manual_schematic_plot()
 
 					else
 
-						if [[ "${SKIP_KICAD_6}" == "0" ]]; then
+						if [[ ! "${SKIP_KICAD_6}" == "1" ]] && [[ "${OSTYPE}" =~ "darwin*" ]]; then
 
 							echo -e "\n   ${LRE}Plotkicadsch has failed, using GUI instead."
 
