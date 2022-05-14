@@ -19,6 +19,10 @@ get_current_display_server()
 	# Check the display server in use (x11 or wayland)
 	# loginctl show-session $(awk '/tty/ {print $1}' <(loginctl)) -p Type | awk -F= '{print $2}'
 	echo "${XDG_SESSION_TYPE}"
+
+	# if [[ -z "${XDG_SESSION_TYPE}" ]]; then
+		# env | grep -i wayland
+	# fi
 }
 
 launch_virtual_display()
@@ -117,34 +121,10 @@ is_design_loaded()
 	done
 }
 
-dimiss_project_recue_helper_popup()
+dissmiss_popup()
 {
-	local win_id="${1}"
-	echo "Dismissing: Project Helper Popup (window_id = ${win_id})"
-
-	xdotool key --window "${win_id}" "Escape" &> /dev/null
-	sleep "${TIME}"
-}
-
-dimiss_loading_schematic_popup()
-{
-	echo "Dismissing: Loading Schematic Popup (window_id = ${win_id})"
-
-	xdotool key --window "${win_id}" "Escape" &> /dev/null
-	sleep "${TIME}"
-}
-
-dimiss_generic_error_popup()
-{
-	echo "Dismissing: Generic Error (window_id = ${win_id})"
-
-	xdotool key --window "${win_id}" "Escape" &> /dev/null
-	sleep "${TIME}"
-}
-
-dissmiss_cache_lib_warning()
-{
-	echo "Dismissing: Cache Lib Popup (window_id = ${win_id})"
+	local win_id=$1
+	echo "- Dismissing popup [${win_id}]"
 
 	xdotool key --window "${win_id}" "Escape" &> /dev/null
 	sleep "${TIME}"
@@ -158,21 +138,8 @@ dismiss_popups()
 		win_title=$(xwininfo -tree -id "${win_id}" 2>/dev/null | grep "xwininfo:" | cut -d" " -f5- | sed "s/\"//g")
 
 		case "${win_title}" in
-			"Project Rescue Helper")
-				dimiss_project_recue_helper_popup "${win_id}"
-				;;
-
-			"Loading Schematic")
-				dimiss_loading_schematic_popup "${win_id}"
-				;;
-
-			"Error")
-				dimiss_generic_error_popup "${win_id}"
-				;;
-
-			Warning*)
-				dissmiss_cache_lib_warning "${win_id}"
-				;;
+			"Project Rescue Helper"|"Loading Schematic"|"Error"|"Warning*"|*)
+				dissmiss_popup "${win_id}" "${win_title}"
 		esac
 	done
 }
@@ -237,7 +204,7 @@ main()
 	if [[ "$(get_current_display_server)" != "x11" ]] && [[ "$(get_current_display_server)" != "wayland" ]]; then
 		echo "Error: Unknown display server \"$(get_current_display_server)\""
 		echo "Only x11, xwayland are currently supported"
-		# exit 1
+		exit 1
 	fi
 
 	local kicad_sch_path="${1}"
