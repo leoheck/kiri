@@ -184,8 +184,8 @@ insert_pages_html()
 		# IFS=
 		read -r -d '' page_html <<-EOM
 		<!-- Page ${i} -->
-		<input id="${page_filename}" title="${page_name}" type="radio" value="${page_filename}" name="pages" ${checked} onchange="change_page()"/>
-		<label for="${page_filename}" title="${page_filename}" id="label-${page}" class="rounded text-sm-left list-group-item radio-box" onclick="change_page_onclick()" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+		<input id="${page_name}" title="${page_filename}" type="radio" value="${page_name}" name="pages" ${checked} onchange="change_page()"/>
+		<label for="${page_name}" title="${page_filename}" id="label-${page}" class="rounded text-sm-left list-group-item radio-box" onclick="change_page_onclick()" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
 		    <span title="${page_name}" style="margin-left:0.5em; margin-right:0.1em;" class="iconify" data-icon="gridicons:pages" data-inline="false"></span>
 		    ${page_name}
 		</label>
@@ -1225,9 +1225,13 @@ manual_schematic_plot()
 
 	if [[ "$(get_file_extension "${kicad_sch}")" == "kicad_sch" ]]; then
 
-		if [[ ! "${SKIP_KICAD_6}" == "1" ]] && [[ "${OSTYPE}" =~ "darwin*" ]]; then
+		if [[ "${SKIP_KICAD_6}" == "0" ]] && [[ ! "${OSTYPE}" =~ "darwin*" ]]; then
 
-			cmd="plot_kicad_sch ${kicad_sch} ${command_end}"
+			if [[ -z ${PLOTPCB_TIMEOUT} ]]; then
+				PLOTPCB_TIMEOUT=5
+			fi
+
+			cmd="timeout ${PLOTPCB_TIMEOUT} plot_kicad_sch ${kicad_sch} ${command_end}"
 			if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
 				echo -e "\n   ${LMA}Plotting ${commit_hash}, ${OUTPUT_DIR_PATH}/${commit_hash}/${RCO}"
 				echo -e "   ${LYE}${cmd}${RCO}" | fmt -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
@@ -1240,10 +1244,15 @@ manual_schematic_plot()
 				fi
 				echo
 			fi
+
 		else
-
-			echo -e "   ${LBL}Skiping schematic plot for ${commit_hash}"
-
+			if [[ "${SKIP_KICAD_6}" == "1" ]]; then
+				echo -e "   ${LBL}Plot schematic plot was disabled"
+			else
+				if [[ "${OSTYPE}" =~ "darwin*" ]]; then
+					echo -e "   ${LBL}Skiping schematic plot that does not work on macOS"
+				fi
+			fi
 		fi
 
 	else
@@ -1288,7 +1297,7 @@ manual_schematic_plot()
 
 					else
 
-						if [[ ! "${SKIP_KICAD_6}" == "1" ]] && [[ "${OSTYPE}" =~ "darwin*" ]]; then
+						if [[ "${SKIP_KICAD_6}" == "0" ]] && [[ ! "${OSTYPE}" =~ "darwin*" ]]; then
 
 							echo -e "\n   ${LRE}Plotkicadsch has failed, using GUI instead."
 
@@ -1311,6 +1320,15 @@ manual_schematic_plot()
 
 							# plot_kicad_sch plots everything, then break
 							break
+
+						else
+							if [[ "${SKIP_KICAD_6}" == "1" ]]; then
+								echo -e "   ${LBL}Plot schematic plot was disabled"
+							else
+								if [[ "${OSTYPE}" =~ "darwin*" ]]; then
+									echo -e "   ${LBL}Skiping schematic plot that does not work on macOS"
+								fi
+							fi
 						fi
 					fi
 				fi
