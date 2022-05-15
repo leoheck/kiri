@@ -1223,15 +1223,15 @@ manual_schematic_plot()
 
 	cd "${OUTPUT_DIR_PATH}/${commit_hash}/" &> /dev/null || exit
 
-	if [[ -z ${PLOTPCB_TIMEOUT} ]]; then
-		PLOTPCB_TIMEOUT=5
-	fi
-
 	if [[ "$(get_file_extension "${kicad_sch}")" == "kicad_sch" ]]; then
 
 		if [[ "${SKIP_KICAD_6}" == "0" ]] && [[ ! "${OSTYPE}" =~ "darwin" ]]; then
 
-			cmd="timeout ${PLOTPCB_TIMEOUT} plot_kicad_sch ${kicad_sch} ${command_end}"
+			if [[ -z ${PLOTSCH_TIMEOUT} ]]; then
+				PLOTSCH_TIMEOUT=15
+			fi
+
+			cmd="timeout ${PLOTSCH_TIMEOUT} plot_kicad_sch ${kicad_sch} ${command_end}"
 			if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
 				echo -e "\n   ${LMA}Plotting ${commit_hash}, ${OUTPUT_DIR_PATH}/${commit_hash}/${RCO}"
 				echo -e "   ${LYE}${cmd}${RCO}" | fmt -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
