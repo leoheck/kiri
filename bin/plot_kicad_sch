@@ -204,7 +204,7 @@ main()
 	if [[ "$(get_current_display_server)" != "x11" ]] && [[ "$(get_current_display_server)" != "wayland" ]]; then
 		echo "Error: Unknown display server \"$(get_current_display_server)\""
 		echo "Only x11, xwayland are currently supported"
-		exit 1
+		#exit 1
 	fi
 
 	local kicad_sch_path="${1}"
