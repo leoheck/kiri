@@ -1,0 +1,213 @@
+#! /bin/bash
+
+# This tool works with Kicad 6
+# Tested on 6.0.5
+# Requires: cliclick
+
+readonly TIME=0.1
+readonly PLOT_TIME=1
+
+forced_exit()
+{
+	kill -9 "${XVFB_PID}" &> /dev/null
+	kill -9 "${EESCHEMA_PID}" &> /dev/null
+	exit 1
+}
+
+get_current_display_server()
+{
+	# Check the display server in use (x11 or wayland)
+	# loginctl show-session $(awk '/tty/ {print $1}' <(loginctl)) -p Type | awk -F= '{print $2}'
+	echo "${XDG_SESSION_TYPE}"
+
+	# if [[ -z "${XDG_SESSION_TYPE}" ]]; then
+		# env | grep -i wayland
+	# fi
+}
+
+launch_virtual_display()
+{
+	export n=":0"
+	if [[ -z "$DISPLAY" ]]; then
+		export DISPLAY=":${n}.0"
+	fi
+
+	# killall Xvfb &>/dev/null
+	# rm -rf "/tmp/.X${n}-lock"
+	# rm -rf "/tmp/.X${n}-unix/X1"
+	# rm -rf "/tmp/.X${n}*"
+	# rm -rf "/tmp/xvfb-run.*"
+
+	# xdpyinfo -display ${DISPLAY} > /dev/null
+
+	# Xvfb -f ${DISPLAY} -screen 1 1280x800x24 &
+	# Xvfb -f ${DISPLAY} -fbdir /var/tmp 1280x800x24 -dpi 96 &
+	# Xvfb -f ${DISPLAY} -screen 0 640x480x8 -nolisten tcp &
+	# Xvfb -f ${DISPLAY} -screen 0 1024x768x16 -dpi 96 &
+	# Xvfb -f ${DISPLAY} -screen 0 1280x800x24 -ac -dpi 96 +extension RANDR :1 &
+	# export XVFB_PID=${!}
+
+	# echo "xvfb-run"
+}
+
+get_filename()
+{
+	local filename="$(basename "${1}")"
+	echo "${filename%.*}"
+}
+
+configure_and_plot()
+{
+	local kicad_sch="${1}"
+	local output_dir_path="${2}"
+
+	open -a Eeschema "${kicad_sch}"
+	sleep 2
+	export EESCHEMA_PID=$(ps aux | grep -v grep | grep -i eeschema.app | awk '{print $2;}')
+
+	# Launch PLOT window
+
+	cliclick c:150,11
+	cliclick w:100
+
+	cliclick kp:arrow-up
+	cliclick w:100
+
+	cliclick kp:return
+	cliclick w:100
+
+	# Select the input field to put the plot folder
+
+	cliclick kp:tab
+	cliclick w:100
+
+	cliclick kp:delete
+	cliclick w:100
+
+	# BUG: cliclick id not handling well strings with "m" like in tmp_xxxx
+	cliclick t:${output_dir_path}
+	liclick w:100
+
+	# Select SVG by clicking the radio list (keyboard does not change the selection)
+	# Does it work on other screen sizes/resolutions?
+	# cliclick m:290,325 # Move mouse to the point, helps to find the x,y coordinates
+	cliclick c:290,325
+
+	# Plot in Black and White
+
+	cliclick kp:tab
+	cliclick w:100
+
+	cliclick kp:tab
+	cliclick w:100
+
+	cliclick kp:tab
+	cliclick w:100
+
+	cliclick kp:tab
+	cliclick w:100
+
+	cliclick kp:tab
+	cliclick w:100
+
+	cliclick kp:arrow-down
+	cliclick w:100
+
+	cliclick kp:arrow-down
+	cliclick w:100
+
+	cliclick kp:return
+	cliclick w:100
+
+	# PLOT
+	cliclick kp:return
+	cliclick w:100
+
+
+	# Dismiss plot window
+	cliclick kp:esc
+	cliclick w:100
+
+	# Close Eeschema
+	# cliclick kd:cmd kp:q
+	# cliclick w:100
+
+	# HIDE WINDOW
+
+	# cliclick c:110,11
+	# cliclick w:100
+
+	# cliclick ku:cmd
+	# cliclick w:100
+
+	# cliclick kp:arrow-down
+	# cliclick w:100
+
+	# cliclick kp:arrow-down
+	# cliclick w:100
+
+	# cliclick kp:arrow-down
+	# cliclick w:100
+
+	# cliclick kp:arrow-down
+	# cliclick w:100
+
+	# cliclick kp:return
+	# cliclick w:100
+
+	kill -9 ${EESCHEMA_PID} 2> /dev/null
+}
+
+main()
+{
+	trap "exit 1" TERM
+	trap forced_exit INT
+
+	local kicad_sch_path="${1}"
+	local output_dir_path="${2}"
+
+	file_name=$(basename -- "${kicad_sch_path}")
+	project_name="${file_name%.*}"
+
+	if [[ ! -f "${kicad_sch_path}" ]]; then
+		echo "Missing .kicad_sch file"
+		exit 1
+	fi
+
+	if [[ "${#}" -lt 2 ]]; then
+		output_dir_path="."
+	else
+		output_dir_path="${2}"
+		if [[ ! -d "${output_dir_path}" ]]; then
+			echo "Error: \"${output_dir_path}\" does not exist"
+			exit 1
+		fi
+	fi
+
+	echo -e "\nDisplay server = $(get_current_display_server)"
+	echo -e "Schematic_path = ${kicad_sch_path}"
+	echo -e "   Output_path = ${output_dir_path}"
+
+	local temp_dir=$(mktemp -d "dir_${RANDOM}")
+	local output_temp_dir_path="${output_dir_path}/${temp_dir}"
+	mkdir -p "${output_temp_dir_path}" &> /dev/null
+
+	configure_and_plot "${kicad_sch_path}" "${output_temp_dir_path}" 2> /dev/null
+
+	# Organize generated files for KiRI
+	svg_file_paths=($(find "${output_temp_dir_path}" -name "*.svg"))
+
+	if [[ -n ${svg_file_paths} ]]; then
+		IFS=$'\n'
+		for svg_file in "${svg_file_paths[@]}"; do
+			new_file=$(echo "${svg_file}" | sed "s|${temp_dir}/|sch-|g" )
+			echo "      Ploting = ${new_file}"
+			mv "${svg_file}" "${new_file}" 2> /dev/null
+		done
+		echo
+	fi
+
+	rm -rf "${temp_dir}"
+}
+
+main "${@}" | tee .kiri.log
