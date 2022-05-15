@@ -78,13 +78,17 @@ launch_eeschema()
 
 	setxkbmap us
 
+	# Can be changed externally
+	if [[ -z ${WAIT_FOR_EESCHEMA_S} ]]; then
+		WAIT_FOR_EESCHEMA_S=0.5
+	fi
+
 	# Wait for eeschema to launch the project
 	while [[ "$(is_design_loaded "${kicad_sch_filename}")" -ne "1" ]]; do
-		sleep 0.2
+		sleep ${WAIT_FOR_EESCHEMA_S}
 		EESCHEMA_WIDS=($(xdotool search --onlyvisible --sync --classname "Eeschema" 2> /dev/null))
 		debug_eeschema_popups
-		dismiss_popups
-		# read
+		dismiss_eeschema_popups
 	done
 
 	export EESCHEMA_WID=${EESCHEMA_WIDS[0]}
@@ -96,7 +100,7 @@ debug_eeschema_popups()
 	for win_id in "${EESCHEMA_WIDS[@]}"; do
 		# xwininfo -tree -id ${id}
 		win_title=$(xwininfo -tree -id "${win_id}" 2> /dev/null | grep "xwininfo:" | cut -d" " -f5- | sed "s/\"//g")
-		echo "- [${win_id}] Title: \"${win_title}\""
+		echo "- [${win_id}] Win title: \"${win_title}\""
 	done
 }
 
@@ -130,7 +134,7 @@ dissmiss_popup()
 	sleep "${TIME}"
 }
 
-dismiss_popups()
+dismiss_eeschema_popups()
 {
 	IFS=$'\n'
 	for win_id in "${EESCHEMA_WIDS[@]}"; do
@@ -138,8 +142,23 @@ dismiss_popups()
 		win_title=$(xwininfo -tree -id "${win_id}" 2>/dev/null | grep "xwininfo:" | cut -d" " -f5- | sed "s/\"//g")
 
 		case "${win_title}" in
-			"Project Rescue Helper"|"Loading Schematic"|"Error"|"Warning*"|*)
+
+			"[no schematic loaded] — Schematic Editor")
+				;;
+
+			"Loading Schematic")
+				;;
+
+			"${project_name} [${project_name}/] — Schematic Editor")
+				;;
+
+			"Project Rescue Helper"|"Error*"|"Warning*")
 				dissmiss_popup "${win_id}" "${win_title}"
+				;;
+
+			*)
+				echo "Unknwon popup window [${win_id}] \"${win_title}\""
+				;;
 		esac
 	done
 }
@@ -165,21 +184,29 @@ configure_and_plot()
 	local win_id="${1}"
 	local output_dir_path="${2}"
 
-	# Set output directory
+	# Remove ./ from the path
+	# Otherwise Kicad may complain about the path being relative
+	output_dir_path=$(echo ${output_dir_path} | sed "s|\./||g" )
+
+	# Write output directory
 	xdotool type --window "${win_id}" --delay 1 "${output_dir_path}"
 	sleep "${TIME}"
 
 	# Change ouput format to svg
-	xdotool key --window "${win_id}" "Tab"
-	sleep "${TIME}"
-	xdotool key --window "${win_id}" "Tab"
-	sleep "${TIME}"
-	xdotool key --window "${win_id}" "Up"
-	sleep "${TIME}"
-	xdotool key --window "${win_id}" "Up"
-	sleep "${TIME}"
-	xdotool key --window "${win_id}" "BackSpace"
-	sleep "${TIME}"
+	# It is default on mine, where this is stored?
+	# It looks like there is no way to go to a fixed place to this list
+	# Or to select a fixed settings
+	# xdotool key --window "${win_id}" "Tab"
+	# sleep "${TIME}"
+	# xdotool key --window "${win_id}" "Tab"
+	# sleep "${TIME}"
+	# xdotool key --window "${win_id}" "Up"
+	# sleep "${TIME}"
+	# xdotool key --window "${win_id}" "Up"
+	# sleep "${TIME}"
+	# xdotool key --window "${win_id}" "space"
+	# sleep "${TIME}"
+
 
 	# Set color mode as black and white
 	xdotool key --repeat 4 --delay "${TIME}" "Tab"
@@ -193,6 +220,19 @@ configure_and_plot()
 	xdotool key --repeat 11 --delay "${TIME}" "Tab"
 	sleep "${TIME}"
 	xdotool key --window "${win_id}" "Return"
+	sleep ${PLOT_TIME}
+
+	# Once more
+	xdotool key --window "${win_id}" "Return"
+	sleep ${PLOT_TIME}
+
+	# Once more
+	xdotool key --window "${win_id}" "Return"
+	sleep ${PLOT_TIME}
+
+
+	# Once more
+	xdotool key --window "${win_id}" "Escape"
 	sleep ${PLOT_TIME}
 }
 
@@ -259,7 +299,8 @@ main()
 		echo
 	fi
 
-	rm -rf "${temp_dir}"
+	# remove temporary folder
+	rm -rf "${output_temp_dir_path}"
 }
 
 main "${@}" | tee .kiri.log
