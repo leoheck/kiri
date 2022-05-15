@@ -1162,7 +1162,7 @@ create_list_of_pages()
 	if [[ "${DEBUG}" == "1" ]]; then
 		echo -e "\n${kicad_sch}"
 		echo -e "${LBL}Pages:${RCO}"
-		echo -e "${pages}\n" | nl -s": "
+		echo -e "${pages}" | nl -s": "
 	fi
 
 	printf "%s\n" "${pages}" > "${OUTPUT_DIR_PATH}/${commit_hash}/${pages_file}"
@@ -1223,13 +1223,13 @@ manual_schematic_plot()
 
 	cd "${OUTPUT_DIR_PATH}/${commit_hash}/" &> /dev/null || exit
 
+	if [[ -z ${PLOTPCB_TIMEOUT} ]]; then
+		PLOTPCB_TIMEOUT=5
+	fi
+
 	if [[ "$(get_file_extension "${kicad_sch}")" == "kicad_sch" ]]; then
 
-		if [[ "${SKIP_KICAD_6}" == "0" ]] && [[ ! "${OSTYPE}" =~ "darwin*" ]]; then
-
-			if [[ -z ${PLOTPCB_TIMEOUT} ]]; then
-				PLOTPCB_TIMEOUT=5
-			fi
+		if [[ "${SKIP_KICAD_6}" == "0" ]] && [[ ! "${OSTYPE}" =~ "darwin" ]]; then
 
 			cmd="timeout ${PLOTPCB_TIMEOUT} plot_kicad_sch ${kicad_sch} ${command_end}"
 			if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
@@ -1249,8 +1249,23 @@ manual_schematic_plot()
 			if [[ "${SKIP_KICAD_6}" == "1" ]]; then
 				echo -e "   ${LBL}Plot schematic plot was disabled"
 			else
-				if [[ "${OSTYPE}" =~ "darwin*" ]]; then
-					echo -e "   ${LBL}Skiping schematic plot that does not work on macOS"
+
+				if [[ "${OSTYPE}" =~ "darwin" ]]; then
+
+					cmd="plot_kicad_sch_macos ${kicad_sch} ${command_end}"
+					if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
+						echo -e "\n   ${LMA}Plotting ${commit_hash}, ${OUTPUT_DIR_PATH}/${commit_hash}/${RCO}"
+						echo -e "   ${LYE}${cmd}${RCO}" | fmt -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
+					fi
+					eval "${cmd}" | sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
+					ret="${PIPESTATUS[0]}"
+					if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
+						if [[ "${ret}" -gt "0" ]]; then
+							echo -e "${LRE}${BTE}   Status: ${ret}${RCO}"
+						fi
+						echo
+					fi
+
 				fi
 			fi
 		fi
@@ -1297,13 +1312,13 @@ manual_schematic_plot()
 
 					else
 
-						if [[ "${SKIP_KICAD_6}" == "0" ]] && [[ ! "${OSTYPE}" =~ "darwin*" ]]; then
+						if [[ "${SKIP_KICAD_6}" == "0" ]] && [[ ! "${OSTYPE}" =~ "darwin" ]]; then
 
 							echo -e "\n   ${LRE}Plotkicadsch has failed, using GUI instead."
 
 							# TESTING: Plokicadsch has failed, then usig GUI
 							# IF THIS IS GOOD. Then it is better to organize this function main_if order here to avoid repetition
-							cmd="plot_kicad_sch ${kicad_sch} ${command_end}"
+							cmd="timeout ${PLOTPCB_TIMEOUT} plot_kicad_sch ${kicad_sch} ${command_end}"
 							ret=${?}
 							if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
 								echo -e "   ${LMA}Plotting ${commit_hash}, ${OUTPUT_DIR_PATH}/${commit_hash}/${RCO}"
@@ -1318,16 +1333,29 @@ manual_schematic_plot()
 								fi
 							fi
 
-							# plot_kicad_sch plots everything, then break
+							# plot_kicad_sch plots all pagest at once, then break
 							break
 
 						else
-							if [[ "${SKIP_KICAD_6}" == "1" ]]; then
-								echo -e "   ${LBL}Plot schematic plot was disabled"
-							else
-								if [[ "${OSTYPE}" =~ "darwin*" ]]; then
-									echo -e "   ${LBL}Skiping schematic plot that does not work on macOS"
+
+							if [[ "${OSTYPE}" =~ "darwin" ]]; then
+
+								cmd="plot_kicad_sch_macos ${kicad_sch} ${command_end}"
+								if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
+									echo -e "\n   ${LMA}Plotting ${commit_hash}, ${OUTPUT_DIR_PATH}/${commit_hash}/${RCO}"
+									echo -e "   ${LYE}${cmd}${RCO}" | fmt -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
 								fi
+								eval "${cmd}" | sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
+								ret="${PIPESTATUS[0]}"
+								if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
+									if [[ "${ret}" -gt "0" ]]; then
+										echo -e "${LRE}${BTE}   Status: ${ret}${RCO}"
+									fi
+									echo
+								fi
+
+								# plot_kicad_sch_macos plots all pagest at once, then break
+								break
 							fi
 						fi
 					fi
