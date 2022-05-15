@@ -4,55 +4,16 @@
 # Tested on 6.0.5
 # Requires: cliclick
 
-readonly TIME=0.1
-readonly PLOT_TIME=1
-
-forced_exit()
+ctrl_c()
 {
 	kill -9 "${XVFB_PID}" &> /dev/null
 	kill -9 "${EESCHEMA_PID}" &> /dev/null
 	exit 1
 }
 
-get_current_display_server()
+get_filename_without_extension()
 {
-	# Check the display server in use (x11 or wayland)
-	# loginctl show-session $(awk '/tty/ {print $1}' <(loginctl)) -p Type | awk -F= '{print $2}'
-	echo "${XDG_SESSION_TYPE}"
-
-	# if [[ -z "${XDG_SESSION_TYPE}" ]]; then
-		# env | grep -i wayland
-	# fi
-}
-
-launch_virtual_display()
-{
-	export n=":0"
-	if [[ -z "$DISPLAY" ]]; then
-		export DISPLAY=":${n}.0"
-	fi
-
-	# killall Xvfb &>/dev/null
-	# rm -rf "/tmp/.X${n}-lock"
-	# rm -rf "/tmp/.X${n}-unix/X1"
-	# rm -rf "/tmp/.X${n}*"
-	# rm -rf "/tmp/xvfb-run.*"
-
-	# xdpyinfo -display ${DISPLAY} > /dev/null
-
-	# Xvfb -f ${DISPLAY} -screen 1 1280x800x24 &
-	# Xvfb -f ${DISPLAY} -fbdir /var/tmp 1280x800x24 -dpi 96 &
-	# Xvfb -f ${DISPLAY} -screen 0 640x480x8 -nolisten tcp &
-	# Xvfb -f ${DISPLAY} -screen 0 1024x768x16 -dpi 96 &
-	# Xvfb -f ${DISPLAY} -screen 0 1280x800x24 -ac -dpi 96 +extension RANDR :1 &
-	# export XVFB_PID=${!}
-
-	# echo "xvfb-run"
-}
-
-get_filename()
-{
-	local filename="$(basename "${1}")"
+	local filename="$(basename -- "${1}")"
 	echo "${filename%.*}"
 }
 
@@ -161,18 +122,17 @@ configure_and_plot()
 main()
 {
 	trap "exit 1" TERM
-	trap forced_exit INT
+	trap ctrl_c INT
 
 	local kicad_sch_path="${1}"
 	local output_dir_path="${2}"
-
-	file_name=$(basename -- "${kicad_sch_path}")
-	project_name="${file_name%.*}"
 
 	if [[ ! -f "${kicad_sch_path}" ]]; then
 		echo "Missing .kicad_sch file"
 		exit 1
 	fi
+
+	local project_name=$(get_filename_without_extension "${kicad_sch_path}")
 
 	if [[ "${#}" -lt 2 ]]; then
 		output_dir_path="."
@@ -184,7 +144,6 @@ main()
 		fi
 	fi
 
-	echo -e "\nDisplay server = $(get_current_display_server)"
 	echo -e "Schematic_path = ${kicad_sch_path}"
 	echo -e "   Output_path = ${output_dir_path}"
 
@@ -201,7 +160,7 @@ main()
 		IFS=$'\n'
 		for svg_file in "${svg_file_paths[@]}"; do
 			new_file=$(echo "${svg_file}" | sed "s|${temp_dir}/|sch-|g" )
-			echo "      Ploting = ${new_file}"
+			echo "      Plotting = ${new_file}"
 			mv "${svg_file}" "${new_file}" 2> /dev/null
 		done
 		echo
