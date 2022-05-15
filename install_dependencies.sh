@@ -80,7 +80,6 @@ linux_install_software_with_apt()
 	sudo apt install -y librsvg2-bin
 	sudo apt install -y imagemagick
 	sudo apt install -y xdotool
-	sudo apt install -y ydotool
 }
 
 # =============================================
@@ -138,8 +137,8 @@ macos_install_brew_modules()
 	brew install wxpython
 	brew install wxwidgets
 	brew install librsvg
-	brew install xdotool
 	brew install imagemagick
+	brew install cliclick
 }
 
 # =============================================
