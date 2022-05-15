@@ -7,7 +7,7 @@
 readonly TIME=0.1
 readonly PLOT_TIME=1
 
-forced_exit()
+ctrl_c()
 {
 	kill -9 "${XVFB_PID}" &> /dev/null
 	kill -9 "${EESCHEMA_PID}" &> /dev/null
@@ -18,7 +18,7 @@ get_current_display_server()
 {
 	# Check the display server in use (x11 or wayland)
 	# loginctl show-session $(awk '/tty/ {print $1}' <(loginctl)) -p Type | awk -F= '{print $2}'
-	echo "${XDG_SESSION_TYPE}"
+	echo "${XDG_SESSION_TYPE:-unknown}"
 
 	# if [[ -z "${XDG_SESSION_TYPE}" ]]; then
 		# env | grep -i wayland
@@ -50,7 +50,7 @@ launch_virtual_display()
 	# echo "xvfb-run"
 }
 
-get_filename()
+get_filename_without_extension()
 {
 	local filename="$(basename "${1}")"
 	echo "${filename%.*}"
@@ -65,7 +65,7 @@ get_window_tile()
 launch_eeschema()
 {
 	local kicad_sch_path="${1}"
-	local kicad_sch_filename=$(get_filename "${kicad_sch_path}")
+	local kicad_sch_filename=$(get_filename_without_extension "${kicad_sch_path}")
 
 	export EESCHEMA_PID
 	export EESCHEMA_WIDS
@@ -157,7 +157,7 @@ dismiss_eeschema_popups()
 				;;
 
 			*)
-				echo "Unknwon popup window [${win_id}] \"${win_title}\""
+				echo "Unknown popup window [${win_id}] \"${win_title}\""
 				;;
 		esac
 	done
@@ -239,7 +239,7 @@ configure_and_plot()
 main()
 {
 	trap "exit 1" TERM
-	trap forced_exit INT
+	trap ctrl_c INT
 
 	if [[ "$(get_current_display_server)" != "x11" ]] && [[ "$(get_current_display_server)" != "wayland" ]]; then
 		echo "Error: Unknown display server \"$(get_current_display_server)\""
@@ -250,13 +250,12 @@ main()
 	local kicad_sch_path="${1}"
 	local output_dir_path="${2}"
 
-	file_name=$(basename -- "${kicad_sch_path}")
-	project_name="${file_name%.*}"
-
 	if [[ ! -f "${kicad_sch_path}" ]]; then
 		echo "Missing .kicad_sch file"
 		exit 1
 	fi
+
+	local project_name=$(get_filename_without_extension "${kicad_sch_path}")
 
 	if [[ "${#}" -lt 2 ]]; then
 		output_dir_path="."
@@ -270,7 +269,7 @@ main()
 
 	echo -e "\nDisplay server = $(get_current_display_server)"
 	echo -e "Schematic_path = ${kicad_sch_path}"
-	echo -e "   Output_path = ${output_dir_path}\n"
+	echo -e "   Output_path = ${output_dir_path}"
 
 	local temp_dir=$(mktemp -d -p "${output_dir_path}")
 	local output_temp_dir_path="${output_dir_path}/${temp_dir}"
@@ -293,7 +292,7 @@ main()
 		IFS=$'\n'
 		for svg_file in "${svg_file_paths[@]}"; do
 			new_file=$(echo "${svg_file}" | sed "s|${temp_dir}/|sch-|g" )
-			echo "      Ploting = ${new_file}"
+			echo "      Plotting = ${new_file}"
 			mv "${svg_file}" "${new_file}" 2> /dev/null
 		done
 		echo
