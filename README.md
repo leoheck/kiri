@@ -1,9 +1,11 @@
-q# Kicad Revision Inspector (KiRI)
+# Kicad Revision Inspector (KiRI)
 
 KiRI is small tool to experiment having a visual diff tool for Kicad.
 It uses [Kicad-Diff](https://github.com/Gasman2014/KiCad-Diff) to generate layout diffs and [Plotgitsch](https://github.com/jnavila/plotkicadsch) to generate schematic diffs.
 
 It currently supports projects of `Kicad 5.*` and `Kicad 6.*` using `git` for source management.
+
+Schematics on `Kicad 6` are handled by `xdotool` on Linux/Windows and by `cliclick` on macOS.
 
 ## Installing
 
