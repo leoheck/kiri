@@ -230,7 +230,7 @@ main()
 
 	echo -e "\nDisplay server = $(get_current_display_server)"
 	echo -e "Schematic_path = ${kicad_sch_path}"
-	echo -e "   Output_path = ${output_dir_path}"
+	echo -e "   Output_path = ${output_dir_path}\n"
 
 	local temp_dir=$(mktemp -d -p "${output_dir_path}")
 	local output_temp_dir_path="${output_dir_path}/${temp_dir}"
