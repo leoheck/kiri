@@ -229,12 +229,7 @@ configure_and_plot()
 	local output_dir_path="${2}"
 
 	# Plot window will launch pre-configured
-
-	# Move off the text input field to Output Format
-	xdotool key --window "${win_id}" "Tab"
-	sleep "${TIME}"
-	xdotool key --window "${win_id}" "Tab"
-	sleep "${TIME}"
+	# When it launched, the focus is the Output Directory field
 
 	# Plot
 	xdotool key --window "${win_id}" "Return"
