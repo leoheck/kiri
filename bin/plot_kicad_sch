@@ -56,10 +56,54 @@ get_filename_without_extension()
 	echo "${filename%.*}"
 }
 
+get_file_extension()
+{
+	echo "${1##*.}"
+}
+
 get_window_tile()
 {
 	local win_id="${1}"
 	xwininfo -tree -id "${win_id}" 2> /dev/null | grep "xwininfo:" | cut -d" " -f5- | sed "s/\"//g"
+}
+
+set_default_plot_settings()
+{
+	local eeschema_json="${HOME}/.config/kicad/6.0/eeschema.json"
+
+	# "plot": {
+	#   "background_color": false,
+	#   "color": true,
+	#   "color_theme": "user",
+	#   "format": 0,
+	#   "frame_reference": true,
+	#   "hpgl_origin": 0,
+	#   "hpgl_paper_size": 0,
+	#   "hpgl_pen_size": 0.5
+	# },
+
+	# 1.   ps - 2
+	# 2.  pdf - 4
+	# 3.  svg - 5
+	# 4.  dxf - 3
+	# 5. hpgl - 0
+
+	background_color=false
+	color=false
+	format=5
+
+	if [[ -f "${eeschema_json}" ]]; then
+		sed -i "s/\"background_color\":.*/\"background_color\": ${background_color},/g" "${eeschema_json}"
+		sed -i "s/\"color\":.*/\"color\": ${color},/g" "${eeschema_json}"
+		sed -i "s/\"format\":.*/\"format\": ${format},/g" "${eeschema_json}"
+	fi
+}
+
+set_plot_output_directory()
+{
+	local kicad_prj="${1}"
+	local plot_directory="${2}"
+	sed -i "s|\"plot_directory\":.*|\"plot_directory\": \"${plot_directory}\",|g" "${kicad_prj}"
 }
 
 launch_eeschema()
@@ -184,56 +228,21 @@ configure_and_plot()
 	local win_id="${1}"
 	local output_dir_path="${2}"
 
-	# Remove ./ from the path
-	# Otherwise Kicad may complain about the path being relative
-	output_dir_path=$(echo ${output_dir_path} | sed "s|\./||g" )
+	# Plot window will launch pre-configured
 
-	# Write output directory
-	xdotool type --window "${win_id}" --delay 1 "${output_dir_path}"
+	# Move off the text input field to Output Format
+	xdotool key --window "${win_id}" "Tab"
+	sleep "${TIME}"
+	xdotool key --window "${win_id}" "Tab"
 	sleep "${TIME}"
 
-	# Change ouput format to svg
-	# It is default on mine, where this is stored?
-	# It looks like there is no way to go to a fixed place to this list
-	# Or to select a fixed settings
-	# xdotool key --window "${win_id}" "Tab"
-	# sleep "${TIME}"
-	# xdotool key --window "${win_id}" "Tab"
-	# sleep "${TIME}"
-	# xdotool key --window "${win_id}" "Up"
-	# sleep "${TIME}"
-	# xdotool key --window "${win_id}" "Up"
-	# sleep "${TIME}"
-	# xdotool key --window "${win_id}" "space"
-	# sleep "${TIME}"
-
-
-	# Set color mode as black and white
-	xdotool key --repeat 4 --delay "${TIME}" "Tab"
-	sleep "${TIME}"
-	xdotool key --window "${win_id}" "Page_Down"
-	sleep "${TIME}"
-	xdotool key --repeat 2 --delay "${TIME}" "Return"
-	sleep "${TIME}"
-
-	# Plot all pages
-	xdotool key --repeat 11 --delay "${TIME}" "Tab"
-	sleep "${TIME}"
+	# Plot
 	xdotool key --window "${win_id}" "Return"
 	sleep ${PLOT_TIME}
 
-	# Once more
-	xdotool key --window "${win_id}" "Return"
-	sleep ${PLOT_TIME}
-
-	# Once more
-	xdotool key --window "${win_id}" "Return"
-	sleep ${PLOT_TIME}
-
-
-	# Once more
+	# Close the popup
 	xdotool key --window "${win_id}" "Escape"
-	sleep ${PLOT_TIME}
+	sleep ${TIME}
 }
 
 main()
@@ -256,6 +265,22 @@ main()
 	fi
 
 	local project_name=$(get_filename_without_extension "${kicad_sch_path}")
+	local kicad_sch_extension=$(get_file_extension "${kicad_sch_path}")
+
+	case kicad_sch_extension in
+		"sch")
+			kicad_prj_extension="pro"
+			;;
+		"kicad_sch")
+			kicad_prj_extension="kicad_pro"
+			;;
+		*)
+			kicad_prj_extension="kicad_pro"
+			;;
+	esac
+
+	local kicad_prj="${project_name}.${kicad_prj_extension}"
+
 
 	if [[ "${#}" -lt 2 ]]; then
 		output_dir_path="."
@@ -268,18 +293,18 @@ main()
 	fi
 
 	echo -e "\nDisplay server = $(get_current_display_server)"
-	echo -e "Schematic_path = ${kicad_sch_path}"
-	echo -e "   Output_path = ${output_dir_path}"
+	echo -e "Schematic path = ${kicad_sch_path}"
+	echo -e "   Output path = ${output_dir_path}"
+	echo -e " Kicad project = ${kicad_prj}"
 
 	local temp_dir=$(mktemp -d -p "${output_dir_path}")
 	local output_temp_dir_path="${output_dir_path}/${temp_dir}"
 	mkdir -p "${output_temp_dir_path}" &> /dev/null
 
-	launch_eeschema "${kicad_sch_path}" #&> /dev/null
-	# echo -e "\n   eeschema_pid = ${EESCHEMA_PID}"
-	# echo -e "main_window_ids = ${EESCHEMA_WIDS[@]}"
-	# echo -e " main_window_id = ${EESCHEMA_WID}"
+	set_default_plot_settings
+	set_plot_output_directory "${kicad_prj}" "${output_temp_dir_path}"
 
+	launch_eeschema "${kicad_sch_path}" #&> /dev/null
 	launch_plot_window "${EESCHEMA_WID}" 2> /dev/null
 	configure_and_plot "${EESCHEMA_WID}" "${output_temp_dir_path}" 2> /dev/null
 
