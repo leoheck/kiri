@@ -138,6 +138,11 @@ launch_eeschema()
 	export EESCHEMA_WID=${EESCHEMA_WIDS[0]}
 }
 
+kill_eeschema()
+{
+	kill -9 "${EESCHEMA_PID}" &> /dev/null
+}
+
 debug_eeschema_popups()
 {
 	IFS=$'\n'
@@ -226,10 +231,9 @@ launch_plot_window()
 configure_and_plot()
 {
 	local win_id="${1}"
-	local output_dir_path="${2}"
 
 	# Plot window will launch pre-configured
-	# When it launched, the focus is the Output Directory field
+	# When it launches, the focus is the Output Directory field
 
 	# Plot
 	xdotool key --window "${win_id}" "Return"
@@ -276,7 +280,6 @@ main()
 
 	local kicad_prj="${project_name}.${kicad_prj_extension}"
 
-
 	if [[ "${#}" -lt 2 ]]; then
 		output_dir_path="."
 	else
@@ -301,9 +304,8 @@ main()
 
 	launch_eeschema "${kicad_sch_path}" #&> /dev/null
 	launch_plot_window "${EESCHEMA_WID}" 2> /dev/null
-	configure_and_plot "${EESCHEMA_WID}" "${output_temp_dir_path}" 2> /dev/null
-
-	kill -9 "${EESCHEMA_PID}" &> /dev/null
+	configure_and_plot "${EESCHEMA_WID}" 2> /dev/null
+	kill_eeschema
 
 	# Organize generated files for KiRI
 	svg_file_paths=($(find "${output_temp_dir_path}" -name "*.svg"))
@@ -318,7 +320,7 @@ main()
 		echo
 	fi
 
-	# remove temporary folder
+	# Remove temporary folder
 	rm -rf "${output_temp_dir_path}"
 }
 
