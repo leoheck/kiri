@@ -102,6 +102,11 @@ set_plot_output_directory()
 {
 	local kicad_prj="${1}"
 	local plot_directory="${2}"
+
+	# Kicad 5.0
+	sed -i "s|^PlotDirectoryName.*|PlotDirectoryName=${plot_directory}|g" "${kicad_prj}"
+
+	# Kicad 6.0
 	sed -i "s|\"plot_directory\":.*|\"plot_directory\": \"${plot_directory}\",|g" "${kicad_prj}"
 }
 
@@ -231,6 +236,7 @@ wait_until_plot_finishes()
 {
 	local plot_dir="${1}"
 	until [[ "$(ls -1 ${plot_dir}/*.svg | wc -l)" -ge "1" ]]; do
+		echo "Waiting plotting..."
 		sleep ${TIME}
 	done
 	sleep ${TIME}
@@ -275,14 +281,11 @@ main()
 	local project_name=$(get_filename_without_extension "${kicad_sch_path}")
 	local kicad_sch_extension=$(get_file_extension "${kicad_sch_path}")
 
-	case kicad_sch_extension in
+	case ${kicad_sch_extension} in
 		"sch")
 			kicad_prj_extension="pro"
 			;;
 		"kicad_sch")
-			kicad_prj_extension="kicad_pro"
-			;;
-		*)
 			kicad_prj_extension="kicad_pro"
 			;;
 	esac

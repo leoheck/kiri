@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Kicad 5 files will be ploted with plotgitcsch
+# FORCE_PLOTTING_GRAPHICALLY env variable forces it to be ploted graphically
+# Set it with before runing Kiri with
+# export FORCE_PLOTTING_GRAPHICALLY=1
+
 if [[ -n "${SUPER_DEBUG}" ]]; then
 	set -xe
 fi
@@ -395,6 +400,10 @@ export WEBSERVER_PORT
 export PLOTGITSCH_MISSING
 export KIDIFF_MISSING
 
+if [[ -z ${FORCE_PLOTTING_GRAPHICALLY} ]]; then
+	export FORCE_PLOTTING_GRAPHICALLY=0
+fi
+
 # RAW COLORS
 readonly RCO=$(printf "\e[0m")  # Reset COlors
 readonly BTE=$(printf "\e[1m")  # Bolt TExt
@@ -405,11 +414,6 @@ readonly LYE=$(printf "\e[93m") # Light YEllow
 readonly LBL=$(printf "\e[94m") # Light BLue
 readonly LMA=$(printf "\e[95m") # Light MAgenta
 readonly LCY=$(printf "\e[96m") # Light CYan
-
-# STATUS COLORS
-# readonly INFO=${LBL}
-# readonly ERRO=${LRE}
-# readonly WARN=${LYE}
 
 find()
 {
@@ -1223,7 +1227,7 @@ manual_schematic_plot()
 
 	cd "${OUTPUT_DIR_PATH}/${commit_hash}/" &> /dev/null || exit
 
-	if [[ "$(get_file_extension "${kicad_sch}")" == "kicad_sch" ]]; then
+	if [[ "$(get_file_extension "${kicad_sch}")" == "kicad_sch" ]] || [[ ${FORCE_PLOTTING_GRAPHICALLY} == "1" ]]; then
 
 		if [[ "${SKIP_KICAD_6}" == "0" ]] && [[ ! "${OSTYPE}" =~ "darwin" ]]; then
 
@@ -1333,7 +1337,7 @@ manual_schematic_plot()
 								fi
 							fi
 
-							# plot_kicad_sch plots all pagest at once, then break
+							# plot_kicad_sch plots all pages at once, then break
 							break
 
 						else
@@ -1401,7 +1405,7 @@ generate_schematic_artifacts()
 		local kicad_sch_extension_1=$(get_file_extension "${kicad_sch_1}")
 		local kicad_sch_extension_2=$(get_file_extension "${kicad_sch_1}")
 
-		if [[ "${kicad_sch_extension_1}" == "sch" ]] && [[ "${kicad_sch_extension_2}" == "sch" ]]; then
+		if [[ "${kicad_sch_extension_1}" == "sch" ]] && [[ "${kicad_sch_extension_2}" == "sch" ]] || [[ "${FORCE_PLOTTING_GRAPHICALLY}" == "0" ]]; then
 
 			local removed_color="FF0000"
 			local added_color="008FFF"
