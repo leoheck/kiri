@@ -17,17 +17,65 @@ get_filename_without_extension()
 	echo "${filename%.*}"
 }
 
-configure_and_plot()
+get_file_extension()
+{
+	echo "${1##*.}"
+}
+
+set_default_plot_settings()
+{
+	local eeschema_json="${HOME}/./Library/Preferences/kicad/6.0/eeschema.json"
+
+	# "plot": {
+	#   "background_color": false,
+	#   "color": true,
+	#   "color_theme": "user",
+	#   "format": 0,
+	#   "frame_reference": true,
+	#   "hpgl_origin": 0,
+	#   "hpgl_paper_size": 0,
+	#   "hpgl_pen_size": 0.5
+	# },
+
+	# 1.   ps - 2
+	# 2.  pdf - 4
+	# 3.  svg - 5
+	# 4.  dxf - 3
+	# 5. hpgl - 0
+
+	background_color=false
+	color=false
+	format=5
+
+	if [[ -f "${eeschema_json}" ]]; then
+		sed -i "s/\"background_color\":.*/\"background_color\": ${background_color},/g" "${eeschema_json}"
+		sed -i "s/\"color\":.*/\"color\": ${color},/g" "${eeschema_json}"
+		sed -i "s/\"format\":.*/\"format\": ${format},/g" "${eeschema_json}"
+	fi
+}
+
+set_plot_output_directory()
+{
+	local kicad_prj="${1}"
+	local plot_directory="${2}"
+	sed -i "s|\"plot_directory\":.*|\"plot_directory\": \"${plot_directory}\",|g" "${kicad_prj}"
+}
+
+launch_eeschema()
 {
 	local kicad_sch="${1}"
-	local output_dir_path="${2}"
-
 	open -a Eeschema "${kicad_sch}"
 	sleep 2
 	export EESCHEMA_PID=$(ps aux | grep -v grep | grep -i eeschema.app | awk '{print $2;}')
+}
 
-	# Launch PLOT window
+kill_eeschema()
+{
+	kill -9 ${EESCHEMA_PID} 2> /dev/null
+}
 
+launch_plot_window()
+{
 	cliclick c:150,11
 	cliclick w:100
 
@@ -36,87 +84,20 @@ configure_and_plot()
 
 	cliclick kp:return
 	cliclick w:100
+}
 
-	# Select the input field to put the plot folder
+configure_and_plot()
+{
+	# Plot window will launch pre-configured
+	# When it launches, the focus is the Output Directory field
 
-	cliclick kp:tab
-	cliclick w:100
-
-	cliclick kp:delete
-	cliclick w:100
-
-	# BUG: cliclick id not handling well strings with "m" like in tmp_xxxx
-	cliclick t:${output_dir_path}
-	liclick w:100
-
-	# Select SVG by clicking the radio list (keyboard does not change the selection)
-	# Does it work on other screen sizes/resolutions?
-	# cliclick m:290,325 # Move mouse to the point, helps to find the x,y coordinates
-	cliclick c:290,325
-
-	# Plot in Black and White
-
-	cliclick kp:tab
-	cliclick w:100
-
-	cliclick kp:tab
-	cliclick w:100
-
-	cliclick kp:tab
-	cliclick w:100
-
-	cliclick kp:tab
-	cliclick w:100
-
-	cliclick kp:tab
-	cliclick w:100
-
-	cliclick kp:arrow-down
-	cliclick w:100
-
-	cliclick kp:arrow-down
-	cliclick w:100
-
+	# Plot
 	cliclick kp:return
-	cliclick w:100
-
-	# PLOT
-	cliclick kp:return
-	cliclick w:100
-
+	cliclick w:1000
 
 	# Dismiss plot window
 	cliclick kp:esc
 	cliclick w:100
-
-	# Close Eeschema
-	# cliclick kd:cmd kp:q
-	# cliclick w:100
-
-	# HIDE WINDOW
-
-	# cliclick c:110,11
-	# cliclick w:100
-
-	# cliclick ku:cmd
-	# cliclick w:100
-
-	# cliclick kp:arrow-down
-	# cliclick w:100
-
-	# cliclick kp:arrow-down
-	# cliclick w:100
-
-	# cliclick kp:arrow-down
-	# cliclick w:100
-
-	# cliclick kp:arrow-down
-	# cliclick w:100
-
-	# cliclick kp:return
-	# cliclick w:100
-
-	kill -9 ${EESCHEMA_PID} 2> /dev/null
 }
 
 main()
@@ -133,6 +114,21 @@ main()
 	fi
 
 	local project_name=$(get_filename_without_extension "${kicad_sch_path}")
+	local kicad_sch_extension=$(get_file_extension "${kicad_sch_path}")
+
+	case kicad_sch_extension in
+		"sch")
+			kicad_prj_extension="pro"
+			;;
+		"kicad_sch")
+			kicad_prj_extension="kicad_pro"
+			;;
+		*)
+			kicad_prj_extension="kicad_pro"
+			;;
+	esac
+
+	local kicad_prj="${project_name}.${kicad_prj_extension}"
 
 	if [[ "${#}" -lt 2 ]]; then
 		output_dir_path="."
@@ -144,14 +140,21 @@ main()
 		fi
 	fi
 
-	echo -e "Schematic_path = ${kicad_sch_path}"
-	echo -e "   Output_path = ${output_dir_path}"
+	echo -e "Schematic path = ${kicad_sch_path}"
+	echo -e "   Output path = ${output_dir_path}"
+	echo -e " Kicad project = ${kicad_prj}"
 
 	local temp_dir=$(mktemp -d "dir_${RANDOM}")
 	local output_temp_dir_path="${output_dir_path}/${temp_dir}"
 	mkdir -p "${output_temp_dir_path}" &> /dev/null
 
-	configure_and_plot "${kicad_sch_path}" "${output_temp_dir_path}" 2> /dev/null
+	set_default_plot_settings
+	set_plot_output_directory "${kicad_prj}" "${output_temp_dir_path}"
+
+	launch_eeschema "${kicad_sch_path}"
+	launch_plot_window
+	configure_and_plot "${output_temp_dir_path}" 2> /dev/null
+	kill_eeschema
 
 	# Organize generated files for KiRI
 	svg_file_paths=($(find "${output_temp_dir_path}" -name "*.svg"))
