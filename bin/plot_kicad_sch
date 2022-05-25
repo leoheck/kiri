@@ -2,10 +2,9 @@
 
 # This tool works with Kicad 6
 # Tested on 6.0.4-6f826c9f35~116~ubuntu22.04.1
-# Requires: xdootool, xvfb
+# Requires: xdootool
 
 readonly TIME=0.1
-readonly PLOT_TIME=1
 
 ctrl_c()
 {
@@ -228,16 +227,26 @@ launch_plot_window()
 	sleep "${TIME}"
 }
 
-configure_and_plot()
+wait_until_plot_finishes()
+{
+	local plot_dir="${1}"
+	until [[ "$(ls -1 ${plot_dir}/*.svg | wc -l)" -ge "1" ]]; do
+		sleep ${TIME}
+	done
+	sleep ${TIME}
+}
+
+plot_schematics()
 {
 	local win_id="${1}"
+	local plot_dir="${2}"
 
 	# Plot window will launch pre-configured
 	# When it launches, the focus is the Output Directory field
 
 	# Plot
 	xdotool key --window "${win_id}" "Return"
-	sleep ${PLOT_TIME}
+	wait_until_plot_finishes "${plot_dir}"
 
 	# Close the popup
 	xdotool key --window "${win_id}" "Escape"
@@ -304,7 +313,7 @@ main()
 
 	launch_eeschema "${kicad_sch_path}" #&> /dev/null
 	launch_plot_window "${EESCHEMA_WID}" 2> /dev/null
-	configure_and_plot "${EESCHEMA_WID}" 2> /dev/null
+	plot_schematics "${EESCHEMA_WID}" "${output_temp_dir_path}" 2> /dev/null
 	kill_eeschema
 
 	# Organize generated files for KiRI

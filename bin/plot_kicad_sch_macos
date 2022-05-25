@@ -4,6 +4,8 @@
 # Tested on 6.0.5
 # Requires: cliclick
 
+readonly TIME=100
+
 ctrl_c()
 {
 	kill -9 "${XVFB_PID}" &> /dev/null
@@ -77,27 +79,38 @@ kill_eeschema()
 launch_plot_window()
 {
 	cliclick c:150,11
-	cliclick w:100
+	cliclick w:${TIME}
 
 	cliclick kp:arrow-up
-	cliclick w:100
+	cliclick w:${TIME}
 
 	cliclick kp:return
-	cliclick w:100
+	cliclick w:${TIME}
 }
 
-configure_and_plot()
+wait_until_plot_finishes()
 {
+	local plot_dir="${1}"
+	until [[ "$(ls -1 ${plot_dir}/*.svg | wc -l)" -ge "1" ]]; do
+		cliclick w:${TIME}
+	done
+	cliclick w:${TIME}
+}
+
+plot_schematics()
+{
+	local plot_dir="${1}"
+
 	# Plot window will launch pre-configured
 	# When it launches, the focus is the Output Directory field
 
 	# Plot
 	cliclick kp:return
-	cliclick w:1000
+	wait_until_plot_finishes "${plot_dir}"
 
 	# Dismiss plot window
 	cliclick kp:esc
-	cliclick w:100
+	cliclick w:${TIME}
 }
 
 main()
@@ -153,7 +166,7 @@ main()
 
 	launch_eeschema "${kicad_sch_path}"
 	launch_plot_window
-	configure_and_plot "${output_temp_dir_path}" 2> /dev/null
+	plot_schematics "${output_temp_dir_path}" 2> /dev/null
 	kill_eeschema
 
 	# Organize generated files for KiRI
