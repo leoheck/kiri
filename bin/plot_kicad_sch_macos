@@ -6,6 +6,18 @@
 
 readonly TIME=100
 
+sed()
+{
+	case ${OSTYPE} in
+		darwin*)
+			gsed "$@"
+			;;
+		*)
+			command sed "$@"
+			;;
+	esac
+}
+
 ctrl_c()
 {
 	kill -9 "${XVFB_PID}" &> /dev/null
@@ -26,7 +38,7 @@ get_file_extension()
 
 set_default_plot_settings()
 {
-	local eeschema_json="${HOME}/./Library/Preferences/kicad/6.0/eeschema.json"
+	local eeschema_json="${HOME}/Library/Preferences/kicad/6.0/eeschema.json"
 
 	# "plot": {
 	#   "background_color": false,
