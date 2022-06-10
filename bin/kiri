@@ -785,7 +785,8 @@ command_line_parse()
 
 get_kicad_version()
 {
-	kicad_version.py "$@"
+	# kicad_version.py "$@"
+	kicad_version "$@"
 }
 
 get_kidiff_version()
