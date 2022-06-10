@@ -45,7 +45,7 @@ if __name__ == "__main__":
     args = parse_cli_args()
 
     if hasattr(pn, 'GetBuildVersion'):
-        pcbnew_version = pn.GetBuildVersion()
+        pcbnew_version = pn.GetBuildVersion().strip("()")
         version_major = int(pcbnew_version.strip("()").split(".")[0])
         version_minor = int(pcbnew_version.strip("()").split(".")[1])
         version_patch = int(pcbnew_version.strip("()").split(".")[2].replace("-", "+").split("+")[0])
