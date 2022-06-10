@@ -1404,9 +1404,9 @@ generate_schematic_artifacts()
 		# Then plotkicadsch for each .sch (processing all pages) and skip .kicad_sch files
 
 		local kicad_sch_extension_1=$(get_file_extension "${kicad_sch_1}")
-		local kicad_sch_extension_2=$(get_file_extension "${kicad_sch_1}")
+		local kicad_sch_extension_2=$(get_file_extension "${kicad_sch_2}")
 
-		if [[ "${kicad_sch_extension_1}" == "sch" ]] && [[ "${kicad_sch_extension_2}" == "sch" ]] || [[ "${FORCE_PLOTTING_GRAPHICALLY}" == "0" ]]; then
+		if { [[ "${kicad_sch_extension_1}" == "sch" ]] && [[ "${kicad_sch_extension_2}" == "sch" ]]; } && [[ "${FORCE_PLOTTING_GRAPHICALLY}" == "0" ]]; then
 
 			local removed_color="FF0000"
 			local added_color="008FFF"
@@ -1449,7 +1449,7 @@ generate_schematic_artifacts()
 
 		else
 
-			# This is needed only once since it is always the same
+			# This one is needed only once since it is always the same
 			if [[ "${i}" == "2" ]]; then
 				manual_schematic_plot ${commit_hash_1} "${kicad_sch_1}" "${kicad_cache_lib_1}"
 			fi
