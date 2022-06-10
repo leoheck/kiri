@@ -4,7 +4,7 @@
 # Tested on 6.0.5
 # Requires: cliclick
 
-readonly TIME=100
+readonly TIME=50
 
 sed()
 {
@@ -85,8 +85,15 @@ launch_eeschema()
 {
 	local kicad_sch="${1}"
 	open -a Eeschema "${kicad_sch}"
-	sleep 2
+
+	echo "Waiting for Eeschema..."
+	until [[ "$(ps aux | grep -v grep | grep -i eeschema.app | awk '{print $2;}')" -ge "1" ]]; do
+		sleep 0.1
+		cliclick w:${TIME}
+	done
+
 	export EESCHEMA_PID=$(ps aux | grep -v grep | grep -i eeschema.app | awk '{print $2;}')
+	echo "Eeschema PID(${EESCHEMA_PID})"
 }
 
 kill_eeschema()
@@ -96,21 +103,23 @@ kill_eeschema()
 
 launch_plot_window()
 {
-	cliclick c:150,11
+	sleep 2
+
+	# Move focus to Top menu and Move selection to the File Menu
+	cliclick kd:fn,ctrl kp:f2 ku:fn,ctrl
 	cliclick w:${TIME}
 
-	cliclick kp:arrow-up
-	cliclick w:${TIME}
-
-	cliclick kp:return
+	# Expand File menu (3rd item) and select Plot (last item)
+	cliclick t:f kp:return kp:arrow-up kp:return
 	cliclick w:${TIME}
 }
 
 wait_until_plot_finishes()
 {
 	local plot_dir="${1}"
+	echo "Waiting to plot..."
 	until [[ "$(ls -1 ${plot_dir}/*.svg | wc -l)" -ge "1" ]]; do
-		echo "Waiting plotting..."
+		sleep 0.1
 		cliclick w:${TIME}
 	done
 	cliclick w:${TIME}
@@ -124,7 +133,9 @@ plot_schematics()
 	# When it launches, the focus is the Output Directory field
 
 	# Plot
-	cliclick kp:return
+	cliclick kp:tab kp:return
+	cliclick w:${TIME}
+
 	wait_until_plot_finishes "${plot_dir}"
 
 	# Dismiss plot window
