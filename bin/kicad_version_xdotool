@@ -20,29 +20,6 @@ get_current_display_server()
 	echo "${XDG_SESSION_TYPE}"
 }
 
-launch_virtual_display()
-{
-	export n=":0"
-
-	# killall Xvfb &>/dev/null
-	# rm -rf "/tmp/.X${n}-lock"
-	# rm -rf "/tmp/.X${n}-unix/X1"
-	# rm -rf "/tmp/.X${n}*"
-	# rm -rf "/tmp/xvfb-run.*"
-
-	export DISPLAY=":${n}.0"
-	# xdpyinfo -display ${DISPLAY} > /dev/null
-
-	# Xvfb -f ${DISPLAY} -screen 1 1280x800x24 &
-	# Xvfb -f ${DISPLAY} -fbdir /var/tmp 1280x800x24 -dpi 96 &
-	# Xvfb -f ${DISPLAY} -screen 0 640x480x8 -nolisten tcp &
-	# Xvfb -f ${DISPLAY} -screen 0 1024x768x16 -dpi 96 &
-	# Xvfb -f ${DISPLAY} -screen 0 1280x800x24 -ac -dpi 96 +extension RANDR :1 &
-	# export XVFB_PID=${!}
-
-	# echo "xvfb-run"
-}
-
 get_window_tile()
 {
 	local win_id="${1}"
@@ -54,7 +31,7 @@ launch_kicad()
 	export KICAD_PID
 	export KICAD_WIDS
 
-	$(launch_virtual_display) kicad 2> /dev/null &
+	kicad 2> /dev/null &
 	KICAD_PID=${!}
 
 	# list windows
@@ -62,48 +39,21 @@ launch_kicad()
 
 	setxkbmap us
 
-	# Wait for kicad to launch the project
-	while [[ "$(is_design_loaded "${kicad_sch_filename}")" -ne "1" ]]; do
-		sleep 0.2
+	# Wait for kicad to launch
+	until [[ "$(ps aux | grep -v grep | grep -i kicad.app | awk '{print $2;}')" -ge "1" ]]; do
+		sleep 0.1
 		KICAD_WIDS=($(xdotool search --onlyvisible --sync --classname "kicad" 2> /dev/null))
-		# debug_kicad_popups
-		# read
 	done
 
 	export KICAD_WID=${KICAD_WIDS[0]}
 }
 
-debug_kicad_popups()
+kill_kicad()
 {
-	IFS=$'\n'
-	for win_id in "${KICAD_WIDS[@]}"; do
-		# xwininfo -tree -id ${id}
-		win_title=$(xwininfo -tree -id "${win_id}" 2> /dev/null | grep "xwininfo:" | cut -d" " -f5- | sed "s/\"//g")
-		echo "- [${win_id}] Title: \"${win_title}\""
-	done
+	kill -9 "${KICAD_PID}" &> /dev/null
 }
 
-is_design_loaded()
-{
-	local project_name="${1}"
-
-	IFS=$'\n'
-	for win_id in ${KICAD_WIDS}; do
-
-		win_title=$(get_window_tile "${win_id}")
-
-		case ${win_title} in
-			"KiCad 6.0")
-				echo "1"
-				;;
-			*)
-				echo "0"
-				;;
-		esac
-	done
-}
-
-get_full_kicad_version()
+get_kicad_full_version()
 {
 	local win_id="${1}"
 
@@ -132,8 +82,8 @@ main()
 	fi
 
 	launch_kicad
-	get_full_kicad_version "${KICAD_WID}"
-	kill -9 "${KICAD_PID}" &> /dev/null
+	get_kicad_full_version "${KICAD_WID}"
+	kill_kicad
 }
 
 main "${@}"
