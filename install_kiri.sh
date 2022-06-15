@@ -23,7 +23,7 @@ install_kiri()
 
 		# Clone Kiri
 		if which git &> /dev/null; then
-			git clone --recurse-submodules -j8 https://github.com/leoheck/kiri.git "${KIRI_HOME}"
+			git clone --recurse-submodules -j8 https://github.com/leoheck/kiri.git "${KIRI_HOME}/kiri"
 			cd "${KIRI_HOME}/kiri/" || exit
 		else
 			echo "Git is missing, please use install_dependencies script"
