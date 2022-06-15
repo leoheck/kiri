@@ -66,6 +66,8 @@ linux_install_software_with_apt()
 
 	# Install base packages
 	sudo apt install -y git
+	sudo apt install -y build-essential
+	sudo apt install -y libgtk-3-dev
 	sudo apt install -y libgmp-dev
 	sudo apt install -y pkg-config
 	sudo apt install -y opam
