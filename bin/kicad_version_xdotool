@@ -1,0 +1,89 @@
+#!/bin/bash
+
+# This tool works with Kicad 6
+# Tested on 6.0.4-6f826c9f35~116~ubuntu22.04.1
+# Requires: xclip
+
+readonly TIME=0.015
+
+forced_exit()
+{
+	kill -9 "${XVFB_PID}" &> /dev/null
+	kill -9 "${KICAD_PID}" &> /dev/null
+	exit 1
+}
+
+get_current_display_server()
+{
+	# Check the display server in use (x11 or wayland)
+	# loginctl show-session $(awk '/tty/ {print $1}' <(loginctl)) -p Type | awk -F= '{print $2}'
+	echo "${XDG_SESSION_TYPE}"
+}
+
+get_window_tile()
+{
+	local win_id="${1}"
+	xwininfo -tree -id "${win_id}" 2> /dev/null | grep "xwininfo:" | cut -d" " -f5- | sed "s/\"//g"
+}
+
+launch_kicad()
+{
+	export KICAD_PID
+	export KICAD_WIDS
+
+	kicad 2> /dev/null &
+	KICAD_PID=${!}
+
+	# list windows
+	# xwininfo -tree -root
+
+	setxkbmap us
+
+	# Wait for kicad to launch
+	until [[ "$(ps aux | grep -v grep | grep -i kicad.app | awk '{print $2;}')" -ge "1" ]]; do
+		sleep 0.1
+		KICAD_WIDS=($(xdotool search --onlyvisible --sync --classname "kicad" 2> /dev/null))
+	done
+
+	export KICAD_WID=${KICAD_WIDS[0]}
+}
+
+kill_kicad()
+{
+	kill -9 "${KICAD_PID}" &> /dev/null
+}
+
+get_kicad_full_version()
+{
+	local win_id="${1}"
+
+	xdotool key --window "${win_id}" "alt+h"
+	sleep "${TIME}"
+	xdotool key --window "${win_id}" "Up"
+	sleep "${TIME}"
+	xdotool key --window "${win_id}" "Return"
+	sleep "${TIME}"
+	xdotool key --window "${win_id}" "alt+c"
+	sleep "${TIME}"
+
+	sleep "0.2"
+	xclip -out -selection clipboard
+}
+
+main()
+{
+	trap "exit 1" TERM
+	trap forced_exit INT
+
+	if [[ "$(get_current_display_server)" != "x11" ]] && [[ "$(get_current_display_server)" != "wayland" ]]; then
+		echo "Error: Uknown \"$(get_current_display_server)\" display server"
+		echo "Supported display servers: x11, wayland"
+		# exit 1
+	fi
+
+	launch_kicad
+	get_kicad_full_version "${KICAD_WID}"
+	kill_kicad
+}
+
+main "${@}"

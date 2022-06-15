@@ -1,139 +1,57 @@
 #!/bin/bash
 
-# This tool works with Kicad 6
-# Tested on 6.0.4-6f826c9f35~116~ubuntu22.04.1
-# Requires: xclip
+# Wrapper for the kicad_version.py script
+# It should work on Linux, Mac and possibly on Windows
 
-readonly TIME=0.015
-
-forced_exit()
+readlink_osx()
 {
-	kill -9 "${XVFB_PID}" &> /dev/null
-	kill -9 "${KICAD_PID}" &> /dev/null
-	exit 1
-}
+	TARGET_FILE=$1
 
-get_current_display_server()
-{
-	# Check the display server in use (x11 or wayland)
-	# loginctl show-session $(awk '/tty/ {print $1}' <(loginctl)) -p Type | awk -F= '{print $2}'
-	echo "${XDG_SESSION_TYPE}"
-}
+	cd "$(dirname "${TARGET_FILE}")" || exit
+	TARGET_FILE=$(basename "${TARGET_FILE}")
 
-launch_virtual_display()
-{
-	export n=":0"
-
-	# killall Xvfb &>/dev/null
-	# rm -rf "/tmp/.X${n}-lock"
-	# rm -rf "/tmp/.X${n}-unix/X1"
-	# rm -rf "/tmp/.X${n}*"
-	# rm -rf "/tmp/xvfb-run.*"
-
-	export DISPLAY=":${n}.0"
-	# xdpyinfo -display ${DISPLAY} > /dev/null
-
-	# Xvfb -f ${DISPLAY} -screen 1 1280x800x24 &
-	# Xvfb -f ${DISPLAY} -fbdir /var/tmp 1280x800x24 -dpi 96 &
-	# Xvfb -f ${DISPLAY} -screen 0 640x480x8 -nolisten tcp &
-	# Xvfb -f ${DISPLAY} -screen 0 1024x768x16 -dpi 96 &
-	# Xvfb -f ${DISPLAY} -screen 0 1280x800x24 -ac -dpi 96 +extension RANDR :1 &
-	# export XVFB_PID=${!}
-
-	# echo "xvfb-run"
-}
-
-get_window_tile()
-{
-	local win_id="${1}"
-	xwininfo -tree -id "${win_id}" 2> /dev/null | grep "xwininfo:" | cut -d" " -f5- | sed "s/\"//g"
-}
-
-launch_kicad()
-{
-	export KICAD_PID
-	export KICAD_WIDS
-
-	$(launch_virtual_display) kicad 2> /dev/null &
-	KICAD_PID=${!}
-
-	# list windows
-	# xwininfo -tree -root
-
-	setxkbmap us
-
-	# Wait for kicad to launch the project
-	while [[ "$(is_design_loaded "${kicad_sch_filename}")" -ne "1" ]]; do
-		sleep 0.2
-		KICAD_WIDS=($(xdotool search --onlyvisible --sync --classname "kicad" 2> /dev/null))
-		# debug_kicad_popups
-		# read
+	# Iterate down a (possible) chain of symlinks
+	while [ -L "${TARGET_FILE}" ]
+	do
+		TARGET_FILE=$(readlink "${TARGET_FILE}")
+		cd "$(dirname "${TARGET_FILE}")" || exit
+		TARGET_FILE=$(basename "${TARGET_FILE}")
 	done
 
-	export KICAD_WID=${KICAD_WIDS[0]}
+	# Compute the canonicalized name by finding the physical path
+	# for the directory we're in and appending the target file.
+	PHYS_DIR=$(pwd -P)
+
+	RESULT="$PHYS_DIR/${TARGET_FILE}"
+
+	echo "${RESULT}"
 }
 
-debug_kicad_popups()
-{
-	IFS=$'\n'
-	for win_id in "${KICAD_WIDS[@]}"; do
-		# xwininfo -tree -id ${id}
-		win_title=$(xwininfo -tree -id "${win_id}" 2> /dev/null | grep "xwininfo:" | cut -d" " -f5- | sed "s/\"//g")
-		echo "- [${win_id}] Title: \"${win_title}\""
-	done
-}
 
-is_design_loaded()
-{
-	local project_name="${1}"
+case ${OSTYPE} in
 
-	IFS=$'\n'
-	for win_id in ${KICAD_WIDS}; do
+	# MaxOS
+	darwin*)
+		SCRIPT=$(readlink_osx "$0")
+		SCRIPTPATH=$(dirname "${SCRIPT}")
 
-		win_title=$(get_window_tile "${win_id}")
+		kicad_app_path=/Applications/Kicad/kicad.app/
+		if [[ ! -d ${kicad_app_path} ]]; then
+			kicad_app_path=/Applications/KiCad/KiCad.app/
+		fi
 
-		case ${win_title} in
-			"KiCad 6.0")
-				echo "1"
-				;;
-			*)
-				echo "0"
-				;;
-		esac
-	done
-}
+		if [[ -f ${kicad_app_path}/Contents/Frameworks/Python.framework/Versions/Current/bin/python ]]; then
+			${kicad_app_path}/Contents/Frameworks/Python.framework/Versions/Current/bin/python "${SCRIPTPATH}/kicad_version.py" "$@"
+		else
+			${kicad_app_path}/Contents/Frameworks/Python.framework/Versions/Current/bin/python3 "${SCRIPTPATH}/kicad_version.py" "$@"
+		fi
+		;;
 
-get_full_kicad_version()
-{
-	local win_id="${1}"
+	# Linux
+	*)
+		SCRIPT=$(readlink -f "$0")
+		SCRIPTPATH=$(dirname "${SCRIPT}")
+		/usr/bin/env python3 "${SCRIPTPATH}/kicad_version.py" "$@"
+		;;
 
-	xdotool key --window "${win_id}" "alt+h"
-	sleep "${TIME}"
-	xdotool key --window "${win_id}" "Up"
-	sleep "${TIME}"
-	xdotool key --window "${win_id}" "Return"
-	sleep "${TIME}"
-	xdotool key --window "${win_id}" "alt+c"
-	sleep "${TIME}"
-
-	sleep "0.2"
-	xclip -out -selection clipboard
-}
-
-main()
-{
-	trap "exit 1" TERM
-	trap forced_exit INT
-
-	if [[ "$(get_current_display_server)" != "x11" ]] && [[ "$(get_current_display_server)" != "wayland" ]]; then
-		echo "Error: Uknown \"$(get_current_display_server)\" display server"
-		echo "Supported display servers: x11, wayland"
-		# exit 1
-	fi
-
-	launch_kicad
-	get_full_kicad_version "${KICAD_WID}"
-	kill -9 "${KICAD_PID}" &> /dev/null
-}
-
-main "${@}"
+esac

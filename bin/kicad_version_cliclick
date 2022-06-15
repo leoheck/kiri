@@ -1,0 +1,64 @@
+#!/bin/bash
+
+# This tool works with Kicad 6
+# Tested on 6.0.4-6f826c9f35~116~ubuntu22.04.1
+# Requires: xclip
+
+readonly TIME=20
+
+forced_exit()
+{
+	kill -9 "${XVFB_PID}" &> /dev/null
+	kill -9 "${KICAD_PID}" &> /dev/null
+	exit 1
+}
+
+launch_kicad()
+{
+	open -a Kicad "${kicad_sch}"
+
+	# echo "Waiting for Kicad..."
+	until [[ "$(ps aux | grep -v grep | grep -i kicad.app | awk '{print $2;}')" -ge "1" ]]; do
+		sleep 0.1
+	done
+
+	export KICAD_PID=$(ps aux | grep -v grep | grep -i kicad.app | awk '{print $2;}')
+	# echo "Kicad PID(${KICAD_PID})"
+}
+
+kill_kicad()
+{
+	kill -9 "${KICAD_PID}" &> /dev/null
+}
+
+get_kicad_full_version()
+{
+	# Move focus to Top menu
+	cliclick kd:fn,ctrl kp:f2 ku:fn,ctrl
+	cliclick w:${TIME}
+
+	# Move selection to the File Menu, Expand File menu (1st item) and select About (1st item)
+	cliclick t:k kp:arrow-down kp:arrow-down kp:return
+	cliclick w:${TIME}
+
+	sleep 0.5
+
+	# Copy version
+	cliclick kd:cmd t:c ku:cmd
+	cliclick w:${TIME}
+
+	# Paste text copied to the clipboard
+	pbpaste
+}
+
+main()
+{
+	trap "exit 1" TERM
+	trap forced_exit INT
+
+	launch_kicad
+	get_kicad_full_version
+	kill_kicad
+}
+
+main "${@}"
