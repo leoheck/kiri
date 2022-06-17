@@ -173,10 +173,10 @@ insert_pages_html()
 
 	local i=0
 	IFS=$'\n'
-	for page in ${pages}; do
+	for page in $(cat ${pages}); do
 
-		local page_name=$(cat "${page}" | cut -d'|' -f1 | sed "s/[ \t]\+//g")
-		local page_filename=$(cat "${page}" | cut -d'|' -f2 | sed "s/[ \t]\+//g")
+		local page_name=$(echo "${page}" | cut -d'|' -f1 | sed "s/[ \t]\+//g")
+		local page_filename=$(echo "${page}" | cut -d'|' -f2 | sed "s/[ \t]\+//g")
 
 		if [[ "${i}" == "0" ]]; then
 			checked='checked="checked"'
@@ -190,7 +190,7 @@ insert_pages_html()
 		read -r -d '' page_html <<-EOM
 		<!-- Page ${i} -->
 		<input id="${page_name}" title="${page_filename}" type="radio" value="${page_name}" name="pages" ${checked} onchange="change_page()"/>
-		<label for="${page_name}" title="${page_filename}" id="label-${page}" class="rounded text-sm-left list-group-item radio-box" onclick="change_page_onclick()" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+		<label for="${page_name}" title="${page_filename}" id="label-${page_name}" class="rounded text-sm-left list-group-item radio-box" onclick="change_page_onclick()" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
 		    <span title="${page_name}" style="margin-left:0.5em; margin-right:0.1em;" class="iconify" data-icon="gridicons:pages" data-inline="false"></span>
 		    ${page_name}
 		</label>
@@ -199,7 +199,6 @@ insert_pages_html()
 		pages_html="${pages_html}${page_html}\n"
 
 	done
-
 
 	indent=$(printf '\t%.0s' {1..11})
 
