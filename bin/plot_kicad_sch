@@ -334,11 +334,6 @@ main()
 				new_file=$(echo "${svg_file}" | sed "s|${temp_dir}/${project_name}-|sch-|g")
 			fi
 
-			echo "======================================" >> /tmp/file.log
-			echo ${svg_file} >> /tmp/file.log
-			echo ${new_file} >> /tmp/file.log
-
-
 			echo "      Plotting = ${new_file}"
 			mv "${svg_file}" "${new_file}" 2> /dev/null
 		done
