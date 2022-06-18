@@ -176,7 +176,8 @@ insert_pages_html()
 	for page in $(cat ${pages}); do
 
 		local page_name=$(echo "${page}" | cut -d'|' -f1 | sed "s/^[ \t]\+//g" | sed "s/[ \t]\+$//g")
-		local page_filename=$(echo "${page}" | cut -d'|' -f2 | sed "s/^[ \t]\+//g" | sed "s/[ \t]\+$//g")
+		local page_filename_path=$(echo "${page}" | cut -d'|' -f2 | sed "s/^[ \t]\+//g" | sed "s/[ \t]\+$//g")
+		local page_filename=$(echo "${page_filename_path}" | xargs basename)
 
 		if [[ "${i}" == "0" ]]; then
 			checked='checked="checked"'
@@ -189,8 +190,8 @@ insert_pages_html()
 		# IFS=
 		read -r -d '' page_html <<-EOM
 		<!-- Page ${i} -->
-		<input id="${page_name}" title="${page_filename}" type="radio" value="${page_name}" name="pages" ${checked} onchange="change_page()"/>
-		<label for="${page_name}" title="${page_filename}" id="label-${page_name}" class="rounded text-sm-left list-group-item radio-box" onclick="change_page_onclick()" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+		<input id="${page_name}" title="${page_filename_path}" type="radio" value="${page_filename}" name="pages" ${checked} onchange="change_page()"/>
+		<label for="${page_name}" title="${page_filename_path}" id="label-${page_name}" class="rounded text-sm-left list-group-item radio-box" onclick="change_page_onclick()" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
 		    <span title="${page_name}" style="margin-left:0.5em; margin-right:0.1em;" class="iconify" data-icon="gridicons:pages" data-inline="false"></span>
 		    ${page_name}
 		</label>

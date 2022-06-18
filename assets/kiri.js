@@ -497,7 +497,9 @@ function update_commits() {
 function change_page(commit1="", commit2="") {
     var pages = $("#pages_list input:radio[name='pages']");
     var selected_page = pages.index(pages.filter(':checked'));
+
     var page_name = pages[selected_page].id;
+    var page_filename = pages[selected_page].value.replace(".kicad_sch", "").replace(".sch", "");
 
     if (commit1 == ""){
         commit1 = document.getElementById("diff-xlink-1-sch").href.baseVal.split("/")[1];
@@ -506,11 +508,12 @@ function change_page(commit1="", commit2="") {
         commit2 = document.getElementById("diff-xlink-2-sch").href.baseVal.split("/")[1];
     }
 
-    var image_path_1 = "../" + commit1 + "/" + "sch-" + page_name + ".svg";
-    var image_path_2 = "../" + commit2 + "/" + "sch-" + page_name + ".svg";
+    var image_path_1 = "../" + commit1 + "/" + "sch-" + page_filename + ".svg";
+    var image_path_2 = "../" + commit2 + "/" + "sch-" + page_filename + ".svg";
 
     console.log("---------------------------");
     console.log("         page_name =", page_name);
+    console.log("     page_filename =", page_filename);
     console.log("[SCH] image_path_1 =", image_path_1);
     console.log("[SCH] image_path_2 =", image_path_2);
 
