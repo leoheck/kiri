@@ -175,8 +175,8 @@ insert_pages_html()
 	IFS=$'\n'
 	for page in $(cat ${pages}); do
 
-		local page_name=$(echo "${page}" | cut -d'|' -f1 | sed "s/[ \t]\+//g")
-		local page_filename=$(echo "${page}" | cut -d'|' -f2 | sed "s/[ \t]\+//g")
+		local page_name=$(echo "${page}" | cut -d'|' -f1 | sed "s/^[ \t]\+//g" | sed "s/[ \t]\+$//g")
+		local page_filename=$(echo "${page}" | cut -d'|' -f2 | sed "s/^[ \t]\+//g" | sed "s/[ \t]\+$//g")
 
 		if [[ "${i}" == "0" ]]; then
 			checked='checked="checked"'
