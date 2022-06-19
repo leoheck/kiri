@@ -5,6 +5,8 @@
 # Set it with before runing Kiri with
 # export FORCE_PLOTTING_GRAPHICALLY=1
 
+# shellcheck disable=SC2155 # Disable declare and assign separately
+
 if [[ -n "${SUPER_DEBUG}" ]]; then
 	set -xe
 fi
@@ -116,7 +118,7 @@ insert_commits_html()
 		read -r -d '' commit_html <<-EOM
 		<!-- Commit ${i} -->
 		<input class="chkGroup" type="checkbox" id="${hash}" name="commit" value="${hash}" ${checked} onchange="update_commits()"/>
-		<label class="text-sm-left list-group-item" style="display: block; width: 480px" for="${hash}">
+		<label class="text-sm-left list-group-item" style="display: block; width: 430px" for="${hash}">
 		    <table style="width:100%">
 		        <tr>
 		            <td rowspan=2 style="vertical-align: top; width: 1.8em;">
@@ -129,7 +131,7 @@ insert_commits_html()
 		            </td>
 		        </tr>
 		        <tr>
-		            <td style="white-space:nowrap; overflow: hidden;">
+		            <td style="white-space:nowrap; overflow: hidden; text-overflow: ellipsis;">
 		                <span class="text-success font-weight-normal">${hash_label}</span> <span class="text-muted"> | </span> ${sch_icon} ${pcb_icon} ${txt_icon} <span class="text-muted font-weight-normal"> | ${date} | ${user}</span>
 		            </td>
 		        </tr>
@@ -173,11 +175,20 @@ insert_pages_html()
 
 	local i=0
 	IFS=$'\n'
-	for page in $(cat ${pages}); do
+
+	local pages_to_skip
+
+	for page in $(cat "${pages}"); do
 
 		local page_name=$(echo "${page}" | cut -d'|' -f1 | sed "s/^[ \t]\+//g" | sed "s/[ \t]\+$//g")
 		local page_filename_path=$(echo "${page}" | cut -d'|' -f2 | sed "s/^[ \t]\+//g" | sed "s/[ \t]\+$//g")
 		local page_filename=$(echo "${page_filename_path}" | xargs basename)
+
+		if echo "${pages_to_skip}" | grep -s "${page_filename_path}"; then
+			continue
+		else
+			pages_to_skip="${pages_to_skip}\n${page_filename_path}"
+		fi
 
 		if [[ "${i}" == "0" ]]; then
 			checked='checked="checked"'
@@ -762,7 +773,7 @@ command_line_parse()
 
 	KICAD_PRO_ABSOLUTE_PATH=$(realpath "${kicad_pro_path/#\~/$HOME}" 2> /dev/null)
 	if [[ ! -f ${KICAD_PRO_ABSOLUTE_PATH} ]]; then
-		local kicad_pro_path=$(find -maxdepth 1 -name "*\.pro" -o -name "*\.kicad_pro")
+		local kicad_pro_path=$(find ./ -maxdepth 1 -name "*\.pro" -o -name "*\.kicad_pro")
 		KICAD_PRO_ABSOLUTE_PATH=$(realpath "${kicad_pro_path}" 2> /dev/null)
 		if [[ ! -f ${KICAD_PRO_ABSOLUTE_PATH} ]]; then
 			kicad_pro_path="$(launch_project_selector_gui)"
@@ -935,7 +946,7 @@ get_git_commits()
 		echo -e "   ${LYE}${cmd}${RCO}" | fmt -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g' 1>&2
 		echo 1>&2
 	fi
-	eval "$(echo ${cmd} | tr "\n" " ")"
+	eval "$(echo "${cmd}" | tr "\n" " ")"
 	ret="${?}"
 	if [[ "${ret}" -gt "0" ]]; then
 		echo -e "${LRE}Status: ${ret}${RCO}\n" 1>&2
@@ -960,7 +971,7 @@ git_files_have_changes()
 	local has_changes=false
 	local ret=0
 	local file
-	for file in ${files[@]}; do
+	for file in "${files[@]}"; do
 		if [[ -n "${file}" ]]; then
 			if git diff --exit-code -- "${KICAD_PROJ_NESTED_PATH}/${file}" > /dev/null; then
 				if [[ "${DEBUG}" == "1" ]]; then
@@ -1022,7 +1033,7 @@ parse_commits_list()
 	else
 		# Have changes
 		IFS= read -r -d '' COMMITS <<-EOM
-		local | $(date "+%Y-%m-%d %H:%M:%S") | $(get_name_of_current_user ${USER}) | Local changes
+		local | $(date "+%Y-%m-%d %H:%M:%S") | $(get_name_of_current_user "${USER}") | Local changes
 		${COMMITS}
 		EOM
 	fi
@@ -1062,9 +1073,11 @@ retrieve_kicad_files_from_git()
 		"pro")
 			local kicad_sch="$(git ls-tree --name-only "${git_hash}" | grep "${kicad_pro_name}\.sch$")"
 			local kicad_lib="$(git ls-tree --name-only "${git_hash}" | grep "${kicad_pro_name}-cache\.lib$")"
+			local kicad_sch_extra="$(git ls-tree -r --name-only "${git_hash}" | grep "\.sch$")"
 			;;
 		"kicad_pro")
 			local kicad_sch="$(git ls-tree --name-only "${git_hash}" | grep "${kicad_pro_name}\.kicad_sch$")"
+			local kicad_sch_extra="$(git ls-tree -r --name-only "${git_hash}" | grep "\.kicad_sch$")"
 			;;
 	esac
 	local kicad_pcb="$(git ls-tree --name-only "${git_hash}" | grep "${kicad_pro_name}\.kicad_pcb$")"
@@ -1076,7 +1089,7 @@ retrieve_kicad_files_from_git()
 	${kicad_pcb}
 	EOM
 
-	kicad_files=$(echo "${kicad_files}" | sed '/^$/d')
+	kicad_files=$(echo "${kicad_files}" | sed '/^$/d' | sort | uniq)
 
 	IFS=$'\n'
 	for file in ${kicad_files}; do
@@ -1134,7 +1147,7 @@ get_kicad_pro_filename()
 parse_schematic_pages()
 {
 	# Parse a list of schematic pages from the main Kicad's schematic
-	# Format: ${schematic_page_title}|${nested_schematic_path}
+	# Format: ${page_labels}|${nested_schematic_path}|${page_instance_title}
 
 	local kicad_sch="${1}"
 	local main_page_name="$(get_file_without_extention "${kicad_sch}")"
@@ -1142,13 +1155,17 @@ parse_schematic_pages()
 	local first_entry="${main_page_name}|${main_page_path}"
 
 	local sch_extension="$(get_file_extension "${kicad_sch}")"
+
 	case ${sch_extension} in
 		kicad_sch)
 			# Kicad .kicad_sch format:
 			# (property "Sheet name" "power_supply" (id 0) (at 101.6 26.4664 0)...
 			# (property "Sheet file" "sch/power_supply.kicad_sch" (id 1) (at 101.6 43.8662 0)...
 			local page_names=$(sed "s/\r$//g" "${kicad_sch}" | grep 'Sheet name' | sed "s/^[ ]\+//g" | cut -d"\"" -f4)
-			local page_paths=$(sed "s/\r$//g" "${kicad_sch}" | grep 'Sheet file' | sed "s/^[ ]\+//g" | cut -d"\"" -f4) # | sed "s/\.kicad_sch//g" | xargs -I"{}" basename {})
+			local page_paths=$(sed "s/\r$//g" "${kicad_sch}" | grep 'Sheet file' | sed "s/^[ ]\+//g" | cut -d"\"" -f4)
+			if [[ -n ${page_paths} ]]; then
+				local page_labels=$(echo "${page_paths}" | xargs basename -a | sed "s/.kicad_sch//g")
+			fi
 		;;
 
 		sch|*)
@@ -1156,18 +1173,21 @@ parse_schematic_pages()
 			# F0 "page_name" 60
 			# F1 "./path/file_name.sch" 60
 			local page_names=$(sed "s/\r$//g" "${kicad_sch}" | grep "^F0 " | cut -d" " -f2 | sed "s/\"//g")
-			local page_paths=$(sed "s/\r$//g" "${kicad_sch}" | grep "^F1 " | cut -d" " -f2 | sed "s/\"//g") # | sed "s/\.sch//g" | xargs -I"{}" basename {})
+			local page_paths=$(sed "s/\r$//g" "${kicad_sch}" | grep "^F1 " | cut -d" " -f2 | sed "s/\"//g")
+			if [[ -n ${page_paths} ]]; then
+				local page_labels=$(echo "${page_paths}" | xargs basename -a | sed "s/.sch//g")
+			fi
 			;;
 	esac
 
-	local extra_schematic_pages=$(paste -d"|" <(printf "%s" "${page_names}") <(printf "%s" "${page_paths}"))
+	local extra_schematic_pages=$(paste -d"|" <(printf "%s" "${page_labels}") <(printf "%s" "${page_paths}") <(printf "%s" "${page_names}"))
 	printf "%s\n%s\n" "${first_entry}" "${extra_schematic_pages}"
 }
 
 create_list_of_pages()
 {
 	# This creates the "pages" with the format:
-	# PAGE_TITLE|NESTED_SCHEMATIC_PATH
+	# PAGE_TITLE|NESTED_SCHEMATIC_PATH|PAGE_INSTANCE_NAME
 
 	local commit_hash="${1}"
 	local kicad_sch="${2}"
@@ -1251,7 +1271,7 @@ manual_schematic_plot()
 				echo -e "\n   ${LMA}Plotting ${commit_hash}, ${OUTPUT_DIR_PATH}/${commit_hash}/${RCO}"
 				echo -e "   ${LYE}${cmd}${RCO}" | fmt -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
 			fi
-			eval "${cmd}" | sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
+			eval "${cmd}" ${command_end} | sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
 			ret="${PIPESTATUS[0]}"
 			if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
 				if [[ "${ret}" -gt "0" ]]; then
@@ -1272,7 +1292,7 @@ manual_schematic_plot()
 						echo -e "\n   ${LMA}Plotting ${commit_hash}, ${OUTPUT_DIR_PATH}/${commit_hash}/${RCO}"
 						echo -e "   ${LYE}${cmd}${RCO}" | fmt -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
 					fi
-					eval "${cmd}" | sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
+					eval "${cmd}" ${command_end} | sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
 					ret="${PIPESTATUS[0]}"
 					if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
 						if [[ "${ret}" -gt "0" ]]; then
@@ -1302,10 +1322,12 @@ manual_schematic_plot()
 				fi
 
 				if [[ -f "${kicad_cache_lib}" ]]; then
-					cmd="plotkicadsch -f ${kicad_sch_aux} ${cache_lib_param} -o \"${OUTPUT_DIR_PATH}/${commit_hash}\" 2>&1 ${command_end}"
-					echo -e "   ${LMA}Ploting ${commit_hash}, ${OUTPUT_DIR_PATH}/${commit_hash}/${RCO}"
-					echo -e "   ${LYE}${cmd}${RCO}" | fmt -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
-					eval "${cmd}" | sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
+					cmd="plotkicadsch -f ${kicad_sch_aux} ${cache_lib_param} -o \"${OUTPUT_DIR_PATH}/${commit_hash}\" ${command_end}"
+					if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
+						echo -e "   ${LMA}Ploting ${commit_hash}, ${OUTPUT_DIR_PATH}/${commit_hash}/${RCO}"
+						echo -e "   ${LYE}${cmd}${RCO}" | fmt -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
+					fi
+					eval "${cmd}" ${command_end} | sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
 					ret="${PIPESTATUS[0]}"
 					if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
 						if [[ "${ret}" -gt "0" ]]; then
@@ -1317,7 +1339,7 @@ manual_schematic_plot()
 
 						# TODO: Needs tests, since it may not be generating other pages,
 						# or they may need to have names improved
-						local board_name=$(get_file_without_extention ${kicad_sch_aux})
+						local board_name=$(get_file_without_extention "${kicad_sch_aux}")
 						if [[ -f "${board_name}.svg" ]]; then
 							# TODO: How to force fix of the viewbox when the images are off center?
 							plotgitsch_svg_tweaks "${board_name}.svg"| sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
@@ -1327,9 +1349,11 @@ manual_schematic_plot()
 
 					else
 
+						# echo -e "\n   ${LRE}Plotkicadsch has failed, using another way instead.${RCO}"
+
 						if [[ "${SKIP_KICAD_6}" == "0" ]] && [[ ! "${OSTYPE}" =~ "darwin" ]]; then
 
-							echo -e "\n   ${LRE}Plotkicadsch has failed, using GUI instead."
+							PLOTPCB_TIMEOUT=5
 
 							# TESTING: Plokicadsch has failed, then usig GUI
 							# IF THIS IS GOOD. Then it is better to organize this function main_if order here to avoid repetition
@@ -1461,14 +1485,14 @@ generate_schematic_artifacts()
 
 			# This one is needed only once since it is always the same
 			if [[ "${i}" == "2" ]]; then
-				manual_schematic_plot ${commit_hash_1} "${kicad_sch_1}" "${kicad_cache_lib_1}"
+				manual_schematic_plot "${commit_hash_1}" "${kicad_sch_1}" "${kicad_cache_lib_1}"
 			fi
-			manual_schematic_plot ${commit_hash_2} "${kicad_sch_2}" "${kicad_cache_lib_2}"
+			manual_schematic_plot "${commit_hash_2}" "${kicad_sch_2}" "${kicad_cache_lib_2}"
 
 		fi
 	fi
 
-	if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]] || [[ "${DEBUG_KIDIFF}" == "1" ]]; then
+	if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]] || [[ "${DEBUG_PLOTGITSCH}" == "1" ]]; then
 		echo
 	fi
 }
@@ -1562,14 +1586,14 @@ generate_diffs()
 				if [[ ${j} == 1 ]]; then
 					# Commit 1
 					item=$(echo "$COMMITS" | grep "^${hash_1}")
-					printf "%${padding}d${total} %s\n" "${i}" ${item} | cut -c -$(($(tput cols)-4))
+					printf "%${padding}d${total} %s\n" "${i}" "${item}" | cut -c -$(($(tput cols)-4))
 					# Commit 2
 					i=$((i+1))
 					item=$(echo "$COMMITS" | grep "^${hash_2}")
-					printf "%${padding}d${total} %s\n" "${i}" ${item} | cut -c -$(($(tput cols)-4))
+					printf "%${padding}d${total} %s\n" "${i}" "${item}" | cut -c -$(($(tput cols)-4))
 				else
 					item=$(echo "$COMMITS" | grep "^${hash_2}")
-					printf "%${padding}d${total} %s\n" "${i}" ${item} | cut -c -$(($(tput cols)-4))
+					printf "%${padding}d${total} %s\n" "${i}" "${item}" | cut -c -$(($(tput cols)-4))
 				fi
 
 				if [[ ${j} == 1 ]]; then
@@ -1588,7 +1612,11 @@ generate_diffs()
 					local kicad_pcb_1="$(get_kicad_pcb "${OUTPUT_DIR_PATH}/${hash_1}" "${kicad_project_name_1}")"
 					local kicad_sch_extra_1="$(get_kicad_sch_extra "${OUTPUT_DIR_PATH}/${hash_1}/${kicad_sch_1}")"
 					local kicad_cache_lib_1="$(get_kicad_cache_lib "${OUTPUT_DIR_PATH}/${hash_1}" "${kicad_project_name_1}")"
-					echo
+
+					if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]]; then
+						echo
+					fi
+
 					show_project_files "${OUTPUT_DIR_PATH}/${hash_1}" "${kicad_pro_1}" "${kicad_sch_1}" "${kicad_pcb_1}" "${kicad_cache_lib_1}"
 				fi
 				local kicad_pro_2="$(get_kicad_pro "${OUTPUT_DIR_PATH}/${hash_2}")"
@@ -1598,6 +1626,10 @@ generate_diffs()
 				local kicad_pcb_2="$(get_kicad_pcb "${OUTPUT_DIR_PATH}/${hash_2}" "${kicad_project_name_2}")"
 				local kicad_sch_extra_2="$(get_kicad_sch_extra "${OUTPUT_DIR_PATH}/${hash_2}/${kicad_sch_2}")"
 				local kicad_cache_lib_2="$(get_kicad_cache_lib "${OUTPUT_DIR_PATH}/${hash_2}" "${kicad_project_name_2}")"
+
+				if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]]; then
+					echo
+				fi
 				show_project_files "${OUTPUT_DIR_PATH}/${hash_2}" "${kicad_pro_2}" "${kicad_sch_2}" "${kicad_pcb_2}" "${kicad_cache_lib_2}"
 
 				if [[ "${j}" == "1" ]]; then
