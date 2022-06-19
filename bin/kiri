@@ -992,7 +992,7 @@ git_files_have_changes()
 	return ${ret}
 }
 
-parse_commits_list()
+get_git_commits_list()
 {
 	local kicad_pro="${1}"
 	local kicad_sch="${2}"
@@ -1990,7 +1990,7 @@ main()
 		rm -rf "${OUTPUT_DIR_PATH}"
 	fi
 
-	parse_commits_list "${kicad_pro}" "${kicad_sch}" "${kicad_pcb}" "${kicad_sch_extra}"
+	get_git_commits_list "${kicad_pro}" "${kicad_sch}" "${kicad_pcb}" "${kicad_sch_extra}"
 	generate_diffs
 	build_main_html
 
