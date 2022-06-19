@@ -328,11 +328,11 @@ main()
 		IFS=$'\n'
 		for svg_file in "${svg_file_paths[@]}"; do
 
-			module_title=$(basename "$svg_file" | sed "s|${temp_dir}/||g" | sed "s|.svg||g" | sed "s/${project_name}-//g")
+			module_title=$(basename "${svg_file}" | sed "s|.svg||g" | sed "s/${project_name}-//g" | cut -d"-" -f1)
 
 			# Kicad export subsheets using module_title and not file_name
 			# This gets the filename
-			page_filename=$(cat ${output_dir_path}/pages | grep "${module_title}" | cut -d'|' -f2 | xargs basename | sed "s/.kicad_sch//" | sed "s/.sch//")
+			page_filename=$(cat ${output_dir_path}/pages | grep "${module_title}" | cut -d'|' -f2 | xargs basename | sed "s/.kicad_sch//g" | sed "s/.sch//g")
 
 			new_file="sch-${page_filename}.svg"
 
