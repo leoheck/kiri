@@ -601,7 +601,7 @@ launch_project_selector_gui()
 	local file_path
 
 	if [[ -n ${DISPLAY} ]]; then
-		export DISPLAY=:0.0
+		export DISPLAY=:1.0
 	fi
 
 	if ! file_path=$(kiri-file-picker); then
@@ -756,18 +756,28 @@ command_line_parse()
 	done
 
 	# Select Kicad project with GUI if it was not passed
-	if [[ "${kicad_pro_path}" == "" ]]; then
-		kicad_pro_path="$(launch_project_selector_gui)"
+	# if [[ -z "${kicad_pro_path}" ]]; then
+	# 	kicad_pro_path="$(launch_project_selector_gui)"
+	# fi
+
+	KICAD_PRO_ABSOLUTE_PATH=$(realpath "${kicad_pro_path/#\~/$HOME}" 2> /dev/null)
+	if [[ ! -f ${KICAD_PRO_ABSOLUTE_PATH} ]]; then
+		local kicad_pro_path=$(find -maxdepth 1 -name "*\.pro" -o -name "*\.kicad_pro")
+		KICAD_PRO_ABSOLUTE_PATH=$(realpath "${kicad_pro_path}" 2> /dev/null)
+		if [[ ! -f ${KICAD_PRO_ABSOLUTE_PATH} ]]; then
+			kicad_pro_path="$(launch_project_selector_gui)"
+			KICAD_PRO_ABSOLUTE_PATH=$(realpath "${kicad_pro_path/#\~/$HOME}" 2> /dev/null)
+			if [[ ! -f ${KICAD_PRO_ABSOLUTE_PATH} ]]; then
+				printf "ERROR: Kicad's project file (.pro, .kicad_pro) \"%s\" is missing.\n\n" "${KICAD_PRO_ABSOLUTE_PATH}"
+				exit 1
+			fi
+		fi
 	fi
 
-	readonly KICAD_PRO_ABSOLUTE_PATH=$(realpath "${kicad_pro_path/#\~/$HOME}")
+	readonly KICAD_PRO_ABSOLUTE_PATH
 	readonly REPO_ABSOLUTE_PATH="$(get_project_repo_abspath)"
 	readonly KICAD_PROJ_NESTED_PATH="$(get_project_nested_path)"
 
-	if [[ ! -f ${KICAD_PRO_ABSOLUTE_PATH} ]]; then
-		printf "ERROR: Kicad's project file (.pro, .kicad_pro) \"%s\" is missing.\n\n" "${KICAD_PRO_ABSOLUTE_PATH}"
-		exit 1
-	fi
 
 	readonly KICAD_PROJ_ABSOLUTE_PATH="${REPO_ABSOLUTE_PATH}/${KICAD_PROJ_NESTED_PATH}"
 	cd "${KICAD_PROJ_ABSOLUTE_PATH}" || exit
