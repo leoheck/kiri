@@ -547,51 +547,57 @@ function change_page(commit1="", commit2="") {
 
 function change_layer(commit1="", commit2="") {
 
-    var layers = $("#layers_list input:radio[name='layers']");
-    var selected_layer = layers.index(layers.filter(':checked'));
-    var layer_id   = layers[selected_layer].id.split("-")[1];
+    try {
 
-    if (commit1 == ""){
-        commit1 = document.getElementById("diff-xlink-1-pcb").href.baseVal.split("/")[1];
+        var layers = $("#layers_list input:radio[name='layers']");
+        var selected_layer = layers.index(layers.filter(':checked'));
+        var layer_id = layers[selected_layer].id.split("-")[1];
+
+        if (commit1 == ""){
+            commit1 = document.getElementById("diff-xlink-1-pcb").href.baseVal.split("/")[1];
+        }
+        if (commit2 == ""){
+            commit2 = document.getElementById("diff-xlink-2-pcb").href.baseVal.split("/")[1];
+        }
+
+        var image_path_1 = "../" + commit1 + "/" + board_name + "-" + layer_id + ".svg";
+        var image_path_2 = "../" + commit2 + "/" + board_name + "-" + layer_id + ".svg";
+
+        console.log("+++++++++++++++++++++++++++");
+        console.log("          layer_id =", layer_id);
+        console.log("[PCB] image_path_1 =", image_path_1);
+        console.log("[PCB] image_path_2 =", image_path_2);
+
+        var image_path_timestamp_1 = image_path_1 + img_timestamp();
+        var image_path_timestamp_2 = image_path_2 + img_timestamp();
+
+        document.getElementById("diff-xlink-1-pcb").href.baseVal = image_path_timestamp_1;
+        document.getElementById("diff-xlink-2-pcb").href.baseVal = image_path_timestamp_2;
+
+        document.getElementById("diff-xlink-1-pcb").setAttributeNS('http://www.w3.org/1999/xlink', 'href', image_path_timestamp_1);
+        document.getElementById("diff-xlink-2-pcb").setAttributeNS('http://www.w3.org/1999/xlink', 'href', image_path_timestamp_2);
+
+        if_url_exists(image_path_timestamp_1, function(exists) {
+            if (exists == true) {
+                document.getElementById("diff-xlink-1-pcb").parentElement.style.display = 'inline';
+            }
+            else {
+                document.getElementById("diff-xlink-1-pcb").parentElement.style.display = 'none';
+            }
+        });
+
+        if_url_exists(image_path_timestamp_2, function(exists) {
+            if (exists == true) {
+                document.getElementById("diff-xlink-2-pcb").parentElement.style.display = 'inline';
+            }
+            else {
+                document.getElementById("diff-xlink-2-pcb").parentElement.style.display = 'none';
+            }
+        });
     }
-    if (commit2 == ""){
-        commit2 = document.getElementById("diff-xlink-2-pcb").href.baseVal.split("/")[1];
+    catch(err) {
+        console.log("PCB may not be created");
     }
-
-    var image_path_1 = "../" + commit1 + "/" + board_name + "-" + layer_id + ".svg";
-    var image_path_2 = "../" + commit2 + "/" + board_name + "-" + layer_id + ".svg";
-
-    console.log("+++++++++++++++++++++++++++");
-    console.log("          layer_id =", layer_id);
-    console.log("[PCB] image_path_1 =", image_path_1);
-    console.log("[PCB] image_path_2 =", image_path_2);
-
-    var image_path_timestamp_1 = image_path_1 + img_timestamp();
-    var image_path_timestamp_2 = image_path_2 + img_timestamp();
-
-    document.getElementById("diff-xlink-1-pcb").href.baseVal = image_path_timestamp_1;
-    document.getElementById("diff-xlink-2-pcb").href.baseVal = image_path_timestamp_2;
-
-    document.getElementById("diff-xlink-1-pcb").setAttributeNS('http://www.w3.org/1999/xlink', 'href', image_path_timestamp_1);
-    document.getElementById("diff-xlink-2-pcb").setAttributeNS('http://www.w3.org/1999/xlink', 'href', image_path_timestamp_2);
-
-    if_url_exists(image_path_timestamp_1, function(exists) {
-        if (exists == true) {
-            document.getElementById("diff-xlink-1-pcb").parentElement.style.display = 'inline';
-        }
-        else {
-            document.getElementById("diff-xlink-1-pcb").parentElement.style.display = 'none';
-        }
-    });
-
-    if_url_exists(image_path_timestamp_2, function(exists) {
-        if (exists == true) {
-            document.getElementById("diff-xlink-2-pcb").parentElement.style.display = 'inline';
-        }
-        else {
-            document.getElementById("diff-xlink-2-pcb").parentElement.style.display = 'none';
-        }
-    });
 }
 
 // =======================================
