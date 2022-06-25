@@ -129,6 +129,7 @@ macos_install_brew_modules()
 	brew install pkg-config
 	brew install opam
 	brew install dune
+	brew install wget
 
 	# KiRI dependencies
 	brew install gsed
