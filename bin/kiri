@@ -1896,7 +1896,7 @@ get_kicad_sch_extra()
 			# Kicad .kicad_sch format:
 			# (property "Sheet file" "sch/power_supply.kicad_sch" (id 1) (at 101.6 43.8662 0)...
 			grep 'Sheet file' "${kicad_sch}" | sed "s/^[ ]\+//g" | cut -d"\"" -f4
-		;;
+			;;
 	esac
 }
 
