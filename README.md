@@ -13,6 +13,7 @@ To install this tool with on any Operating System, open a terminal and execute t
 
 > Windows users must use WSL/WSL2. See, [Environment preparation on Windows](#Environment-preparation-on-Windows) section.
 
+> macOS users must have `homebrew` installed 
 
 ```bash
 # Installing dependencies
