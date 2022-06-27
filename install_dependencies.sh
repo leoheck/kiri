@@ -151,13 +151,14 @@ macos_install_brew_modules()
 install_python_modules()
 {
 	# Kicad-Diff dependencies
-	pip3 install -U "pillow>8.2.0"
-	pip3 install -U "six>=1.15.0"
-	pip3 install -U "dateutils>=0.6.12"
-	pip3 install -U "python_dateutil>=2.8.1"
-	pip3 install -U "pytz>=2021.1"
-	pip3 install -U "pathlib>=1.0.1"
-	pip3 install -U "wxpython>=4.0.7"
+	yes | pip3 install -U "pillow>8.2.0"
+	yes | pip3 install -U "six>=1.15.0"
+	yes | pip3 install -U "dateutils>=0.6.12"
+	yes | pip3 install -U "python_dateutil>=2.8.1"
+	yes | pip3 install -U "pytz>=2021.1"
+	yes | pip3 install -U "pathlib>=1.0.1"
+	yes | pip3 install -U "wxpython>=4.0.7"
+	yes | pip3 install -U "wxwidgets>=1.0.5"
 }
 
 init_opam()
