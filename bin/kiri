@@ -1344,7 +1344,19 @@ manual_schematic_plot()
 							# TODO: How to force fix of the viewbox when the images are off center?
 							plotgitsch_svg_tweaks "${board_name}.svg"| sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
 							cp -f "${board_name}.svg" "from_${board_name}.svg"
-							git-imgdiff "from_${board_name}.svg"| sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
+
+							cmd="git-imgdiff \"from_${board_name}.svg\""
+							if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
+								echo -e "   ${LMA}Ploting ${commit_hash}, ${OUTPUT_DIR_PATH}/${commit_hash}/${RCO}"
+								echo -e "   ${LYE}${cmd}${RCO}" | fmt -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
+							fi
+							eval "${cmd}" ${command_end} | sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
+							ret="${PIPESTATUS[0]}"
+							if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
+								if [[ "${ret}" -gt "0" ]]; then
+									echo -e "${LRE}${BTE}   Status: ${ret}${RCO}"
+								fi
+							fi
 						fi
 
 					else
@@ -1974,7 +1986,7 @@ main()
 
 	if [[ "${REMOVE_KIRI_FOLDER}" == 1 ]]; then
 		echo -e "\n${LBL}Output folder:${RCO} ${OUTPUT_DIR_PATH}"
-		echo -e "${LRE}Removing leftovers from the previous run${RCO}"
+		echo -e "${LYE}Removing leftovers from the previous run${RCO}"
 		rm -rf "${OUTPUT_DIR_PATH}"
 	fi
 
