@@ -7,7 +7,7 @@ ctrl_c()
 
 identify_linux_or_wsl()
 {
-	if uname -rv | grep -q "Microsoft"; then
+	if grep -qi microsoft /proc/version; then
 		echo "WSL"
 	else
 		echo "Linux"
@@ -28,11 +28,11 @@ identify_operating_system()
 
 identify_linux_pkg_manager()
 {
-	base_distro="$(grep ID_LIKE /etc/os-release | cut -d= -f2)"
+	base_distro="$(grep ID /etc/os-release | cut -d= -f2)"
 
 	case "${base_distro}" in
-		"debian") echo "apt"     ;;
-		"fedora") echo "yum"     ;;
+		*"debian"*) echo "apt"     ;;
+		*"fedora"*) echo "yum"     ;;
 		*)        echo "Unknown" ;;
 	esac
 }
