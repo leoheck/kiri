@@ -7,7 +7,7 @@ ctrl_c()
 
 identify_linux_or_wsl()
 {
-	if grep -qi microsoft /proc/version; then
+	if grep -qEi "(Microsoft|WSL)" /proc/version &> /dev/null ; then
 		echo "WSL"
 	else
 		echo "Linux"
@@ -28,11 +28,17 @@ identify_operating_system()
 
 identify_linux_pkg_manager()
 {
-	base_distro="$(grep ID /etc/os-release | cut -d= -f2)"
+	distro_id="$(grep "^ID=" /etc/os-release | cut -d= -f2)"
+	distro_id_like="$(grep "^ID_LIKE=" /etc/os-release | cut -d= -f2)"
+
+	# Debian does not have "ID_LIKE"
+	if [[ "${distro_id}" == "debian" ]] || [[ "${distro_id_like}" == "debian" ]]; then
+		base_distro="debian"
+	fi
 
 	case "${base_distro}" in
-		*"debian"*) echo "apt"     ;;
-		*"fedora"*) echo "yum"     ;;
+		"debian") echo "apt"     ;;
+		"fedora") echo "yum"     ;;
 		*)        echo "Unknown" ;;
 	esac
 }
