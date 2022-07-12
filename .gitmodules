@@ -4,4 +4,7 @@
 	branch = master
 [submodule "KiCad-Diff"]
 	path = submodules/KiCad-Diff
-	url = https://github.com/leoheck/KiCad-Diff/
+	url = https://github.com/leoheck/KiCad-Diff.git
+[submodule "submodules/kicad_parser"]
+	path = submodules/kicad_parser
+	url = https://github.com/realthunder/kicad_parser.git
