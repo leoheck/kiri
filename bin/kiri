@@ -1071,54 +1071,11 @@ export_project_files()
 	fi
 
 	if [[ "${commit_hash}" == "local" ]]; then
-		local git_hash="HEAD"
+		mkdir -p "${OUTPUT_DIR_PATH}/local"
+		cp -r * "${OUTPUT_DIR_PATH}/local"
 	else
-		local git_hash="${commit_hash}"
-	fi
-
-	local kicad_pro=$(git ls-tree --name-only "${git_hash}" | grep "\.pro\|\.kicad_pro")
-	local kicad_pro_name="$(get_file_without_extention "${kicad_pro}")"
-	local kicad_pro_extension=$(get_file_extension "${kicad_pro}")
-	case "${kicad_pro_extension}" in
-		"pro")
-			local kicad_sch="$(git ls-tree --name-only "${git_hash}" | grep "${kicad_pro_name}\.sch$")"
-			local kicad_lib="$(git ls-tree --name-only "${git_hash}" | grep "${kicad_pro_name}-cache\.lib$")"
-			local kicad_sch_extra="$(git ls-tree -r --name-only "${git_hash}" | grep "\.sch$")"
-			;;
-		"kicad_pro")
-			local kicad_sch="$(git ls-tree --name-only "${git_hash}" | grep "${kicad_pro_name}\.kicad_sch$")"
-			local kicad_sch_extra="$(git ls-tree -r --name-only "${git_hash}" | grep "\.kicad_sch$")"
-			;;
-	esac
-	local kicad_pcb="$(git ls-tree --name-only "${git_hash}" | grep "${kicad_pro_name}\.kicad_pcb$")"
-
-	IFS= read -r -d '' kicad_files <<-EOM
-	${kicad_pro}
-	${kicad_sch}
-	${kicad_lib}
-	${kicad_pcb}
-	EOM
-
-	kicad_files=$(echo "${kicad_files}" | sed '/^$/d' | sort | uniq)
-
-	IFS=$'\n'
-	for file in ${kicad_files}; do
-		if [[ "${DEBUG}" == "1" ]]; then
-			echo "- Exporting: ${KICAD_PROJ_NESTED_PATH}/${file}"
-		fi
 		mkdir -p "${OUTPUT_DIR_PATH}/${commit_hash}"
-		git show "${git_hash}":"${KICAD_PROJ_NESTED_PATH}/${file}" >> "${OUTPUT_DIR_PATH}/${commit_hash}/${file}"
-	done
-
-	local extra_sch_files=$(get_kicad_sch_extra "${OUTPUT_DIR_PATH}/${commit_hash}/${kicad_sch}")
-	if [[ -n ${extra_sch_files} ]]; then
-		for file in ${extra_sch_files}; do
-			if [[ "${DEBUG}" == "1" ]]; then
-				echo "- Exporting: ${KICAD_PROJ_NESTED_PATH}/${file}"
-			fi
-			mkdir -p "$(dirname "${OUTPUT_DIR_PATH}/${commit_hash}/${file}")"
-			git show "${git_hash}":"${KICAD_PROJ_NESTED_PATH}/${file}" >> "${OUTPUT_DIR_PATH}/${commit_hash}/${file}"
-		done
+		git archive --format=tar ${commit_hash} | (cd "${OUTPUT_DIR_PATH}/${commit_hash}" && tar xf -)
 	fi
 
 	if [[ "${DEBUG}" == "1" ]]; then
