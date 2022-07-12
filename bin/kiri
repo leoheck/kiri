@@ -1117,25 +1117,16 @@ parse_schematic_pages()
 	# Format: ${page_labels}|${nested_schematic_path}|${page_instance_title}
 
 	local kicad_sch="${1}"
-	local main_page_name="$(get_file_without_extention "${kicad_sch}")"
-	local main_page_path="$(basename "${kicad_sch}")"
-	local first_entry="${main_page_name}|${main_page_path}"
 
+	local main_page_name="$(get_file_without_extention "${kicad_sch}")"
+	local main_page_basename="$(basename "${kicad_sch}")"
+	local first_entry="${main_page_name}|${main_page_basename}"
 	local sch_extension="$(get_file_extension "${kicad_sch}")"
 
 	case ${sch_extension} in
-		kicad_sch)
-			# Kicad .kicad_sch format:
-			# (property "Sheet name" "power_supply" (id 0) (at 101.6 26.4664 0)...
-			# (property "Sheet file" "sch/power_supply.kicad_sch" (id 1) (at 101.6 43.8662 0)...
-			local page_names=$(sed "s/\r$//g" "${kicad_sch}" | grep 'Sheet name' | sed "s/^[ ]\+//g" | cut -d"\"" -f4)
-			local page_paths=$(sed "s/\r$//g" "${kicad_sch}" | grep 'Sheet file' | sed "s/^[ ]\+//g" | cut -d"\"" -f4)
-			if [[ -n ${page_paths} ]]; then
-				local page_labels=$(echo "${page_paths}" | xargs basename -a | sed "s/.kicad_sch//g")
-			fi
-		;;
 
-		sch|*)
+		# TODO: Improve to handle nested hierarchical sheets
+		"sch")
 			# Kicad .sch format:
 			# F0 "page_name" 60
 			# F1 "./path/file_name.sch" 60
@@ -1144,11 +1135,15 @@ parse_schematic_pages()
 			if [[ -n ${page_paths} ]]; then
 				local page_labels=$(echo "${page_paths}" | xargs basename -a | sed "s/.sch//g")
 			fi
+			local extra_schematic_pages=$(paste -d"|" <(printf "%s" "${page_labels}") <(printf "%s" "${page_paths}") <(printf "%s" "${page_names}"))
+			printf "%s\n%s\n" "${first_entry}" "${extra_schematic_pages[@]}"
 			;;
-	esac
 
-	local extra_schematic_pages=$(paste -d"|" <(printf "%s" "${page_labels}") <(printf "%s" "${page_paths}") <(printf "%s" "${page_names}"))
-	printf "%s\n%s\n" "${first_entry}" "${extra_schematic_pages}"
+		"kicad_sch")
+			pages=($(find_kicad_sch "${kicad_sch}"))
+			printf "%s\n" "${pages[@]}"
+		;;
+	esac
 }
 
 create_list_of_pages()
@@ -1276,7 +1271,7 @@ manual_schematic_plot()
 
 		if [[ -f "${kicad_sch}" ]]; then
 
-			all_kicad_sch_files=("${kicad_sch}" $(get_kicad_sch_extra "${kicad_sch}"))
+			all_kicad_sch_files=("${kicad_sch}" $(get_kicad_sch_extra "${kicad_sch}" ${commit_hash}))
 
 			IFS=$'\n'
 			for kicad_sch_aux in "${all_kicad_sch_files[@]}"; do
