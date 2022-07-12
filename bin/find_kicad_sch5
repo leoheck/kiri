@@ -9,6 +9,11 @@ if [[ ! -f ${kicad_pro} ]]; then
 	exit 1
 fi
 
+if [[ ${kicad_pro_extension} != "pro" ]] && [[ ${kicad_pro_extension} != "sch" ]]; then
+	echo "Not Kicad 5 project"
+	exit
+fi
+
 kicad_sch="${kicad_pro_filename}.sch"
 
 if [[ ! -f ${kicad_sch} ]]; then
@@ -16,25 +21,22 @@ if [[ ! -f ${kicad_sch} ]]; then
 	exit 1
 fi
 
-kicad5_sch_hierarchy()
+sheet_instances()
 {
 	# Format to keep up kicad 6
 	# uuid|instance|exported_image_name
 	# 0999d842-9bc9-4370-bae4-7c28aeba0392|A|sch/a.kicad_sch
 	# 6483d8c3-df4d-40b4-b616-c993cba432d4|A1|sch/a.kicad_sch
 
-	kicad_sch="${1}"
-	inst_name=$(grep -e "F[0]" ${kicad_sch} | cut -d" " -f2 | sed "s/\"//g")
-	inst_file=$(grep -e "F[1]" ${kicad_sch} | cut -d" " -f2 | sed "s/\"//g")
-	# labels=$(echo "${inst_file}" | sed "s|\.kicad_sch||g" | sed "s|\.sch||g" | xargs basename -a)
-	uuid=$(echo "${inst_name}" | sed "s|.*|xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx|g")
+	local kicad_sch
+	local inst_name
+	local inst_file
+	local uuid
 
-	# echo "${inst_name}" | nl
-	# echo
-	# echo "${inst_file}" | nl
-	# echo
-	# echo "${uuid}" | nl
-	# echo
+	kicad_sch="${1}"
+	inst_name=$(grep -e "F[0]" "${kicad_sch}" | cut -d" " -f2 | sed "s/\"//g")
+	inst_file=$(grep -e "F[1]" "${kicad_sch}" | cut -d" " -f2 | sed "s/\"//g")
+	uuid=$(echo "${inst_name}" | sed "s|.*|xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx|g")
 
 	paste -d "|" <(printf %s "${uuid}") <(printf %s "${inst_name}") <(printf %s "${inst_file}")
 }
@@ -48,27 +50,33 @@ find_pages()
 	local parent_uuid="${5}"
 	local parent_inst="${6}"
 
+	local current_sch_rel
+	local sch_instances
+	local sch_inst_name
+	local sch_inst_file
+	local current_sch_dir
+
 	if [[ -f ${current_sch} ]]; then
 
-		local real_path=$(realpath --relative-to="${root_path}" "$(pwd)")
-		local current_sch_rel=$(realpath --relative-to="${root_path}" "${current_sch}")
+		# local real_path=$(realpath --relative-to="${root_path}" "$(pwd)")
+		current_sch_rel=$(realpath --relative-to="${root_path}" "${current_sch}")
 
 		if [[ -f ${current_sch} ]]; then
 
-			file_name=$(basename $(echo "${current_sch_rel%.*}"))
-			echo "${file_name}|${current_sch_rel}|${uuid}|${instance_name}|${parent_inst}"
+			file_name=$(basename "${current_sch_rel%.*}")
+			echo "${file_name}|${current_sch_rel}|${uuid:=-}|${instance_name}|${parent_inst}"
 		fi
 
-		local sch_instances=($(kicad5_sch_hierarchy "${current_sch}"))
+		sch_instances=($(sheet_instances "${current_sch}"))
 
 		for inst in "${sch_instances[@]}"; do
 
-			local sch_inst_name=$(echo "${inst}" | cut -d"|" -f2)
-			local sch_inst_file=$(echo "${inst}" | cut -d"|" -f3)
+			sch_inst_name=$(echo "${inst}" | cut -d"|" -f2)
+			sch_inst_file=$(echo "${inst}" | cut -d"|" -f3)
 
-			local current_sch_dir="$(pwd)"
+			current_sch_dir="$(pwd)"
 
-			local sch_dir="$(dirname ${current_sch})"
+			sch_dir="$(dirname "${current_sch}")"
 			cd "${sch_dir}" &> /dev/null || exit
 
 			find_pages "${sch_inst_file}" "${sch_dir}" "${root_path}" "${sch_inst_name}" "${parent_uuid}/${uuid}" "${parent_inst}-${sch_inst_name}"
@@ -81,6 +89,5 @@ find_pages()
 
 current_path="$(pwd)"
 
-find_pages "${kicad_sch}" "." "${current_path}" "${kicad_pro_filename}" "" "$(basename ${kicad_pro_filename})"
-
-cd "${current_path}"
+find_pages "${kicad_sch}" "." "${current_path}" "${kicad_pro_filename}" "" "$(basename "${kicad_pro_filename}")"
+cd "${current_path}" || exit
