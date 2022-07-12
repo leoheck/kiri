@@ -115,24 +115,27 @@ insert_commits_html()
 
 		i=$((i + 1))
 
+		html_new_line="&#013;"
+		tooltip="${hash} | ${date} | ${user}${html_new_line}${text}"
+
 		read -r -d '' commit_html <<-EOM
 		<!-- Commit ${i} -->
 		<input class="chkGroup" type="checkbox" id="${hash}" name="commit" value="${hash}" ${checked} onchange="update_commits()"/>
 		<label class="text-sm-left list-group-item" style="display: block; width: 430px" for="${hash}">
-		    <table style="width:100%">
+		    <table title="${tooltip}" style="width:100%">
 		        <tr>
 		            <td rowspan=2 style="vertical-align: top; width: 1.8em;">
 		                <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" width="15" height="15">
 		                    <path d="M7.5 10.5a3 3 0 010-6m0 6a3 3 0 000-6m0 6V15m0-10.5V0" stroke="currentColor"></path>
 		                </svg>
 		            </td>
-		            <td>
-		                <em class="${class}" style=" line-height: 0.7;">${text}</em>
+		            <td style="white-space:nowrap; overflow: hidden; text-overflow: ellipsis;">
+		                <span class="text-success font-weight-normal">${hash_label}</span> <span class="text-muted"> | </span> ${sch_icon} ${pcb_icon} ${txt_icon} <span class="text-muted font-weight-normal"> | ${date} | ${user}</span>
 		            </td>
 		        </tr>
 		        <tr>
-		            <td style="white-space:nowrap; overflow: hidden; text-overflow: ellipsis;">
-		                <span class="text-success font-weight-normal">${hash_label}</span> <span class="text-muted"> | </span> ${sch_icon} ${pcb_icon} ${txt_icon} <span class="text-muted font-weight-normal"> | ${date} | ${user}</span>
+		            <td>
+		                <em class="${class}" style=" line-height: 0.7;">${text}</em>
 		            </td>
 		        </tr>
 		    </table>
