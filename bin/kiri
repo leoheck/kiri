@@ -187,7 +187,7 @@ insert_pages_html()
 		local page_filename_path=$(echo "${page}" | cut -d'|' -f2 | sed "s/^[ \t]\+//g" | sed "s/[ \t]\+$//g")
 		local page_filename=$(echo "${page_filename_path}" | xargs basename)
 
-		if echo "${pages_to_skip}" | grep -s "${page_filename_path}"; then
+		if echo -e "${pages_to_skip}" | grep -s "${page_filename_path}" > /dev/null; then
 			continue
 		else
 			pages_to_skip="${pages_to_skip}\n${page_filename_path}"
