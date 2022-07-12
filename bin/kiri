@@ -1131,7 +1131,7 @@ parse_schematic_pages()
 			;;
 
 		"kicad_sch")
-			pages=($(find_kicad_sch "${kicad_sch}"))
+			pages=($(find_kicad6_sch_hier "${kicad_sch}"))
 			printf "%s\n" "${pages[@]}"
 		;;
 	esac
