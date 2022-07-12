@@ -627,9 +627,15 @@ launch_project_selector_gui()
 
 get_project_repo_abspath()
 {
-	local aux_path="$(dirname "${KICAD_PRO_ABSOLUTE_PATH}")"
-	cd "${aux_path}" &> /dev/null || exit
-	git rev-parse --show-toplevel
+		local dir_path="$(dirname "${KICAD_PRO_ABSOLUTE_PATH}")"
+		cd "${dir_path}" &> /dev/null || exit
+
+		if git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
+			git rev-parse --show-toplevel
+		else
+			echo "Error: The ${KICAD_PRO_ABSOLUTE_PATH} is not inside a git directory" >&2
+			kiri_kill
+		fi
 }
 
 get_project_nested_path()
@@ -791,7 +797,6 @@ command_line_parse()
 	readonly KICAD_PRO_ABSOLUTE_PATH
 	readonly REPO_ABSOLUTE_PATH="$(get_project_repo_abspath)"
 	readonly KICAD_PROJ_NESTED_PATH="$(get_project_nested_path)"
-
 
 	readonly KICAD_PROJ_ABSOLUTE_PATH="${REPO_ABSOLUTE_PATH}/${KICAD_PROJ_NESTED_PATH}"
 	cd "${KICAD_PROJ_ABSOLUTE_PATH}" || exit
