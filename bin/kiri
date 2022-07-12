@@ -1125,18 +1125,9 @@ parse_schematic_pages()
 
 	case ${sch_extension} in
 
-		# TODO: Improve to handle nested hierarchical sheets
 		"sch")
-			# Kicad .sch format:
-			# F0 "page_name" 60
-			# F1 "./path/file_name.sch" 60
-			local page_names=$(sed "s/\r$//g" "${kicad_sch}" | grep "^F0 " | cut -d" " -f2 | sed "s/\"//g")
-			local page_paths=$(sed "s/\r$//g" "${kicad_sch}" | grep "^F1 " | cut -d" " -f2 | sed "s/\"//g")
-			if [[ -n ${page_paths} ]]; then
-				local page_labels=$(echo "${page_paths}" | xargs basename -a | sed "s/.sch//g")
-			fi
-			local extra_schematic_pages=$(paste -d"|" <(printf "%s" "${page_labels}") <(printf "%s" "${page_paths}") <(printf "%s" "${page_names}"))
-			printf "%s\n%s\n" "${first_entry}" "${extra_schematic_pages[@]}"
+			pages=($(find_kicad_sch5 "${kicad_sch}"))
+			printf "%s\n" "${pages[@]}"
 			;;
 
 		"kicad_sch")
