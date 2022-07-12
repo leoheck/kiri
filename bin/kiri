@@ -1525,15 +1525,14 @@ generate_diffs()
 	n_comparisons=$(echo "${n_hashs} * $((n_hashs-1)) " | bc)
 
 	# Check for local changes
+	echo -e "\n${LBL}Artiffacts Summary${RCO}"
 	if echo "${COMMITS}" | cut -d' '  -f1 | grep "local" -q; then
-		echo -e "${LBL}Generating artifacts${RCO}"
-		echo -e "$((n_hashs-1)) commits and local changes, totaling $((n_comparisons+1)) comparisons\n"
+		echo "$((n_hashs-1)) commits and local changes, totaling $((n_comparisons+1)) comparisons"
 	else
-		echo -e "\n${LBL}Generating artifacts${RCO}"
-		echo -e "${n_hashs} commits, totaling ${n_comparisons} comparisons\n"
+		echo "${n_hashs} commits, totaling ${n_comparisons} comparisons"
 	fi
 
-	echo "${LBL}Generating artifacts${RCO}" 2>&1
+	echo -e "\n${LBL}Generating artifacts${RCO}"
 
 	local i=0
 	IFS=$'\n'
@@ -1581,6 +1580,7 @@ generate_diffs()
 
 
 				if [[ "${j}" == "1" ]]; then
+
 					local kicad_pro_1="$(get_kicad_pro "${OUTPUT_DIR_PATH}/${hash_1}")"
 					local kicad_pro_extension_1="$(get_file_extension "${kicad_pro_1}")"
 					local kicad_project_name_1="$(get_file_without_extention "${kicad_pro_1}")"
@@ -1588,7 +1588,6 @@ generate_diffs()
 					local kicad_pcb_1="$(get_kicad_pcb "${OUTPUT_DIR_PATH}/${hash_1}" "${kicad_project_name_1}")"
 					local kicad_sch_extra_1="$(get_kicad_sch_extra "${OUTPUT_DIR_PATH}/${hash_1}/${kicad_sch_1}" ${hash_1})"
 					local kicad_cache_lib_1="$(get_kicad_cache_lib "${OUTPUT_DIR_PATH}/${hash_1}" "${kicad_project_name_1}")"
-
 					if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]]; then
 						echo
 					fi
@@ -1852,23 +1851,9 @@ get_kicad_sch_extra()
 
 	local sch_extension="$(get_file_extension "${kicad_sch}")"
 
-	if [[ -z ${git_hash} ]]; then
+	if [[ -z "${git_hash}" ]] || [[ "${git_hash}" == "local" ]]; then
 		git_hash="HEAD"
 	fi
-
-	# case "${sch_extension}" in
-	# 	"sch")
-	# 		# Kicad .sch format:
-	# 		# F1 "./path/file_name.sch" 60
-	# 		grep "^F1 " "${kicad_sch}" | cut -d" " -f2 | sed "s/\"//g"
-	# 		;;
-
-	# 	"kicad_sch")
-	# 		# Kicad .kicad_sch format:
-	# 		# (property "Sheet file" "sch/power_supply.kicad_sch" (id 1) (at 101.6 43.8662 0)...
-	# 		grep 'Sheet file' "${kicad_sch}" | sed "s/^[ ]\+//g" | cut -d"\"" -f4
-	# 		;;
-	# esac
 
 	case "${sch_extension}" in
 		"sch")
