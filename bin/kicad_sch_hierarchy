@@ -1,0 +1,61 @@
+#!/bin/bash
+
+# Wrapper for the kicad_version.py script
+# It should work on Linux, Mac and possibly on Windows
+
+readlink_osx()
+{
+	TARGET_FILE=$1
+
+	cd "$(dirname "${TARGET_FILE}")" || exit
+	TARGET_FILE=$(basename "${TARGET_FILE}")
+
+	# Iterate down a (possible) chain of symlinks
+	while [ -L "${TARGET_FILE}" ]
+	do
+		TARGET_FILE=$(readlink "${TARGET_FILE}")
+		cd "$(dirname "${TARGET_FILE}")" || exit
+		TARGET_FILE=$(basename "${TARGET_FILE}")
+	done
+
+	# Compute the canonicalized name by finding the physical path
+	# for the directory we're in and appending the target file.
+	PHYS_DIR=$(pwd -P)
+
+	RESULT="$PHYS_DIR/${TARGET_FILE}"
+
+	echo "${RESULT}"
+}
+
+
+case ${OSTYPE} in
+
+	# macOS
+	darwin*)
+
+		SCRIPT=$(readlink_osx "$0")
+		SCRIPTPATH=$(dirname "${SCRIPT_FILE_PATH}")
+		SCRIPTNAME=$(basename "${SCRIPT_FILE_PATH%.*}")
+
+		kicad_app_path=/Applications/Kicad/kicad.app/
+		if [[ ! -d ${kicad_app_path} ]]; then
+			kicad_app_path=/Applications/KiCad/KiCad.app/
+		fi
+
+		if [[ -f ${kicad_app_path}/Contents/Frameworks/Python.framework/Versions/Current/bin/python ]]; then
+			${kicad_app_path}/Contents/Frameworks/Python.framework/Versions/Current/bin/python "${SCRIPTPATH}/${SCRIPTNAME}.py" "$@"
+		else
+			${kicad_app_path}/Contents/Frameworks/Python.framework/Versions/Current/bin/python3 "${SCRIPTPATH}/${SCRIPTNAME}.py" "$@"
+		fi
+		;;
+
+	# Linux
+	*)
+		SCRIPT_FILE_PATH=$(readlink -f "$0")
+		SCRIPTPATH=$(dirname "${SCRIPT_FILE_PATH}")
+		SCRIPTNAME=$(basename "${SCRIPT_FILE_PATH%.*}")
+
+			/usr/bin/env python3 "${SCRIPTPATH}/${SCRIPTNAME}.py" "$@"
+		;;
+
+esac

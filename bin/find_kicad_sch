@@ -1,0 +1,73 @@
+#!/bin/bash
+
+kicad_pro="${1}"
+kicad_pro_extension="${kicad_pro##*.}"
+kicad_pro_filename="${kicad_pro%.*}"
+
+if [[ ! -f ${kicad_pro} ]]; then
+	echo "Kicad project '${kicad_pro}' is missing"
+	exit 1
+fi
+
+kicad_sch="${kicad_pro_filename}.kicad_sch"
+
+if [[ ! -f ${kicad_sch} ]]; then
+	echo "Main Kicad schematics '${kicad_sch}' is missing"
+	exit 1
+fi
+
+find_pages()
+{
+	local current_sch="${1}"
+	local sch_dir="${2}"
+	local root_path="${3}"
+	local instance_name="${4}"
+	local parent_uuid="${5}"
+	local parent_inst="${6}"
+
+	if [[ ! -f ${current_sch} ]]; then
+		local current_sch="_"
+		local uuid="_"
+		local check=" Missing"
+	else
+		local uuid=$(grep "(uuid" ${current_sch} -m 1 | cut -d"(" -f2 | cut -d" " -f2 | sed "s/)//g")
+		local check=" Ok"
+	fi
+
+	local real_path=$(realpath --relative-to="${root_path}" "$(pwd)")
+	local current_sch_rel=$(realpath --relative-to="${root_path}" "${current_sch}")
+
+	if [[ -f ${current_sch} ]]; then
+
+		# echo "${real_path} | ${sch_dir} | ${current_sch_rel} | ${uuid} | ${check} | ${instance_name} | ${parent_uuid}"
+
+		# file_name=$(basename $(echo "${current_sch_rel%.*}"))
+		# echo "${uuid}|${current_sch_rel}|${file_name}|${instance_name}"
+
+		file_name=$(basename $(echo "${current_sch_rel%.*}"))
+		echo "${file_name}|${current_sch_rel}|${uuid}|${instance_name}|${parent_inst}"
+	fi
+
+	local sch_instances=($(kicad_sch_hierarchy "${current_sch}"))
+
+	for inst in "${sch_instances[@]}"; do
+
+		local sch_inst_name=$(echo "${inst}" | cut -d"|" -f2)
+		local sch_inst_file=$(echo "${inst}" | cut -d"|" -f3)
+
+		local current_sch_dir="$(pwd)"
+
+		local sch_dir="$(dirname ${current_sch})"
+		cd "${sch_dir}" &> /dev/null || exit
+
+		find_pages "${sch_inst_file}" "${sch_dir}" "${root_path}" "${sch_inst_name}" "${parent_uuid}/${uuid}" "${parent_inst}-${sch_inst_name}"
+
+		cd "${current_sch_dir}" &> /dev/null || exit
+	done
+}
+
+current_path="$(pwd)"
+
+find_pages "${kicad_sch}" "." "${current_path}" "${kicad_pro_filename}" "" "$(basename ${kicad_pro_filename})"
+
+cd "${current_path}"
