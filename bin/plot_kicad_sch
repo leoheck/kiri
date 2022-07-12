@@ -324,22 +324,26 @@ main()
 	# Organize generated files for KiRI
 	svg_file_paths=($(find "${output_temp_dir_path}" -name "*.svg"))
 
+
+	echo "Kicad exported files:"
+	for svg_file in "${svg_file_paths[@]}"; do
+		echo "> ${svg_file}"
+	done
+
+	echo "Renaming files:"
 	if [[ -n ${svg_file_paths} ]]; then
 		IFS=$'\n'
 		for svg_file in "${svg_file_paths[@]}"; do
 
-			module_title=$(basename "${svg_file}" | sed "s|.svg||g" | sed "s/${project_name}-//g" | cut -d"-" -f1)
+			svg_file_name=$(basename "${svg_file%.*}")
+			match_line_no=$(cat ${output_dir_path}/pages | grep -m1 -n "|${svg_file_name}$" | cut -d":" -f1)
 
-			# Kicad export subsheets using module_title and not file_name
-			# This gets the filename
-			page_filename=$(cat ${output_dir_path}/pages | grep "${module_title}" | cut -d'|' -f2 | xargs basename | sed "s/.kicad_sch//g" | sed "s/.sch//g")
-
-			new_file="sch-${page_filename}.svg"
-
-			echo "      Plotting = ${new_file}"
-			mv "${svg_file}" "${new_file}" 2> /dev/null
+			if [[ -n "${match_line_no}" ]]; then
+				new_svg_file="sch-$(sed -n ${match_line_no}p ${output_dir_path}/pages | cut -f1 -d"|").svg"
+				echo "${svg_file} -> ${new_svg_file}" 2>&1
+				cp -f "${svg_file}" "${new_svg_file}" 2> /dev/null
+			fi
 		done
-		echo
 	fi
 
 	# Remove temporary folder
