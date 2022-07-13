@@ -182,6 +182,30 @@ is_design_loaded()
 	done
 }
 
+dissmiss_configure_kicad_Settings_path()
+{
+	local win_id=$1
+	echo "- Dismissing popup [${win_id}]"
+
+	xdotool key --window "${win_id}" "Return" &> /dev/null
+	sleep "${TIME}"
+}
+
+dissmiss_configure_symbol_library_table()
+{
+	local win_id=$1
+	echo "- Dismissing popup [${win_id}]"
+
+	# It looks like the first option to use global lib is not selectable
+	# In this case we are going to an Empty lib (user can fix this later)
+
+	xdotool key --window "${win_id}" "Down" &> /dev/null
+	sleep "${TIME}"
+
+	xdotool key --window "${win_id}" "Return" &> /dev/null
+	sleep "${TIME}"
+}
+
 dissmiss_popup()
 {
 	local win_id=$1
@@ -200,6 +224,16 @@ dismiss_eeschema_popups()
 
 		case "${win_title}" in
 
+			# First time running Kicad
+			"Configure KiCad Settings Path")
+				dissmiss_configure_kicad_Settings_path "${win_id}" "${win_title}"
+				;;
+
+			# First time running Kicad
+			"Configure Global Symbol Library Table")
+				dissmiss_configure_symbol_library_table "${win_id}" "${win_title}"
+				;;
+
 			"[no schematic loaded] — Schematic Editor")
 				;;
 
@@ -213,9 +247,10 @@ dismiss_eeschema_popups()
 				dissmiss_popup "${win_id}" "${win_title}"
 				;;
 
+
 			*)
-				echo "Unknown popup window [${win_id}] \"${win_title}\""
 				# Dismiss anyway
+				echo "Unknown popup window [${win_id}] \"${win_title}\""
 				dissmiss_popup "${win_id}" "${win_title}"
 				;;
 		esac
