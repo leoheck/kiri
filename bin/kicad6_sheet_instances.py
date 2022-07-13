@@ -13,7 +13,6 @@ sys.path.insert(1, script_dir_parent_path)
 from submodules.kicad_parser.kicad_pcb import *
 from submodules.kicad_parser.sexp_parser import *
 
-from tabulate import tabulate
 
 def parse_cli_args():
     parser = argparse.ArgumentParser(description="EEschema hierarchy finder")
