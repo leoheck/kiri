@@ -5,7 +5,11 @@ import os
 import sys
 
 
-sys.path.insert(1, '/home/lheck/Documents/kiri/')
+script_file_path = os.path.realpath(__file__)
+script_dir_path = os.path.dirname(script_file_path)
+script_dir_parent_path = os.path.dirname(script_dir_path)
+sys.path.insert(1, script_dir_parent_path)
+
 from submodules.kicad_parser.kicad_pcb import *
 from submodules.kicad_parser.sexp_parser import *
 
