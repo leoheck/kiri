@@ -64,9 +64,20 @@ show_env_config_message()
 	read -r -d '' ENV_SETUP_NOTE <<-EOM
 	${CI}${CB}Finish KiRi setup by adding the following lines in the end of your ~/.bashrc or ~/.zshrc${CR}
 
-	# On Windows WLS, make sure DISPLAY env var is set
-	# Launch kicad from the command line once to configure it
-	# export DISPLAY=:0.0
+	# WINDOWS USERS
+	# Set DISPLAY to use X terminal in WSL
+	# In WSL2 the localhost and network interfaces are not the same than windows
+	if grep -q "WSL2" /proc/version &> /dev/null; then
+	    # execute route.exe in the windows to determine its IP address
+	    export DISPLAY=\$(route.exe print | grep 0.0.0.0 | head -1 | awk '{print \$4}'):0.0
+
+	else
+	    # In WSL1 the DISPLAY can be the localhost address
+	    if grep -qi "Microsoft" /proc/version &> /dev/null; then
+	        export DISPLAY=127.0.0.1:0.0
+	    fi
+
+	fi
 
 	# Kiri environment setup
 	eval \$(opam env)
