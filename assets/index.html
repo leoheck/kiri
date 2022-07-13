@@ -44,7 +44,7 @@
 							and reset with <kbd>r</kbd>
 							</small>
 						</p>
-						<div class="form-check scrollbox" style="padding: 0px 0px 8px 0px; margin: 0px; overflow-y: scroll">
+						<div class="form-check scrollbox" style="padding: 0px 4px 8px 0px; margin: 0px; margin-right: 4px; overflow-y: scroll">
 							<form id="commits_form" class="overflow-auto scrollbox-content">
 								<!-- FILL_COMMITS_HERE -->
 							</form>
@@ -101,20 +101,31 @@
 					</div>
 
 					<div class="col no-gutters" style="width: 100%; padding: 0px 0px 0px 0px; margin: 0px; height: 100%; ">
-
 						<div class="col no-gutters" style="width: 100%; height: 90%; padding: 0px 0px 0px 0px; margin: 0px;">
-
-							<div id="legend" class="no-gutters" style="width: 100%; padding: 0px 0px 0px 0px; margin: 0px;">
-								<form class="rounded form-inline" style="background-color: #222; padding: 8px 5px 8px 5px">
-									<span id=commit1_legend style="margin-left:0.5em; margin-right:0.5em; color: #00FFFF; width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
-									<small class="text-sm text-muted"> New <span class="text-monospace" id=commit1_legend_hash>([COMMIT_1_HASH])</span></small>
-									<span style="width: 2em;"></span>
-									<span id="commit2_legend" style="margin-left:0.5em; margin-right:0.5em; color: #880808; width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
-									<small class="text-sm text-muted"> Old <span class="text-monospace" id=commit2_legend_hash>([COMMIT_2_HASH])</span></small>
-									<span style="width: 2em;"></span>
-									<span id="commit3_legend" style="margin-left:0.5em; margin-right:0.5em; color: #807F7F; width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
-									<small class="text-sm text-muted"> Unchanged </small>
-								</form>
+							<div id="legend" class="rounded no-gutters" style="background-color: #222; width: 100%; padding: 8px 5px 8px 5px; margin: 0px;">
+								<span id=commit1_legend style="margin-left:0.5em; margin-right:0.5em; color: #00FFFF; width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
+								<small class="text-sm text-muted">
+									Newer
+									<span class="text-monospace">
+										<form id="KICAD_COMMIT_1" class="form-inline" style="display: inline;" action="kicad_rev" method="post">
+											<input type="hidden" name="hash" value="[COMMIT_1_HASH]"/>
+											(<a title="Launch Kicad at this Rev" id="commit1_legend_hash" href="javascript:{}" onclick="document.getElementById('KICAD_COMMIT_1').submit();">[COMMIT_1_HASH]</a>)
+								        </form>
+									</span>
+								</small>
+								<span style="display: inline; width: 2em;"></span>
+								<span id="commit2_legend" style="display: inline; margin-left:0.5em; margin-right:0.5em; color: #880808; width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
+								<small class="text-sm text-muted" style="display: inline;">
+									Older
+									<span class="text-monospace">
+										<form id="KICAD_COMMIT_2" class="form-inline" style="display: inline;" action="kicad_rev" method="post">
+											<input type="hidden" name="hash" value="[COMMIT_2_HASH]"/>
+											(<a title="Launch Kicad at this Rev" id="commit2_legend_hash" href="javascript:{}" onclick="document.getElementById('KICAD_COMMIT_2').submit();">[COMMIT_2_HASH]</a>)
+										</form>
+									</span>
+								</small>
+								<span id="commit3_legend" style="margin-left:0.5em; margin-right:0.5em; color: #807F7F; width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
+								<small class="text-sm text-muted"> Unchanged </small>
 							</div>
 
 							<div id="diff-sch" style="width: 100%; height: 94%; display: inline; padding-top: 0px;">

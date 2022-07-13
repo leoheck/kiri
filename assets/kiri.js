@@ -487,8 +487,8 @@ function update_commits() {
     console.log("     commit1 =", commit1);
     console.log("     commit2 =", commit2);
 
-    document.getElementById("commit1_legend_hash").innerHTML = "(" + commit1 + ")";
-    document.getElementById("commit2_legend_hash").innerHTML = "(" + commit2 + ")";
+    document.getElementById("commit1_legend_hash").innerHTML = commit1;
+    document.getElementById("commit2_legend_hash").innerHTML = commit2;
 
     change_page(commit1, commit2);
     change_layer(commit1, commit2);
