@@ -72,8 +72,35 @@ export PATH=${KIRI_HOME}/submodules/KiCad-Diff/:${PATH}
 export PATH=${KIRI_HOME}/bin:${PATH}
 ```
 
+On Windows/WSL, it is needed to launch the XServer (e.g `Xming`) and also have the `DISPLAY` set correctly
+Add the following lines in the end of the `~/.bashrc`, `~/.zshrc` to set DISPLAY.
+Also, launch `kicad` manually or any other GUI tool like `xeyes` to test if X11 is working.
+
+```bash
+# Set DISPLAY to use X terminal in WSL
+# In WSL2 the localhost and network interfaces are not the same than windows
+if grep -q "WSL2" /proc/version &> /dev/null; then
+    # execute route.exe in the windows to determine its IP address
+    export DISPLAY=$(route.exe print | grep 0.0.0.0 | head -1 | awk '{print $4}'):0.0
+
+else
+    # In WSL1 the DISPLAY can be the localhost address
+    if grep -qi "Microsoft" /proc/version &> /dev/null; then
+        export DISPLAY=127.0.0.1:0.0
+    fi
+
+fi
+```
 
 # Using KiRI
+
+```bash
+cd [kicad_git_repo]
+kiri
+```
+
+Alternatively, it is possible to pass the filename
+
 ```bash
 cd [kicad_git_repo]
 kiri board.pro
@@ -135,7 +162,7 @@ Comparing the new `.kicad_sch` file with an old `.sch`
     <img src="misc/kicad_sch_v6.png" width="820" alt="Layout View">
 </p>
 
-Demo on Youtube
+Demo on YouTube
 
 <p align="center">
 <a href="https://youtu.be/zpssGsvCgi0" target="_blank">
