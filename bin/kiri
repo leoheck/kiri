@@ -1926,8 +1926,6 @@ main()
 	generate_diffs
 	build_main_html
 
-	echo -e "\n${LBL}Output folder:${RCO} $(realpath --relative-to="${KICAD_PROJ_ABSOLUTE_PATH}" "${OUTPUT_DIR_PATH}")"
-
 	if [[ ${ARCHIVE_PROJECT} == 1 ]]; then
 		archive_kiri_website
 	fi
