@@ -33,7 +33,7 @@ case ${OSTYPE} in
 	# macOS
 	darwin*)
 
-		SCRIPT=$(readlink_osx "$0")
+		SCRIPT_FILE_PATH=$(readlink_osx "${0}")
 		SCRIPTPATH=$(dirname "${SCRIPT_FILE_PATH}")
 		SCRIPTNAME=$(basename "${SCRIPT_FILE_PATH%.*}")
 
