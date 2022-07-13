@@ -380,7 +380,6 @@ main()
 	# Organize generated files for KiRI
 	svg_file_paths=($(find "${output_temp_dir_path}" -name "*.svg"))
 
-
 	echo "Kicad exported files:"
 	for svg_file in "${svg_file_paths[@]}"; do
 		echo "> ${svg_file}"
