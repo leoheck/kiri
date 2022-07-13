@@ -797,7 +797,14 @@ function imgError(image) {
 
 function check_server_status()
 {
-    var img = document.body.appendChild(document.createElement("img"));
+    var img;
+
+    img = document.getElementById("server_status_img");
+
+    if (! img) {
+        var img = document.body.appendChild(document.createElement("img"));
+        img.setAttribute("id", "server_status_img");
+    }
 
     img.onload = function()
     {
