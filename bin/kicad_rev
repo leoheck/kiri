@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# KiRI has already expoter revs
+# To launch kicad, we just need to get the path of the project
+
+kicad_pro_path="${1}"
+
+case "${OSTYPE}" in
+
+	darwin*)
+		# On OSX it has to be in /Applications folder
+		open -n --fresh -a Kicad "${kicad_pro_path}"
+		;;
+
+	*)
+		# On Linux/WSL it needs an absolute path
+		kicad "${kicad_pro_path}"
+		;;
+esac
