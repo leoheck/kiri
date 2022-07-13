@@ -44,14 +44,14 @@ insert_commits_html()
 		local kicad_proj_name=$(get_file_without_extention "${kicad_pro}")
 		local kicad_sch=$(get_kicad_sch "${KICAD_PROJ_ABSOLUTE_PATH}" "${kicad_proj_name}" "${kicad_pro_extension}")
 		local kicad_pcb=$(get_kicad_pcb "${KICAD_PROJ_ABSOLUTE_PATH}" "${kicad_proj_name}")
-		local kicad_sch_extra=$(get_kicad_sch_extra "${KICAD_PROJ_ABSOLUTE_PATH}/${kicad_sch}")
+		local kicad_sch_pages=$(get_kicad_sch_pages "${KICAD_PROJ_ABSOLUTE_PATH}/${kicad_sch}")
 		local kicad_cache_lib=$(get_kicad_cache_lib "${KICAD_PROJ_ABSOLUTE_PATH}" "${kicad_proj_name}")
 		# show_project_files "${OUTPUT_DIR_PATH}/${hash}" "${kicad_pro}" "${kicad_sch}" "${kicad_pcb}" "${kicad_cache_lib}"
 
 		if [[ "${hash}" != "local" ]]; then
 
 			# Check for changes in ".sch|.kicad_sch" files
-			if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${KICAD_PROJ_NESTED_PATH}" | cat | grep -q -s -E "${kicad_sch// /|}${kicad_sch_extra}"; then
+			if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${KICAD_PROJ_NESTED_PATH}" | cat | grep -q -s -E "${kicad_sch// /|}${kicad_sch_pages}"; then
 				sch_icon="${sch_img}"
 			else
 				sch_icon="${empty_img}"
@@ -65,7 +65,7 @@ insert_commits_html()
 			fi
 
 			# Check for changes in textual files only
-			if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${KICAD_PROJ_NESTED_PATH}" | cat | grep -q -s -vE "${kicad_sch// /|}${kicad_sch_extra}${kicad_pcb}"; then
+			if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${KICAD_PROJ_NESTED_PATH}" | cat | grep -q -s -vE "${kicad_sch// /|}${kicad_sch_pages}${kicad_pcb}"; then
 				txt_icon="${txt_img}"
 			else
 				txt_icon="${empty_img}"
@@ -83,7 +83,7 @@ insert_commits_html()
 		else
 
 			# Check for changes in ".sch|.kicad_sch" files
-			if git status -uno  | grep -q -s -E "${kicad_pro}${kicad_sch// /|}${kicad_pcb}${kicad_sch_extra}"; then
+			if git status -uno  | grep -q -s -E "${kicad_pro}${kicad_sch// /|}${kicad_pcb}${kicad_sch_pages}"; then
 				sch_icon="${sch_img}"
 			else
 				sch_icon="${empty_img}"
@@ -97,7 +97,7 @@ insert_commits_html()
 			fi
 
 			# Check for changes in textual files only
-			if git status -uno  | grep -q -s -vE "${kicad_pro}${kicad_sch// /|}${kicad_pcb}${kicad_sch_extra}"; then
+			if git status -uno  | grep -q -s -vE "${kicad_pro}${kicad_sch// /|}${kicad_pcb}${kicad_sch_pages}"; then
 				txt_icon="${txt_img}"
 			else
 				txt_icon="${empty_img}"
@@ -627,15 +627,15 @@ launch_project_selector_gui()
 
 get_project_repo_abspath()
 {
-		local dir_path="$(dirname "${KICAD_PRO_ABSOLUTE_PATH}")"
-		cd "${dir_path}" &> /dev/null || exit
+	local dir_path="$(dirname "${KICAD_PRO_ABSOLUTE_PATH}")"
+	cd "${dir_path}" &> /dev/null || exit
 
-		if git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
-			git rev-parse --show-toplevel
-		else
-			echo "Error: The ${KICAD_PRO_ABSOLUTE_PATH} is not inside a git directory" >&2
-			kiri_kill
-		fi
+	if git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
+		git rev-parse --show-toplevel
+	else
+		echo "Error: The ${KICAD_PRO_ABSOLUTE_PATH} is not inside a git directory" >&2
+		kiri_kill
+	fi
 }
 
 get_project_nested_path()
@@ -945,7 +945,7 @@ set_default_html_view()
 
 get_git_commits()
 {
-	local files=(${@})
+	local files=("${@}")
 	local current_git_branch=$(git rev-parse --abbrev-ref HEAD)
 
 	command_end=1>&2
@@ -977,7 +977,7 @@ get_name_of_current_user()
 
 git_files_have_changes()
 {
-	local files=(${@})
+	local files=("${@}")
 	local has_changes="No"
 	local ret=0
 	local file
@@ -1264,7 +1264,7 @@ manual_schematic_plot()
 
 		if [[ -f "${kicad_sch}" ]]; then
 
-			all_kicad_sch_files=("${kicad_sch}" $(get_kicad_sch_extra "${kicad_sch}" ${commit_hash}))
+			all_kicad_sch_files=("${kicad_sch}" $(get_kicad_sch_pages "${kicad_sch}" ${commit_hash}))
 
 			IFS=$'\n'
 			for kicad_sch_aux in "${all_kicad_sch_files[@]}"; do
@@ -1579,7 +1579,7 @@ generate_diffs()
 					local kicad_project_name_1="$(get_file_without_extention "${kicad_pro_1}")"
 					local kicad_sch_1="$(get_kicad_sch "${OUTPUT_DIR_PATH}/${hash_1}" "${kicad_project_name_1}" "${kicad_pro_extension_1}")"
 					local kicad_pcb_1="$(get_kicad_pcb "${OUTPUT_DIR_PATH}/${hash_1}" "${kicad_project_name_1}")"
-					local kicad_sch_extra_1="$(get_kicad_sch_extra "${OUTPUT_DIR_PATH}/${hash_1}/${kicad_sch_1}" ${hash_1})"
+					local kicad_sch_pages_1="$(get_kicad_sch_pages "${OUTPUT_DIR_PATH}/${hash_1}/${kicad_sch_1}" ${hash_1})"
 					local kicad_cache_lib_1="$(get_kicad_cache_lib "${OUTPUT_DIR_PATH}/${hash_1}" "${kicad_project_name_1}")"
 					if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]]; then
 						echo
@@ -1592,7 +1592,7 @@ generate_diffs()
 				local kicad_project_name_2="$(get_file_without_extention "${kicad_pro_2}")"
 				local kicad_sch_2="$(get_kicad_sch "${OUTPUT_DIR_PATH}/${hash_2}" "${kicad_project_name_2}" "${kicad_pro_extension_2}")"
 				local kicad_pcb_2="$(get_kicad_pcb "${OUTPUT_DIR_PATH}/${hash_2}" "${kicad_project_name_2}")"
-				local kicad_sch_extra_2="$(get_kicad_sch_extra "${OUTPUT_DIR_PATH}/${hash_2}/${kicad_sch_2}" ${hash_2})"
+				local kicad_sch_pages_2="$(get_kicad_sch_pages "${OUTPUT_DIR_PATH}/${hash_2}/${kicad_sch_2}" ${hash_2})"
 				local kicad_cache_lib_2="$(get_kicad_cache_lib "${OUTPUT_DIR_PATH}/${hash_2}" "${kicad_project_name_2}")"
 
 				if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]]; then
@@ -1621,7 +1621,7 @@ build_main_html()
 	local kicad_proj_name="$(get_file_without_extention "${kicad_pro}")"
 	local kicad_sch="$(get_kicad_sch "${KICAD_PROJ_ABSOLUTE_PATH}" "${kicad_proj_name}" "${kicad_pro_extension}")"
 	local kicad_pcb="$(get_kicad_pcb "${KICAD_PROJ_ABSOLUTE_PATH}" "${kicad_proj_name}")"
-	local kicad_sch_extra="$(get_kicad_sch_extra "${KICAD_PROJ_ABSOLUTE_PATH}/${kicad_sch}")"
+	local kicad_sch_pages="$(get_kicad_sch_pages "${KICAD_PROJ_ABSOLUTE_PATH}/${kicad_sch}")"
 	local kicad_cache_lib="$(get_kicad_cache_lib "${KICAD_PROJ_ABSOLUTE_PATH}" "${kicad_proj_name}")"
 	show_project_files "${KICAD_PROJ_ABSOLUTE_PATH}" "${kicad_pro}" "${kicad_sch}" "${kicad_pcb}" "${kicad_cache_lib}"
 
@@ -1834,7 +1834,7 @@ get_kicad_sch()
 	esac
 }
 
-get_kicad_sch_extra()
+get_kicad_sch_pages()
 {
 	# Parse a list of schematic pages from the main Kicad's schematic
 	# Format: schematic_page_name|filename_without_extension
@@ -1880,15 +1880,15 @@ show_project_files()
 	local kicad_pcb="${4}"
 	local kicad_cache_lib="${5}"
 
-	local kicad_sch_extra="$(get_kicad_sch_extra "${kicad_project_path}/${kicad_sch}")"
+	local kicad_sch_pages="$(get_kicad_sch_pages "${kicad_project_path}/${kicad_sch}")"
 
 	if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]] || [[ "${DEBUG_PLOTGITSCH}" == "1" ]] || [[ "${DEBUG_KIDIFF}" == "1" ]]; then
 		echo "     project_path: ${kicad_project_path}"
 		echo "          project: ${kicad_pro}"
 		echo "        schematic: ${kicad_sch}"
-		if [[ -n "${kicad_sch_extra}" ]]; then
+		if [[ -n "${kicad_sch_pages}" ]]; then
 			padding=$(printf ' %.0s' {1..19})
-			echo -e "  extra_sch_files: $(echo -e "${kicad_sch_extra}" | sed "s/^/${padding}/g" | sed '1s/[ ]\+//')"
+			echo -e "  extra_sch_files: $(echo -e "${kicad_sch_pages}" | sed "s/^/${padding}/g" | sed '1s/[ ]\+//')"
 		fi
 		if [[ -n "${kicad_cache_lib}" ]]; then
 			echo -e "        cache.lib: ${kicad_cache_lib}"
@@ -1938,7 +1938,7 @@ main()
 	local kicad_proj_name="$(get_file_without_extention "${kicad_pro}")"
 	local kicad_sch="$(get_kicad_sch "${KICAD_PROJ_ABSOLUTE_PATH}" "${kicad_proj_name}" "${kicad_pro_extension}")"
 	local kicad_pcb="$(get_kicad_pcb "${KICAD_PROJ_ABSOLUTE_PATH}" "${kicad_proj_name}")"
-	local kicad_sch_extra="$(get_kicad_sch_extra "${KICAD_PROJ_ABSOLUTE_PATH}/${kicad_sch}")"
+	local kicad_sch_pages="$(get_kicad_sch_pages "${KICAD_PROJ_ABSOLUTE_PATH}/${kicad_sch}")"
 	local kicad_cache_lib="$(get_kicad_cache_lib "${KICAD_PROJ_ABSOLUTE_PATH}" "${kicad_proj_name}")"
 	show_project_files "${KICAD_PROJ_ABSOLUTE_PATH}" "${kicad_pro}" "${kicad_sch}" "${kicad_pcb}" "${kicad_cache_lib}"
 
@@ -1948,7 +1948,7 @@ main()
 		rm -rf "${OUTPUT_DIR_PATH}"
 	fi
 
-	get_git_commits_list "${kicad_pro}" "${kicad_sch}" "${kicad_pcb}" "${kicad_sch_extra}"
+	get_git_commits_list "${kicad_pro}" "${kicad_sch}" "${kicad_pcb}" "${kicad_sch_pages}"
 	generate_diffs
 	build_main_html
 
