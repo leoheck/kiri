@@ -256,7 +256,8 @@ html, body {
 	filter : invert(79%) sepia(92%) saturate(322%) hue-rotate(3deg) brightness(89%) contrast(92%);
 }
 
-#================
+/* ==============================
+** ============================*/
 
 .ellipsis {
 	text-overflow: ellipsis;
@@ -288,4 +289,24 @@ label#layers, label#pages {
 	background-color: rgba(0,0,0,0.8);
 	z-index: 2;
 	cursor: pointer;
+}
+
+
+/* ==============================
+** ============================*/
+
+a:link {
+	color: red;
+}
+
+a:visited {
+	color: green;
+}
+
+a:hover {
+	color: hotpink;
+}
+
+a:active {
+	color: blue;
 }
