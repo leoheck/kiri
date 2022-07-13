@@ -64,7 +64,8 @@ show_env_config_message()
 	read -r -d '' ENV_SETUP_NOTE <<-EOM
 	${CI}${CB}Finish KiRi setup by adding the following lines in the end of your ~/.bashrc or ~/.zshrc${CR}
 
-	# On Windows WLS, make sure display is set
+	# On Windows WLS, make sure DISPLAY env var is set
+	# Launch kicad from the command line once to configure it
 	# export DISPLAY=:0.0
 
 	# Kiri environment setup
