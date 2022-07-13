@@ -30,7 +30,7 @@ identify_linux_or_wsl()
 
 get_current_display_server()
 {
-	case $(identify_linux_or_wsl) in
+	case "$(identify_linux_or_wsl)" in
 
 		Linux)
 			# Check the display server in use (x11 or wayland)
@@ -39,16 +39,15 @@ get_current_display_server()
 			;;
 
 		WSL)
-			echo "wsl"
+			echo "x11"
 			;;
 	esac
 }
 
 launch_virtual_display()
 {
-	export n=":0"
 	if [[ -z "$DISPLAY" ]]; then
-		export DISPLAY=":${n}.0"
+		export DISPLAY=":0.0"
 	fi
 
 	# killall Xvfb &>/dev/null
@@ -322,9 +321,10 @@ main()
 	original_kbd_lang=$(setxkbmap -query | grep layout | tr -s ' ' | cut -d" " -f2)
 	setxkbmap -layout us &> /dev/null
 
-	if [[ "$(get_current_display_server)" != "x11" ]] && [[ "$(get_current_display_server)" != "wayland" ]] || [[ "$(get_current_display_server)" != "wsl" ]]; then
-		echo "Error: Unknown display server \"$(get_current_display_server)\""
-		echo "Only X11, XWayland are currently supported"
+	display_server=$(get_current_display_server)
+	if [[ "${display_server}" != "x11" ]] && [[ "${display_server}" != "wayland" ]]; then
+		echo "Warning: Unknown display server (${display_server})"
+		echo "Only X11 and XWayland are currently supported"
 		#exit 1
 	fi
 
