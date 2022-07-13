@@ -19,15 +19,29 @@ ctrl_c()
 	exit 1
 }
 
+identify_linux_or_wsl()
+{
+	if grep -qEi "(Microsoft|WSL)" /proc/version &> /dev/null ; then
+		echo "WSL"
+	else
+		echo "Linux"
+	fi
+}
+
 get_current_display_server()
 {
-	# Check the display server in use (x11 or wayland)
-	# loginctl show-session $(awk '/tty/ {print $1}' <(loginctl)) -p Type | awk -F= '{print $2}'
-	echo "${XDG_SESSION_TYPE:-unknown}"
+	case $(identify_linux_or_wsl) in
 
-	# if [[ -z "${XDG_SESSION_TYPE}" ]]; then
-		# env | grep -i wayland
-	# fi
+		Linux)
+			# Check the display server in use (x11 or wayland)
+			# loginctl show-session $(awk '/tty/ {print $1}' <(loginctl)) -p Type | awk -F= '{print $2}'
+			echo "${XDG_SESSION_TYPE:-unknown}"
+			;;
+
+		WSL)
+			echo "wsl"
+			;;
+	esac
 }
 
 launch_virtual_display()
@@ -247,7 +261,6 @@ dismiss_eeschema_popups()
 				dissmiss_popup "${win_id}" "${win_title}"
 				;;
 
-
 			*)
 				# Dismiss anyway
 				echo "Unknown popup window [${win_id}] \"${win_title}\""
@@ -307,11 +320,11 @@ main()
 
 	# Set keyboard to us
 	original_kbd_lang=$(setxkbmap -query | grep layout | tr -s ' ' | cut -d" " -f2)
-	setxkbmap us &> /dev/null
+	setxkbmap -layout us &> /dev/null
 
-	if [[ "$(get_current_display_server)" != "x11" ]] && [[ "$(get_current_display_server)" != "wayland" ]]; then
+	if [[ "$(get_current_display_server)" != "x11" ]] && [[ "$(get_current_display_server)" != "wayland" ]] || [[ "$(get_current_display_server)" != "wsl" ]]; then
 		echo "Error: Unknown display server \"$(get_current_display_server)\""
-		echo "Only x11, xwayland are currently supported"
+		echo "Only X11, XWayland are currently supported"
 		#exit 1
 	fi
 
