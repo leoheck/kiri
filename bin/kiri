@@ -1759,43 +1759,19 @@ archive_kiri_website()
 
 launch_webserver()
 {
-	# I should just use Kiri server for everything...
-
 	if [[ "${START_SERVER}" != 0 ]]; then
-		if grep -i -q "Microsoft" "/proc/version" &> /dev/null; then
-			# Webserver alternative for Windows with WSL
-			local host=127.0.0.1
-			if [[ "${WEBSERVER_PORT}" == "" ]]; then
-				WEBSERVER_PORT=8080
-			fi
-			if [[ ${LAUNCH_BROWSER} == 1 ]]; then
-				cmd.exe /C start "http://${host}:${WEBSERVER_PORT}" &> /dev/null &
-			fi
-			echo "Starting web-server at http://${host}:${WEBSERVER_PORT}"
-			echo "Hit Ctrl+C to end session"
-			if python3 -m http.server -d "${WEB_DIR_PATH}/../" -b "${host}" "${WEBSERVER_PORT}" &> /dev/null; then
-				pid=$!
-				kill -9 $pid > /dev/null
-			else
-				echo
-				echo -e "Error: Web-server's port ${WEBSERVER_PORT} already in use."
-				echo -e "Close older kiri sessions or change the port with '-p [PORT]'"
-				exit 1
-			fi
+		if [[ "${WEBSERVER_PORT}" != "" ]]; then
+			local webserver_port_param="-p ${WEBSERVER_PORT}"
+		fi
+		if [[ ${LAUNCH_BROWSER} == 0 ]]; then
+			server_only_flag="-S"
+		fi
+		if kiri-server "${OUTPUT_DIR_PATH}" ${webserver_port_param} ${server_only_flag} 2> /dev/null; then
+			pid=$!
+			kill -9 $pid > /dev/null
 		else
-			if [[ "${WEBSERVER_PORT}" != "" ]]; then
-				local webserver_port_param="-p ${WEBSERVER_PORT}"
-			fi
-			if [[ ${LAUNCH_BROWSER} == 0 ]]; then
-				server_only_flag="-S"
-			fi
-			if kiri-server "${OUTPUT_DIR_PATH}" ${webserver_port_param} ${server_only_flag} 2> /dev/null; then
-				pid=$!
-				kill -9 $pid > /dev/null
-			else
-				echo -e "Something went wrong with kiri-server, try to force the port with '-p'"
-				exit 1
-			fi
+			echo -e "Something went wrong with kiri-server, try to force the port with '-p'"
+			exit 1
 		fi
 	fi
 }
