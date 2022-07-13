@@ -1523,7 +1523,7 @@ generate_diffs()
 		echo "${n_hashs} commits, totaling ${n_comparisons} possible comparisons"
 	fi
 
-	echo -e "\n${LBL}Generating artifacts${RCO}"
+	echo -e "\n${LBL}Generating artifacts (may take some time)${RCO}"
 
 	local i=0
 	IFS=$'\n'
