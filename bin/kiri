@@ -1712,8 +1712,10 @@ build_main_html()
 
 	# Initial commit
 	echo "- Initial selected commits: ${commit_hash_1}, ${commit_hash_2}"
-	sed -i "s|\[COMMIT_1_HASH\]|${commit_hash_1}|g" "${WEB_DIR_PATH}/${main_html}"
-	sed -i "s|\[COMMIT_2_HASH\]|${commit_hash_2}|g" "${WEB_DIR_PATH}/${main_html}"
+	if [[ "${commit_hash_1}" == "local" ]]; then commit_label1="_local_"; else commit_label1="${commit_hash_1}"; fi
+	if [[ "${commit_hash_2}" == "local" ]]; then commit_label2="_local_"; else commit_label2="${commit_hash_2}"; fi
+	sed -i "s|\[COMMIT_1_HASH\]|${commit_label1}|g" "${WEB_DIR_PATH}/${main_html}"
+	sed -i "s|\[COMMIT_2_HASH\]|${commit_label2}|g" "${WEB_DIR_PATH}/${main_html}"
 
 	# Update initial schematic images
 	local sch_img_1="../${commit_hash_1}/sch-${kicad_proj_name}.svg"
