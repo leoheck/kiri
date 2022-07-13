@@ -487,8 +487,25 @@ function update_commits() {
     console.log("     commit1 =", commit1);
     console.log("     commit2 =", commit2);
 
-    document.getElementById("commit1_legend_hash").innerHTML = commit1;
-    document.getElementById("commit2_legend_hash").innerHTML = commit2;
+    var commit_label1;
+    var commit_label2;
+
+    if (commit1 == "local") {
+        commit_label1 = "_local_";
+    }
+    else {
+        commit_label1 = commit1;
+    }
+
+    if (commit2 == "local") {
+        commit_label2 = "_local_";
+    }
+    else {
+        commit_label2 = commit2;
+    }
+
+    document.getElementById("commit1_legend_hash").innerHTML = commit_label1;
+    document.getElementById("commit2_legend_hash").innerHTML = commit_label2;
 
     change_page(commit1, commit2);
     change_layer(commit1, commit2);
