@@ -945,7 +945,7 @@ set_default_html_view()
 
 get_git_commits()
 {
-	local files=("${@}")
+	local files=(${@})
 	local current_git_branch=$(git rev-parse --abbrev-ref HEAD)
 
 	command_end=1>&2
@@ -977,7 +977,7 @@ get_name_of_current_user()
 
 git_files_have_changes()
 {
-	local files=${@}
+	local files=(${@})
 	local has_changes="No"
 	local ret=0
 	local file
@@ -986,7 +986,9 @@ git_files_have_changes()
 		echo "${LBL}Checking local changes${RCO}" 2>&1
 	fi
 
-	for file in ${files[@]}; do
+	uniq_files=($(for f in "${files[@]}"; do echo "${f}"; done | sort -u))
+
+	for file in "${uniq_files[@]}"; do
 		if [[ -n "${file}" ]]; then
 			if ! git diff --exit-code -- "${KICAD_PROJ_NESTED_PATH}/${file}" > /dev/null; then
 				if [[ "${DEBUG}" == "1" ]]; then
