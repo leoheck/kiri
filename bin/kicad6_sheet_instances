@@ -42,6 +42,8 @@ case ${OSTYPE} in
 			kicad_app_path=/Applications/KiCad/KiCad.app/
 		fi
 
+		export PYTHONPATH="${SCRIPTPATH}/../":"${PYTHONPATH}"
+
 		if [[ -f ${kicad_app_path}/Contents/Frameworks/Python.framework/Versions/Current/bin/python ]]; then
 			${kicad_app_path}/Contents/Frameworks/Python.framework/Versions/Current/bin/python "${SCRIPTPATH}/${SCRIPTNAME}.py" "$@"
 		else
@@ -54,8 +56,8 @@ case ${OSTYPE} in
 		SCRIPT_FILE_PATH=$(readlink -f "$0")
 		SCRIPTPATH=$(dirname "${SCRIPT_FILE_PATH}")
 		SCRIPTNAME=$(basename "${SCRIPT_FILE_PATH%.*}")
-
-			/usr/bin/env python3 "${SCRIPTPATH}/${SCRIPTNAME}.py" "$@"
+		export PYTHONPATH="${SCRIPTPATH}/../":"${PYTHONPATH}"
+		env python3 "${SCRIPTPATH}/${SCRIPTNAME}.py" "$@"
 		;;
 
 esac
