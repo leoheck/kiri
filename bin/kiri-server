@@ -21,13 +21,20 @@ default_port = 8080
 
 
 class WebServerHandler(SimpleHTTPRequestHandler):
+
     def __init__(self, *args, **kwargs):
         super().__init__(
             *args, directory=os.path.realpath(wwwdir_path, **kwargs)
         )
 
     def log_message(self, format, *args):
-        return
+        pass
+
+    def do_GET(self):
+        super().do_GET()
+
+    def do_POST(self):
+        pass
 
 
 def signal_handler(sig, frame):
@@ -73,6 +80,7 @@ def parse_cli_args():
         print(args)
 
     return args
+
 
 def launch_webserver(request_handler, port, kicad_project, server_only):
 
