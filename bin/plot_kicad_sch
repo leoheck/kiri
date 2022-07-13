@@ -10,6 +10,12 @@ ctrl_c()
 {
 	kill -9 "${XVFB_PID}" &> /dev/null
 	kill -9 "${EESCHEMA_PID}" &> /dev/null
+
+	# Restore original keyboard layout
+	if [[ -n "${original_kbd_lang}" ]]; then
+		setxkbmap "${original_kbd_lang}" &> /dev/null
+	fi
+
 	exit 1
 }
 
@@ -123,8 +129,6 @@ launch_eeschema()
 
 	# list windows
 	# xwininfo -tree -root
-
-	setxkbmap us
 
 	# Can be changed externally
 	if [[ -z ${WAIT_FOR_EESCHEMA_S} ]]; then
@@ -266,6 +270,10 @@ main()
 	trap "exit 1" TERM
 	trap ctrl_c INT
 
+	# Set keyboard to us
+	original_kbd_lang=$(setxkbmap -query | grep layout | tr -s ' ' | cut -d" " -f2)
+	setxkbmap us &> /dev/null
+
 	if [[ "$(get_current_display_server)" != "x11" ]] && [[ "$(get_current_display_server)" != "wayland" ]]; then
 		echo "Error: Unknown display server \"$(get_current_display_server)\""
 		echo "Only x11, xwayland are currently supported"
@@ -348,6 +356,11 @@ main()
 
 	# Remove temporary folder
 	rm -rf "${output_temp_dir_path}"
+
+	# Restore original keyboard layout
+	if [[ -n "${original_kbd_lang}" ]]; then
+		setxkbmap "${original_kbd_lang}" &> /dev/null
+	fi
 }
 
 main "${@}" | tee .kiri.log
