@@ -296,17 +296,17 @@ label#layers, label#pages {
 ** ============================*/
 
 a:link {
-	color: red;
+	color: #28a745;
 }
 
 a:visited {
-	color: green;
+	color: #28a745;
 }
 
 a:hover {
-	color: hotpink;
+	color: #28a745;
 }
 
 a:active {
-	color: blue;
+	color: #28a745;
 }
