@@ -857,6 +857,8 @@ function server_offline() {
     }
 }
 
+// #===========================
+
 $(function () {
   $('[data-toggle="tooltip"]').tooltip({html:true});
 })

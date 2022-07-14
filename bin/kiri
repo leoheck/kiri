@@ -116,13 +116,13 @@ insert_commits_html()
 		i=$((i + 1))
 
 		html_new_line="&#013;"
-		tooltip="<div>Hash: ${hash}</br>Date: ${date}</br>Author: ${user}</br>Description:</br>${text}</div>"
+		tooltip="<div>Commit: ${hash}</br>Date: ${date}</br>Author: ${user}</br>Description:</br>${text}</div>"
 
 		read -r -d '' commit_html <<-EOM
 		<!-- Commit ${i} -->
 		<input class="chkGroup" type="checkbox" id="${hash}" name="commit" value="${hash}" ${checked} onchange="update_commits()"/>
-		<label class="text-sm-left list-group-item" style="display: block; width: 430px" for="${hash}">
-		    <table data-toggle="tooltip" title="${tooltip}" style="width:100%">
+		<label class="text-sm-left list-group-item" style="display: block; width: 445px; margin-left: 0px;" for="${hash}">
+		    <table data-toggle="tooltip" title="${tooltip}">
 		        <tr>
 		            <td rowspan=2 style="vertical-align: top; width: 1.8em;">
 		                <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" width="15" height="15">
@@ -1718,6 +1718,15 @@ build_main_html()
 	if [[ "${commit_hash_2}" == "local" ]]; then commit_label2="_local_"; else commit_label2="${commit_hash_2}"; fi
 	sed -i "s|\[COMMIT_1_HASH\]|${commit_label1}|g" "${WEB_DIR_PATH}/${main_html}"
 	sed -i "s|\[COMMIT_2_HASH\]|${commit_label2}|g" "${WEB_DIR_PATH}/${main_html}"
+
+	# Initial Kicad project path
+	local project_path_1="$(realpath --relative-to="${KICAD_PROJ_ABSOLUTE_PATH}" "${OUTPUT_DIR_PATH}/${commit_hash_1}/${kicad_proj_name}.${kicad_pro_extension}")"
+	local project_path_2="$(realpath --relative-to="${KICAD_PROJ_ABSOLUTE_PATH}" "${OUTPUT_DIR_PATH}/${commit_hash_2}/${kicad_proj_name}.${kicad_pro_extension}")"
+	echo "- Initial project path: ${project_path_1}, ${project_path_2}"
+	echo "  Pro 1: ${BTE}${LMA}${project_path_1}${RCO}"
+	echo "  Pro 2: ${BTE}${LCY}${project_path_2}${RCO}"
+	sed -i "s|\[COMMIT_1_KICAD_PRO\]|${project_path_1}|g" "${WEB_DIR_PATH}/${main_html}"
+	sed -i "s|\[COMMIT_2_KICAD_PRO\]|${project_path_2}|g" "${WEB_DIR_PATH}/${main_html}"
 
 	# Update initial schematic images
 	local sch_img_1="../${commit_hash_1}/sch-${kicad_proj_name}.svg"
