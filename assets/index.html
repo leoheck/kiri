@@ -59,11 +59,11 @@
 
 								<form class="inline" style="padding: 0px 0px 0px 0px; margin: 20px 0px 0px 15px;">
 									<div id="view_mode" class="form-group row btn-group btn-group-toggle" data-toggle="buttons" role="group" aria-label="View Mode">
-										<label id="show_sch_lbl" title="Schematic View" class="btn btn-secondary active" onclick="show_sch()">
+										<label id="show_sch_lbl" data-toggle="tooltip" title="Schematic View" class="btn btn-secondary active" onclick="show_sch()">
 											<input id="show_sch" type="radio" name="view_mode" value="show_sch" checked>
 											<span class="iconify" style="width: 20px; height: 20px;" data-icon="carbon:schematics" data-inline="false"></span>
 										</label>
-										<label id="show_pcb_lbl" title="Layout View" class="btn btn-secondary" onclick="show_pcb()">
+										<label id="show_pcb_lbl" data-toggle="tooltip" title="Layout View" class="btn btn-secondary" onclick="show_pcb()">
 											<input id="show_pcb" type="radio" name="view_mode" value="show_pcb" >
 											<span class="iconify" style="width: 20px; height: 20px;" data-icon="codicon:circuit-board" data-inline="false"></span>
 										</label>
@@ -78,13 +78,13 @@
 
 								<form class="inline" style="padding: 0px 0px 0px 0px; margin: 20px 0px 0px 20px;">
 									<div id="svg_controls" class="form-group btn-group btn-group-toggle" role="group" aria-label="Zoom Level">
-										<button id="zoom-in" title="Zoom In" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary" onclick="this.blur();">
+										<button id="zoom-in" data-toggle="tooltip" title="Zoom In" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary" onclick="this.blur();">
 										<span class="iconify" style="width: 20px; height: 20px;" data-icon="akar-icons:zoom-in" data-inline="false"></span>
 										</button>
-										<button id="zoom-out" title="Zoom Out" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary" onclick="this.blur();" >
+										<button id="zoom-out" data-toggle="tooltip" title="Zoom Out" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary" onclick="this.blur();" >
 										<span class="iconify" style="width: 20px; height: 20px;" data-icon="akar-icons:zoom-out" data-inline="false"></span>
 										</button>
-										<button id="reset" title="Reset View" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary" onclick="this.blur();" >
+										<button id="reset" data-toggle="tooltip" title="Reset View" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary" onclick="this.blur();" >
 										<span class="iconify" style="width: 20px; height: 20px;" data-icon="carbon:center-to-fit" data-inline="false"></span>
 										</button>
 									</div>
@@ -106,7 +106,7 @@
 									<span class="text-monospace">
 										<form id="KICAD_COMMIT_1" class="form-inline" style="display: inline;" action="kicad_rev" method="post">
 											<input type="hidden" name="hash" value="[COMMIT_1_HASH]"/>
-											(<a title="Launch Kicad at this Rev" id="commit1_legend_hash" href="javascript:{}" onclick="document.getElementById('KICAD_COMMIT_1').submit();">[COMMIT_1_HASH]</a>)
+											(<a data-toggle="tooltip" title="Launch Kicad at this Rev" id="commit1_legend_hash" href="javascript:{}" onclick="document.getElementById('KICAD_COMMIT_1').submit();">[COMMIT_1_HASH]</a>)
 								        </form>
 									</span>
 								</small>
@@ -117,7 +117,7 @@
 									<span class="text-monospace">
 										<form id="KICAD_COMMIT_2" class="form-inline" style="display: inline;" action="kicad_rev" method="post">
 											<input type="hidden" name="hash" value="[COMMIT_2_HASH]"/>
-											(<a title="Launch Kicad at this Rev" id="commit2_legend_hash" href="javascript:{}" onclick="document.getElementById('KICAD_COMMIT_2').submit();">[COMMIT_2_HASH]</a>)
+											(<a data-toggle="tooltip" title="Launch Kicad at this Rev" id="commit2_legend_hash" href="javascript:{}" onclick="document.getElementById('KICAD_COMMIT_2').submit();">[COMMIT_2_HASH]</a>)
 										</form>
 									</span>
 								</small>

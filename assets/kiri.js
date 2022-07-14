@@ -856,3 +856,7 @@ function server_offline() {
         console.log("Server is Offline");
     }
 }
+
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip({html:true});
+})

@@ -116,13 +116,13 @@ insert_commits_html()
 		i=$((i + 1))
 
 		html_new_line="&#013;"
-		tooltip="${hash} | ${date} | ${user}${html_new_line}${text}"
+		tooltip="<div>Hash: ${hash}</br>Date: ${date}</br>Author: ${user}</br>Description:</br>${text}</div>"
 
 		read -r -d '' commit_html <<-EOM
 		<!-- Commit ${i} -->
 		<input class="chkGroup" type="checkbox" id="${hash}" name="commit" value="${hash}" ${checked} onchange="update_commits()"/>
 		<label class="text-sm-left list-group-item" style="display: block; width: 430px" for="${hash}">
-		    <table title="${tooltip}" style="width:100%">
+		    <table data-toggle="tooltip" title="${tooltip}" style="width:100%">
 		        <tr>
 		            <td rowspan=2 style="vertical-align: top; width: 1.8em;">
 		                <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" width="15" height="15">
@@ -204,9 +204,9 @@ insert_pages_html()
 		# IFS=
 		read -r -d '' page_html <<-EOM
 		<!-- Page ${i} -->
-		<input id="${page_name}" title="${page_filename_path}" type="radio" value="${page_filename}" name="pages" ${checked} onchange="change_page()"/>
-		<label for="${page_name}" title="${page_filename_path}" id="label-${page_name}" class="rounded text-sm-left list-group-item radio-box" onclick="change_page_onclick()" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-		    <span title="${page_name}" style="margin-left:0.5em; margin-right:0.1em;" class="iconify" data-icon="gridicons:pages" data-inline="false"></span>
+		<input id="${page_name}" data-toggle="tooltip" title="${page_filename_path}" type="radio" value="${page_filename}" name="pages" ${checked} onchange="change_page()"/>
+		<label for="${page_name}" data-toggle="tooltip" title="${page_filename_path}" id="label-${page_name}" class="rounded text-sm-left list-group-item radio-box" onclick="change_page_onclick()" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+		    <span data-toggle="tooltip" title="${page_name}" style="margin-left:0.5em; margin-right:0.1em;" class="iconify" data-icon="gridicons:pages" data-inline="false"></span>
 		    ${page_name}
 		</label>
 		EOM
@@ -347,7 +347,7 @@ insert_layers_html()
 		read -r -d '' layer_html <<-EOM
 		<!-- Layer ${i} -->
 		<input  id="layer-${layer_id_padding}" value="layer-${layer_name}" type="radio" name="layers" onchange="change_layer()" ${checked}/>
-		<label for="layer-${layer_id_padding}" id="label-${layer_id_padding}" title="Layer ID: ${layer_id}" class="rounded text-sm-left list-group-item radio-box" onclick="change_layer_onclick()">
+		<label for="layer-${layer_id_padding}" id="label-${layer_id_padding}" data-toggle="tooltip" title="Layer ID: ${layer_id}" class="rounded text-sm-left list-group-item radio-box" onclick="change_layer_onclick()">
 		    <span style="margin-left:0.5em; margin-right:0.1em; color: ${layer_color}" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
 		    ${layer_name}
 		</label>
