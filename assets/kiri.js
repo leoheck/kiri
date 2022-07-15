@@ -487,6 +487,23 @@ function update_commits() {
     console.log("     commit1 =", commit1);
     console.log("     commit2 =", commit2);
 
+    old_commit1 = document.getElementById("commit1_hash").value;
+    old_commit2 = document.getElementById("commit2_hash").value;
+
+    kicad_pro_path_1 = document.getElementById("commit1_kicad_pro_path").value;
+    kicad_pro_path_2 = document.getElementById("commit2_kicad_pro_path").value;
+
+    console.log(old_commit1, commit1);
+    console.log(old_commit2, commit2);
+
+    kicad_pro_path_1 = kicad_pro_path_1.replace(old_commit1, commit1);
+    kicad_pro_path_2 = kicad_pro_path_2.replace(old_commit2, commit2);
+
+    document.getElementById("commit1_kicad_pro_path").value = kicad_pro_path_1;
+    document.getElementById("commit2_kicad_pro_path").value = kicad_pro_path_2;
+    document.getElementById("commit1_hash").value = commit1;
+    document.getElementById("commit2_hash").value = commit2;
+
     document.getElementById("commit1_legend_hash").innerHTML = commit1;
     document.getElementById("commit2_legend_hash").innerHTML = commit2;
 

@@ -44,16 +44,17 @@ class WebServerHandler(SimpleHTTPRequestHandler):
             self.end_headers()
 
             content_len = int(self.headers.get('content-length', 0))
-            post_body = unquote(self.rfile.read(content_len))
+            post_body = unquote(self.rfile.read(content_len)).split("&")
 
-            # with open("post.txt","a") as f:
-            #     f.write(str(post_body))
-            #     f.write("\n")
-            # print("Done storing file")
+            with open("post.txt","a") as f:
+                f.write(str(post_body))
+                f.write("\n")
 
-            kicad_pro_path = post_body.split("=")[1]
+            commit_hash = post_body[0].split("=")[1]
+            kicad_pro_path = post_body[1].split("=")[1]
+
             cmd = "kicad_rev {}".format(kicad_pro_path)
-            print("cmd", cmd)
+            print("Cmd:", cmd)
             process = subprocess.Popen(cmd.split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
             # self._set_response()

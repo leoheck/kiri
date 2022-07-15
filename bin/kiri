@@ -1118,6 +1118,14 @@ parse_schematic_pages()
 	cd - &> /dev/null || exit
 }
 
+create_project_info()
+{
+	local commit_hash="${1}"
+	local kicad_pro="${2}"
+	mkdir -p "${OUTPUT_DIR_PATH}/${commit_hash}/kiri/"
+	printf "%s\n" "${kicad_pro}" > "${OUTPUT_DIR_PATH}/${commit_hash}/kiri/pro_infos"
+}
+
 create_list_of_pages()
 {
 	local commit_hash="${1}"
@@ -1630,9 +1638,11 @@ generate_diffs()
 				show_project_files "${OUTPUT_DIR_PATH}/${hash_2}" "${kicad_pro_2}" "${kicad_sch_2}" "${kicad_pcb_2}" "${kicad_cache_lib_2}"
 
 				if [[ "${j}" == "1" ]]; then
+					create_project_info "${hash_1}" "${OUTPUT_DIR_PATH}/${hash_1}/${kicad_pro_1}"
 					create_list_of_pages "${hash_1}" "${OUTPUT_DIR_PATH}/${hash_1}/${kicad_sch_1}"
 					create_list_of_layers "${hash_1}" "${OUTPUT_DIR_PATH}/${hash_1}/${kicad_pcb_1}"
 				fi
+				create_project_info "${hash_2}" "${OUTPUT_DIR_PATH}/${hash_2}/${kicad_pro_2}"
 				create_list_of_pages "${hash_2}" "${OUTPUT_DIR_PATH}/${hash_2}/${kicad_sch_2}"
 				create_list_of_layers "${hash_2}" "${OUTPUT_DIR_PATH}/${hash_2}/${kicad_pcb_2}"
 
