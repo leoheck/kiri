@@ -164,24 +164,12 @@ insert_pages_html()
 	local page_html
 	local pages_html
 
-	local pages_commit_1="${OUTPUT_DIR_PATH}/${commit_hash_1}/pages"
-	local pages_commit_2="${OUTPUT_DIR_PATH}/${commit_hash_2}/pages"
-
-	if ! diff -q "${pages_commit_1}" "${pages_commit_2}" > /dev/null; then
-		local pages="${pages_commit_1}"
-	else
-		# TODO: If page files differ do somenthing here
-		local  pages="${pages_commit_1}"
-		local pages2="${pages_commit_2}"
-		echo -e "  ${LGY}> INFO: Pages lists differ on both commits. What should we do?${RCO}"
-	fi
+	local pages=$(cat "${OUTPUT_DIR_PATH}/sch_sheets")
+	local pages_to_skip
 
 	local i=0
 	IFS=$'\n'
-
-	local pages_to_skip
-
-	for page in $(cat "${pages}"); do
+	for page in ${pages}; do
 
 		local page_name=$(echo "${page}" | cut -d'|' -f1 | sed "s/^[ \t]\+//g" | sed "s/[ \t]\+$//g")
 		local page_filename_path=$(echo "${page}" | cut -d'|' -f2 | sed "s/^[ \t]\+//g" | sed "s/[ \t]\+$//g")
@@ -224,21 +212,17 @@ insert_pages_html()
 	sed -i "${line_no} e cat \"${OUTPUT_DIR_PATH}/pages.html\"" "${html_path}"
 }
 
+create_unified_sheets_list()
+{
+	# Remove duplicates keeping the order
+	local sheets=$(find "${OUTPUT_DIR_PATH}" -mindepth 3 -maxdepth 3 -name "sch_sheets" -exec cat -n {} \; | sort -k2 -k1n | sort -u -t"|" -k1,1 | uniq -f1 | sort -nk1,1 | cut -f2-)
+	echo -e "${sheets}" | sed '/^$/d' | tee "${OUTPUT_DIR_PATH}/sch_sheets"
+}
+
 create_unified_layers_list()
 {
-	local layers_list=$(find "${OUTPUT_DIR_PATH}" -mindepth 2 -maxdepth 2 -name "layers" -exec cat {} \; | sort | uniq)
-	local layer_ids=$(echo "${layers_list}" | cut -d" " -f1 | sort | uniq)
-
-	local layers
-
-	IFS=$'\n'
-	for layer_id in ${layer_ids}; do
-		layer_name=$(echo "${layers_list}" | grep "^${layer_id} " | cut -d" " -f2 | tr "\n" " ")
-		line="${layer_id} ${layer_name}"
-		layers="${layers}${line}\n"
-	done
-
-	echo -e "${layers}" | sed '/^$/d' | tee "${OUTPUT_DIR_PATH}/layers"
+	local layers=$(find "${OUTPUT_DIR_PATH}" -mindepth 3 -maxdepth 3 -name "pcb_layers" -exec cat {} \; | sort -u -t"|" -k1,1)
+	echo -e "${layers}" | sed '/^$/d' | tee "${OUTPUT_DIR_PATH}/pcb_layers"
 }
 
 get_layer_color()
@@ -315,17 +299,7 @@ insert_layers_html()
 	local layer_html
 	local layers_html
 
-	local layers_commit_1="${OUTPUT_DIR_PATH}/${commit_hash_1}/layers"
-	local layers_commit_2="${OUTPUT_DIR_PATH}/${commit_hash_2}/layers"
-
-	if ! diff -q "${layers_commit_1}" "${layers_commit_2}" > /dev/null; then
-		local layers=$(cat "${layers_commit_1}")
-	else
-		# TODO: If page files differ do somenthing here
-		local  layers=$(cat "${layers_commit_1}")
-		local layers2=$(cat "${layers_commit_2}")
-		echo -e "  ${LGY}> INFO: Layers lists differ on both commits. What should we do?${RCO}"
-	fi
+	local layers=$(cat "${OUTPUT_DIR_PATH}/pcb_layers")
 
 	i=0
 	IFS=$'\n'
@@ -1115,53 +1089,56 @@ get_kicad_pro_filename()
 
 parse_schematic_pages()
 {
-	# Parse a list of schematic pages from the main Kicad's schematic
-	# Format: ${page_labels}|${nested_schematic_path}|${page_instance_title}
+	# This function creates a list of pages of the project
+	# Format:
+	# FILENAME_WIITHOUT_EXTENSION|FILE_PATH_RELATIVE_TO_PROJ_ROOT|INSTANCE_UUID|INSTANCE_NAME|KICAD_HIERARCHY"
 
 	local kicad_sch="${1}"
 
+	local kicad_sch_dir_path="$(dirname "${kicad_sch}")"
 	local main_page_name="$(get_file_without_extention "${kicad_sch}")"
 	local main_page_basename="$(basename "${kicad_sch}")"
-	local first_entry="${main_page_name}|${main_page_basename}"
 	local sch_extension="$(get_file_extension "${kicad_sch}")"
+
+	cd ${kicad_sch_dir_path} &> /dev/null || exit
 
 	case ${sch_extension} in
 
 		"sch")
-			pages=($(find_kicad5_sch_hier "${kicad_sch}"))
+			pages=($(find_kicad5_sch_hier "${main_page_name}.${sch_extension}"))
 			printf "%s\n" "${pages[@]}"
 			;;
 
 		"kicad_sch")
-			pages=($(find_kicad6_sch_hier "${kicad_sch}"))
+			pages=($(find_kicad6_sch_hier "${main_page_name}.${sch_extension}"))
 			printf "%s\n" "${pages[@]}"
 		;;
 	esac
+
+	cd - &> /dev/null || exit
 }
 
 create_list_of_pages()
 {
-	# This creates the "pages" with the format:
-	# PAGE_TITLE|NESTED_SCHEMATIC_PATH|PAGE_INSTANCE_NAME
-
 	local commit_hash="${1}"
 	local kicad_sch="${2}"
-	local pages_file="pages"
-
 	local pages=$(parse_schematic_pages "${kicad_sch}")
+
 	if [[ "${DEBUG}" == "1" ]]; then
 		echo -e "\n${kicad_sch}"
 		echo -e "${LBL}Pages:${RCO}"
 		echo -e "${pages}" | nl -s": "
 	fi
 
-	printf "%s\n" "${pages}" > "${OUTPUT_DIR_PATH}/${commit_hash}/${pages_file}"
+	mkdir -p "${OUTPUT_DIR_PATH}/${commit_hash}/kiri/"
+	printf "%s\n" "${pages}" > "${OUTPUT_DIR_PATH}/${commit_hash}/kiri/sch_sheets"
 }
 
 parse_layout_layers()
 {
-	# Parse a list of layers used in the main Kicad's layout
-	# Format: LAYER_ID|CUSTOM_NAME_OR_DEFAULT_LAYER_NAME
+	# This function get the list of layers of a PCB
+	# Format:
+	# LAYER_ID|LAYER_NAME [LAYER_NAME_KICAD]
 
 	local kicad_pcb="${1}"
 
@@ -1183,21 +1160,18 @@ parse_layout_layers()
 
 create_list_of_layers()
 {
-	# This creates the "pages" with the format:
-	# PAGE_TITLE|NESTED_SCHEMATIC_PATH
-
 	local commit_hash="${1}"
 	local kicad_pcb="${2}"
-	local layers_file="layers"
-
 	local layers=$(parse_layout_layers "${kicad_pcb}")
+
 	if [[ "${DEBUG}" == "1" ]]; then
 		echo -e "\n${kicad_pcb}"
 		echo -e "${LBL}Layers:${RCO}"
 		echo -e "${layers}\n" | column -t | nl -s": "
 	fi
 
-	printf "%s\n" "${layers}" > "${OUTPUT_DIR_PATH}/${commit_hash}/${layers_file}"
+	mkdir -p "${OUTPUT_DIR_PATH}/${commit_hash}/kiri/"
+	printf "%s\n" "${layers}" > "${OUTPUT_DIR_PATH}/${commit_hash}/kiri/pcb_layers"
 }
 
 manual_schematic_plot()
@@ -1504,19 +1478,47 @@ generate_layout_artifacts()
 			fi
 		fi
 
-		# kidiff generate local files with "local"
+		# Revert commits back to _local_ to finish the cleanup
 		if [[ "${commit_hash_1}" == "${kicad_pcb_1}" ]]; then commit_hash_1="local"; fi
 		if [[ "${commit_hash_2}" == "${kicad_pcb_2}" ]]; then commit_hash_2="local"; fi
 
-		# Organize images (rename and move to a folder)
 		rename "s/${kicad_project_name_1}-/layer-/" "${OUTPUT_DIR_PATH}/${commit_hash_1}/"*.svg &> /dev/null
 		rename "s/${kicad_project_name_2}-/layer-/" "${OUTPUT_DIR_PATH}/${commit_hash_2}/"*.svg &> /dev/null
+
+		# Revert commits back to _local_ to finish the cleanup
+		if [[ "${commit_hash_1}" == "local" ]]; then commit_hash_1="_local_"; fi
+		if [[ "${commit_hash_2}" == "local" ]]; then commit_hash_2="_local_"; fi
 
 		mkdir -p "${OUTPUT_DIR_PATH}/${commit_hash_1}/kiri/pcb/"
 		mkdir -p "${OUTPUT_DIR_PATH}/${commit_hash_2}/kiri/pcb/"
 
 		mv "${OUTPUT_DIR_PATH}/${commit_hash_1}/layer-"*.svg "${OUTPUT_DIR_PATH}/${commit_hash_1}/kiri/pcb/" &> /dev/null
 		mv "${OUTPUT_DIR_PATH}/${commit_hash_2}/layer-"*.svg "${OUTPUT_DIR_PATH}/${commit_hash_2}/kiri/pcb/" &> /dev/null
+
+		if [[ -d "${OUTPUT_DIR_PATH}/local" ]]; then
+			mv "${OUTPUT_DIR_PATH}/local/layer-"*.svg "${OUTPUT_DIR_PATH}/_local_/kiri/pcb/" &> /dev/null
+			rm -rf "${OUTPUT_DIR_PATH}/local"
+		fi
+
+
+		# kidiff generate local files with "local"
+		# if [[ "${commit_hash_1}" == "${kicad_pcb_1}" ]]; then commit_hash_1="local"; fi
+		# if [[ "${commit_hash_2}" == "${kicad_pcb_2}" ]]; then commit_hash_2="local"; fi
+
+		# Rename generated images
+		# rename "s/${kicad_project_name_1}-/layer-/" "${OUTPUT_DIR_PATH}/${commit_hash_1}/"*.svg &> /dev/null
+		# rename "s/${kicad_project_name_2}-/layer-/" "${OUTPUT_DIR_PATH}/${commit_hash_2}/"*.svg &> /dev/null
+
+
+		# Revert commits back to _local_ to finish the cleanup
+		# if [[ "${commit_hash_1}" == "local" ]]; then commit_hash_1="_local_"; fi
+		# if [[ "${commit_hash_2}" == "local" ]]; then commit_hash_2="_local_"; fi
+
+		# mkdir -p "${OUTPUT_DIR_PATH}/${commit_hash_1}/kiri/pcb/"
+		# mkdir -p "${OUTPUT_DIR_PATH}/${commit_hash_2}/kiri/pcb/"
+
+		# mv "${OUTPUT_DIR_PATH}/${commit_hash_1}/layer-"*.svg "${OUTPUT_DIR_PATH}/${commit_hash_1}/kiri/pcb/" &> /dev/null
+		# mv "${OUTPUT_DIR_PATH}/${commit_hash_2}/layer-"*.svg "${OUTPUT_DIR_PATH}/${commit_hash_2}/kiri/pcb/" &> /dev/null
 
 		# Kidiff textual diffs (check if they are good)
 		# if [[ -f "${OUTPUT_DIR_PATH}/diff.txt" ]]; then
@@ -1525,15 +1527,16 @@ generate_layout_artifacts()
 		# fi
 
 		# Revert commits back to _local_ to finish the cleanup
-		if [[ "${commit_hash_1}" == "local" ]]; then commit_hash_1="_local_"; fi
-		if [[ "${commit_hash_2}" == "local" ]]; then commit_hash_2="_local_"; fi
+		# if [[ "${commit_hash_1}" == "local" ]]; then commit_hash_1="_local_"; fi
+		# if [[ "${commit_hash_2}" == "local" ]]; then commit_hash_2="_local_"; fi
 
 		# Rename local to _local_
-		if [[ "${commit_hash_1}" == "_local_" ]] || [[ "${commit_hash_2}" == "_local_" ]]; then
-			mkdir -p "${OUTPUT_DIR_PATH}/_local_"
-			mv "${OUTPUT_DIR_PATH}/local/"* "${OUTPUT_DIR_PATH}/_local_" &> /dev/null
-			rm -rf "${OUTPUT_DIR_PATH}/local"
-		fi
+		# if [[ "${commit_hash_1}" == "_local_" ]] || [[ "${commit_hash_2}" == "_local_" ]]; then
+		# if [[ -d "${OUTPUT_DIR_PATH}/local" ]]; then
+		# 	mkdir -p "${OUTPUT_DIR_PATH}/_local_"
+		# 	mv -rf "${OUTPUT_DIR_PATH}/local/kiri/" "${OUTPUT_DIR_PATH}/_local_/" &> /dev/null
+			# rm -rf "${OUTPUT_DIR_PATH}/local"
+		# fi
 	fi
 }
 
@@ -1676,6 +1679,7 @@ build_main_html()
 	local commit_hash_1=$(echo "${COMMITS}" | head -n$((commit1_i + 1)) | tail -n1 | cut -d" " -f1)
 	local commit_hash_2=$(echo "${COMMITS}" | head -n$((commit2_i + 1)) | tail -n1 | cut -d" " -f1)
 
+	local sheets=$(create_unified_sheets_list)
 	local layers=$(create_unified_layers_list)
 
 	# Insert commits list
@@ -1739,7 +1743,7 @@ build_main_html()
 	sed -i "s|\[SCH_DATE\]|${sch_date}|g" "${WEB_DIR_PATH}/${main_html}"
 
 	# Initial commit
-	echo "- Initial selected commits: ${commit_hash_1}, ${commit_hash_2}"
+	echo "- Initial commits: ${BTE}${LMA}${commit_hash_1}${RCO}, ${BTE}${LCY}${commit_hash_2}${RCO}"
 	sed -i "s|\[COMMIT_1_HASH\]|${commit_hash_1}|g" "${WEB_DIR_PATH}/${main_html}"
 	sed -i "s|\[COMMIT_2_HASH\]|${commit_hash_2}|g" "${WEB_DIR_PATH}/${main_html}"
 

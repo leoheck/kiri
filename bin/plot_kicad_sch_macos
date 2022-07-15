@@ -210,10 +210,10 @@ main()
 		for svg_file in "${svg_file_paths[@]}"; do
 
 			svg_file_name=$(basename "${svg_file%.*}")
-			match_line_no=$(cat ${output_dir_path}/pages | grep -m1 -n "|${svg_file_name}$" | cut -d":" -f1)
+			match_line_no=$(cat "${output_dir_path}/sch_sheets" | grep -m1 -n "|${svg_file_name}$" | cut -d":" -f1)
 
 			if [[ -n "${match_line_no}" ]]; then
-				new_svg_file="sch-$(sed -n ${match_line_no}p ${output_dir_path}/pages | cut -f1 -d"|").svg"
+				new_svg_file="sch-$(sed -n ${match_line_no}p "${output_dir_path}/sch_sheets" | cut -f1 -d"|").svg"
 				echo "${svg_file} -> ${new_svg_file}" 2>&1
 				cp -f "${svg_file}" "${new_svg_file}" 2> /dev/null
 			fi
