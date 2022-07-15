@@ -109,7 +109,7 @@ insert_commits_html()
 				checked=""
 			fi
 
-			hash_label="_${hash}_"
+			hash_label="${hash}"
 			class="text-warning"
 		fi
 
