@@ -34,10 +34,10 @@ process_svg()
 	# Improve the original filename a bit
 	case ${id} in
 		1)
-			new_svg_path="$(basename "${svg_file_path}" | sed "s/from_/sch-/g")"
+			new_svg_path="$(basename "${svg_file_path}" | sed "s/from_//g")"
 			;;
 		2)
-			new_svg_path="$(basename "${svg_file_path}" | sed "s/to_/sch-/g")"
+			new_svg_path="$(basename "${svg_file_path}" | sed "s/to_//g")"
 			;;
 	esac
 
@@ -57,7 +57,7 @@ process_svg()
 		rm -rf "${new_svg_path}" 2> /dev/null
 	else
 	    # Image teaks
-	    svg_file_paths=$(find "${new_svg_path}" -name "sch-*.svg")
+	    svg_file_paths=$(find "${new_svg_path}" -name "*.svg")
 	    IFS=$'\n'
 	    for svg_file in "${svg_file_paths}"; do
 	        plotgitsch_svg_tweaks "${svg_file}"

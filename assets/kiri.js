@@ -525,8 +525,8 @@ function change_page(commit1="", commit2="") {
         commit2 = document.getElementById("diff-xlink-2-sch").href.baseVal.split("/")[1];
     }
 
-    var image_path_1 = "../" + commit1 + "/" + "sch-" + page_filename + ".svg";
-    var image_path_2 = "../" + commit2 + "/" + "sch-" + page_filename + ".svg";
+    var image_path_1 = "../" + commit1 + "/" + "kiri/sch/" + page_filename + ".svg";
+    var image_path_2 = "../" + commit2 + "/" + "kiri/sch/" + page_filename + ".svg";
 
     console.log("---------------------------");
     console.log("         page_name =", page_name);

@@ -8,6 +8,9 @@ readonly TIME=0.1
 
 ctrl_c()
 {
+	# force to kill the childs
+	pkill -P $$ --signal 9 &> /dev/null
+
 	kill -9 "${XVFB_PID}" &> /dev/null
 	kill -9 "${EESCHEMA_PID}" &> /dev/null
 
@@ -159,9 +162,23 @@ launch_eeschema()
 	export EESCHEMA_WID=${EESCHEMA_WIDS[0]}
 }
 
+close_eeschema()
+{
+	local win_id=$1
+	echo "- Dismissing popup [${win_id}]"
+
+	xdotool key --window "${win_id}" "Esc" &> /dev/null
+	sleep "${TIME}"
+
+	xdotool key --window "${win_id}" "ctrl+q"
+	sleep "${TIME}"
+}
+
 kill_eeschema()
 {
-	kill -9 "${EESCHEMA_PID}" &> /dev/null
+	if ps aux | grep -q "${EESCHEMA_PID}" &> /dev/null; then
+		kill -9 "${EESCHEMA_PID}" &> /dev/null
+	fi
 }
 
 debug_eeschema_popups()
@@ -209,14 +226,17 @@ dissmiss_configure_symbol_library_table()
 	local win_id=$1
 	echo "- Dismissing popup [${win_id}]"
 
+	xdotool key --window "${win_id}" "Return" &> /dev/null
+	sleep "${TIME}"
+
 	# It looks like the first option to use global lib is not selectable
 	# In this case we are going to an Empty lib (user can fix this later)
 
-	xdotool key --window "${win_id}" "Down" &> /dev/null
-	sleep "${TIME}"
+	# xdotool key --window "${win_id}" "Down" &> /dev/null
+	# sleep "${TIME}"
 
-	xdotool key --window "${win_id}" "Return" &> /dev/null
-	sleep "${TIME}"
+	# xdotool key --window "${win_id}" "Return" &> /dev/null
+	# sleep "${TIME}"
 }
 
 dissmiss_popup()
@@ -375,6 +395,7 @@ main()
 	launch_eeschema "${kicad_sch_path}" #&> /dev/null
 	launch_plot_window "${EESCHEMA_WID}" 2> /dev/null
 	plot_schematics "${EESCHEMA_WID}" "${output_temp_dir_path}" 2> /dev/null
+	close_eeschema "${EESCHEMA_WID}" 2> /dev/null
 	kill_eeschema
 
 	# Organize generated files for KiRI
@@ -385,6 +406,8 @@ main()
 		echo "> ${svg_file}"
 	done
 
+	mkdir -p "${output_dir_path}/kiri/sch/" &> /dev/null
+
 	echo "Renaming files:"
 	if [[ -n ${svg_file_paths} ]]; then
 		IFS=$'\n'
@@ -394,9 +417,9 @@ main()
 			match_line_no=$(cat "${output_dir_path}/kiri/sch_sheets" | grep -m1 -n "|${svg_file_name}$" | cut -d":" -f1)
 
 			if [[ -n "${match_line_no}" ]]; then
-				new_svg_file="sch-$(sed -n ${match_line_no}p "${output_dir_path}/kiri/sch_sheets" | cut -f1 -d"|").svg"
-				echo "${svg_file} -> ${new_svg_file}" 2>&1
-				cp -f "${svg_file}" "${new_svg_file}" 2> /dev/null
+				new_svg_file="$(sed -n ${match_line_no}p "${output_dir_path}/kiri/sch_sheets" | cut -f1 -d"|").svg"
+				echo "${svg_file} -> ${output_dir_path}/kiri/sch/${new_svg_file}" 2>&1
+				cp -f "${svg_file}" "${output_dir_path}/kiri/sch/${new_svg_file}" 2> /dev/null
 			fi
 		done
 	fi

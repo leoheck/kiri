@@ -466,6 +466,9 @@ tac()
 # Handle Ctrl-C
 cleanup_on_exit()
 {
+	# force to kill the childs
+	pkill -P $$ --signal 9 &> /dev/null
+
 	# Restore board bkps
 	if [[ -f "${kicad_pcb}.bkp" ]]; then
 		mv -f "${kicad_pcb}.bkp" "${kicad_pcb}" &> /dev/null
@@ -473,7 +476,7 @@ cleanup_on_exit()
 
 	# Remove some leftovers
 	# rm -rf ${OUTPUT_DIR_PATH}
-	rm -rf sch[12]-*.svg
+	# rm -rf sch[12]-*.svg
 
 	exit 1
 }
@@ -1248,6 +1251,9 @@ manual_schematic_plot()
 
 			all_kicad_sch_files=("${kicad_sch}" $(get_kicad_sch_pages "${kicad_sch}" ${commit_hash}))
 
+			svg_dir_path="${OUTPUT_DIR_PATH}/${commit_hash}/kiri/sch"
+			mkdir -p "${svg_dir_path}"
+
 			IFS=$'\n'
 			for kicad_sch_aux in "${all_kicad_sch_files[@]}"; do
 
@@ -1259,7 +1265,8 @@ manual_schematic_plot()
 				fi
 
 				if [[ -f "${kicad_cache_lib}" ]]; then
-					cmd="plotkicadsch -f ${kicad_sch_aux} ${cache_lib_param} -o \"${OUTPUT_DIR_PATH}/${commit_hash}\" ${command_end}"
+
+					cmd="plotkicadsch -f ${kicad_sch_aux} ${cache_lib_param} -o \"${svg_dir_path}\" ${command_end}"
 					if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
 						echo -e "   ${LMA}Ploting ${commit_hash}, ${OUTPUT_DIR_PATH}/${commit_hash}/${RCO}"
 						echo -e "   ${LYE}${cmd}${RCO}" | fmt -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
@@ -1277,23 +1284,25 @@ manual_schematic_plot()
 						# TODO: Needs tests, since it may not be generating other pages,
 						# or they may need to have names improved
 						local board_name=$(get_file_without_extention "${kicad_sch_aux}")
-						if [[ -f "${board_name}.svg" ]]; then
+						if [[ -f "${svg_dir_path}/${board_name}.svg" ]]; then
 							# TODO: How to force fix of the viewbox when the images are off center?
-							plotgitsch_svg_tweaks "${board_name}.svg"| sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
-							cp -f "${board_name}.svg" "from_${board_name}.svg"
+							plotgitsch_svg_tweaks "${svg_dir_path}/${board_name}.svg"| sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
 
-							cmd="git-imgdiff \"from_${board_name}.svg\""
-							if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
-								echo -e "   ${LMA}Ploting ${commit_hash}, ${OUTPUT_DIR_PATH}/${commit_hash}/${RCO}"
-								echo -e "   ${LYE}${cmd}${RCO}" | fmt -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
-							fi
-							eval "${cmd}" ${command_end} | sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
-							ret="${PIPESTATUS[0]}"
-							if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
-								if [[ "${ret}" -gt "0" ]]; then
-									echo -e "${LRE}${BTE}   Status: ${ret}${RCO}"
-								fi
-							fi
+							# svg_dir_path="${OUTPUT_DIR_PATH}/${commit_hash}/kiri/sch"
+							# mkdir -p "${svg_dir_path}"
+							# cp -f "${svg_dir_path}/${board_name}.svg" "from_${board_name}.svg"
+							# cmd="git-imgdiff \"from_${board_name}.svg\""
+							# if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
+							# 	echo -e "   ${LMA}Ploting ${commit_hash}, ${OUTPUT_DIR_PATH}/${commit_hash}/${RCO}"
+							# 	echo -e "   ${LYE}${cmd}${RCO}" | fmt -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
+							# fi
+							# eval "${cmd}" ${command_end} | sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
+							# ret="${PIPESTATUS[0]}"
+							# if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
+							# 	if [[ "${ret}" -gt "0" ]]; then
+							# 		echo -e "${LRE}${BTE}   Status: ${ret}${RCO}"
+							# 	fi
+							# fi
 						fi
 
 					else
@@ -1412,14 +1421,16 @@ generate_schematic_artifacts()
 				fi
 			fi
 
+			# Configure git-imagediff used by plotgitsch
+			export IMGDIFF_SVG1_DIR_PATH="${OUTPUT_DIR_PATH}/${commit_hash_1}/kiri/sch"
+			export IMGDIFF_SVG2_DIR_PATH="${OUTPUT_DIR_PATH}/${commit_hash_2}/kiri/sch"
+			mkdir -p "${IMGDIFF_SVG1_DIR_PATH}"
+			mkdir -p "${IMGDIFF_SVG2_DIR_PATH}"
 			cmd="plotgitsch --keep --allow_missing ${relative_path} ${cache_lib} ${color_scheme} ${command_end}"
 			if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
 				echo -e "   ${LYE}${cmd}${RCO}" | fmt -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
 			fi
 			if [[ "${DRY_RUN}" == "0" ]]; then
-				# Configure git-imagediff used by plotgitsch
-				export IMGDIFF_SVG1_DIR_PATH="${OUTPUT_DIR_PATH}/${commit_hash_1}"
-				export IMGDIFF_SVG2_DIR_PATH="${OUTPUT_DIR_PATH}/${commit_hash_2}"
 				eval "${cmd}" | sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
 				ret="${PIPESTATUS[0]}"
 				if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
@@ -1767,8 +1778,8 @@ build_main_html()
 	sed -i "s|\[COMMIT_2_KICAD_PRO\]|${project_path_2}|g" "${WEB_DIR_PATH}/${main_html}"
 
 	# Update initial schematic images
-	local sch_img_1="../${commit_hash_1}/sch-${kicad_proj_name}.svg"
-	local sch_img_2="../${commit_hash_2}/sch-${kicad_proj_name}.svg"
+	local sch_img_1="../${commit_hash_1}/kiri/sch/${kicad_proj_name}.svg"
+	local sch_img_2="../${commit_hash_2}/kiri/sch/${kicad_proj_name}.svg"
 	echo "- Initial schematic images:"
 	echo "  Sch 1: ${BTE}${LMA}$(realpath --relative-to="${KICAD_PROJ_ABSOLUTE_PATH}" "${OUTPUT_DIR_PATH}/${commit_hash_1}/${sch_img_1}")${RCO}"
 	echo "  Sch 2: ${BTE}${LCY}$(realpath --relative-to="${KICAD_PROJ_ABSOLUTE_PATH}" "${OUTPUT_DIR_PATH}/${commit_hash_2}/${sch_img_2}")${RCO}"

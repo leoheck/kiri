@@ -20,8 +20,12 @@ sed()
 
 ctrl_c()
 {
+	# force to kill the childs
+	pkill -P $$ --signal 9 &> /dev/null
+
 	kill -9 "${XVFB_PID}" &> /dev/null
 	kill -9 "${EESCHEMA_PID}" &> /dev/null
+
 	exit 1
 }
 
@@ -204,6 +208,8 @@ main()
 		echo "> ${svg_file}"
 	done
 
+	mkdir -p "${output_dir_path}/kiri/sch/" &> /dev/null
+
 	echo "Renaming files:"
 	if [[ -n ${svg_file_paths} ]]; then
 		IFS=$'\n'
@@ -213,9 +219,9 @@ main()
 			match_line_no=$(cat "${output_dir_path}/sch_sheets" | grep -m1 -n "|${svg_file_name}$" | cut -d":" -f1)
 
 			if [[ -n "${match_line_no}" ]]; then
-				new_svg_file="sch-$(sed -n ${match_line_no}p "${output_dir_path}/sch_sheets" | cut -f1 -d"|").svg"
-				echo "${svg_file} -> ${new_svg_file}" 2>&1
-				cp -f "${svg_file}" "${new_svg_file}" 2> /dev/null
+				new_svg_file="$(sed -n ${match_line_no}p "${output_dir_path}/kiri/sch_sheets" | cut -f1 -d"|").svg"
+				echo "${svg_file} -> ${output_dir_path}/kiri/sch/${new_svg_file}" 2>&1
+				cp -f "${svg_file}" "${output_dir_path}/kiri/sch/${new_svg_file}" 2> /dev/null
 			fi
 		done
 	fi
