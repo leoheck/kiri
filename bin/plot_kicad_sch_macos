@@ -184,7 +184,7 @@ main()
 		fi
 	fi
 
-	echo -e "Schematic path = ${kicad_sch_path}"
+	echo -e "\nSchematic path = ${kicad_sch_path}"
 	echo -e "   Output path = ${output_dir_path}"
 	echo -e " Kicad project = ${kicad_prj}"
 
@@ -227,7 +227,7 @@ main()
 	fi
 
 	# Remove temporary folder
-	rm -rf "${temp_dir}"
+	rm -rf "${output_temp_dir_path}"
 }
 
-main "${@}" | tee .kiri.log
+main "${@}"
