@@ -48,7 +48,7 @@ insert_commits_html()
 		local kicad_cache_lib=$(get_kicad_cache_lib "${KICAD_PROJ_ABSOLUTE_PATH}" "${kicad_proj_name}")
 		# show_project_files "${OUTPUT_DIR_PATH}/${hash}" "${kicad_pro}" "${kicad_sch}" "${kicad_pcb}" "${kicad_cache_lib}"
 
-		if [[ "${hash}" != "local" ]]; then
+		if [[ "${hash}" != "_local_" ]]; then
 
 			# Check for changes in ".sch|.kicad_sch" files
 			if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${KICAD_PROJ_NESTED_PATH}" | cat | grep -q -s -E "${kicad_sch// /|}${kicad_sch_pages}"; then
@@ -1045,7 +1045,7 @@ get_git_commits_list()
 	# Append local files only if they have changes
 	if ! git_files_have_changes "${kicad_pcb}" "${kicad_sch}" "${extra_sch_files}"; then
 		IFS= read -r -d '' COMMITS <<-EOM
-		local | $(date "+%Y-%m-%d %H:%M:%S") | $(get_name_of_current_user "${USER}") | Local changes
+		_local_ | $(date "+%Y-%m-%d %H:%M:%S") | $(get_name_of_current_user "${USER}") | Local, staged and unstaged, changes
 		${COMMITS}
 		EOM
 	fi
@@ -1072,9 +1072,9 @@ export_project_files()
 		echo -e "- Output path: ${OUTPUT_DIR_PATH}/${commit_hash}"
 	fi
 
-	if [[ "${commit_hash}" == "local" ]]; then
-		mkdir -p "${OUTPUT_DIR_PATH}/local"
-		cp -r * "${OUTPUT_DIR_PATH}/local"
+	if [[ "${commit_hash}" == "_local_" ]]; then
+		mkdir -p "${OUTPUT_DIR_PATH}/_local_"
+		cp -r * "${OUTPUT_DIR_PATH}/_local_"
 	else
 		mkdir -p "${OUTPUT_DIR_PATH}/${commit_hash}"
 		git archive --format=tar ${commit_hash} | (cd "${OUTPUT_DIR_PATH}/${commit_hash}" && tar xf -)
@@ -1397,8 +1397,8 @@ generate_schematic_artifacts()
 		# plotgitsch requires an empty string when plotting local changes
 		commit_hash_aux_1="${commit_hash_1}"
 		commit_hash_aux_2="${commit_hash_2}"
-		if [[ "${commit_hash_1}" == "local" ]]; then commit_hash_aux_1=""; fi
-		if [[ "${commit_hash_2}" == "local" ]]; then commit_hash_aux_2=""; fi
+		if [[ "${commit_hash_1}" == "_local_" ]]; then commit_hash_aux_1=""; fi
+		if [[ "${commit_hash_2}" == "_local_" ]]; then commit_hash_aux_2=""; fi
 
 		# When both commits are .sch then use plotgitsch (this already processes all pages)
 		# Skip plotgitsch when both commits are .kicad_sch
@@ -1471,16 +1471,16 @@ generate_layout_artifacts()
 	local kicad_pcb_1="${3}"
 	local kicad_pcb_2="${4}"
 
-	local command_end="&> /dev/null"
-	if [[ "${DEBUG}" == 1 ]] || [[ "${DEBUG_KIDIFF}" == 1 ]]; then
-		command_end=""
-	fi
-
-	# Kidiff does local diff using ${kicad_pcb} name, so update it here
-	if [[ "${commit_hash_1}" == "local" ]]; then commit_hash_1="${kicad_pcb_1}"; fi
-	if [[ "${commit_hash_2}" == "local" ]]; then commit_hash_2="${kicad_pcb_2}"; fi
-
 	if [[ ! "${KIDIFF_MISSING}" == 1 ]]; then
+
+		local command_end="&> /dev/null"
+		if [[ "${DEBUG}" == 1 ]] || [[ "${DEBUG_KIDIFF}" == 1 ]]; then
+			command_end=""
+		fi
+
+		# Kidiff does local diff using ${kicad_pcb} name, so update it here
+		if [[ "${commit_hash_1}" == "_local_" ]]; then commit_hash_1="${kicad_pcb_1}"; fi
+		if [[ "${commit_hash_2}" == "_local_" ]]; then commit_hash_2="${kicad_pcb_2}"; fi
 
 		if [[ ${PAGE_FRAME} == "1" ]]; then
 			page_frame_parameter="-f"
@@ -1502,11 +1502,22 @@ generate_layout_artifacts()
 			fi
 		fi
 
+		# Rever _local_
+		if [[ "${commit_hash_1}" == "${kicad_pcb_1}" ]]; then commit_hash_1="_local_"; fi
+		if [[ "${commit_hash_2}" == "${kicad_pcb_2}" ]]; then commit_hash_2="_local_"; fi
+
 		# TODO: It may be better to do it myself if needed
 		# Store/kidiff textual diffs (check if they are good)
 		if [[ -f "${OUTPUT_DIR_PATH}/diff.txt" ]]; then
 			cp -f "${OUTPUT_DIR_PATH}/diff.txt" "${OUTPUT_DIR_PATH}/${commit_hash_1}/pcb-diff-${commit_hash_2}.diff" 2>/dev/null
 			mv -f "${OUTPUT_DIR_PATH}/diff.txt" "${OUTPUT_DIR_PATH}/${commit_hash_2}/pcb-diff-${commit_hash_1}.diff" 2>/dev/null
+		fi
+
+		# Rename local to _local_
+		if [[ "${commit_hash_1}" == "_local_" ]] || [[ "${commit_hash_2}" == "_local_" ]]; then
+			mkdir -p "${OUTPUT_DIR_PATH}/_local_"
+			mv "${OUTPUT_DIR_PATH}/local/"* "${OUTPUT_DIR_PATH}/_local_" &> /dev/null
+			rm -rf "${OUTPUT_DIR_PATH}/local"
 		fi
 	fi
 }
@@ -1519,7 +1530,7 @@ generate_diffs()
 
 	# Check for local changes
 	echo -e "\n${LBL}Artiffacts Summary${RCO}"
-	if echo "${COMMITS}" | cut -d' '  -f1 | grep "local" -q; then
+	if echo "${COMMITS}" | cut -d' '  -f1 | grep "_local_" -q; then
 		echo "$((n_hashs-1)) commits and local changes, totaling $((n_comparisons+1)) possible comparisons"
 	else
 		echo "${n_hashs} commits, totaling ${n_comparisons} possible comparisons"
@@ -1714,15 +1725,13 @@ build_main_html()
 
 	# Initial commit
 	echo "- Initial selected commits: ${commit_hash_1}, ${commit_hash_2}"
-	if [[ "${commit_hash_1}" == "local" ]]; then commit_label1="_local_"; else commit_label1="${commit_hash_1}"; fi
-	if [[ "${commit_hash_2}" == "local" ]]; then commit_label2="_local_"; else commit_label2="${commit_hash_2}"; fi
-	sed -i "s|\[COMMIT_1_HASH\]|${commit_label1}|g" "${WEB_DIR_PATH}/${main_html}"
-	sed -i "s|\[COMMIT_2_HASH\]|${commit_label2}|g" "${WEB_DIR_PATH}/${main_html}"
+	sed -i "s|\[COMMIT_1_HASH\]|${commit_hash_1}|g" "${WEB_DIR_PATH}/${main_html}"
+	sed -i "s|\[COMMIT_2_HASH\]|${commit_hash_2}|g" "${WEB_DIR_PATH}/${main_html}"
 
 	# Initial Kicad project path
 	local project_path_1="$(realpath --relative-to="${KICAD_PROJ_ABSOLUTE_PATH}" "${OUTPUT_DIR_PATH}/${commit_hash_1}/${kicad_proj_name}.${kicad_pro_extension}")"
 	local project_path_2="$(realpath --relative-to="${KICAD_PROJ_ABSOLUTE_PATH}" "${OUTPUT_DIR_PATH}/${commit_hash_2}/${kicad_proj_name}.${kicad_pro_extension}")"
-	echo "- Initial project path: ${project_path_1}, ${project_path_2}"
+	echo "- Initial project path:"
 	echo "  Pro 1: ${BTE}${LMA}${project_path_1}${RCO}"
 	echo "  Pro 2: ${BTE}${LCY}${project_path_2}${RCO}"
 	sed -i "s|\[COMMIT_1_KICAD_PRO\]|${project_path_1}|g" "${WEB_DIR_PATH}/${main_html}"
@@ -1853,7 +1862,7 @@ get_kicad_sch_pages()
 
 	local sch_extension="$(get_file_extension "${kicad_sch}")"
 
-	if [[ -z "${git_hash}" ]] || [[ "${git_hash}" == "local" ]]; then
+	if [[ -z "${git_hash}" ]] || [[ "${git_hash}" == "_local_" ]]; then
 		git_hash="HEAD"
 	fi
 
