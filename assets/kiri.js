@@ -560,8 +560,8 @@ function change_layer(commit1="", commit2="") {
             commit2 = document.getElementById("diff-xlink-2-pcb").href.baseVal.split("/")[1];
         }
 
-        var image_path_1 = "../" + commit1 + "/" + board_name + "-" + layer_id + ".svg";
-        var image_path_2 = "../" + commit2 + "/" + board_name + "-" + layer_id + ".svg";
+        var image_path_1 = "../" + commit1 + "/kiri/pcb/layer" + "-" + layer_id + ".svg";
+        var image_path_2 = "../" + commit2 + "/kiri/pcb/layer" + "-" + layer_id + ".svg";
 
         console.log("+++++++++++++++++++++++++++");
         console.log("          layer_id =", layer_id);

@@ -1470,6 +1470,8 @@ generate_layout_artifacts()
 	local commit_hash_2="${2}"
 	local kicad_pcb_1="${3}"
 	local kicad_pcb_2="${4}"
+	local kicad_project_name_1="${5}"
+	local kicad_project_name_2="${6}"
 
 	if [[ ! "${KIDIFF_MISSING}" == 1 ]]; then
 
@@ -1502,16 +1504,29 @@ generate_layout_artifacts()
 			fi
 		fi
 
-		# Rever _local_
-		if [[ "${commit_hash_1}" == "${kicad_pcb_1}" ]]; then commit_hash_1="_local_"; fi
-		if [[ "${commit_hash_2}" == "${kicad_pcb_2}" ]]; then commit_hash_2="_local_"; fi
+		# kidiff generate local files with "local"
+		if [[ "${commit_hash_1}" == "${kicad_pcb_1}" ]]; then commit_hash_1="local"; fi
+		if [[ "${commit_hash_2}" == "${kicad_pcb_2}" ]]; then commit_hash_2="local"; fi
 
-		# TODO: It may be better to do it myself if needed
-		# Store/kidiff textual diffs (check if they are good)
-		if [[ -f "${OUTPUT_DIR_PATH}/diff.txt" ]]; then
-			cp -f "${OUTPUT_DIR_PATH}/diff.txt" "${OUTPUT_DIR_PATH}/${commit_hash_1}/pcb-diff-${commit_hash_2}.diff" 2>/dev/null
-			mv -f "${OUTPUT_DIR_PATH}/diff.txt" "${OUTPUT_DIR_PATH}/${commit_hash_2}/pcb-diff-${commit_hash_1}.diff" 2>/dev/null
-		fi
+		# Organize images (rename and move to a folder)
+		rename "s/${kicad_project_name_1}-/layer-/" "${OUTPUT_DIR_PATH}/${commit_hash_1}/"*.svg &> /dev/null
+		rename "s/${kicad_project_name_2}-/layer-/" "${OUTPUT_DIR_PATH}/${commit_hash_2}/"*.svg &> /dev/null
+
+		mkdir -p "${OUTPUT_DIR_PATH}/${commit_hash_1}/kiri/pcb/"
+		mkdir -p "${OUTPUT_DIR_PATH}/${commit_hash_2}/kiri/pcb/"
+
+		mv "${OUTPUT_DIR_PATH}/${commit_hash_1}/layer-"*.svg "${OUTPUT_DIR_PATH}/${commit_hash_1}/kiri/pcb/" &> /dev/null
+		mv "${OUTPUT_DIR_PATH}/${commit_hash_2}/layer-"*.svg "${OUTPUT_DIR_PATH}/${commit_hash_2}/kiri/pcb/" &> /dev/null
+
+		# Kidiff textual diffs (check if they are good)
+		# if [[ -f "${OUTPUT_DIR_PATH}/diff.txt" ]]; then
+			# cp -f "${OUTPUT_DIR_PATH}/diff.txt" "${OUTPUT_DIR_PATH}/${commit_hash_1}/kiri/pcb/${commit_hash_2}.diff" &> /dev/null
+			# mv -f "${OUTPUT_DIR_PATH}/diff.txt" "${OUTPUT_DIR_PATH}/${commit_hash_2}/kiri/pcb/${commit_hash_1}.diff" &> /dev/null
+		# fi
+
+		# Revert commits back to _local_ to finish the cleanup
+		if [[ "${commit_hash_1}" == "local" ]]; then commit_hash_1="_local_"; fi
+		if [[ "${commit_hash_2}" == "local" ]]; then commit_hash_2="_local_"; fi
 
 		# Rename local to _local_
 		if [[ "${commit_hash_1}" == "_local_" ]] || [[ "${commit_hash_2}" == "_local_" ]]; then
@@ -1619,7 +1634,7 @@ generate_diffs()
 				create_list_of_layers "${hash_2}" "${OUTPUT_DIR_PATH}/${hash_2}/${kicad_pcb_2}"
 
 				generate_schematic_artifacts "${hash_1}" "${hash_2}" "${kicad_sch_1}" "${kicad_sch_2}" "${kicad_cache_lib_1}" "${kicad_cache_lib_2}" "${i}"
-				generate_layout_artifacts "${hash_1}" "${hash_2}" "${kicad_pcb_1}" "${kicad_pcb_2}"
+				generate_layout_artifacts "${hash_1}" "${hash_2}" "${kicad_pcb_1}" "${kicad_pcb_2}" "${kicad_project_name_1}" "${kicad_project_name_2}"
 			fi
 		done
 	done
@@ -1749,8 +1764,8 @@ build_main_html()
 	# Update initial layout images
 	local initial_layer_id="$(printf "%02d" "$(echo -e "${layers}" | head -1 | cut -d "|" -f1 | tr "." "_")")"
 	local initial_layer_name="$(echo -e "${layers}" | sed '/^$/d' | head -1 | cut -d "|" -f2 | tr "." "_")"
-	local pcb_img_1="../${commit_hash_1}/${kicad_proj_name}-${initial_layer_id}.svg"
-	local pcb_img_2="../${commit_hash_2}/${kicad_proj_name}-${initial_layer_id}.svg"
+	local pcb_img_1="../${commit_hash_1}/kiri/pcb/layer-${initial_layer_id}.svg"
+	local pcb_img_2="../${commit_hash_2}/kiri/pcb/layer-${initial_layer_id}.svg"
 	echo "- Inicial layer: id=${initial_layer_id}, name=${initial_layer_name}"
 	echo "- Initial layer images:"
 	echo "  PCB 1: ${BTE}${LMA}$(realpath --relative-to="${KICAD_PROJ_ABSOLUTE_PATH}" "${OUTPUT_DIR_PATH}/${commit_hash_1}/${pcb_img_1}")${RCO}"
