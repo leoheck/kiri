@@ -944,12 +944,18 @@ get_name_of_current_user()
 {
 	case ${OSTYPE} in
 		darwin*)
-			id -F
+			username=$(id -F)
 			;;
 		*)
-			getent passwd "${USER:-Local User}" | cut -d: -f5 | cut -d, -f1;
+			username=$(getent passwd "${USER:-Local User}" | cut -d: -f5 | cut -d, -f1;)
 			;;
 	esac
+
+	if [[ -n ${username} ]]; then
+		echo "${username}"
+	else
+		echo "${USER}"
+	fi
 }
 
 git_files_have_changes()
