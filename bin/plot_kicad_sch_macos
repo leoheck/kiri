@@ -224,7 +224,7 @@ main()
 		for svg_file in "${svg_file_paths[@]}"; do
 
 			svg_file_name=$(basename "${svg_file%.*}")
-			match_line_no=$(cat "${output_dir_path}/sch_sheets" | grep -m1 -n "|${svg_file_name}$" | cut -d":" -f1)
+			match_line_no=$(cat "${output_dir_path}/kiri/sch_sheets" | grep -m1 -n "|${svg_file_name}$" | cut -d":" -f1)
 
 			if [[ -n "${match_line_no}" ]]; then
 				new_svg_file="$(sed -n ${match_line_no}p "${output_dir_path}/kiri/sch_sheets" | cut -f1 -d"|").svg"
