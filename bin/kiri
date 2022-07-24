@@ -1524,44 +1524,6 @@ generate_layout_artifacts()
 			mv "${OUTPUT_DIR_PATH}/local/layer-"*.svg "${OUTPUT_DIR_PATH}/_local_/kiri/pcb/" &> /dev/null
 			rm -rf "${OUTPUT_DIR_PATH}/local"
 		fi
-
-
-		# kidiff generate local files with "local"
-		# if [[ "${commit_hash_1}" == "${kicad_pcb_1}" ]]; then commit_hash_1="local"; fi
-		# if [[ "${commit_hash_2}" == "${kicad_pcb_2}" ]]; then commit_hash_2="local"; fi
-
-		# Rename generated images
-		# rename "s/${kicad_project_name_1}-/layer-/" "${OUTPUT_DIR_PATH}/${commit_hash_1}/"*.svg &> /dev/null
-		# rename "s/${kicad_project_name_2}-/layer-/" "${OUTPUT_DIR_PATH}/${commit_hash_2}/"*.svg &> /dev/null
-
-
-		# Revert commits back to _local_ to finish the cleanup
-		# if [[ "${commit_hash_1}" == "local" ]]; then commit_hash_1="_local_"; fi
-		# if [[ "${commit_hash_2}" == "local" ]]; then commit_hash_2="_local_"; fi
-
-		# mkdir -p "${OUTPUT_DIR_PATH}/${commit_hash_1}/kiri/pcb/"
-		# mkdir -p "${OUTPUT_DIR_PATH}/${commit_hash_2}/kiri/pcb/"
-
-		# mv "${OUTPUT_DIR_PATH}/${commit_hash_1}/layer-"*.svg "${OUTPUT_DIR_PATH}/${commit_hash_1}/kiri/pcb/" &> /dev/null
-		# mv "${OUTPUT_DIR_PATH}/${commit_hash_2}/layer-"*.svg "${OUTPUT_DIR_PATH}/${commit_hash_2}/kiri/pcb/" &> /dev/null
-
-		# Kidiff textual diffs (check if they are good)
-		# if [[ -f "${OUTPUT_DIR_PATH}/diff.txt" ]]; then
-			# cp -f "${OUTPUT_DIR_PATH}/diff.txt" "${OUTPUT_DIR_PATH}/${commit_hash_1}/kiri/pcb/${commit_hash_2}.diff" &> /dev/null
-			# mv -f "${OUTPUT_DIR_PATH}/diff.txt" "${OUTPUT_DIR_PATH}/${commit_hash_2}/kiri/pcb/${commit_hash_1}.diff" &> /dev/null
-		# fi
-
-		# Revert commits back to _local_ to finish the cleanup
-		# if [[ "${commit_hash_1}" == "local" ]]; then commit_hash_1="_local_"; fi
-		# if [[ "${commit_hash_2}" == "local" ]]; then commit_hash_2="_local_"; fi
-
-		# Rename local to _local_
-		# if [[ "${commit_hash_1}" == "_local_" ]] || [[ "${commit_hash_2}" == "_local_" ]]; then
-		# if [[ -d "${OUTPUT_DIR_PATH}/local" ]]; then
-		# 	mkdir -p "${OUTPUT_DIR_PATH}/_local_"
-		# 	mv -rf "${OUTPUT_DIR_PATH}/local/kiri/" "${OUTPUT_DIR_PATH}/_local_/" &> /dev/null
-			# rm -rf "${OUTPUT_DIR_PATH}/local"
-		# fi
 	fi
 }
 
