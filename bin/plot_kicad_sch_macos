@@ -84,6 +84,11 @@ set_plot_output_directory()
 launch_eeschema()
 {
 	local kicad_sch="${1}"
+
+	defaults write com.apple.LaunchServices LSQuarantine -bool false
+	defaults write com.apple.LaunchServices LSQuarantine -bool NO
+	#sudo xattr -d com.apple.quarantine /Applications/KiCad/Eeschema.app
+
 	open -a Eeschema "${kicad_sch}"
 
 	echo "Waiting for Eeschema..."
@@ -104,6 +109,9 @@ kill_eeschema()
 launch_plot_window()
 {
 	sleep 2
+
+	# Refresh window
+	cliclick kd:cmd t:r ku:cmd
 
 	# Move focus to Top menu and Move selection to the File Menu
 	cliclick kd:fn,ctrl kp:f2 ku:fn,ctrl
