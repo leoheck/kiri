@@ -35,7 +35,7 @@ case ${OSTYPE} in
 
 		SCRIPT_FILE_PATH=$(readlink_osx "${0}")
 		SCRIPTPATH=$(dirname "${SCRIPT_FILE_PATH}")
-		SCRIPTNAME=$(basename "${SCRIPT_FILE_PATH%.*}")
+		SCRIPTNAME=$(basename "${SCRIPT_FILE_PATH}")
 
 		kicad_app_path=/Applications/Kicad/kicad.app/
 		if [[ ! -d ${kicad_app_path} ]]; then
@@ -55,7 +55,7 @@ case ${OSTYPE} in
 	*)
 		SCRIPT_FILE_PATH=$(readlink -f "$0")
 		SCRIPTPATH=$(dirname "${SCRIPT_FILE_PATH}")
-		SCRIPTNAME=$(basename "${SCRIPT_FILE_PATH%.*}")
+		SCRIPTNAME=$(basename "${SCRIPT_FILE_PATH}")
 		export PYTHONPATH="${SCRIPTPATH}/../":"${PYTHONPATH}"
 		env python3 "${SCRIPTPATH}/${SCRIPTNAME}.py" "$@"
 		;;
