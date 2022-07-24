@@ -7,6 +7,8 @@ It currently supports projects of `Kicad 5.*` and `Kicad 6.*` using `git` for so
 
 Schematics on `Kicad 6` are handled graphically by [xdotool](https://github.com/jordansissel/xdotool) on Linux/Windows and by [cliclick](https://github.com/BlueM/cliclick) on macOS.
 
+Cliclick neeeds `System Preferences → Security & Privacy → Accessibility` for Terminal enabled.
+
 ## Installing
 
 To install this tool with on any Operating System, open a terminal and execute the following commands:
@@ -15,16 +17,19 @@ To install this tool with on any Operating System, open a terminal and execute t
 
 > macOS users must have `homebrew` installed 
 
+Installing (and Resintalling) dependencies
 ```bash
-# Installing dependencies
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/leoheck/kiri/main/install_dependencies.sh)"
 ```
 
+Installing (and Reinstalling) KiRI
 ```bash
-# Installing KiRI and Kicad Plugin
-# The default installation path is "${HOME}/.local/share" it can be changed
-# with the KIRI_INSTALL_PATH environment variable.
+# The default installation path is "${HOME}/.local/share" 
+# It can be changed which the KIRI_INSTALL_PATH environment variable.
 # Example: export KIRI_INSTALL_PATH=/home/$USER/Documents/
+```
+
+```bash
 bash -c "INSTALL_KIRI_REMOTELLY=1; $(curl -fsSL https://raw.githubusercontent.com/leoheck/kiri/main/install_kiri.sh)"
 ```
 
