@@ -30,7 +30,8 @@ Installing (and Reinstalling) KiRI
 ```
 
 ```bash
-bash -c "INSTALL_KIRI_REMOTELLY=1; $(curl -fsSL https://raw.githubusercontent.com/leoheck/kiri/main/install_kiri.sh)"
+bash -c "INSTALL_KIRI_REMOTELLY=1; \
+    $(curl -fsSL https://raw.githubusercontent.com/leoheck/kiri/main/install_kiri.sh)"
 ```
 
 > xdotool, used to plot schematics of Kicad 6 (.kicad_sch) requires a X Window System Server. Some of the alternatives include [Xming](https://sourceforge.net/projects/xming/), [Cygwin](https://x.cygwin.com/), and [Mobaterm](https://mobaxterm.mobatek.net/).
