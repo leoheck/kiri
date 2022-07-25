@@ -142,12 +142,6 @@ cd kiri
 ./kiri-webserver.py .
 ```
 
-# Limitations
-
-Current known limitations of Kiri is schematic pages. It supports hierarchical pages in the first page but it does not support nested hierarchical pages.
-Schematic pages inside a separated folder are also accepted if they nested pages are not in use.
-
-
 # Examples
 
 Schematic view, assets generated using Plotkicadsch
