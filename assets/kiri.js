@@ -694,6 +694,9 @@ window.onload = function() {
         show_pcb();
 
     check_server_status();
+
+    console.log("Update initial view");
+    update_commits();
 };
 
 // =======================================
