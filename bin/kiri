@@ -1504,26 +1504,27 @@ generate_layout_artifacts()
 		fi
 
 		# Revert commits back to _local_ to finish the cleanup
-		if [[ "${commit_hash_1}" == "${kicad_pcb_1}" ]]; then commit_hash_1="local"; fi
-		if [[ "${commit_hash_2}" == "${kicad_pcb_2}" ]]; then commit_hash_2="local"; fi
-
-		rename "s/${kicad_project_name_1}-/layer-/" "${OUTPUT_DIR_PATH}/${commit_hash_1}/"*.svg &> /dev/null
-		rename "s/${kicad_project_name_2}-/layer-/" "${OUTPUT_DIR_PATH}/${commit_hash_2}/"*.svg &> /dev/null
-
-		# Revert commits back to _local_ to finish the cleanup
-		if [[ "${commit_hash_1}" == "local" ]]; then commit_hash_1="_local_"; fi
-		if [[ "${commit_hash_2}" == "local" ]]; then commit_hash_2="_local_"; fi
+		if [[ "${commit_hash_1}" == "${kicad_pcb_1}" ]]; then commit_hash_1="_local_"; fi
+		if [[ "${commit_hash_2}" == "${kicad_pcb_2}" ]]; then commit_hash_2="_local_"; fi
 
 		mkdir -p "${OUTPUT_DIR_PATH}/${commit_hash_1}/kiri/pcb/"
 		mkdir -p "${OUTPUT_DIR_PATH}/${commit_hash_2}/kiri/pcb/"
 
+		# Fix folder name, kidiff generates local instead of _local_
+		if [[ -d "${OUTPUT_DIR_PATH}/local/" ]]; then
+			if [[ -d "${OUTPUT_DIR_PATH}/_local_/" ]]; then
+				mv "${OUTPUT_DIR_PATH}/local/"* "${OUTPUT_DIR_PATH}/_local_/" &> /dev/null
+			fi
+			rm -fr "${OUTPUT_DIR_PATH}/local" &> /dev/null
+		fi
+
+		# Rename files folowing format: layer-xx.svg
+		rename "s/${kicad_project_name_1}-/layer-/" "${OUTPUT_DIR_PATH}/${commit_hash_1}/"*.svg &> /dev/null
+		rename "s/${kicad_project_name_2}-/layer-/" "${OUTPUT_DIR_PATH}/${commit_hash_2}/"*.svg &> /dev/null
+
+		# Organize renamed files
 		mv "${OUTPUT_DIR_PATH}/${commit_hash_1}/layer-"*.svg "${OUTPUT_DIR_PATH}/${commit_hash_1}/kiri/pcb/" &> /dev/null
 		mv "${OUTPUT_DIR_PATH}/${commit_hash_2}/layer-"*.svg "${OUTPUT_DIR_PATH}/${commit_hash_2}/kiri/pcb/" &> /dev/null
-
-		if [[ -d "${OUTPUT_DIR_PATH}/local" ]]; then
-			mv "${OUTPUT_DIR_PATH}/local/layer-"*.svg "${OUTPUT_DIR_PATH}/_local_/kiri/pcb/" &> /dev/null
-			rm -rf "${OUTPUT_DIR_PATH}/local"
-		fi
 	fi
 }
 
