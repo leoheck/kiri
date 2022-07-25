@@ -20,8 +20,12 @@ sed()
 
 ctrl_c()
 {
+	# force to kill the childs
+	pkill -P $$ --signal 9 &> /dev/null
+
 	kill -9 "${XVFB_PID}" &> /dev/null
 	kill -9 "${EESCHEMA_PID}" &> /dev/null
+
 	exit 1
 }
 
@@ -188,7 +192,7 @@ main()
 		fi
 	fi
 
-	echo -e "Schematic path = ${kicad_sch_path}"
+	echo -e "\nSchematic path = ${kicad_sch_path}"
 	echo -e "   Output path = ${output_dir_path}"
 	echo -e " Kicad project = ${kicad_prj}"
 
@@ -207,17 +211,31 @@ main()
 	# Organize generated files for KiRI
 	svg_file_paths=($(find "${output_temp_dir_path}" -name "*.svg"))
 
+	echo "Kicad exported files:"
+	for svg_file in "${svg_file_paths[@]}"; do
+		echo "> ${svg_file}"
+	done
+
+	mkdir -p "${output_dir_path}/kiri/sch/" &> /dev/null
+
+	echo "Renaming files:"
 	if [[ -n ${svg_file_paths} ]]; then
 		IFS=$'\n'
 		for svg_file in "${svg_file_paths[@]}"; do
-			new_file=$(echo "${svg_file}" | sed "s|${temp_dir}/|sch-|g" )
-			echo "      Plotting = ${new_file}"
-			mv "${svg_file}" "${new_file}" 2> /dev/null
+
+			svg_file_name=$(basename "${svg_file%.*}")
+			match_line_no=$(cat "${output_dir_path}/kiri/sch_sheets" | grep -m1 -n "|${svg_file_name}$" | cut -d":" -f1)
+
+			if [[ -n "${match_line_no}" ]]; then
+				new_svg_file="$(sed -n ${match_line_no}p "${output_dir_path}/kiri/sch_sheets" | cut -f1 -d"|").svg"
+				echo "${svg_file} -> ${output_dir_path}/kiri/sch/${new_svg_file}" 2>&1
+				cp -f "${svg_file}" "${output_dir_path}/kiri/sch/${new_svg_file}" 2> /dev/null
+			fi
 		done
-		echo
 	fi
 
-	rm -rf "${temp_dir}"
+	# Remove temporary folder
+	rm -rf "${output_temp_dir_path}"
 }
 
-main "${@}" | tee .kiri.log
+main "${@}"

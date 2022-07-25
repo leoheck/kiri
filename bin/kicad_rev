@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# Launch Kicad on a given revision
+
+kicad_pro_path="${1}"
+
+kicad_pro_path_filename="${kicad_pro_path%.*}"
+kicad_pro_extension="${kicad_pro_path##*.}"
+
+case "${OSTYPE}" in
+
+	# macOS
+	darwin*)
+		open -n --fresh -a Kicad "${kicad_pro_path_filename}".*pro
+		;;
+
+	# Linux/WSL
+	*)
+		kicad "${kicad_pro_path_filename}".*pro
+		;;
+esac

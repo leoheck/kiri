@@ -8,27 +8,49 @@ readonly TIME=0.1
 
 ctrl_c()
 {
+	# force to kill the childs
+	pkill -P $$ --signal 9 &> /dev/null
+
 	kill -9 "${XVFB_PID}" &> /dev/null
 	kill -9 "${EESCHEMA_PID}" &> /dev/null
+
+	# Restore original keyboard layout
+	if [[ -n "${original_kbd_lang}" ]]; then
+		setxkbmap "${original_kbd_lang}" &> /dev/null
+	fi
+
 	exit 1
+}
+
+identify_linux_or_wsl()
+{
+	if grep -qEi "(Microsoft|WSL)" /proc/version &> /dev/null ; then
+		echo "WSL"
+	else
+		echo "Linux"
+	fi
 }
 
 get_current_display_server()
 {
-	# Check the display server in use (x11 or wayland)
-	# loginctl show-session $(awk '/tty/ {print $1}' <(loginctl)) -p Type | awk -F= '{print $2}'
-	echo "${XDG_SESSION_TYPE:-unknown}"
+	case "$(identify_linux_or_wsl)" in
 
-	# if [[ -z "${XDG_SESSION_TYPE}" ]]; then
-		# env | grep -i wayland
-	# fi
+		Linux)
+			# Check the display server in use (x11 or wayland)
+			# loginctl show-session $(awk '/tty/ {print $1}' <(loginctl)) -p Type | awk -F= '{print $2}'
+			echo "${XDG_SESSION_TYPE:-unknown}"
+			;;
+
+		WSL)
+			echo "x11"
+			;;
+	esac
 }
 
 launch_virtual_display()
 {
-	export n=":0"
 	if [[ -z "$DISPLAY" ]]; then
-		export DISPLAY=":${n}.0"
+		export DISPLAY=":0.0"
 	fi
 
 	# killall Xvfb &>/dev/null
@@ -124,8 +146,6 @@ launch_eeschema()
 	# list windows
 	# xwininfo -tree -root
 
-	setxkbmap us
-
 	# Can be changed externally
 	if [[ -z ${WAIT_FOR_EESCHEMA_S} ]]; then
 		WAIT_FOR_EESCHEMA_S=0.5
@@ -142,9 +162,23 @@ launch_eeschema()
 	export EESCHEMA_WID=${EESCHEMA_WIDS[0]}
 }
 
+close_eeschema()
+{
+	local win_id=$1
+	echo "- Dismissing popup [${win_id}]"
+
+	xdotool key --window "${win_id}" "Esc" &> /dev/null
+	sleep "${TIME}"
+
+	xdotool key --window "${win_id}" "ctrl+q"
+	sleep "${TIME}"
+}
+
 kill_eeschema()
 {
-	kill -9 "${EESCHEMA_PID}" &> /dev/null
+	if ps aux | grep -q "${EESCHEMA_PID}" &> /dev/null; then
+		kill -9 "${EESCHEMA_PID}" &> /dev/null
+	fi
 }
 
 debug_eeschema_popups()
@@ -178,6 +212,33 @@ is_design_loaded()
 	done
 }
 
+dissmiss_configure_kicad_Settings_path()
+{
+	local win_id=$1
+	echo "- Dismissing popup [${win_id}]"
+
+	xdotool key --window "${win_id}" "Return" &> /dev/null
+	sleep "${TIME}"
+}
+
+dissmiss_configure_symbol_library_table()
+{
+	local win_id=$1
+	echo "- Dismissing popup [${win_id}]"
+
+	xdotool key --window "${win_id}" "Return" &> /dev/null
+	sleep "${TIME}"
+
+	# It looks like the first option to use global lib is not selectable
+	# In this case we are going to an Empty lib (user can fix this later)
+
+	# xdotool key --window "${win_id}" "Down" &> /dev/null
+	# sleep "${TIME}"
+
+	# xdotool key --window "${win_id}" "Return" &> /dev/null
+	# sleep "${TIME}"
+}
+
 dissmiss_popup()
 {
 	local win_id=$1
@@ -196,6 +257,16 @@ dismiss_eeschema_popups()
 
 		case "${win_title}" in
 
+			# First time running Kicad
+			"Configure KiCad Settings Path")
+				dissmiss_configure_kicad_Settings_path "${win_id}" "${win_title}"
+				;;
+
+			# First time running Kicad
+			"Configure Global Symbol Library Table")
+				dissmiss_configure_symbol_library_table "${win_id}" "${win_title}"
+				;;
+
 			"[no schematic loaded] — Schematic Editor")
 				;;
 
@@ -210,8 +281,8 @@ dismiss_eeschema_popups()
 				;;
 
 			*)
-				echo "Unknown popup window [${win_id}] \"${win_title}\""
 				# Dismiss anyway
+				echo "Unknown popup window [${win_id}] \"${win_title}\""
 				dissmiss_popup "${win_id}" "${win_title}"
 				;;
 		esac
@@ -266,9 +337,14 @@ main()
 	trap "exit 1" TERM
 	trap ctrl_c INT
 
-	if [[ "$(get_current_display_server)" != "x11" ]] && [[ "$(get_current_display_server)" != "wayland" ]]; then
-		echo "Error: Unknown display server \"$(get_current_display_server)\""
-		echo "Only x11, xwayland are currently supported"
+	# Set keyboard to us
+	original_kbd_lang=$(setxkbmap -query | grep layout | tr -s ' ' | cut -d" " -f2)
+	setxkbmap -layout us &> /dev/null
+
+	display_server=$(get_current_display_server)
+	if [[ "${display_server}" != "x11" ]] && [[ "${display_server}" != "wayland" ]]; then
+		echo "Warning: Unknown display server (${display_server})"
+		echo "Only X11 and XWayland are currently supported"
 		#exit 1
 	fi
 
@@ -319,31 +395,42 @@ main()
 	launch_eeschema "${kicad_sch_path}" #&> /dev/null
 	launch_plot_window "${EESCHEMA_WID}" 2> /dev/null
 	plot_schematics "${EESCHEMA_WID}" "${output_temp_dir_path}" 2> /dev/null
+	close_eeschema "${EESCHEMA_WID}" 2> /dev/null
 	kill_eeschema
 
 	# Organize generated files for KiRI
 	svg_file_paths=($(find "${output_temp_dir_path}" -name "*.svg"))
 
+	echo "Kicad exported files:"
+	for svg_file in "${svg_file_paths[@]}"; do
+		echo "> ${svg_file}"
+	done
+
+	mkdir -p "${output_dir_path}/kiri/sch/" &> /dev/null
+
+	echo "Renaming files:"
 	if [[ -n ${svg_file_paths} ]]; then
 		IFS=$'\n'
 		for svg_file in "${svg_file_paths[@]}"; do
 
-			module_title=$(basename "${svg_file}" | sed "s|.svg||g" | sed "s/${project_name}-//g" | cut -d"-" -f1)
+			svg_file_name=$(basename "${svg_file%.*}")
+			match_line_no=$(cat "${output_dir_path}/kiri/sch_sheets" | grep -m1 -n "|${svg_file_name}$" | cut -d":" -f1)
 
-			# Kicad export subsheets using module_title and not file_name
-			# This gets the filename
-			page_filename=$(cat ${output_dir_path}/pages | grep "${module_title}" | cut -d'|' -f2 | xargs basename | sed "s/.kicad_sch//g" | sed "s/.sch//g")
-
-			new_file="sch-${page_filename}.svg"
-
-			echo "      Plotting = ${new_file}"
-			mv "${svg_file}" "${new_file}" 2> /dev/null
+			if [[ -n "${match_line_no}" ]]; then
+				new_svg_file="$(sed -n ${match_line_no}p "${output_dir_path}/kiri/sch_sheets" | cut -f1 -d"|").svg"
+				echo "${svg_file} -> ${output_dir_path}/kiri/sch/${new_svg_file}" 2>&1
+				cp -f "${svg_file}" "${output_dir_path}/kiri/sch/${new_svg_file}" 2> /dev/null
+			fi
 		done
-		echo
 	fi
 
 	# Remove temporary folder
 	rm -rf "${output_temp_dir_path}"
+
+	# Restore original keyboard layout
+	if [[ -n "${original_kbd_lang}" ]]; then
+		setxkbmap "${original_kbd_lang}" &> /dev/null
+	fi
 }
 
-main "${@}" | tee .kiri.log
+main "${@}"

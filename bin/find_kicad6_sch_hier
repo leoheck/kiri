@@ -1,0 +1,72 @@
+#!/bin/bash
+
+kicad_pro="${1}"
+kicad_pro_extension="${kicad_pro##*.}"
+kicad_pro_filename="${kicad_pro%.*}"
+
+if [[ ! -f ${kicad_pro} ]]; then
+	echo "Kicad project '${kicad_pro}' is missing"
+	exit 1
+fi
+
+if [[ ${kicad_pro_extension} != "kicad_pro" ]] && [[ ${kicad_pro_extension} != "kicad_sch" ]]; then
+	echo "Not Kicad 6 project"
+	exit
+fi
+
+kicad_sch="${kicad_pro_filename}.kicad_sch"
+
+if [[ ! -f ${kicad_sch} ]]; then
+	echo "Main Kicad schematics '${kicad_sch}' is missing"
+	exit 1
+fi
+
+find_pages()
+{
+	local current_sch="${1}"
+	local sch_dir="${2}"
+	local root_path="${3}"
+	local instance_name="${4}"
+	local parent_uuid="${5}"
+	local parent_inst="${6}"
+
+	local current_sch_rel
+	local file_name
+	local sch_instances
+	local sch_inst_name
+	local sch_inst_file
+	local current_sch_dir
+	local sch_dir
+
+	local uuid
+
+	if [[ -f ${current_sch} ]]; then
+
+		current_sch_rel=$(realpath --relative-to="${root_path}" "${current_sch}")
+
+		file_name=$(basename "${current_sch_rel%.*}")
+		echo "${file_name}|${current_sch_rel}|${uuid}|${instance_name}|${parent_inst}"
+
+		sch_instances=($(kicad6_sheet_instances "${current_sch}"))
+
+		for inst in "${sch_instances[@]}"; do
+
+			sch_inst_name=$(echo "${inst}" | cut -d"|" -f2)
+			sch_inst_file=$(echo "${inst}" | cut -d"|" -f3)
+
+			current_sch_dir="$(pwd)"
+
+			sch_dir="$(dirname "${current_sch}")"
+			cd "${sch_dir}" &> /dev/null || exit
+
+			find_pages "${sch_inst_file}" "${sch_dir}" "${root_path}" "${sch_inst_name}" "${parent_uuid}/${uuid}" "${parent_inst}-${sch_inst_name}"
+
+			cd "${current_sch_dir}" &> /dev/null || exit
+		done
+
+	fi
+}
+
+current_path="$(pwd)"
+find_pages "${kicad_sch}" "." "${current_path}" "${kicad_pro_filename}" "" "$(basename "${kicad_pro_filename}")"
+cd "${current_path}" || exit

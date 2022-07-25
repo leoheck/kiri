@@ -7,6 +7,8 @@ It currently supports projects of `Kicad 5.*` and `Kicad 6.*` using `git` for so
 
 Schematics on `Kicad 6` are handled graphically by [xdotool](https://github.com/jordansissel/xdotool) on Linux/Windows and by [cliclick](https://github.com/BlueM/cliclick) on macOS.
 
+Cliclick neeeds `System Preferences → Security & Privacy → Accessibility` for Terminal enabled.
+
 ## Installing
 
 To install this tool with on any Operating System, open a terminal and execute the following commands:
@@ -15,17 +17,21 @@ To install this tool with on any Operating System, open a terminal and execute t
 
 > macOS users must have `homebrew` installed 
 
+Installing (and Resintalling) dependencies
 ```bash
-# Installing dependencies
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/leoheck/kiri/main/install_dependencies.sh)"
 ```
 
+Installing (and Reinstalling) KiRI
 ```bash
-# Installing KiRI and Kicad Plugin
-# The default installation path is "${HOME}/.local/share" it can be changed
-# with the KIRI_INSTALL_PATH environment variable.
+# The default installation path is "${HOME}/.local/share" 
+# It can be changed which the KIRI_INSTALL_PATH environment variable.
 # Example: export KIRI_INSTALL_PATH=/home/$USER/Documents/
-bash -c "INSTALL_KIRI_REMOTELLY=1; $(curl -fsSL https://raw.githubusercontent.com/leoheck/kiri/main/install_kiri.sh)"
+```
+
+```bash
+bash -c "INSTALL_KIRI_REMOTELLY=1; \
+    $(curl -fsSL https://raw.githubusercontent.com/leoheck/kiri/main/install_kiri.sh)"
 ```
 
 > xdotool, used to plot schematics of Kicad 6 (.kicad_sch) requires a X Window System Server. Some of the alternatives include [Xming](https://sourceforge.net/projects/xming/), [Cygwin](https://x.cygwin.com/), and [Mobaterm](https://mobaxterm.mobatek.net/).
@@ -72,8 +78,35 @@ export PATH=${KIRI_HOME}/submodules/KiCad-Diff/:${PATH}
 export PATH=${KIRI_HOME}/bin:${PATH}
 ```
 
+On Windows/WSL, it is needed to launch the XServer (e.g `Xming`) and also have the `DISPLAY` set correctly
+Add the following lines in the end of the `~/.bashrc`, `~/.zshrc` to set DISPLAY.
+Also, launch `kicad` manually or any other GUI tool like `xeyes` to test if X11 is working.
+
+```bash
+# Set DISPLAY to use X terminal in WSL
+# In WSL2 the localhost and network interfaces are not the same than windows
+if grep -q "WSL2" /proc/version &> /dev/null; then
+    # execute route.exe in the windows to determine its IP address
+    export DISPLAY=$(route.exe print | grep 0.0.0.0 | head -1 | awk '{print $4}'):0.0
+
+else
+    # In WSL1 the DISPLAY can be the localhost address
+    if grep -qi "Microsoft" /proc/version &> /dev/null; then
+        export DISPLAY=127.0.0.1:0.0
+    fi
+
+fi
+```
 
 # Using KiRI
+
+```bash
+cd [kicad_git_repo]
+kiri
+```
+
+Alternatively, it is possible to pass the filename
+
 ```bash
 cd [kicad_git_repo]
 kiri board.pro
@@ -135,7 +168,7 @@ Comparing the new `.kicad_sch` file with an old `.sch`
     <img src="misc/kicad_sch_v6.png" width="820" alt="Layout View">
 </p>
 
-Demo on Youtube
+Demo on YouTube
 
 <p align="center">
 <a href="https://youtu.be/zpssGsvCgi0" target="_blank">

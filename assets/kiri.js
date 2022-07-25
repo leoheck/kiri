@@ -487,8 +487,25 @@ function update_commits() {
     console.log("     commit1 =", commit1);
     console.log("     commit2 =", commit2);
 
-    document.getElementById("commit1_legend_hash").innerHTML = "(" + commit1 + ")";
-    document.getElementById("commit2_legend_hash").innerHTML = "(" + commit2 + ")";
+    old_commit1 = document.getElementById("commit1_hash").value;
+    old_commit2 = document.getElementById("commit2_hash").value;
+
+    kicad_pro_path_1 = document.getElementById("commit1_kicad_pro_path").value;
+    kicad_pro_path_2 = document.getElementById("commit2_kicad_pro_path").value;
+
+    console.log(old_commit1, commit1);
+    console.log(old_commit2, commit2);
+
+    kicad_pro_path_1 = kicad_pro_path_1.replace(old_commit1, commit1);
+    kicad_pro_path_2 = kicad_pro_path_2.replace(old_commit2, commit2);
+
+    document.getElementById("commit1_kicad_pro_path").value = kicad_pro_path_1;
+    document.getElementById("commit2_kicad_pro_path").value = kicad_pro_path_2;
+    document.getElementById("commit1_hash").value = commit1;
+    document.getElementById("commit2_hash").value = commit2;
+
+    document.getElementById("commit1_legend_hash").innerHTML = commit1;
+    document.getElementById("commit2_legend_hash").innerHTML = commit2;
 
     change_page(commit1, commit2);
     change_layer(commit1, commit2);
@@ -508,8 +525,8 @@ function change_page(commit1="", commit2="") {
         commit2 = document.getElementById("diff-xlink-2-sch").href.baseVal.split("/")[1];
     }
 
-    var image_path_1 = "../" + commit1 + "/" + "sch-" + page_filename + ".svg";
-    var image_path_2 = "../" + commit2 + "/" + "sch-" + page_filename + ".svg";
+    var image_path_1 = "../" + commit1 + "/" + "kiri/sch/" + page_filename + ".svg";
+    var image_path_2 = "../" + commit2 + "/" + "kiri/sch/" + page_filename + ".svg";
 
     console.log("---------------------------");
     console.log("         page_name =", page_name);
@@ -560,8 +577,8 @@ function change_layer(commit1="", commit2="") {
             commit2 = document.getElementById("diff-xlink-2-pcb").href.baseVal.split("/")[1];
         }
 
-        var image_path_1 = "../" + commit1 + "/" + board_name + "-" + layer_id + ".svg";
-        var image_path_2 = "../" + commit2 + "/" + board_name + "-" + layer_id + ".svg";
+        var image_path_1 = "../" + commit1 + "/kiri/pcb/layer" + "-" + layer_id + ".svg";
+        var image_path_2 = "../" + commit2 + "/kiri/pcb/layer" + "-" + layer_id + ".svg";
 
         console.log("+++++++++++++++++++++++++++");
         console.log("          layer_id =", layer_id);
@@ -677,6 +694,9 @@ window.onload = function() {
         show_pcb();
 
     check_server_status();
+
+    console.log("Update initial view");
+    update_commits();
 };
 
 // =======================================
@@ -797,7 +817,14 @@ function imgError(image) {
 
 function check_server_status()
 {
-    var img = document.body.appendChild(document.createElement("img"));
+    var img;
+
+    img = document.getElementById("server_status_img");
+
+    if (! img) {
+        var img = document.body.appendChild(document.createElement("img"));
+        img.setAttribute("id", "server_status_img");
+    }
 
     img.onload = function()
     {
@@ -832,3 +859,9 @@ function server_offline() {
         console.log("Server is Offline");
     }
 }
+
+// #===========================
+
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip({html:true});
+})

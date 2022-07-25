@@ -3,15 +3,12 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+		<script integrity="" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css" integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn" crossorigin="anonymous">
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-		<script integrity="" src="https://code.iconify.design/1/1.0.7/iconify.min.js"></script>
-		<script integrity="" src="https://code.jquery.com/jquery-3.5.0.js"></script>
 		<link rel="icon" href="./favicon.ico" type="image/x-icon" />
 		<link rel="shortcut icon" href="./favicon.ico" type="image/x-icon" />
-		<script integrity="" src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.0/dist/svg-pan-zoom.min.js"></script>
 		<link integrity="" rel="stylesheet" href="kiri.css">
-		<script integrity="" src="./kiri.js"></script>
 		<title>[PROJECT_TITLE]</title>
 	</head>
 	<body>
@@ -44,7 +41,7 @@
 							and reset with <kbd>r</kbd>
 							</small>
 						</p>
-						<div class="form-check scrollbox" style="padding: 0px 0px 8px 0px; margin: 0px; overflow-y: scroll">
+						<div class="form-check scrollbox" style="padding: 0px 4px 8px 0px; margin: 0px; margin-right: 4px; overflow-y: scroll">
 							<form id="commits_form" class="overflow-auto scrollbox-content">
 								<!-- FILL_COMMITS_HERE -->
 							</form>
@@ -62,11 +59,11 @@
 
 								<form class="inline" style="padding: 0px 0px 0px 0px; margin: 20px 0px 0px 15px;">
 									<div id="view_mode" class="form-group row btn-group btn-group-toggle" data-toggle="buttons" role="group" aria-label="View Mode">
-										<label id="show_sch_lbl" title="Schematic View" class="btn btn-secondary active" onclick="show_sch()">
+										<label id="show_sch_lbl" data-toggle="tooltip" title="Schematic View" class="btn btn-secondary active" onclick="show_sch()">
 											<input id="show_sch" type="radio" name="view_mode" value="show_sch" checked>
 											<span class="iconify" style="width: 20px; height: 20px;" data-icon="carbon:schematics" data-inline="false"></span>
 										</label>
-										<label id="show_pcb_lbl" title="Layout View" class="btn btn-secondary" onclick="show_pcb()">
+										<label id="show_pcb_lbl" data-toggle="tooltip" title="Layout View" class="btn btn-secondary" onclick="show_pcb()">
 											<input id="show_pcb" type="radio" name="view_mode" value="show_pcb" >
 											<span class="iconify" style="width: 20px; height: 20px;" data-icon="codicon:circuit-board" data-inline="false"></span>
 										</label>
@@ -81,13 +78,13 @@
 
 								<form class="inline" style="padding: 0px 0px 0px 0px; margin: 20px 0px 0px 20px;">
 									<div id="svg_controls" class="form-group btn-group btn-group-toggle" role="group" aria-label="Zoom Level">
-										<button id="zoom-in" title="Zoom In" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary" onclick="this.blur();">
+										<button id="zoom-in" data-toggle="tooltip" title="Zoom In" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary" onclick="this.blur();">
 										<span class="iconify" style="width: 20px; height: 20px;" data-icon="akar-icons:zoom-in" data-inline="false"></span>
 										</button>
-										<button id="zoom-out" title="Zoom Out" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary" onclick="this.blur();" >
+										<button id="zoom-out" data-toggle="tooltip" title="Zoom Out" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary" onclick="this.blur();" >
 										<span class="iconify" style="width: 20px; height: 20px;" data-icon="akar-icons:zoom-out" data-inline="false"></span>
 										</button>
-										<button id="reset" title="Reset View" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary" onclick="this.blur();" >
+										<button id="reset" data-toggle="tooltip" title="Reset View" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary" onclick="this.blur();" >
 										<span class="iconify" style="width: 20px; height: 20px;" data-icon="carbon:center-to-fit" data-inline="false"></span>
 										</button>
 									</div>
@@ -99,22 +96,37 @@
 							</div>
 						</div>
 					</div>
-
 					<div class="col no-gutters" style="width: 100%; padding: 0px 0px 0px 0px; margin: 0px; height: 100%; ">
-
 						<div class="col no-gutters" style="width: 100%; height: 90%; padding: 0px 0px 0px 0px; margin: 0px;">
-
-							<div id="legend" class="no-gutters" style="width: 100%; padding: 0px 0px 0px 0px; margin: 0px;">
-								<form class="rounded form-inline" style="background-color: #222; padding: 8px 5px 8px 5px">
-									<span id=commit1_legend style="margin-left:0.5em; margin-right:0.5em; color: #00FFFF; width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
-									<small class="text-sm text-muted"> New <span class="text-monospace" id=commit1_legend_hash>([COMMIT_1_HASH])</span></small>
-									<span style="width: 2em;"></span>
-									<span id="commit2_legend" style="margin-left:0.5em; margin-right:0.5em; color: #880808; width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
-									<small class="text-sm text-muted"> Old <span class="text-monospace" id=commit2_legend_hash>([COMMIT_2_HASH])</span></small>
-									<span style="width: 2em;"></span>
-									<span id="commit3_legend" style="margin-left:0.5em; margin-right:0.5em; color: #807F7F; width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
-									<small class="text-sm text-muted"> Unchanged </small>
-								</form>
+							<div id="legend" class="rounded no-gutters" style="background-color: #222; width: 100%; padding: 8px 5px 8px 5px; margin: 0px;">
+								<iframe name="hidden_post_target" class="hidden_iframe"></iframe>
+								<span id=commit1_legend style="margin-left:0.5em; margin-right:0.5em; color: #00FFFF; width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
+								<small class="text-sm text-muted">
+									Newer
+									<span class="text-monospace">
+										<form id="KICAD_COMMIT_1" class="form-inline" style="display: inline;" action="index.html" method="post" target="hidden_post_target">
+											<input id="commit1_hash" type="hidden" name="hash" value="[KICAD_COMMIT_1]"/>
+											<input id="commit1_kicad_pro_path" type="hidden" name="kicad_pro_path" value="[COMMIT_1_KICAD_PRO]"/>
+											(<a data-toggle="tooltip" title="Launch Kicad at this Rev" id="commit1_legend_hash" href="javascript:{}" onclick="document.getElementById('KICAD_COMMIT_1').submit();">[COMMIT_1_HASH]</a>)
+										</form>
+									</span>
+								</small>
+								<span style="display: inline; width: 2em;"></span>
+								<span id="commit2_legend" style="display: inline; margin-left:0.5em; margin-right:0.5em; color: #880808; width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
+								<small class="text-sm text-muted">
+									Older
+									<span class="text-monospace">
+										<form id="KICAD_COMMIT_2" class="form-inline" style="display: inline;" action="index.html" method="post" target="hidden_post_target">
+											<input id="commit2_hash" type="hidden" name="hash" value="[KICAD_COMMIT_2]"/>
+											<input id="commit2_kicad_pro_path" type="hidden" name="kicad_pro_path" value="[COMMIT_2_KICAD_PRO]"/>
+											(<a data-toggle="tooltip" title="Launch Kicad at this Rev" id="commit2_legend_hash" href="javascript:{}" onclick="document.getElementById('KICAD_COMMIT_2').submit();">[COMMIT_2_HASH]</a>)
+										</form>
+									</span>
+								</small>
+								<span id="commit3_legend" style="margin-left:0.5em; margin-right:0.5em; color: #807F7F; width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
+								<small class="text-sm text-muted">
+									Unchanged
+								</small>
 							</div>
 
 							<div id="diff-sch" style="width: 100%; height: 94%; display: inline; padding-top: 0px;">
@@ -258,5 +270,10 @@
 				</div>
 			</div>
 		</div>
+
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF" crossorigin="anonymous"></script>
+		<script integrity="" src="https://code.iconify.design/2/2.2.1/iconify.min.js"></script>
+		<script integrity="" src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js"></script>
+		<script integrity="" src="./kiri.js"></script>
 	</body>
 </html>

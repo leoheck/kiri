@@ -256,7 +256,8 @@ html, body {
 	filter : invert(79%) sepia(92%) saturate(322%) hue-rotate(3deg) brightness(89%) contrast(92%);
 }
 
-#================
+/* ==============================
+** ============================*/
 
 .ellipsis {
 	text-overflow: ellipsis;
@@ -288,4 +289,32 @@ label#layers, label#pages {
 	background-color: rgba(0,0,0,0.8);
 	z-index: 2;
 	cursor: pointer;
+}
+
+
+/* ==============================
+** ============================*/
+
+a:link {
+	color: #28a745;
+}
+
+a:visited {
+	color: #28a745;
+}
+
+a:hover {
+	color: #28a745;
+}
+
+a:active {
+	color: #28a745;
+}
+
+
+/* ==============================
+** ============================*/
+
+.hidden_iframe {
+	position:absolute; top:-1px; left:-1px; width:1px; height:1px;
 }
