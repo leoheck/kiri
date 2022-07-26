@@ -1,3 +1,6 @@
+
+// jshint esversion:6
+
 // Default variables
 // These variables are updated by Kiri script
 var default_view = "schematic";
@@ -481,11 +484,9 @@ function update_commits() {
     var commit2 = hashes[1].replace(/\s+/g, '');
 
     console.log("");
-    console.log("=======================================");
-    console.log("=======================================");
-    console.log("  board_name =", board_name);
-    console.log("     commit1 =", commit1);
-    console.log("     commit2 =", commit2);
+    console.log("[Cmt]    board_name =", board_name);
+    console.log("[Cmt]       commit1 =", commit1);
+    console.log("[Cmt]       commit2 =", commit2);
 
     old_commit1 = document.getElementById("commit1_hash").value;
     old_commit2 = document.getElementById("commit2_hash").value;
@@ -493,23 +494,38 @@ function update_commits() {
     kicad_pro_path_1 = document.getElementById("commit1_kicad_pro_path").value;
     kicad_pro_path_2 = document.getElementById("commit2_kicad_pro_path").value;
 
-    console.log(old_commit1, commit1);
-    console.log(old_commit2, commit2);
-
     kicad_pro_path_1 = kicad_pro_path_1.replace(old_commit1, commit1);
     kicad_pro_path_2 = kicad_pro_path_2.replace(old_commit2, commit2);
 
     document.getElementById("commit1_kicad_pro_path").value = kicad_pro_path_1;
     document.getElementById("commit2_kicad_pro_path").value = kicad_pro_path_2;
+
     document.getElementById("commit1_hash").value = commit1;
     document.getElementById("commit2_hash").value = commit2;
 
     document.getElementById("commit1_legend_hash").innerHTML = commit1;
     document.getElementById("commit2_legend_hash").innerHTML = commit2;
 
-    change_page(commit1, commit2);
-    change_layer(commit1, commit2);
+    // Update the active view enabled view
+    var view_mode = $('#view_mode input[name="view_mode"]:checked').val();
+    if (view_mode == "show_sch") {
+        change_page(commit1, commit2);
+    } else {
+        change_layer(commit1, commit2);
+    }
 }
+
+function loadFile(filePath) {
+    var result = null;
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.open('GET', filePath, false);
+    xmlhttp.send();
+    if (xmlhttp.status==200) {
+        result = xmlhttp.responseText;
+    }
+    return result;
+}
+
 
 function change_page(commit1="", commit2="") {
     var pages = $("#pages_list input:radio[name='pages']");
@@ -517,6 +533,10 @@ function change_page(commit1="", commit2="") {
 
     var page_name = pages[selected_page].id;
     var page_filename = pages[selected_page].value.replace(".kicad_sch", "").replace(".sch", "");
+
+    if ((commit1 != "") && (commit2 != "")) {
+        update_sheets_list(commit1, commit2, page_name);
+    }
 
     if (commit1 == ""){
         commit1 = document.getElementById("diff-xlink-1-sch").href.baseVal.split("/")[1];
@@ -528,11 +548,9 @@ function change_page(commit1="", commit2="") {
     var image_path_1 = "../" + commit1 + "/" + "kiri/sch/" + page_filename + ".svg";
     var image_path_2 = "../" + commit2 + "/" + "kiri/sch/" + page_filename + ".svg";
 
-    console.log("---------------------------");
-    console.log("         page_name =", page_name);
-    console.log("     page_filename =", page_filename);
-    console.log("[SCH] image_path_1 =", image_path_1);
-    console.log("[SCH] image_path_2 =", image_path_2);
+    console.log("[SCH] page_filename =", page_filename);
+    console.log("[SCH]  image_path_1 =", image_path_1);
+    console.log("[SCH]  image_path_2 =", image_path_2);
 
     var image_path_timestamp_1 = image_path_1 + img_timestamp();
     var image_path_timestamp_2 = image_path_2 + img_timestamp();
@@ -562,28 +580,268 @@ function change_page(commit1="", commit2="") {
     });
 }
 
+function update_sheets_list(commit1, commit2, selected_sheet) {
+
+    // Data format: ID|LAYER
+
+    console.log("==== UPDATING_SHEETS_LIST ====");
+    console.log("Selected sheet:", selected_sheet);
+
+    data1 = loadFile("../" + commit1 + "/kiri/sch_sheets" + img_timestamp()).split("\n").filter((a) => a);
+    data2 = loadFile("../" + commit2 + "/kiri/sch_sheets" + img_timestamp()).split("\n").filter((a) => a);
+
+    var sheets = [];
+
+    for (const d of data1)
+    {
+        sheet = d.split("|")[0];
+        sheets.push(sheet);
+    }
+
+    for (const d of data2)
+    {
+        sheet = d.split("|")[0];
+        if (! sheets.includes(sheet))
+        {
+            sheets.push(sheet);
+        }
+    }
+
+    // sheets.sort();
+    sheets = Array.from(new Set(sheets.sort()));
+
+    console.log("[SCH]  Sheets =", sheets.length);
+    console.log("sheets", sheets);
+
+    var form_inputs_html;
+
+    for (const sheet of sheets)
+    {
+        if (sheet == selected_sheet) {
+            checked="checked='checked'";
+        }
+        else {
+            checked = "";
+        }
+
+        // Original
+        //
+        // <!-- Page 1 -->
+        // <input id="board" data-toggle="tooltip" title="board.kicad_sch" type="radio" value="board.kicad_sch" name="pages" checked="checked" onchange="change_page()"/>
+        // <label for="board" data-toggle="tooltip" title="board.kicad_sch" id="label-board" class="rounded text-sm-left list-group-item radio-box" onclick="change_page_onclick()" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+        //     <span data-toggle="tooltip" title="board" style="margin-left:0.5em; margin-right:0.1em;" class="iconify" data-icon="gridicons:pages" data-inline="false"></span>
+        //     board
+        // </label>
+
+        var input_html = `
+        <input id="${sheet}" data-toggle="tooltip" title="${sheet}.kicad_sch" type="radio" value="${sheet}.kicad_sch" name="pages" ${checked} onchange="change_page()">
+            <label for="${sheet}" data-toggle="tooltip" title="${sheet}.kicad_sch" id="label-${sheet}" class="rounded text-sm-left list-group-item radio-box" onclick="change_page_onclick()" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                <span data-toggle="tooltip" title="${sheet}" style="margin-left:0.5em; margin-right:0.1em;" class="iconify" data-icon="gridicons:pages" data-inline="false"></span>
+                ${sheet}
+            </label>
+        </label>
+        `;
+
+        form_inputs_html = form_inputs_html + input_html;
+    }
+
+    sheets_element = document.getElementById("pages_list_form");
+
+    sheets_element.style.display = "none";
+    sheets_element.innerHTML = form_inputs_html.replace("undefined", "");
+    sheets_element.style.display = "block";
+}
+
+function layer_color(layer_id) {
+
+    var color;
+
+    console.log(">>> layer_id", layer_id);
+
+    const F_Cu      = 0;
+    const In1_Cu    = 1;
+    const In2_Cu    = 2;
+    const In3_Cu    = 3;
+    const In4_Cu    = 4;
+    const B_Cu      = 31;
+    const B_Adhes   = 32;
+    const F_Adhes   = 33;
+    const B_Paste   = 34;
+    const F_Paste   = 35;
+    const B_SilkS   = 36;
+    const F_SilkS   = 37;
+    const B_Mask    = 38;
+    const F_Mask    = 39;
+    const Dwgs_User = 40;
+    const Cmts_User = 41;
+    const Eco1_User = 42;
+    const Eco2_User = 43;
+    const Edge_Cuts = 44;
+    const Margin    = 45;
+    const B_CrtYd   = 46;
+    const F_CrtYd   = 47;
+    const B_Fab     = 48;
+    const F_Fab     = 49;
+
+    switch(layer_id) {
+        case B_Adhes:   color="#3545A8"; break;
+        case B_CrtYd:   color="#D3D04B"; break;
+        case B_Cu:      color="#359632"; break;
+        case B_Fab:     color="#858585"; break;
+        case B_Mask:    color="#943197"; break;
+        case B_Paste:   color="#969696"; break;
+        case B_SilkS:   color="#481649"; break;
+        case Cmts_User: color="#7AC0F4"; break;
+        case Dwgs_User: color="#0364D3"; break;
+        case Eco1_User: color="#008500"; break;
+        case Eco2_User: color="#008500"; break;
+        case Edge_Cuts: color="#C9C83B"; break;
+        case F_Adhes:   color="#A74AA8"; break;
+        case F_CrtYd:   color="#A7A7A7"; break;
+        case F_Cu:      color="#952927"; break;
+        case F_Fab:     color="#C2C200"; break;
+        case F_Mask:    color="#943197"; break;
+        case F_Paste:   color="#3DC9C9"; break;
+        case F_SilkS:   color="#339697"; break;
+        case In1_Cu:    color="#C2C200"; break;
+        case In2_Cu:    color="#C200C2"; break;
+        case In3_Cu:    color="#C20000"; break;
+        case In4_Cu:    color="#0000C2"; break;
+        case Margin:    color="#D357D2"; break;
+        default:        color="#000000";
+    }
+
+    return color;
+}
+
+function pad(num, size) {
+    num = num.toString();
+    while (num.length < size) num = "0" + num;
+    return num;
+}
+
+function update_layers_list(commit1, commit2, selected_id) {
+
+    // Data format: ID|LAYER
+
+    console.log("==== UPDATING_LAYERS_LIST ====");
+    console.log("Selected ID:", selected_id);
+
+    data1 = loadFile("../" + commit1 + "/kiri/pcb_layers" + img_timestamp()).split("\n").filter((a) => a);
+    data2 = loadFile("../" + commit2 + "/kiri/pcb_layers" + img_timestamp()).split("\n").filter((a) => a);
+
+    var dict = {};
+    var id;
+    var id_pad;
+    var layer;
+    var layer_name;
+    var color;
+    var checked;
+
+    for (const d of data1)
+    {
+        id = d.split("|")[0];
+        layer = d.split("|")[1].replace(".", "_");
+        dict[id] = [layer];
+        // dict[id] = layer;
+    }
+
+    for (const d of data2)
+    {
+        id = d.split("|")[0];
+        layer = d.split("|")[1].replace(".", "_");
+
+        if (! dict.hasOwnProperty(id)) {
+            console.log("Adding new key");
+            dict[id] = [layer];
+            // dict[id] = layer;
+        }
+        else {
+            if (dict[id] != layer) {
+                console.log("Updating existing key");
+                dict[id].push(layer);
+                // dict[id] = layer;
+            }
+        }
+    }
+
+    console.log("[PCB]  Layers =", Object.keys(dict).length);
+    // console.log("dict", dict);
+
+    var form_inputs_html;
+
+    for (const [key, value] of Object.entries(dict))
+    {
+        id = parseInt(key);
+        id_pad = pad(id, 2);
+        layer = value[0];
+        layer_name = value;
+        color = layer_color(id);
+        checked = "";
+
+        if (id_pad == selected_id) {
+            checked="checked='checked'";
+        }
+        else {
+            checked = "";
+        }
+
+        // <!-- Layer ${i} -->
+        // <input  id="layer-${layer_id_padding}" value="layer-${layer_name}" type="radio" name="layers" onchange="change_layer()" ${checked}>
+        // <label for="layer-${layer_id_padding}" id="label-${layer_id_padding}" data-toggle="tooltip" title="Layer ID: ${layer_id}" class="rounded text-sm-left list-group-item radio-box" onclick="change_layer_onclick()">
+        //     <span style="margin-left:0.5em; margin-right:0.1em; color: ${layer_color}" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+        //     ${layer_name}
+        // </label>
+
+        var input_html = `
+        <!-- Generated Layer ${id} -->
+        <input  id="layer-${id_pad}" value="layer-${layer}" type="radio" name="layers" onchange="change_layer()" ${checked}>
+        <label for="layer-${id_pad}" id="label-${id_pad}" data-toggle="tooltip" title="Layer ID: ${id}" class="rounded text-sm-left list-group-item radio-box" onclick="change_layer_onclick()">
+            <span style="margin-left:0.5em; margin-right:0.1em; color:${color}" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
+            </svg>
+            ${layer_name}
+        </label>
+        `;
+
+        form_inputs_html = form_inputs_html + input_html;
+    }
+
+    layers_element = document.getElementById("layers_list_form");
+    layers_element.style.display = "none";
+    layers_element.innerHTML = form_inputs_html.replace("undefined", "");
+    layers_element.style.display = "block";
+}
+
 function change_layer(commit1="", commit2="") {
 
-    try {
+    // try {
 
         var layers = $("#layers_list input:radio[name='layers']");
         var selected_layer = layers.index(layers.filter(':checked'));
-        var layer_id = layers[selected_layer].id.split("-")[1];
 
-        if (commit1 == ""){
+        var layer_id = layers[selected_layer].id.split("-")[1];
+        if (! layer_id)
+        {
+            layer_id = "00";
+        }
+
+        if ((commit1 != "") && (commit2 != "")) {
+            update_layers_list(commit1, commit2, layer_id);
+        }
+
+        if (commit1 == "") {
             commit1 = document.getElementById("diff-xlink-1-pcb").href.baseVal.split("/")[1];
         }
-        if (commit2 == ""){
+        if (commit2 == "") {
             commit2 = document.getElementById("diff-xlink-2-pcb").href.baseVal.split("/")[1];
         }
 
         var image_path_1 = "../" + commit1 + "/kiri/pcb/layer" + "-" + layer_id + ".svg";
         var image_path_2 = "../" + commit2 + "/kiri/pcb/layer" + "-" + layer_id + ".svg";
 
-        console.log("+++++++++++++++++++++++++++");
-        console.log("          layer_id =", layer_id);
-        console.log("[PCB] image_path_1 =", image_path_1);
-        console.log("[PCB] image_path_2 =", image_path_2);
+        console.log("[PCB]      layer_id =", layer_id);
+        console.log("[PCB]  image_path_1 =", image_path_1);
+        console.log("[PCB]  image_path_2 =", image_path_2);
 
         var image_path_timestamp_1 = image_path_1 + img_timestamp();
         var image_path_timestamp_2 = image_path_2 + img_timestamp();
@@ -611,10 +869,10 @@ function change_layer(commit1="", commit2="") {
                 document.getElementById("diff-xlink-2-pcb").parentElement.style.display = 'none';
             }
         });
-    }
-    catch(err) {
-        console.log("PCB may not be created");
-    }
+    // }
+    // catch(err) {
+    //     console.log("[PCB] Image may not exist");
+    // }
 }
 
 // =======================================
@@ -822,7 +1080,7 @@ function check_server_status()
     img = document.getElementById("server_status_img");
 
     if (! img) {
-        var img = document.body.appendChild(document.createElement("img"));
+        img = document.body.appendChild(document.createElement("img"));
         img.setAttribute("id", "server_status_img");
     }
 
@@ -864,4 +1122,4 @@ function server_offline() {
 
 $(function () {
   $('[data-toggle="tooltip"]').tooltip({html:true});
-})
+});
