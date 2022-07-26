@@ -3,12 +3,12 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<script integrity="" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+		<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css" integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn" crossorigin="anonymous">
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-		<link rel="icon" href="./favicon.ico" type="image/x-icon" />
-		<link rel="shortcut icon" href="./favicon.ico" type="image/x-icon" />
-		<link integrity="" rel="stylesheet" href="kiri.css">
+		<link rel="icon" href="./favicon.ico" type="image/x-icon">
+		<link rel="shortcut icon" href="./favicon.ico" type="image/x-icon">
+		<link rel="stylesheet" href="kiri.css" integrity="">
 		<title>[PROJECT_TITLE]</title>
 	</head>
 	<body>
@@ -105,8 +105,8 @@
 									Newer
 									<span class="text-monospace">
 										<form id="KICAD_COMMIT_1" class="form-inline" style="display: inline;" action="index.html" method="post" target="hidden_post_target">
-											<input id="commit1_hash" type="hidden" name="hash" value="[KICAD_COMMIT_1]"/>
-											<input id="commit1_kicad_pro_path" type="hidden" name="kicad_pro_path" value="[COMMIT_1_KICAD_PRO]"/>
+											<input id="commit1_hash" type="hidden" name="hash" value="[KICAD_COMMIT_1]">
+											<input id="commit1_kicad_pro_path" type="hidden" name="kicad_pro_path" value="[COMMIT_1_KICAD_PRO]">
 											(<a data-toggle="tooltip" title="Launch Kicad at this Rev" id="commit1_legend_hash" href="javascript:{}" onclick="document.getElementById('KICAD_COMMIT_1').submit();">[COMMIT_1_HASH]</a>)
 										</form>
 									</span>
@@ -117,8 +117,8 @@
 									Older
 									<span class="text-monospace">
 										<form id="KICAD_COMMIT_2" class="form-inline" style="display: inline;" action="index.html" method="post" target="hidden_post_target">
-											<input id="commit2_hash" type="hidden" name="hash" value="[KICAD_COMMIT_2]"/>
-											<input id="commit2_kicad_pro_path" type="hidden" name="kicad_pro_path" value="[COMMIT_2_KICAD_PRO]"/>
+											<input id="commit2_hash" type="hidden" name="hash" value="[KICAD_COMMIT_2]">
+											<input id="commit2_kicad_pro_path" type="hidden" name="kicad_pro_path" value="[COMMIT_2_KICAD_PRO]">
 											(<a data-toggle="tooltip" title="Launch Kicad at this Rev" id="commit2_legend_hash" href="javascript:{}" onclick="document.getElementById('KICAD_COMMIT_2').submit();">[COMMIT_2_HASH]</a>)
 										</form>
 									</span>
@@ -234,9 +234,9 @@
 								</small>
 							</p>
 							<div class="row" style="height: 85%; width: 300px">
-								<div class="col col" style="height: 100%; width: 100%">
-									<div class="form-check scrollbox" style="height: 100%; width: 100%; padding: 0px 0px 8px 0px; margin: 0px; overflow-y: scroll">
-										<form class="overflow-auto scrollbox-content">
+								<div class="col" style="height: 100%; width: 100%">
+									<div id="pages_list_div" class="form-check scrollbox" style="height: 100%; width: 100%; padding: 0px 0px 8px 0px; margin: 0px; overflow-y: scroll">
+										<form id="pages_list_form" class="overflow-auto scrollbox-content">
 											<!-- FILL_PAGES_HERE -->
 										</form>
 									</div>
@@ -257,9 +257,9 @@
 								</small>
 							</p>
 							<div class="row" style="height: 85%; width: 300px">
-								<div class="col col" style="height: 100%; width: 100%">
-									<div class="form-check scrollbox" style="height: 100%; width: 100%; padding: 0px 0px 8px 0px; margin: 0px; overflow-y: scroll">
-										<form class="overflow-auto scrollbox-content">
+								<div class="col" style="height: 100%; width: 100%">
+									<div id="layers_list_div" class="form-check scrollbox" style="height: 100%; width: 100%; padding: 0px 0px 8px 0px; margin: 0px; overflow-y: scroll">
+										<form id="layers_list_form" class="overflow-auto scrollbox-content">
 											<!-- FILL_LAYERS_HERE -->
 										</form>
 									</div>
@@ -272,8 +272,8 @@
 		</div>
 
 		<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF" crossorigin="anonymous"></script>
-		<script integrity="" src="https://code.iconify.design/2/2.2.1/iconify.min.js"></script>
-		<script integrity="" src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js"></script>
-		<script integrity="" src="./kiri.js"></script>
+		<script src="https://code.iconify.design/2/2.2.1/iconify.min.js" integrity=""></script>
+		<script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js" integrity=""></script>
+		<script src="./kiri.js" integrity="" crossorigin="anonymous"></script>
 	</body>
 </html>
