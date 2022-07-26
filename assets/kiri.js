@@ -708,7 +708,7 @@ function layer_color(layer_id) {
         case In3_Cu:    color="#C20000"; break;
         case In4_Cu:    color="#0000C2"; break;
         case Margin:    color="#D357D2"; break;
-        default:        color="#000000";
+        default:        color="#DBDBDB";
     }
 
     return color;
