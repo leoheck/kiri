@@ -528,15 +528,16 @@ function loadFile(filePath) {
 
 
 function change_page(commit1="", commit2="") {
+
+    // Runs only when using Arrow-Right/Left keys
+    if ((commit1 != "") && (commit2 != "")) {
+        update_sheets_list(commit1, commit2);
+    }
+
     var pages = $("#pages_list input:radio[name='pages']");
     var selected_page = pages.index(pages.filter(':checked'));
-
     var page_name = pages[selected_page].id;
     var page_filename = pages[selected_page].value.replace(".kicad_sch", "").replace(".sch", "");
-
-    if ((commit1 != "") && (commit2 != "")) {
-        update_sheets_list(commit1, commit2, page_name);
-    }
 
     if (commit1 == ""){
         commit1 = document.getElementById("diff-xlink-1-sch").href.baseVal.split("/")[1];
@@ -580,12 +581,22 @@ function change_page(commit1="", commit2="") {
     });
 }
 
-function update_sheets_list(commit1, commit2, selected_sheet) {
+function update_sheets_list(commit1, commit2) {
+
+    // Get current selected page name
+    var pages = $("#pages_list input:radio[name='pages']");
+    var selected_page = pages.index(pages.filter(':checked'));
+
+    // Save the current selected page, if any
+    try {
+        selected_sheet = pages[selected_page].id;
+    }
+    catch(err) {
+        selected_page = "";
+        console.log("There isn't a sheet selected");
+    }
 
     // Data format: ID|LAYER
-
-    console.log("==== UPDATING_SHEETS_LIST ====");
-    console.log("Selected sheet:", selected_sheet);
 
     data1 = loadFile("../" + commit1 + "/kiri/sch_sheets" + img_timestamp()).split("\n").filter((a) => a);
     data2 = loadFile("../" + commit2 + "/kiri/sch_sheets" + img_timestamp()).split("\n").filter((a) => a);
@@ -608,7 +619,8 @@ function update_sheets_list(commit1, commit2, selected_sheet) {
     }
 
     // sheets.sort();
-    sheets = Array.from(new Set(sheets.sort()));
+    // sheets = Array.from(new Set(sheets.sort()));
+    sheets = Array.from(new Set(sheets));
 
     console.log("[SCH]  Sheets =", sheets.length);
     console.log("sheets", sheets);
@@ -617,25 +629,9 @@ function update_sheets_list(commit1, commit2, selected_sheet) {
 
     for (const sheet of sheets)
     {
-        if (sheet == selected_sheet) {
-            checked="checked='checked'";
-        }
-        else {
-            checked = "";
-        }
-
-        // Original
-        //
-        // <!-- Page 1 -->
-        // <input id="board" data-toggle="tooltip" title="board.kicad_sch" type="radio" value="board.kicad_sch" name="pages" checked="checked" onchange="change_page()"/>
-        // <label for="board" data-toggle="tooltip" title="board.kicad_sch" id="label-board" class="rounded text-sm-left list-group-item radio-box" onclick="change_page_onclick()" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-        //     <span data-toggle="tooltip" title="board" style="margin-left:0.5em; margin-right:0.1em;" class="iconify" data-icon="gridicons:pages" data-inline="false"></span>
-        //     board
-        // </label>
-
         var input_html = `
-        <input id="${sheet}" data-toggle="tooltip" title="${sheet}.kicad_sch" type="radio" value="${sheet}.kicad_sch" name="pages" ${checked} onchange="change_page()">
-            <label for="${sheet}" data-toggle="tooltip" title="${sheet}.kicad_sch" id="label-${sheet}" class="rounded text-sm-left list-group-item radio-box" onclick="change_page_onclick()" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+        <input id="${sheet}" data-toggle="tooltip" title="${sheet}" type="radio" value="${sheet}" name="pages" onchange="change_page()">
+            <label for="${sheet}" data-toggle="tooltip" title="${sheet}" id="label-${sheet}" class="rounded text-sm-left list-group-item radio-box" onclick="change_page_onclick()" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                 <span data-toggle="tooltip" title="${sheet}" style="margin-left:0.5em; margin-right:0.1em;" class="iconify" data-icon="gridicons:pages" data-inline="false"></span>
                 ${sheet}
             </label>
@@ -646,10 +642,26 @@ function update_sheets_list(commit1, commit2, selected_sheet) {
     }
 
     sheets_element = document.getElementById("pages_list_form");
-
-    sheets_element.style.display = "none";
     sheets_element.innerHTML = form_inputs_html.replace("undefined", "");
-    sheets_element.style.display = "block";
+
+
+    var pages = $("#pages_list input:radio[name='pages']");
+    const optionLabels = Array.from(pages).map((opt) => opt.id);
+
+    const hasOption = optionLabels.includes(selected_sheet);
+    if (hasOption) {
+        // Keep previews selection active
+        $("#pages_list input:radio[name='pages'][value=" + selected_sheet + "]").prop('checked', true);
+    }
+    else {
+        // If old selection does not exist, maybe the list is now shorter, then select the last item...
+        pages[optionLabels.length-1].checked = true;
+    }
+
+    // If nothing is selected still, select the first item
+    if (!pages.filter(':checked').length) {
+        pages[0].checked = true;
+    }
 }
 
 function layer_color(layer_id) {
