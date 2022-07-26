@@ -67,6 +67,7 @@ find_pages()
 			echo "${file_name}|${current_sch_rel}|${uuid:=-}|${instance_name}|${parent_inst}"
 		fi
 
+		IFS=$'\n'
 		sch_instances=($(sheet_instances "${current_sch}"))
 
 		for inst in "${sch_instances[@]}"; do
