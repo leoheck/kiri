@@ -120,7 +120,7 @@ insert_commits_html()
 
 		read -r -d '' commit_html <<-EOM
 		<!-- Commit ${i} -->
-		<input class="chkGroup" type="checkbox" id="${hash}" name="commit" value="${hash}" ${checked} onchange="update_commits()"/>
+		<input class="chkGroup" type="checkbox" id="${hash}" name="commit" value="${hash}" ${checked} onchange="update_commits()">
 		<label class="text-sm-left list-group-item" style="display: block; width: 445px; margin-left: 0px;" for="${hash}">
 		    <table data-toggle="tooltip" title="${tooltip}">
 		        <tr>
@@ -192,7 +192,7 @@ insert_pages_html()
 		# IFS=
 		read -r -d '' page_html <<-EOM
 		<!-- Page ${i} -->
-		<input id="${page_name}" data-toggle="tooltip" title="${page_filename_path}" type="radio" value="${page_filename}" name="pages" ${checked} onchange="change_page()"/>
+		<input id="${page_name}" data-toggle="tooltip" title="${page_filename_path}" type="radio" value="${page_filename}" name="pages" ${checked} onchange="change_page()">
 		<label for="${page_name}" data-toggle="tooltip" title="${page_filename_path}" id="label-${page_name}" class="rounded text-sm-left list-group-item radio-box" onclick="change_page_onclick()" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
 		    <span data-toggle="tooltip" title="${page_name}" style="margin-left:0.5em; margin-right:0.1em;" class="iconify" data-icon="gridicons:pages" data-inline="false"></span>
 		    ${page_name}
@@ -320,7 +320,7 @@ insert_layers_html()
 
 		read -r -d '' layer_html <<-EOM
 		<!-- Layer ${i} -->
-		<input  id="layer-${layer_id_padding}" value="layer-${layer_name}" type="radio" name="layers" onchange="change_layer()" ${checked}/>
+		<input  id="layer-${layer_id_padding}" value="layer-${layer_name}" type="radio" name="layers" onchange="change_layer()" ${checked}>
 		<label for="layer-${layer_id_padding}" id="label-${layer_id_padding}" data-toggle="tooltip" title="Layer ID: ${layer_id}" class="rounded text-sm-left list-group-item radio-box" onclick="change_layer_onclick()">
 		    <span style="margin-left:0.5em; margin-right:0.1em; color: ${layer_color}" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
 		    ${layer_name}
