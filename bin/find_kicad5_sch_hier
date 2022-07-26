@@ -68,7 +68,7 @@ find_pages()
 		fi
 
 		IFS=$'\n'
-		sch_instances=($(sheet_instances "${current_sch}"))
+		sch_instances=($(sheet_instances "${current_sch}" | sort -n))
 
 		for inst in "${sch_instances[@]}"; do
 
