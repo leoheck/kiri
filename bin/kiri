@@ -50,22 +50,24 @@ insert_commits_html()
 
 		if [[ "${hash}" != "_local_" ]]; then
 
+			local path_to_git_root="$(realpath --relative-to="${KICAD_PROJ_ABSOLUTE_PATH}" "${REPO_ABSOLUTE_PATH}")"
+
 			# Check for changes in ".sch|.kicad_sch" files
-			if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${KICAD_PROJ_NESTED_PATH}" | cat | grep -q -s -E "${kicad_sch// /|}${kicad_sch_pages}"; then
+			if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${path_to_git_root}/${KICAD_PROJ_NESTED_PATH}" | cat | grep -q -s -E "${kicad_sch// /|}${kicad_sch_pages}"; then
 				sch_icon="${sch_img}"
 			else
 				sch_icon="${empty_img}"
 			fi
 
 			# Check for changes in .kicad_pcb files
-			if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${KICAD_PROJ_NESTED_PATH}" | cat | grep -q -s "${kicad_pcb}"; then
+			if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${path_to_git_root}/${KICAD_PROJ_NESTED_PATH}" | cat | grep -q -s "${kicad_pcb}"; then
 				pcb_icon="${pcb_img}"
 			else
 				pcb_icon="${empty_img}"
 			fi
 
 			# Check for changes in textual files only
-			if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${KICAD_PROJ_NESTED_PATH}" | cat | grep -q -s -vE "${kicad_sch// /|}${kicad_sch_pages}${kicad_pcb}"; then
+			if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${path_to_git_root}/${KICAD_PROJ_NESTED_PATH}" | cat | grep -q -s -vE "${kicad_sch// /|}${kicad_sch_pages}${kicad_pcb}"; then
 				txt_icon="${txt_img}"
 			else
 				txt_icon="${empty_img}"
