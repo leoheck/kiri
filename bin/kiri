@@ -1747,6 +1747,7 @@ build_main_html()
 	sed -i "s|\[COMMIT_2_KICAD_PRO\]|${project_path_2}|g" "${WEB_DIR_PATH}/${main_html}"
 
 	# Update initial schematic images
+	# This somehow fix the initial viewbox
 	local sch_img_1="../${commit_hash_1}/kiri/sch/${kicad_proj_name}.svg"
 	local sch_img_2="../${commit_hash_2}/kiri/sch/${kicad_proj_name}.svg"
 	echo "- Initial schematic images:"
