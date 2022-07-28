@@ -440,7 +440,7 @@ window.onkeydown = function(e) {
 // =======================================
 // =======================================
 
-function img_timestamp() {
+function url_timestamp() {
     return "?t=" + new Date().getTime();
 }
 
@@ -529,8 +529,8 @@ function loadFile(filePath) {
 
 function change_page(commit1="", commit2="") {
 
-    // Runs only when using Arrow-Right/Left keys
     if ((commit1 != "") && (commit2 != "")) {
+        // Runs only when using Arrow-Right/Left keys
         update_sheets_list(commit1, commit2);
     }
 
@@ -553,8 +553,8 @@ function change_page(commit1="", commit2="") {
     console.log("[SCH]  image_path_1 =", image_path_1);
     console.log("[SCH]  image_path_2 =", image_path_2);
 
-    var image_path_timestamp_1 = image_path_1 + img_timestamp();
-    var image_path_timestamp_2 = image_path_2 + img_timestamp();
+    var image_path_timestamp_1 = image_path_1 + url_timestamp();
+    var image_path_timestamp_2 = image_path_2 + url_timestamp();
 
     document.getElementById("diff-xlink-1-sch").href.baseVal = image_path_timestamp_1;
     document.getElementById("diff-xlink-2-sch").href.baseVal = image_path_timestamp_2;
@@ -598,8 +598,8 @@ function update_sheets_list(commit1, commit2) {
 
     // Data format: ID|LAYER
 
-    data1 = loadFile("../" + commit1 + "/kiri/sch_sheets" + img_timestamp()).split("\n").filter((a) => a);
-    data2 = loadFile("../" + commit2 + "/kiri/sch_sheets" + img_timestamp()).split("\n").filter((a) => a);
+    data1 = loadFile("../" + commit1 + "/kiri/sch_sheets" + url_timestamp()).split("\n").filter((a) => a);
+    data2 = loadFile("../" + commit2 + "/kiri/sch_sheets" + url_timestamp()).split("\n").filter((a) => a);
 
     var sheets = [];
 
@@ -625,6 +625,7 @@ function update_sheets_list(commit1, commit2) {
     console.log("[SCH]  Sheets =", sheets.length);
     console.log("sheets", sheets);
 
+    var new_sheets_list = [];
     var form_inputs_html;
 
     for (const sheet of sheets)
@@ -638,12 +639,29 @@ function update_sheets_list(commit1, commit2) {
         </label>
         `;
 
+        new_sheets_list.push(sheet);
+
         form_inputs_html = form_inputs_html + input_html;
     }
 
+    // Get the current list of pages
+    var pages = $("#pages_list input:radio[name='pages']");
+    const current_sheets_list = Array.from(pages).map((opt) => opt.id);
+
+        // Return if the current list is equal to the new list
+    console.log("current_sheets_list = ", current_sheets_list);
+    console.log("new_sheets_list = ", new_sheets_list);
+    if (current_sheets_list.toString() === new_sheets_list.toString()) {
+        console.log("Keep the same list of sheets");
+        return;
+    }
+
+    // Update list of pages
     sheets_element = document.getElementById("pages_list_form");
     sheets_element.innerHTML = form_inputs_html.replace("undefined", "");
 
+    // rerun tooltips since they are getting ugly.
+    $('[data-toggle="tooltip"]').tooltip({html:true});
 
     var pages = $("#pages_list input:radio[name='pages']");
     const optionLabels = Array.from(pages).map((opt) => opt.id);
@@ -728,100 +746,133 @@ function layer_color(layer_id) {
 
 function pad(num, size) {
     num = num.toString();
-    while (num.length < size) num = "0" + num;
+    while (num.length < size) {
+        num = "0" + num;
+    }
     return num;
 }
 
 function update_layers_list(commit1, commit2, selected_id) {
 
-    // Data format: ID|LAYER
+    var used_layers_1;
+    var used_layers_2;
 
-    console.log("==== UPDATING_LAYERS_LIST ====");
-    console.log("Selected ID:", selected_id);
-
-    data1 = loadFile("../" + commit1 + "/kiri/pcb_layers" + img_timestamp()).split("\n").filter((a) => a);
-    data2 = loadFile("../" + commit2 + "/kiri/pcb_layers" + img_timestamp()).split("\n").filter((a) => a);
-
-    var dict = {};
     var id;
-    var id_pad;
     var layer;
+    var dict = {};
+
+    var id_pad;
     var layer_name;
     var color;
     var checked;
 
-    for (const d of data1)
-    {
-        id = d.split("|")[0];
-        layer = d.split("|")[1].replace(".", "_");
-        dict[id] = [layer];
-        // dict[id] = layer;
+    var new_layers_list = [];
+    var form_inputs_html;
+
+    // Get current selected page name
+    var layers = $("#layers_list input:radio[name='layers']");
+    var selected_layer_element = layers.index(layers.filter(':checked'));
+
+    // Save the current selected page, if any
+    try {
+        selected_layer = layers[selected_layer_element].id;
+    }
+    catch(err) {
+        selected_layer = "";
+        console.log("There isn't a layer selected");
     }
 
-    for (const d of data2)
-    {
-        id = d.split("|")[0];
-        layer = d.split("|")[1].replace(".", "_");
+    // File = ../[COMMIT]/kiri/pcb_layers
+    // Format = ID|LAYER
 
+    used_layers_1 = loadFile("../" + commit1 + "/kiri/pcb_layers" + url_timestamp()).split("\n").filter((a) => a);
+    used_layers_2 = loadFile("../" + commit2 + "/kiri/pcb_layers" + url_timestamp()).split("\n").filter((a) => a);
+
+    for (const line of used_layers_1)
+    {
+        id = line.split("|")[0];
+        layer = line.split("|")[1].replace(".", "_");
+        dict[id] = [layer];
+    }
+
+    for (const line of used_layers_2)
+    {
+        id = line.split("|")[0];
+        layer = line.split("|")[1].replace(".", "_");
+
+        // Add new key
         if (! dict.hasOwnProperty(id)) {
-            console.log("Adding new key");
             dict[id] = [layer];
-            // dict[id] = layer;
         }
         else {
+            // Append if id key exists
             if (dict[id] != layer) {
-                console.log("Updating existing key");
                 dict[id].push(layer);
-                // dict[id] = layer;
             }
         }
     }
 
-    console.log("[PCB]  Layers =", Object.keys(dict).length);
-    // console.log("dict", dict);
+    console.log("[PCB] Layers =", Object.keys(dict).length);
 
-    var form_inputs_html;
-
-    for (const [key, value] of Object.entries(dict))
+    for (const [layer_id, layer_names] of Object.entries(dict))
     {
-        id = parseInt(key);
+        id = parseInt(layer_id);
         id_pad = pad(id, 2);
-        layer = value[0];
-        layer_name = value;
+        layer_name = layer_names[0];
         color = layer_color(id);
-        checked = "";
-
-        if (id_pad == selected_id) {
-            checked="checked='checked'";
-        }
-        else {
-            checked = "";
-        }
-
-        // <!-- Layer ${i} -->
-        // <input  id="layer-${layer_id_padding}" value="layer-${layer_name}" type="radio" name="layers" onchange="change_layer()" ${checked}>
-        // <label for="layer-${layer_id_padding}" id="label-${layer_id_padding}" data-toggle="tooltip" title="Layer ID: ${layer_id}" class="rounded text-sm-left list-group-item radio-box" onclick="change_layer_onclick()">
-        //     <span style="margin-left:0.5em; margin-right:0.1em; color: ${layer_color}" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
-        //     ${layer_name}
-        // </label>
 
         var input_html = `
         <!-- Generated Layer ${id} -->
-        <input  id="layer-${id_pad}" value="layer-${layer}" type="radio" name="layers" onchange="change_layer()" ${checked}>
+        <input  id="layer-${id_pad}" value="layer-${layer_names}" type="radio" name="layers" onchange="change_layer()">
         <label for="layer-${id_pad}" id="label-${id_pad}" data-toggle="tooltip" title="Layer ID: ${id}" class="rounded text-sm-left list-group-item radio-box" onclick="change_layer_onclick()">
             <span style="margin-left:0.5em; margin-right:0.1em; color:${color}" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
-            </svg>
-            ${layer_name}
+            ${layer_names}
         </label>
         `;
+
+        new_layers_list.push(layer_names.toString());
 
         form_inputs_html = form_inputs_html + input_html;
     }
 
+    // Get the current list of pages
+    var layers = $("#layers_list input:radio[name='layers']");
+    const current_layers_list = Array.from(layers).map((opt) => opt.value.replace("layer-", ""));
+
+        // Return if the current list is equal to the new list
+    console.log("current_layers_list = ", current_layers_list);
+    console.log("new_layers_list = ", new_layers_list);
+    if (current_layers_list.toString() === new_layers_list.toString()) {
+        console.log("Keep the same list of layers");
+        return;
+    }
+
+    // Update layers list
     layers_element = document.getElementById("layers_list_form");
-    layers_element.style.display = "none";
     layers_element.innerHTML = form_inputs_html.replace("undefined", "");
-    layers_element.style.display = "block";
+
+    // Update html tooltips
+    $('[data-toggle="tooltip"]').tooltip({html:true});
+
+    // Enable back the selected layer
+
+    var layers = $("#layers_list input:radio[name='layers']");
+    const optionLabels = Array.from(layers).map((opt) => opt.id);
+
+    const hasOption = optionLabels.includes(selected_layer);
+    if (hasOption) {
+        // Keep previews selection active
+        $("#layers_list input:radio[name='layers'][value=" + selected_layer + "]").prop('checked', true);
+    }
+    else {
+        // If old selection does not exist, maybe the list is now shorter, then select the last item...
+        layers[optionLabels.length-1].checked = true;
+    }
+
+    // If nothing is selected still, select the first item
+    if (!layers.filter(':checked').length) {
+        layers[0].checked = true;
+    }
 }
 
 function change_layer(commit1="", commit2="") {
@@ -838,6 +889,7 @@ function change_layer(commit1="", commit2="") {
         }
 
         if ((commit1 != "") && (commit2 != "")) {
+            // Runs only when changing commits
             update_layers_list(commit1, commit2, layer_id);
         }
 
@@ -855,8 +907,8 @@ function change_layer(commit1="", commit2="") {
         console.log("[PCB]  image_path_1 =", image_path_1);
         console.log("[PCB]  image_path_2 =", image_path_2);
 
-        var image_path_timestamp_1 = image_path_1 + img_timestamp();
-        var image_path_timestamp_2 = image_path_2 + img_timestamp();
+        var image_path_timestamp_1 = image_path_1 + url_timestamp();
+        var image_path_timestamp_2 = image_path_2 + url_timestamp();
 
         document.getElementById("diff-xlink-1-pcb").href.baseVal = image_path_timestamp_1;
         document.getElementById("diff-xlink-2-pcb").href.baseVal = image_path_timestamp_2;
