@@ -81,9 +81,15 @@ main()
 		# exit 1
 	fi
 
+	original_kbd_lang=$(setxkbmap -query | grep layout | tr -s ' ' | cut -d" " -f2)
+
 	launch_kicad
 	get_kicad_full_version "${KICAD_WID}"
 	kill_kicad
+	# Restore original keyboard layout
+	if [[ -n "${original_kbd_lang}" ]]; then
+		setxkbmap "${original_kbd_lang}" &> /dev/null
+	fi
 }
 
 main "${@}"
