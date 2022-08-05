@@ -88,7 +88,7 @@ linux_install_software_with_apt()
 	sudo apt install -y librsvg2-bin
 	sudo apt install -y imagemagick
 	sudo apt install -y xdotool
-	sudo apt install -y rename
+	sudo apt install -y rename # this perl rename and not util-linux
 }
 
 # =============================================
