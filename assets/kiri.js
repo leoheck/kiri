@@ -1,80 +1,25 @@
 
 // jshint esversion:6
 
-// Default variables
-// These variables are updated by Kiri script
-var default_view = "schematic";
-var board_name = "board";
-var port = 8080;
+var commit1;
+var commit2;
 
-var server_status = 1;
-var old_server_status = -1;
+var old_view;
+var current_view;
 
-//
-// Attempt to fix the:
-// [Violation] Added non-passive event listener to a scroll-blocking
+var panZoom_instance = null;
+var lastEventListener = null;
+var lastEmbed = null;
 
-jQuery.event.special.touchstart = {
-    setup: function(_, ns, handle) {
-        if (ns.includes("noPreventDefault")) {
-            this.addEventListener("touchstart", handle, {
-                passive: false
-            });
-        } else {
-            this.addEventListener("touchstart", handle, {
-                passive: true
-            });
-        }
-    }
-};
-
-jQuery.event.special.touchmove = {
-    setup: function(_, ns, handle) {
-        if (ns.includes("noPreventDefault")) {
-            this.addEventListener("touchmove", handle, {
-                passive: false
-            });
-        } else {
-            this.addEventListener("touchmove", handle, {
-                passive: true
-            });
-        }
-    }
-};
-
-jQuery.event.special.mousewheel = {
-    setup: function(_, ns, handle) {
-        if (ns.includes("noPreventDefault")) {
-            this.addEventListener("mousewheel", handle, {
-                passive: false
-            });
-        } else {
-            this.addEventListener("mousewheel", handle, {
-                passive: true
-            });
-        }
-    }
-};
-
-// =======================================
-
-// Limit commits list with 2 checked at most
-$(document).ready(function() {
-    $("input[name='commit']").change(function() {
-        var maxAllowed = 2;
-        var cnt = $("input[name='commit']:checked").length;
-        if (cnt > maxAllowed) {
-            $(this).prop("checked", "");
-        }
-    });
-});
+// Variables updated by Kiri
+var selected_view = "schematic";
 
 // =======================================
 // HANDLE KEY PRESSES
 // =======================================
 
-var panZoom_sch;
-var panZoom_pcb;
+// Awesome website
+// https://www.toptal.com/developers/keycode/
 
 var keysDown = {};
 
@@ -101,16 +46,40 @@ window.onkeydown = function(e) {
     if (keysDown.s || keysDown.S) {
 
         var view_mode = $('#view_mode input[name="view_mode"]:checked').val();
-        var next_view_mode = "";
 
         if (view_mode == "show_sch") {
-            next_view_mode = "show_pcb";
             show_pcb();
         } else {
-            next_view_mode = "show_sch";
             show_sch();
         }
 
+        update_commits();
+
+        keysDown = {};
+    }
+
+    // =======================================
+    // SVG Pan
+    // =======================================
+
+    // if ( event.shiftKey && event.altKey && (keysDown.ArrowUp || keysDown.ArrowDown || keysDown.ArrowRight || keysDown.ArrowRight) )
+    if ( event.altKey && keysDown.ArrowUp ) {
+        manual_pan("up");
+        keysDown = {};
+    }
+
+    if ( event.altKey && keysDown.ArrowDown ) {
+        manual_pan("down");
+        keysDown = {};
+    }
+
+    if ( event.altKey && keysDown.ArrowLeft ) {
+        manual_pan("left");
+        keysDown = {};
+    }
+
+    if ( event.altKey && keysDown.ArrowRight ) {
+        manual_pan("right");
         keysDown = {};
     }
 
@@ -242,7 +211,7 @@ window.onkeydown = function(e) {
     // Previous Commit Pair
     // =======================================
 
-    if (keysDown["["] || (event.ctrlKey && keysDown.ArrowUp )) {
+    if (keysDown["["] || (event.ctrlKey && keysDown.ArrowUp)) {
 
         commits = $("#commits_form input:checkbox[name='commit']");
 
@@ -362,8 +331,11 @@ window.onkeydown = function(e) {
 
             pages[new_index].checked = true;
 
-            change_page();
-        } else {
+            update_page();
+            update_sheets_list(commit1, commit2);
+        }
+        else
+        {
             layers = $("#layers_list input:radio[name='layers']");
             selected_layer = layers.index(layers.filter(':checked'));
 
@@ -374,7 +346,7 @@ window.onkeydown = function(e) {
 
             layers[new_index].checked = true;
 
-            change_layer();
+            update_layer();
         }
 
         keysDown = {};
@@ -396,7 +368,9 @@ window.onkeydown = function(e) {
 
             pages[new_index].checked = true;
 
-            change_page();
+            update_page();
+            update_sheets_list(commit1, commit2);
+
         } else {
             layers = $("#layers_list input:radio[name='layers']");
             selected_layer = layers.index(layers.filter(':checked'));
@@ -408,34 +382,67 @@ window.onkeydown = function(e) {
 
             layers[new_index].checked = true;
 
-            change_layer();
+            update_layer();
         }
 
         keysDown = {};
     }
 
     // =======================================
-    // Zoom Reset
+    // SVG Zoom
     // =======================================
 
-    if (keysDown.f || keysDown.F) {
+    if (keysDown.f || keysDown.F || e.keyCode === 48 || e.keyCode === 96) { // f | F | Digit Zero | Numpad 0
+        svg_fit_center();
+        keysDown = {};
+    }
 
-        if (document.getElementById('diff-sch').style.display === "inline") {
-            panZoom_sch.resetZoom();
-            panZoom_sch.center();
-            // panZoom_sch.fit() // cannot be used, bug?
-        }
-        if (document.getElementById('diff-pcb').style.display === "inline") {
-            panZoom_pcb.resetZoom();
-            panZoom_pcb.center();
-            // panZoom_pcb.fit() // cannot be used, bug?
-        }
+    if (e.keyCode === 187 || e.keyCode === 107) { // Plus | Numpad Plus
+        svg_zoom_in();
+        keysDown = {};
+    }
 
+    if (e.keyCode === 189 || e.keyCode === 109) { // Minus | Numpad Minus
+        svg_zoom_out();
         keysDown = {};
     }
 
     // keysDown = {};
 };
+
+function svg_fit_center()
+{
+    panZoom_instance.resetZoom();
+    panZoom_instance.center();
+}
+
+function svg_zoom_in()
+{
+    panZoom_instance.zoomIn();
+}
+
+function svg_zoom_out()
+{
+    panZoom_instance.zoomOut();
+}
+
+function manual_pan(direction)
+{
+    switch(direction) {
+       case "up":
+            panZoom_instance.panBy({x: 0, y: -50});
+            break;
+       case "down":
+            panZoom_instance.panBy({x: 0, y: 50});
+            break;
+       case "left":
+            panZoom_instance.panBy({x: 50, y: 0});
+            break;
+       case "right":
+            panZoom_instance.panBy({x: -50, y: 0});
+            break;
+    }
+}
 
 // =======================================
 // =======================================
@@ -465,12 +472,15 @@ function if_url_exists(url, callback) {
 }
 
 function update_commits() {
+
+    console.log("================================================================================");
+
     var commits = $("#commits_form input:checkbox[name='commit']");
     var hashes = [];
 
     for (var i = 0; i < commits.length; i++) {
-        if ($("#commits_form input:checkbox[name='commit']")[i].checked) {
-            var value = $("#commits_form input:checkbox[name='commit']")[i].value;
+        if (commits[i].checked) {
+            var value = commits[i].value;
             hashes.push(value);
         }
     }
@@ -480,25 +490,31 @@ function update_commits() {
         return;
     }
 
-    var commit1 = hashes[0].replace(/\s+/g, '');
-    var commit2 = hashes[1].replace(/\s+/g, '');
+    // Update selected commits
+    commit1 = hashes[0].replace(/\s+/g, '');
+    commit2 = hashes[1].replace(/\s+/g, '');
 
-    console.log("");
-    console.log("[Cmt]    board_name =", board_name);
-    console.log("[Cmt]       commit1 =", commit1);
-    console.log("[Cmt]       commit2 =", commit2);
+    console.log("commit1:", commit1);
+    console.log("commit2:", commit2);
 
-    old_commit1 = document.getElementById("commit1_hash").value;
-    old_commit2 = document.getElementById("commit2_hash").value;
 
-    kicad_pro_path_1 = document.getElementById("commit1_kicad_pro_path").value;
-    kicad_pro_path_2 = document.getElementById("commit2_kicad_pro_path").value;
+    // 1. Update commit_legend_links
+    // 2. Update commit_legend
+    // 3. Update current_diff_view
 
-    kicad_pro_path_1 = kicad_pro_path_1.replace(old_commit1, commit1);
-    kicad_pro_path_2 = kicad_pro_path_2.replace(old_commit2, commit2);
 
-    document.getElementById("commit1_kicad_pro_path").value = kicad_pro_path_1;
-    document.getElementById("commit2_kicad_pro_path").value = kicad_pro_path_2;
+    // Update commit_legend_links
+
+    var old_commit1 = document.getElementById("commit1_hash").value;
+    var old_commit2 = document.getElementById("commit2_hash").value;
+
+    var kicad_pro_path_1 = document.getElementById("commit1_kicad_pro_path").value;
+    var kicad_pro_path_2 = document.getElementById("commit2_kicad_pro_path").value;
+
+    document.getElementById("commit1_kicad_pro_path").value = kicad_pro_path_1.replace(old_commit1, commit1);
+    document.getElementById("commit2_kicad_pro_path").value = kicad_pro_path_2.replace(old_commit2, commit2);
+
+    // Update commit_legend
 
     document.getElementById("commit1_hash").value = commit1;
     document.getElementById("commit2_hash").value = commit2;
@@ -506,16 +522,22 @@ function update_commits() {
     document.getElementById("commit1_legend_hash").innerHTML = commit1;
     document.getElementById("commit2_legend_hash").innerHTML = commit2;
 
-    // Update the active view enabled view
-    var view_mode = $('#view_mode input[name="view_mode"]:checked').val();
-    if (view_mode == "show_sch") {
-        change_page(commit1, commit2);
+    // Update current_diff_view
+
+    old_view = current_view;
+    current_view = $('#view_mode input[name="view_mode"]:checked').val();
+
+    if (current_view == "show_sch") {
+        update_page();
     } else {
-        change_layer(commit1, commit2);
+        update_layer();
     }
 }
 
 function loadFile(filePath) {
+
+    console.log("filePath:", filePath);
+
     var result = null;
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.open('GET', filePath, false);
@@ -526,13 +548,12 @@ function loadFile(filePath) {
     return result;
 }
 
+function update_page()
+{
+    console.log("-----------------------------------------");
 
-function change_page(commit1="", commit2="") {
-
-    if ((commit1 != "") && (commit2 != "")) {
-        // Runs only when using Arrow-Right/Left keys
-        update_sheets_list(commit1, commit2);
-    }
+    // Runs only when updating commits
+    update_sheets_list(commit1, commit2);
 
     var pages = $("#pages_list input:radio[name='pages']");
     var selected_page = pages.index(pages.filter(':checked'));
@@ -556,29 +577,43 @@ function change_page(commit1="", commit2="") {
     var image_path_timestamp_1 = image_path_1 + url_timestamp();
     var image_path_timestamp_2 = image_path_2 + url_timestamp();
 
-    document.getElementById("diff-xlink-1-sch").href.baseVal = image_path_timestamp_1;
-    document.getElementById("diff-xlink-2-sch").href.baseVal = image_path_timestamp_2;
+    if (current_view != old_view)
+    {
+        removeEmbed()
+        lastEmbed = createNewEmbed(image_path_timestamp_1, image_path_timestamp_2);
+    }
+    else
+    {
+        document.getElementById("diff-xlink-1").href.baseVal = image_path_timestamp_1;
+        document.getElementById("diff-xlink-2").href.baseVal = image_path_timestamp_2;
 
-    document.getElementById("diff-xlink-1-sch").setAttributeNS('http://www.w3.org/1999/xlink', 'href', image_path_timestamp_1);
-    document.getElementById("diff-xlink-2-sch").setAttributeNS('http://www.w3.org/1999/xlink', 'href', image_path_timestamp_2);
+        document.getElementById("diff-xlink-1").setAttributeNS('http://www.w3.org/1999/xlink', 'href', image_path_timestamp_1);
+        document.getElementById("diff-xlink-2").setAttributeNS('http://www.w3.org/1999/xlink', 'href', image_path_timestamp_2);
 
-    if_url_exists(image_path_timestamp_1, function(exists) {
-        if (exists == true) {
-            document.getElementById("diff-xlink-1-sch").parentElement.style.display = 'inline';
-        }
-        else {
-            document.getElementById("diff-xlink-1-sch").parentElement.style.display = 'none';
-        }
-    });
+        if_url_exists(image_path_timestamp_1, function(exists)
+        {
+            if (exists == true)
+            {
+                document.getElementById("diff-xlink-1").parentElement.style.display = 'inline';
+            }
+            else
+            {
+                document.getElementById("diff-xlink-1").parentElement.style.display = "none";
+            }
+        });
 
-    if_url_exists(image_path_timestamp_2, function(exists) {
-        if (exists == true) {
-            document.getElementById("diff-xlink-2-sch").parentElement.style.display = 'inline';
-        }
-        else {
-            document.getElementById("diff-xlink-2-sch").parentElement.style.display = 'none';
-        }
-    });
+        if_url_exists(image_path_timestamp_2, function(exists)
+        {
+            if (exists == true)
+            {
+                document.getElementById("diff-xlink-2").parentElement.style.display = 'inline';
+            }
+            else
+            {
+                document.getElementById("diff-xlink-2").parentElement.style.display = "none";
+            }
+        });
+    }
 }
 
 function update_sheets_list(commit1, commit2) {
@@ -631,8 +666,8 @@ function update_sheets_list(commit1, commit2) {
     for (const sheet of sheets)
     {
         var input_html = `
-        <input id="${sheet}" data-toggle="tooltip" title="${sheet}" type="radio" value="${sheet}" name="pages" onchange="change_page()">
-            <label for="${sheet}" data-toggle="tooltip" title="${sheet}" id="label-${sheet}" class="rounded text-sm-left list-group-item radio-box" onclick="change_page_onclick()" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+        <input id="${sheet}" data-toggle="tooltip" title="${sheet}" type="radio" value="${sheet}" name="pages" onchange="update_page()">
+            <label for="${sheet}" data-toggle="tooltip" title="${sheet}" id="label-${sheet}" class="rounded text-sm-left list-group-item radio-box" onclick="update_page_onclick()" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                 <span data-toggle="tooltip" title="${sheet}" style="margin-left:0.5em; margin-right:0.1em;" class="iconify" data-icon="gridicons:pages" data-inline="false"></span>
                 ${sheet}
             </label>
@@ -648,7 +683,7 @@ function update_sheets_list(commit1, commit2) {
     var pages = $("#pages_list input:radio[name='pages']");
     const current_sheets_list = Array.from(pages).map((opt) => opt.id);
 
-        // Return if the current list is equal to the new list
+    // Return if the current list is equal to the new list
     console.log("current_sheets_list = ", current_sheets_list);
     console.log("new_sheets_list = ", new_sheets_list);
     if (current_sheets_list.toString() === new_sheets_list.toString()) {
@@ -744,7 +779,8 @@ function layer_color(layer_id) {
     return color;
 }
 
-function pad(num, size) {
+function pad(num, size)
+{
     num = num.toString();
     while (num.length < size) {
         num = "0" + num;
@@ -752,8 +788,8 @@ function pad(num, size) {
     return num;
 }
 
-function update_layers_list(commit1, commit2, selected_id) {
-
+function update_layers_list(commit1, commit2, selected_id)
+{
     var used_layers_1;
     var used_layers_2;
 
@@ -823,8 +859,8 @@ function update_layers_list(commit1, commit2, selected_id) {
 
         var input_html = `
         <!-- Generated Layer ${id} -->
-        <input  id="layer-${id_pad}" value="layer-${layer_names}" type="radio" name="layers" onchange="change_layer()">
-        <label for="layer-${id_pad}" id="label-${id_pad}" data-toggle="tooltip" title="Layer ID: ${id}" class="rounded text-sm-left list-group-item radio-box" onclick="change_layer_onclick()">
+        <input  id="layer-${id_pad}" value="layer-${layer_names}" type="radio" name="layers" onchange="update_layer()">
+        <label for="layer-${id_pad}" id="label-${id_pad}" data-toggle="tooltip" title="${id}, ${layer_names}" class="rounded text-sm-left list-group-item radio-box" onclick="update_layer_onclick()">
             <span style="margin-left:0.5em; margin-right:0.1em; color:${color}" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
             ${layer_names}
         </label>
@@ -875,232 +911,212 @@ function update_layers_list(commit1, commit2, selected_id) {
     }
 }
 
-function change_layer(commit1="", commit2="") {
+function update_layer() {
 
-    // try {
+    console.log("-----------------------------------------");
 
-        var layers = $("#layers_list input:radio[name='layers']");
-        var selected_layer = layers.index(layers.filter(':checked'));
+    var layers = $("#layers_list input:radio[name='layers']");
+    var selected_layer = layers.index(layers.filter(':checked'));
 
+    try {
         var layer_id = layers[selected_layer].id.split("-")[1];
-        if (! layer_id)
-        {
-            layer_id = "00";
-        }
+    }
+    catch(err) {
+        console.log("[PCB] Image may not exist");
+        return;
+    }
 
-        if ((commit1 != "") && (commit2 != "")) {
-            // Runs only when changing commits
-            update_layers_list(commit1, commit2, layer_id);
-        }
+    if (! layer_id)
+    {
+        layer_id = "00";
+    }
 
-        if (commit1 == "") {
-            commit1 = document.getElementById("diff-xlink-1-pcb").href.baseVal.split("/")[1];
-        }
-        if (commit2 == "") {
-            commit2 = document.getElementById("diff-xlink-2-pcb").href.baseVal.split("/")[1];
-        }
+    // if ((commit1 != "") && (commit2 != "")) {
+    //     // Runs only when changing commits
+        update_layers_list(commit1, commit2, layer_id);
+    // }
 
-        var image_path_1 = "../" + commit1 + "/kiri/pcb/layer" + "-" + layer_id + ".svg";
-        var image_path_2 = "../" + commit2 + "/kiri/pcb/layer" + "-" + layer_id + ".svg";
+    if (commit1 == "") {
+        commit1 = document.getElementById("diff-xlink-1-pcb").href.baseVal.split("/")[1];
+    }
+    if (commit2 == "") {
+        commit2 = document.getElementById("diff-xlink-2-pcb").href.baseVal.split("/")[1];
+    }
 
-        console.log("[PCB]      layer_id =", layer_id);
-        console.log("[PCB]  image_path_1 =", image_path_1);
-        console.log("[PCB]  image_path_2 =", image_path_2);
+    var image_path_1 = "../" + commit1 + "/kiri/pcb/layer" + "-" + layer_id + ".svg";
+    var image_path_2 = "../" + commit2 + "/kiri/pcb/layer" + "-" + layer_id + ".svg";
 
-        var image_path_timestamp_1 = image_path_1 + url_timestamp();
-        var image_path_timestamp_2 = image_path_2 + url_timestamp();
+    console.log("[PCB]      layer_id =", layer_id);
+    console.log("[PCB]  image_path_1 =", image_path_1);
+    console.log("[PCB]  image_path_2 =", image_path_2);
 
-        document.getElementById("diff-xlink-1-pcb").href.baseVal = image_path_timestamp_1;
-        document.getElementById("diff-xlink-2-pcb").href.baseVal = image_path_timestamp_2;
+    var image_path_timestamp_1 = image_path_1 + url_timestamp();
+    var image_path_timestamp_2 = image_path_2 + url_timestamp();
 
-        document.getElementById("diff-xlink-1-pcb").setAttributeNS('http://www.w3.org/1999/xlink', 'href', image_path_timestamp_1);
-        document.getElementById("diff-xlink-2-pcb").setAttributeNS('http://www.w3.org/1999/xlink', 'href', image_path_timestamp_2);
+    if (current_view != old_view)
+    {
+        removeEmbed()
+        lastEmbed = createNewEmbed(image_path_timestamp_1, image_path_timestamp_2);
+    }
+    else
+    {
+        document.getElementById("diff-xlink-1").href.baseVal = image_path_timestamp_1;
+        document.getElementById("diff-xlink-2").href.baseVal = image_path_timestamp_2;
+
+        document.getElementById("diff-xlink-1").setAttributeNS('http://www.w3.org/1999/xlink', 'href', image_path_timestamp_1);
+        document.getElementById("diff-xlink-2").setAttributeNS('http://www.w3.org/1999/xlink', 'href', image_path_timestamp_2);
 
         if_url_exists(image_path_timestamp_1, function(exists) {
             if (exists == true) {
-                document.getElementById("diff-xlink-1-pcb").parentElement.style.display = 'inline';
+                document.getElementById("diff-xlink-1").parentElement.style.display = 'inline';
             }
             else {
-                document.getElementById("diff-xlink-1-pcb").parentElement.style.display = 'none';
+                document.getElementById("diff-xlink-1").parentElement.style.display = "none";
             }
         });
 
         if_url_exists(image_path_timestamp_2, function(exists) {
             if (exists == true) {
-                document.getElementById("diff-xlink-2-pcb").parentElement.style.display = 'inline';
+                document.getElementById("diff-xlink-2").parentElement.style.display = 'inline';
             }
             else {
-                document.getElementById("diff-xlink-2-pcb").parentElement.style.display = 'none';
+                document.getElementById("diff-xlink-2").parentElement.style.display = "none";
             }
         });
-    // }
-    // catch(err) {
-    //     console.log("[PCB] Image may not exist");
-    // }
+    }
 }
 
 // =======================================
 // SVG Controls
 // =======================================
 
-window.onload = function() {
+function select_initial_commits()
+{
+    var commits = $("#commits_form input:checkbox[name='commit']");
 
-    panZoom_sch = svgPanZoom(
-        '#svg-id-sch', {
-            zoomEnabled: true,
-            controlIconsEnabled: false,
-            center: true,
-            minZoom: 1,
-            maxZoom: 20,
-            zoomScaleSensitivity: 0.1,
-            fit: false, // cannot be used, bug? (this one must be here to change the default)
-            viewportSelector: '.svg-pan-zoom_viewport-sch',
-            eventsListenerElement: document.querySelector('#svg-id-sch .svg-pan-zoom_viewport-sch')
+    if (commits.length >= 2)
+    {
+        commit1 = commits[0].value;
+        commit2 = commits[1].value;
+        commits[0].checked = true;
+        commits[1].checked = true;
+    }
+    else if (commits.length == 1)
+    {
+        commit1 = commits[0].value;
+        commits[0].checked = true;
+    }
+}
+
+function get_selected_commits()
+{
+    var commits = [];
+    var hashes = [];
+    for (var i = 0; i < commits.length; i++) {
+        if ($("#commits_form input:checkbox[name='commit']")[i].checked) {
+            var value = $("#commits_form input:checkbox[name='commit']")[i].value;
+            hashes.push(value);
         }
-    );
+    }
 
-    panZoom_pcb = svgPanZoom(
-        '#svg-id-pcb', {
-            zoomEnabled: true,
-            controlIconsEnabled: false,
-            center: true,
-            minZoom: 1,
-            maxZoom: 20,
-            zoomScaleSensitivity: 0.1,
-            fit: false, // cannot be used, bug? (this one must be here to change the default)
-            viewportSelector: '.svg-pan-zoom_viewport-pcb',
-            eventsListenerElement: document.querySelector('#svg-id-pcb .svg-pan-zoom_viewport-pcb')
-        }
-    );
+    // It needs 2 items selected to do something
+    if (hashes.length < 2) {
+        return;
+    }
 
-    document.getElementById('zoom-in').addEventListener('click', function(ev) {
-        ev.preventDefault();
+    var commit1 = hashes[0].replace(/\s+/g, '');
+    var commit2 = hashes[1].replace(/\s+/g, '');
 
-        if (document.getElementById('diff-sch').style.display === "inline") {
-            panZoom_sch.zoomIn();
-        }
-        if (document.getElementById('diff-pcb').style.display === "inline") {
-            panZoom_pcb.zoomIn();
-        }
-    });
+    return [commit1, commit2];
+}
 
-    document.getElementById('zoom-out').addEventListener('click', function(ev) {
-        ev.preventDefault();
 
-        if (document.getElementById('diff-sch').style.display === "inline") {
-            panZoom_sch.zoomOut();
-        }
-        if (document.getElementById('diff-pcb').style.display === "inline") {
-            panZoom_pcb.zoomOut();
-        }
-    });
+// Interpret tooltois as html
+$(document).ready(function()
+{
+    $('[data-toggle="tooltip"]').tooltip({html:true});
+});
 
-    document.getElementById('reset').addEventListener('click', function(ev) {
-        ev.preventDefault();
-
-        if (document.getElementById('diff-sch').style.display === "inline") {
-            panZoom_sch.resetZoom();
-            panZoom_sch.center();
-            // panZoom_sch.fit(); // cannot be used, bug?
-        }
-        if (document.getElementById('diff-pcb').style.display === "inline") {
-            panZoom_pcb.resetZoom();
-            panZoom_pcb.center();
-            // panZoom_pcb.fit(); // cannot be used, bug?
+// Limit commits list with 2 checked commits at most
+$(document).ready(function()
+{
+    $("#commits_form input:checkbox[name='commit']").change(function() {
+        var max_allowed = 2;
+        var count = $("input[name='commit']:checked").length;
+        if (count > max_allowed) {
+            $(this).prop("checked", "");
         }
     });
+});
 
-    if (default_view == "schematic")
-        show_sch();
-    else
-        show_pcb();
-
+function ready()
+{
     check_server_status();
+    select_initial_commits();
 
-    console.log("Update initial view");
     update_commits();
+
+    // if (selected_view == "schematic") {
+    //     // show_sch();
+    //     update_page(commit1, commit2);
+    // }
+    // else {
+    //     // show_pcb();
+    //     update_layer(commit1, commit2);
+    // }
+}
+
+window.onload = function()
+{
+    console.log("function onload");
 };
+
+window.addEventListener('DOMContentLoaded', ready);
 
 // =======================================
 // Toggle Schematic/Layout
 // =======================================
 
-function show_sch() {
-
-    var sch_view;
-    var pcb_view;
-    var pages_list;
-    var layers_list;
-
+function show_sch()
+{
+    // Show schematic stuff
     document.getElementById("show_sch_lbl").classList.add('active');
     document.getElementById("show_sch").checked = true;
+    // document.getElementById("diff-sch").style.display = "inline";
+    document.getElementById("diff-xlink-1").parentElement.style.display = "inline";
+    document.getElementById("diff-xlink-2").parentElement.style.display = "inline";
+    document.getElementById("pages_list").style.display = "inline";
+    document.getElementById("sch_title").style.display = "inline";
 
+    // Hide layout stuff
     document.getElementById("show_pcb_lbl").classList.remove('active');
     document.getElementById("show_pcb").checked = false;
-
-    // Show schematic image
-    sch_view = document.getElementById("diff-sch");
-    sch_view.style.display = "inline";
-
-    // Show pages list
-    pages_list = document.getElementById("pages_list");
-    pages_list.style.display = "inline";
-    // pages_list.style.display = "none";
-
-    // Hide layout image
-    pcb_view = document.getElementById("diff-pcb");
-    pcb_view.style.display = "none";
-
-    // Hide layers list
-    layers_list = document.getElementById("layers_list");
-    layers_list.style.display = "none";
-
-    // Hide pcb title
-    sch_view = document.getElementById("pcb_title");
-    sch_view.style.display = "none";
-
-    // Show sch title
-    pages_list = document.getElementById("sch_title");
-    pages_list.style.display = "inline";
+    // document.getElementById("diff-pcb").style.display = "none";
+    // document.getElementById("diff-xlink-1-pcb").parentElement.style.display = "none";
+    // document.getElementById("diff-xlink-2-pcb").parentElement.style.display = "none";
+    document.getElementById("layers_list").style.display = "none";
+    document.getElementById("pcb_title").style.display = "none";
 }
 
-function show_pcb() {
-
-    var sch_view;
-    var pcb_view;
-    var pages_list;
-    var layers_list;
-
-    document.getElementById("show_sch_lbl").classList.remove('active');
-    document.getElementById("show_sch").checked = false;
-
+function show_pcb()
+{
+    // Show layout stuff
     document.getElementById("show_pcb_lbl").classList.add('active');
     document.getElementById("show_pcb").checked = true;
+    // document.getElementById("diff-pcb").style.display = "inline";
+    document.getElementById("diff-xlink-1").parentElement.style.display = "inline";
+    document.getElementById("diff-xlink-2").parentElement.style.display = "inline";
+    document.getElementById("layers_list").style.display = "inline";
+    document.getElementById("pcb_title").style.display = "inline";
 
-    // Hide layers list
-    sch_view = document.getElementById("diff-sch");
-    sch_view.style.display = "none";
-
-    // Hide pages list
-    pages_list = document.getElementById("pages_list");
-    pages_list.style.display = "none";
-
-    // Show layout image
-    pcb_view = document.getElementById("diff-pcb");
-    pcb_view.style.display = "inline";
-
-    // Show layers list
-    layers_list = document.getElementById("layers_list");
-    layers_list.style.display = "inline";
-    //layers_list.style.display = "none";
-
-    // Show PCB Title
-    sch_view = document.getElementById("pcb_title");
-    sch_view.style.display = "inline";
-
-    // Hide SCH Title
-    pages_list = document.getElementById("sch_title");
-    pages_list.style.display = "none";
+    // Hide schematic stuff
+    document.getElementById("show_sch_lbl").classList.remove('active');
+    document.getElementById("show_sch").checked = false;
+    // document.getElementById("diff-sch").style.display = "none";
+    // document.getElementById("diff-xlink-1-sch").parentElement.style.display = "none";
+    // document.getElementById("diff-xlink-2-sch").parentElement.style.display = "none";
+    document.getElementById("pages_list").style.display = "none";
+    document.getElementById("sch_title").style.display = "none";
 }
 
 // =======================================
@@ -1118,24 +1134,29 @@ function show_slide() {
 // =======================================
 // =======================================
 
-function change_page_onclick(obj) {
-    change_page();
+function update_page_onclick(obj) {
+    update_page();
 }
 
-function change_layer_onclick(obj) {
-    change_layer();
+function update_layer_onclick(obj) {
+    update_layer();
 }
 
-// Hide missing images
-function imgError(image) {
-    console.log("Image Error (missing or problematic) =", image.href.baseVal);
+// Hide fields with missing images
+function imgError(image)
+{
+    // console.log("Image Error (missing or problematic) =", image.href.baseVal);
     image.onerror = null;
     parent = document.getElementById(image.id).parentElement;
-    parent.style.display = 'none';
+    parent.style.display = "none";
     return true;
 }
 
+
 // #===========================
+
+var server_status = 1;
+var old_server_status = -1;
 
 function check_server_status()
 {
@@ -1146,25 +1167,23 @@ function check_server_status()
     if (! img) {
         img = document.body.appendChild(document.createElement("img"));
         img.setAttribute("id", "server_status_img");
+        img.style.display = "none";
     }
 
-    img.onload = function()
-    {
-        server_online();
+    img.onload = function() {
+        server_is_online();
     };
 
-    img.onerror = function()
-    {
-        server_offline();
+    img.onerror = function() {
+        server_is_offline();
     };
 
-    img.src = "http://127.0.0.1:" + port + "/web/favicon.ico?" + Date.now();
-    img.style.display = "none";
+    img.src = "/web/favicon.ico" + url_timestamp();
 
     setTimeout(check_server_status, 5000);
 }
 
-function server_online() {
+function server_is_online() {
     server_status = 1;
     document.getElementById("server_offline").style.display = "none";
     if (server_status != old_server_status) {
@@ -1173,7 +1192,7 @@ function server_online() {
     }
 }
 
-function server_offline() {
+function server_is_offline() {
     server_status = 0;
     document.getElementById("server_offline").style.display = "block";
     if (server_status != old_server_status) {
@@ -1182,8 +1201,113 @@ function server_offline() {
     }
 }
 
-// #===========================
+// ==================================================================
 
-$(function () {
-  $('[data-toggle="tooltip"]').tooltip({html:true});
-});
+function createNewEmbed(src1, src2)
+{
+    var embed = document.createElement('div');
+    embed.setAttribute('id', "div-svg");
+    embed.setAttribute('style', "display: inline; width: inherit; min-width: inherit; max-width: inherit; height: inherit; min-height: inherit; max-height: inherit;");
+
+    var svg_element = `
+    <svg id="svg-id" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" style="display: inline; width: inherit; min-width: inherit; max-width: inherit; height: inherit; min-height: inherit; max-height: inherit;">
+      <g class="my_svg-pan-zoom_viewport">
+          <svg id="img-1" style="display: inline;">
+              <defs>
+                  <filter id="filter-1">
+                      <feColorMatrix in=SourceGraphic type="matrix"
+                      values="1.0  0.0  0.0  0.0  0.0
+                              0.0  1.0  0.0  1.0  0.0
+                              0.0  0.0  1.0  1.0  0.0
+                              0.0  0.0  0.0  1.0  0.0">
+                  </filter>
+              </defs>
+              <image id="diff-xlink-1" x="0" y="0" height="100%" width="100%" filter="url(#filter-1)"
+                  onerror="this.onerror=null; imgError(this);"
+                  href="${src1}" xlink:href="${src1}"/>
+          </svg>
+          <svg id="img-2" style="display: inline;">
+              <defs>
+                  <filter id="filter-2">
+                      <feColorMatrix in=SourceGraphic type="matrix"
+                      values="1.0  0.0  0.0  1.0  0.0
+                              0.0  1.0  0.0  0.0  0.0
+                              0.0  0.0  1.0  0.0  0.0
+                              0.0  0.0  0.0  0.5  0.0">
+                  </filter>
+              </defs>
+              <image id="diff-xlink-2" x="0" y="0" height="100%" width="100%" filter="url(#filter-2)"
+                  onerror="this.onerror=null; imgError(this);"
+                  href="${src2}" xlink:href="${src2}"/>
+          </svg>
+      </g>
+    </svg>
+    `;
+
+    document.getElementById('diff-container').appendChild(embed);
+    document.getElementById('div-svg').innerHTML = svg_element;
+    console.log(">>> SVG: ", embed);
+
+    svgpanzoom_selector = "#" + "svg-id"
+
+    panZoom_instance = svgPanZoom(
+      svgpanzoom_selector, {
+        zoomEnabled: true,
+        controlIconsEnabled: false,
+        center: true,
+        minZoom: 1,
+        maxZoom: 20,
+        zoomScaleSensitivity: 0.1,
+        fit: true, // cannot be used, bug? (this one must be here to change the default)
+        contain: false,
+        viewportSelector: '.my_svg-pan-zoom_viewport',
+        eventsListenerElement: document.querySelector(svgpanzoom_selector)
+    });
+
+    console.log("panZoom_instance:", panZoom_instance);
+
+    embed.addEventListener('load', lastEventListener)
+    document.getElementById('zoom-in').addEventListener('click', function(ev) {
+        ev.preventDefault();
+        panZoom_instance.zoomIn();
+        panZoom_instance.center();
+    });
+
+    document.getElementById('zoom-out').addEventListener('click', function(ev) {
+        ev.preventDefault();
+        panZoom_instance.zoomOut();
+        panZoom_instance.center();
+    });
+
+    document.getElementById('reset').addEventListener('click', function(ev) {
+        ev.preventDefault();
+        panZoom_instance.resetZoom();
+        panZoom_instance.center();
+    });
+
+    return embed;
+}
+
+function removeEmbed()
+{
+    console.log(">> lastEmbed: ", lastEmbed);
+    console.log(">> panZoom_instance: ", panZoom_instance);
+
+    // Destroy svgpanzoom
+    if (! panZoom_instance == null)
+    {
+        panZoom_instance.destroy()
+
+        // Remove event listener
+        lastEmbed.removeEventListener('load', lastEventListener)
+
+        // Null last event listener
+        lastEventListener = null
+
+        // Remove embed element
+        document.getElementById('diff-container').removeChild(lastEmbed)
+
+        // Null reference to embed
+        lastEmbed = null
+    }
+}
