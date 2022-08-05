@@ -141,14 +141,14 @@ html, body {
    ==============================
 */
 
-#svg-id-sch {
+#div-svg {
 	/*border: 1px solid #111;*/
-	border-radius: 5px;
 	margin-top: 15px;
 	background-color: #222;
+	border-radius: 5px;
 }
 
-#svg-id-pcb {
+#svg-id {
 	/*border: 1px solid #111;*/
 	margin-top: 15px;
 	background-color: #222;
@@ -290,7 +290,6 @@ label#layers, label#pages {
 	z-index: 2;
 	cursor: pointer;
 }
-
 
 /* ==============================
 ** ============================*/
