@@ -49,15 +49,15 @@
 					</div>
 				</div>
 
-				<div class="col align-self-start justify-content-start col-7 no-gutters" style="background-color: #333; padding: 0px 0px 0px 0px; margin: 0px; height: 100vh;">
+				<div class="col align-self-start justify-content-start col-7 no-gutters" style="background-color: #333; padding: 0px 0px 0px 0px; margin: 0px; height: 90vh;">
 
 					<div class="row no-gutters" style="width: 100%; padding: 0px 0px 0px 0px; margin: 0px;">
 
 						<div class="container no-gutters" style="width: 100%; flex: 1; padding: 0px 0px 0px 0px; margin: 0px;">
 
-							<div class="row no-gutters" style="width: 100%; margin: 0px 50px 10px 10px;">
+							<div class="row no-gutters" style="width: 100%; margin: 0px 0px 0px 5px;">
 
-								<form class="inline" style="padding: 0px 0px 0px 0px; margin: 20px 0px 0px 15px;">
+								<form class="inline" style="padding: 0px 0px 0px 0px; margin: 20px 0px 0px 10px;">
 									<div id="view_mode" class="form-group row btn-group btn-group-toggle" data-toggle="buttons" role="group" aria-label="View Mode">
 										<label id="show_sch_lbl" data-toggle="tooltip" title="Schematic View (s)" class="btn btn-secondary active" onclick="show_sch()">
 											<input id="show_sch" type="radio" name="view_mode" value="show_sch" checked>
@@ -70,10 +70,11 @@
 									</div>
 								</form>
 
-								<span style="width: 1.5em"></span>
+<!-- 								<span style="width: 1.5em"></span>
 								<p class="text-light" style="padding: 0px 0px 0px 0px; margin: 25px 0px 0px 5px;">
 									<small class="text-sm">Toggle view mode with <kbd>s</kbd></small>
-								</p>
+								</p> -->
+
 								<span style="width: 2em"></span>
 
 								<form class="inline" style="padding: 0px 0px 0px 0px; margin: 20px 0px 0px 20px;">
@@ -84,12 +85,13 @@
 										<button id="zoom-out" data-toggle="tooltip" title="Zoom Out (-)" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary" onclick="this.blur();" >
 										<span class="iconify" style="width: 20px; height: 20px;" data-icon="akar-icons:zoom-out" data-inline="false"></span>
 										</button>
-										<button id="reset" data-toggle="tooltip" title="Reset View (0)" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary" onclick="this.blur();" >
+										<button id="zoom-fit" data-toggle="tooltip" title="Fit View (0 or f)" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary" onclick="this.blur();" >
 										<span class="iconify" style="width: 20px; height: 20px;" data-icon="carbon:center-to-fit" data-inline="false"></span>
 										</button>
 									</div>
 								</form>
-								<span style="width: 1.5em"></span>
+
+<!-- 								<span style="width: 1.5em"></span>
 								<p class="text-light" style="padding: 0px 0px 0px 0px; margin: 25px 0px 0px 0px;">
 									<small class="text-sm">Zoom in/out <kbd>+</kbd>/<kbd>-</kbd>, fit <kbd>f</kbd>/<kbd>0</kbd> and pan with <kbd>Alt</kbd>
 										<kbd>
@@ -100,6 +102,17 @@
 										</kbd>
 									</small>
 								</p>
+ -->
+								<span style="width: 1em"></span>
+
+								<form class="inline" style="padding: 0px 0px 0px 0px; margin: 20px 0px 0px 20px;">
+									<div id="info_controls" class="form-group btn-group btn-group-toggle" role="group" aria-label="Info">
+										<button id="info-btn" data-toggle="tooltip" title="Info (i)" name="info_controls" type="button" aria-pressed="false" class="btn btn-secondary" onclick="this.blur();">
+										<span class="iconify" style="width: 20px; height: 20px;" data-icon="akar-icons:info" data-inline="false"></span>
+										</button>
+									</div>
+								</form>
+
 							</div>
 						</div>
 					</div>
@@ -158,9 +171,9 @@
 									<kbd><span class="iconify" data-icon="typcn-arrow-right" data-inline="false"></span></kbd>
 								</small>
 							</p>
-							<div class="row" style="height: 85%; width: 300px">
+							<div class="row" style="height: 85%; width: 300px;">
 								<div class="col" style="height: 100%; width: 100%">
-									<div id="pages_list_div" class="form-check scrollbox" style="height: 100%; width: 100%; padding: 0px 0px 8px 0px; margin: 0px; overflow-y: scroll;">
+									<div id="pages_list_div" class="form-check scrollbox" style="height: 100%; width: 100%; padding: 0px 0px 8px 0px; margin: 0px; overflow-y: scroll; max-height: 90vh;">
 										<form id="pages_list_form" class="overflow-auto scrollbox-content">
 											<!-- FILL_PAGES_HERE -->
 										</form>
@@ -181,9 +194,9 @@
 									<kbd><span class="iconify" data-icon="typcn-arrow-right" data-inline="false"></span></kbd>
 								</small>
 							</p>
-							<div class="row" style="height: 85%; width: 300px">
+							<div class="row" style="height: 85%; width: 300px;">
 								<div class="col" style="height: 100%; width: 100%">
-									<div id="layers_list_div" class="form-check scrollbox" style="height: 100%; width: 100%; padding: 0px 0px 8px 0px; margin: 0px; overflow-y: scroll;">
+									<div id="layers_list_div" class="form-check scrollbox" style="height: 100%; width: 100%; padding: 0px 0px 8px 0px; margin: 0px; overflow-y: scroll; max-height: 90vh;">
 										<form id="layers_list_form" class="overflow-auto scrollbox-content">
 											<!-- FILL_LAYERS_HERE -->
 										</form>

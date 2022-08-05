@@ -473,6 +473,9 @@ function if_url_exists(url, callback) {
 
 function update_commits() {
 
+    // Remove tooltips so they dont get stuck
+    $('[data-toggle="tooltip"]').tooltip("hide");
+
     console.log("================================================================================");
 
     var commits = $("#commits_form input:checkbox[name='commit']");
@@ -1279,7 +1282,7 @@ function createNewEmbed(src1, src2)
         panZoom_instance.center();
     });
 
-    document.getElementById('reset').addEventListener('click', function(ev) {
+    document.getElementById('zoom-fit').addEventListener('click', function(ev) {
         ev.preventDefault();
         panZoom_instance.resetZoom();
         panZoom_instance.center();
