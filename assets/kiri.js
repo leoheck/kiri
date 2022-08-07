@@ -447,8 +447,15 @@ function manual_pan(direction)
 // =======================================
 // =======================================
 
-function url_timestamp() {
-    return "?t=" + new Date().getTime();
+// For images related with each commit, it is good to have the same image cached with the same specially when serving throug the internet
+// For those images, it uses the commit hash as the timestamp
+function url_timestamp(timestamp_id="") {
+    if (timestamp_id) {
+        return "?t=" + timestamp_id;
+    }
+    else {
+        return "?t=" + new Date().getTime();
+    }
 }
 
 function if_url_exists(url, callback) {
@@ -577,8 +584,8 @@ function update_page()
     console.log("[SCH]  image_path_1 =", image_path_1);
     console.log("[SCH]  image_path_2 =", image_path_2);
 
-    var image_path_timestamp_1 = image_path_1 + url_timestamp();
-    var image_path_timestamp_2 = image_path_2 + url_timestamp();
+    var image_path_timestamp_1 = image_path_1 + url_timestamp(commit1);
+    var image_path_timestamp_2 = image_path_2 + url_timestamp(commit2);
 
     if (current_view != old_view)
     {
@@ -636,8 +643,8 @@ function update_sheets_list(commit1, commit2) {
 
     // Data format: ID|LAYER
 
-    data1 = loadFile("../" + commit1 + "/kiri/sch_sheets" + url_timestamp()).split("\n").filter((a) => a);
-    data2 = loadFile("../" + commit2 + "/kiri/sch_sheets" + url_timestamp()).split("\n").filter((a) => a);
+    data1 = loadFile("../" + commit1 + "/kiri/sch_sheets" + url_timestamp(commit1)).split("\n").filter((a) => a);
+    data2 = loadFile("../" + commit2 + "/kiri/sch_sheets" + url_timestamp(commit2)).split("\n").filter((a) => a);
 
     var sheets = [];
 
@@ -824,8 +831,8 @@ function update_layers_list(commit1, commit2, selected_id)
     // File = ../[COMMIT]/kiri/pcb_layers
     // Format = ID|LAYER
 
-    used_layers_1 = loadFile("../" + commit1 + "/kiri/pcb_layers" + url_timestamp()).split("\n").filter((a) => a);
-    used_layers_2 = loadFile("../" + commit2 + "/kiri/pcb_layers" + url_timestamp()).split("\n").filter((a) => a);
+    used_layers_1 = loadFile("../" + commit1 + "/kiri/pcb_layers" + url_timestamp(commit1)).split("\n").filter((a) => a);
+    used_layers_2 = loadFile("../" + commit2 + "/kiri/pcb_layers" + url_timestamp(commit2)).split("\n").filter((a) => a);
 
     for (const line of used_layers_1)
     {
@@ -953,8 +960,8 @@ function update_layer() {
     console.log("[PCB]  image_path_1 =", image_path_1);
     console.log("[PCB]  image_path_2 =", image_path_2);
 
-    var image_path_timestamp_1 = image_path_1 + url_timestamp();
-    var image_path_timestamp_2 = image_path_2 + url_timestamp();
+    var image_path_timestamp_1 = image_path_1 + url_timestamp(commit1);
+    var image_path_timestamp_2 = image_path_2 + url_timestamp(commit2);
 
     if (current_view != old_view)
     {
