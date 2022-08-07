@@ -45,9 +45,11 @@ window.onkeydown = function(e) {
 
     if (keysDown.s || keysDown.S) {
 
-        var view_mode = $('#view_mode input[name="view_mode"]:checked').val();
+        old_view = current_view;
+        current_view = $('#view_mode input[name="view_mode"]:checked').val();
+        console.log("current_view:", current_view)
 
-        if (view_mode == "show_sch") {
+        if (current_view == "show_sch") {
             show_pcb();
         } else {
             show_sch();
@@ -332,7 +334,6 @@ window.onkeydown = function(e) {
             pages[new_index].checked = true;
 
             update_page();
-            update_sheets_list(commit1, commit2);
         }
         else
         {
@@ -589,7 +590,8 @@ function update_page()
 
     if (current_view != old_view)
     {
-        removeEmbed()
+        old_view = current_view;
+        removeEmbed();
         lastEmbed = createNewEmbed(image_path_timestamp_1, image_path_timestamp_2);
     }
     else
@@ -965,7 +967,8 @@ function update_layer() {
 
     if (current_view != old_view)
     {
-        removeEmbed()
+        old_view = current_view;
+        removeEmbed();
         lastEmbed = createNewEmbed(image_path_timestamp_1, image_path_timestamp_2);
     }
     else
@@ -1300,6 +1303,8 @@ function createNewEmbed(src1, src2)
 
 function removeEmbed()
 {
+    console.log(">=============================================<");
+    console.log("removeEmbed...")
     console.log(">> lastEmbed: ", lastEmbed);
     console.log(">> panZoom_instance: ", panZoom_instance);
 
