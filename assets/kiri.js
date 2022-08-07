@@ -11,6 +11,14 @@ var panZoom_instance = null;
 var lastEventListener = null;
 var lastEmbed = null;
 
+sch_current_zoom = null;
+sch_old_zoom = null;
+sch_current_pan = null;
+
+pcb_current_zoom = null;
+pcb_old_zoom = null;
+pcb_current_pan = null;
+
 // Variables updated by Kiri
 var selected_view = "schematic";
 
@@ -1274,12 +1282,33 @@ function createNewEmbed(src1, src2)
         fit: true, // cannot be used, bug? (this one must be here to change the default)
         contain: false,
         viewportSelector: '.my_svg-pan-zoom_viewport',
-        eventsListenerElement: document.querySelector(svgpanzoom_selector)
+        eventsListenerElement: document.querySelector(svgpanzoom_selector),
+        onUpdatedCTM: function() {
+            console.log("Restoring last pan and zoom settgins");
+            if (current_view == "show_sch") {
+                if (sch_current_zoom != sch_old_zoom) {
+                    console.log(">> RESTORING SCH PAN and ZOOM");
+                    panZoom_instance.zoom(sch_current_zoom);
+                    panZoom_instance.pan(sch_current_pan);
+                    sch_old_zoom = sch_current_zoom;
+                }
+            }
+            else {
+                if (pcb_current_zoom != pcb_old_zoom) {
+                    console.log(">> RESTORING PCB PAN and ZOOM");
+                    panZoom_instance.zoom(pcb_current_zoom);
+                    panZoom_instance.pan(pcb_current_pan);
+                    pcb_old_zoom = pcb_current_zoom;
+                }
+            }
+
+        }
     });
 
     console.log("panZoom_instance:", panZoom_instance);
 
-    embed.addEventListener('load', lastEventListener)
+    embed.addEventListener('load', lastEventListener);
+
     document.getElementById('zoom-in').addEventListener('click', function(ev) {
         ev.preventDefault();
         panZoom_instance.zoomIn();
@@ -1304,13 +1333,23 @@ function createNewEmbed(src1, src2)
 function removeEmbed()
 {
     console.log(">=============================================<");
-    console.log("removeEmbed...")
+    console.log("removeEmbed...");
     console.log(">> lastEmbed: ", lastEmbed);
     console.log(">> panZoom_instance: ", panZoom_instance);
 
     // Destroy svgpanzoom
-    if (! panZoom_instance == null)
+    if (panZoom_instance)
     {
+        if (current_view == "show_pcb") {
+            sch_current_zoom = panZoom_instance.getZoom();
+            sch_current_pan = panZoom_instance.getPan();
+            sch_old_zoom = null;
+        } else {
+            pcb_current_zoom = panZoom_instance.getZoom();
+            pcb_current_pan = panZoom_instance.getPan();
+            pcb_old_zoom = null;
+        }
+
         panZoom_instance.destroy()
 
         // Remove event listener
