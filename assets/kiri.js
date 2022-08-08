@@ -401,6 +401,11 @@ window.onkeydown = function(e) {
     // SVG Zoom
     // =======================================
 
+    if (keysDown.z || keysDown.z) { // z | Z
+        toogle_fullscreen()
+        keysDown = {};
+    }
+
     if (keysDown.f || keysDown.F || e.keyCode === 48 || e.keyCode === 96) { // f | F | Digit Zero | Numpad 0
         svg_fit_center();
         keysDown = {};
@@ -1364,4 +1369,31 @@ function removeEmbed()
         // Null reference to embed
         lastEmbed = null
     }
+}
+
+function toogle_fullscreen()
+{
+  if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement)
+  {
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if (document.mozCancelFullScreen) {
+      document.mozCancelFullScreen();
+    } else if (document.webkitExitFullscreen) {
+      document.webkitExitFullscreen();
+    } else if (document.msExitFullscreen) {
+      document.msExitFullscreen();
+    }
+  } else {
+    element = $('#diff-container').get(0);
+    if (element.requestFullscreen) {
+      element.requestFullscreen();
+    } else if (element.mozRequestFullScreen) {
+      element.mozRequestFullScreen();
+    } else if (element.webkitRequestFullscreen) {
+      element.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+    } else if (element.msRequestFullscreen) {
+      element.msRequestFullscreen();
+    }
+  }
 }
