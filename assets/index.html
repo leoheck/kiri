@@ -33,13 +33,6 @@
 						<p class="text-light" >
 							<span style="margin-left:5px; margin-right:0.5em" class="iconify" data-icon="fa-solid:code-branch" data-inline="false"></span>
 							Commits
-							<small class="text-sm text-muted">
-							: Walk through using
-							(<kbd>Ctrl</kbd>)
-							<kbd><span class="iconify" data-icon="typcn-arrow-up" data-inline="false"></span></kbd> /
-							<kbd><span class="iconify" data-icon="typcn-arrow-down" data-inline="false"></span></kbd>
-							and reset with <kbd>r</kbd>
-							</small>
 						</p>
 						<div class="form-check scrollbox" style="padding: 0px 4px 8px 0px; margin: 0px; margin-right: 4px; overflow-y: scroll">
 							<form id="commits_form" class="overflow-auto scrollbox-content">
@@ -70,11 +63,6 @@
 									</div>
 								</form>
 
-<!-- 								<span style="width: 1.5em"></span>
-								<p class="text-light" style="padding: 0px 0px 0px 0px; margin: 25px 0px 0px 5px;">
-									<small class="text-sm">Toggle view mode with <kbd>s</kbd></small>
-								</p> -->
-
 								<span style="width: 2em"></span>
 
 								<form class="inline" style="padding: 0px 0px 0px 0px; margin: 20px 0px 0px 20px;">
@@ -85,30 +73,18 @@
 										<button id="zoom-out" data-toggle="tooltip" title="Zoom Out (-)" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary" onclick="this.blur();" >
 										<span class="iconify" style="width: 20px; height: 20px;" data-icon="akar-icons:zoom-out" data-inline="false"></span>
 										</button>
-										<button id="zoom-fit" data-toggle="tooltip" title="Fit View (0 or f)" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary" onclick="this.blur();" >
+										<button id="zoom-fit" data-toggle="tooltip" title="Fit View (0)" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary" onclick="this.blur();" >
 										<span class="iconify" style="width: 20px; height: 20px;" data-icon="carbon:center-to-fit" data-inline="false"></span>
 										</button>
 									</div>
 								</form>
 
-<!-- 								<span style="width: 1.5em"></span>
-								<p class="text-light" style="padding: 0px 0px 0px 0px; margin: 25px 0px 0px 0px;">
-									<small class="text-sm">Zoom in/out <kbd>+</kbd>/<kbd>-</kbd>, fit <kbd>f</kbd>/<kbd>0</kbd> and pan with <kbd>Alt</kbd>
-										<kbd>
-											<span class="iconify" data-icon="typcn-arrow-up" data-inline="false"></span>
-											<span class="iconify" data-icon="typcn-arrow-down" data-inline="false"></span>
-											<span class="iconify" data-icon="typcn-arrow-left" data-inline="false"></span>
-											<span class="iconify" data-icon="typcn-arrow-right" data-inline="false"></span>
-										</kbd>
-									</small>
-								</p>
- -->
 								<span style="width: 1em"></span>
 
 								<form class="inline" style="padding: 0px 0px 0px 0px; margin: 20px 0px 0px 20px;">
 									<div id="info_controls" class="form-group btn-group btn-group-toggle" role="group" aria-label="Info">
-										<button id="info-btn" data-toggle="tooltip" title="Info (i)" name="info_controls" type="button" aria-pressed="false" class="btn btn-secondary" onclick="this.blur();">
-										<span class="iconify" style="width: 20px; height: 20px;" data-icon="akar-icons:info" data-inline="false"></span>
+										<button id="info-btn" data-toggle="modal" title="Info (i)" name="info_controls" type="button" aria-pressed="false" class="btn btn-secondary" data-target="#shortcuts-modal" onclick="this.blur();">
+											<span class="iconify" style="width: 20px; height: 20px;" data-icon="akar-icons:info" data-inline="false"></span>
 										</button>
 									</div>
 								</form>
@@ -165,11 +141,6 @@
 							<p class="text-light">
 								<span style="margin-right:0.5em; width: 20px; height: 20px;" class="iconify" data-icon="gridicons:next-page" data-inline="false"></span>
 								Pages
-								<small class="text-sm text-muted"><br>
-									Cycle using
-									<kbd><span class="iconify" data-icon="typcn-arrow-left" data-inline="false"></span></kbd>/
-									<kbd><span class="iconify" data-icon="typcn-arrow-right" data-inline="false"></span></kbd>
-								</small>
 							</p>
 							<div class="row" style="height: 85%; width: 300px;">
 								<div class="col" style="height: 100%; width: 100%">
@@ -188,11 +159,6 @@
 							<p class="text-light">
 								<span style="margin-right:0.5em; width: 20px; height: 20px;" class="iconify" data-icon="teenyicons:layers-solid" data-inline="false"></span>
 								Layers
-								<small class="text-sm text-muted"><br>
-									Cycle using
-									<kbd><span class="iconify" data-icon="typcn-arrow-left" data-inline="false"></span></kbd>/
-									<kbd><span class="iconify" data-icon="typcn-arrow-right" data-inline="false"></span></kbd>
-								</small>
 							</p>
 							<div class="row" style="height: 85%; width: 300px;">
 								<div class="col" style="height: 100%; width: 100%">
@@ -204,6 +170,126 @@
 								</div>
 							</div>
 						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="modal fade" id="shortcuts-modal" tabindex="-1" role="dialog" aria-labelledby="shortcuts-modal-Title" aria-hidden="true">
+			<div class="modal-dialog modal-dialog-centered" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title" id="exampleModalLongTitle">Sortcuts</h4>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+
+						<h5>Commits releated</h5>
+
+						<table>
+							<tbody>
+							<tr>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd><span class="iconify" data-icon="typcn-arrow-up" data-inline="false"></span></kbd></small></td>
+								<td>Move commits par upwards</td>
+							</tr>
+							<tr>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd><span class="iconify" data-icon="typcn-arrow-down" data-inline="false"></span></kbd></small></td>
+								<td>Move commits par downwards</td>
+							</tr>
+							<tr>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>[</kbd> or <kbd>Ctrl + <span class="iconify" data-icon="typcn-arrow-up" data-inline="false"></span></kbd></small></td>
+								<td>Move 2nd commit upwards</td>
+							</tr>
+							<tr>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>]</kbd> or <kbd>Ctrl + <span class="iconify" data-icon="typcn-arrow-down" data-inline="false"></span></kbd></small></td>
+								<td>Move 2nd commit downwards</td>
+							</tr>
+							<tr>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>r</kbd></small></td>
+								<td>Reset commit selection to the top 2 commits</td>
+							</tr>
+							</tbody>
+						</table>
+
+						<hr>
+						<h5>View, sheets and layers</h5>
+
+						<table>
+							<tbody>
+							<tr>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>s</kbd></small></td>
+								<td>Switch Schematic/Layout view</td>
+							</tr>
+							<tr>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd><span class="iconify" data-icon="typcn-arrow-right" data-inline="false"></span></kbd>or <kbd>l<kbd></small></td>
+								<td>Select next page/layer</td>
+							</tr>
+							<tr>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd><span class="iconify" data-icon="typcn-arrow-left" data-inline="false"></span></kbd>or <kbd>k<kbd></small></td>
+								<td>Select previows page/layer</td>
+							</tr>
+							</tbody>
+						</table>
+
+						<hr>
+						<h5>Diff Pan and Zoom</h5>
+
+						<table>
+							<tbody>
+							<tr>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>+</kbd></small></td>
+								<td>Zoom in</td>
+							</tr>
+							<tr>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>-</kbd></small></td>
+								<td>Zoom out</td>
+							</tr>
+							<tr>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>0</kbd></small></td>
+								<td>Zoom fit</td>
+							</tr>
+							<tr>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>Alt + <span class="iconify" data-icon="typcn-arrow-up" data-inline="false"></span></kbd></small></td>
+								<td>Pan svg up</td>
+							</tr>
+							<tr>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>Alt + <span class="iconify" data-icon="typcn-arrow-down" data-inline="false"></span></kbd></small></td>
+								<td>Pan svg down</td>
+							</tr>
+							<tr>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>Alt + <span class="iconify" data-icon="typcn-arrow-left" data-inline="false"></span></kbd></small></td>
+								<td>Pan svg left</td>
+							</tr>
+							<tr>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>Alt + <span class="iconify" data-icon="typcn-arrow-right" data-inline="false"></span></kbd></small></td>
+								<td>Pan svg right</td>
+							</tr>
+							</tbody>
+						</table>
+
+						<hr>
+						<h5>Miscelaneous</h5>
+
+						<table>
+							<tbody>
+							<tr>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>f</kbd></small></td>
+								<td>Toggle fullscreen view</td>
+							</tr>
+							<tr>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>i</kbd></small></td>
+								<td>Shows this info view</td>
+							</tr>
+							</tbody>
+						</table>
+
+					</div>
+					<div class="modal-footer">
+						<small class="text-sm">
+							<a href="https://github.com/leoheck/kiri" target="_blank">Kicad Revision Inspector</a> (KiRI) by Leandro Heck
+						</small>
 					</div>
 				</div>
 			</div>

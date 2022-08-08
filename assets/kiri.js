@@ -72,7 +72,6 @@ window.onkeydown = function(e) {
     // SVG Pan
     // =======================================
 
-    // if ( event.shiftKey && event.altKey && (keysDown.ArrowUp || keysDown.ArrowDown || keysDown.ArrowRight || keysDown.ArrowRight) )
     if ( event.altKey && keysDown.ArrowUp ) {
         manual_pan("up");
         keysDown = {};
@@ -90,40 +89,6 @@ window.onkeydown = function(e) {
 
     if ( event.altKey && keysDown.ArrowRight ) {
         manual_pan("right");
-        keysDown = {};
-    }
-
-    // =======================================
-    // Toggle View Type (Onion/Swipe)
-    // =======================================
-
-    if (keysDown.d || keysDown.D) {
-
-        var view_type = $('#view_type input[name="view_type"]:checked').val();
-        var next_view_type = "";
-
-        if (view_type == "show_onion") {
-            next_view_type = "show_slide";
-
-            show_slide();
-
-            document.getElementById("show_onion_lbl").classList.remove('active');
-            document.getElementById("show_onion").checked = false;
-
-            document.getElementById("show_slide_lbl").classList.add('active');
-            document.getElementById("show_slide").checked = true;
-        } else {
-            next_view_type = "show_onion";
-
-            show_onion();
-
-            document.getElementById("show_onion_lbl").classList.add('active');
-            document.getElementById("show_onion").checked = true;
-
-            document.getElementById("show_slide_lbl").classList.remove('active');
-            document.getElementById("show_slide").checked = false;
-        }
-
         keysDown = {};
     }
 
@@ -401,12 +366,7 @@ window.onkeydown = function(e) {
     // SVG Zoom
     // =======================================
 
-    if (keysDown.z || keysDown.z) { // z | Z
-        toogle_fullscreen()
-        keysDown = {};
-    }
-
-    if (keysDown.f || keysDown.F || e.keyCode === 48 || e.keyCode === 96) { // f | F | Digit Zero | Numpad 0
+    if (e.keyCode === 48 || e.keyCode === 96) { // Digit Zero | Numpad 0
         svg_fit_center();
         keysDown = {};
     }
@@ -418,6 +378,16 @@ window.onkeydown = function(e) {
 
     if (e.keyCode === 189 || e.keyCode === 109) { // Minus | Numpad Minus
         svg_zoom_out();
+        keysDown = {};
+    }
+
+    if (keysDown.f || keysDown.F) {
+        toogle_fullscreen();
+        keysDown = {};
+    }
+
+    if (keysDown.i || keysDown.I) {
+        show_info_popup();
         keysDown = {};
     }
 
@@ -721,7 +691,9 @@ function update_sheets_list(commit1, commit2) {
     sheets_element.innerHTML = form_inputs_html.replace("undefined", "");
 
     // rerun tooltips since they are getting ugly.
-    $('[data-toggle="tooltip"]').tooltip({html:true});
+    $('[data-toggle="tooltip"]').tooltip({html: true});
+    $('[data-toggle="tooltip"]').tooltip('update');
+    $('[data-toggle="tooltip"]').tooltip({boundary: 'window'})
 
     var pages = $("#pages_list input:radio[name='pages']");
     const optionLabels = Array.from(pages).map((opt) => opt.id);
@@ -914,6 +886,8 @@ function update_layers_list(commit1, commit2, selected_id)
 
     // Update html tooltips
     $('[data-toggle="tooltip"]').tooltip({html:true});
+    $('[data-toggle="tooltip"]').tooltip('update');
+    $('[data-toggle="tooltip"]').tooltip({boundary: 'window'});
 
     // Enable back the selected layer
 
@@ -1061,6 +1035,8 @@ function get_selected_commits()
 $(document).ready(function()
 {
     $('[data-toggle="tooltip"]').tooltip({html:true});
+    $('[data-toggle="tooltip"]').tooltip('update');
+    $('[data-toggle="tooltip"]').tooltip({boundary: 'window'});
 });
 
 // Limit commits list with 2 checked commits at most
@@ -1082,14 +1058,14 @@ function ready()
 
     update_commits();
 
-    // if (selected_view == "schematic") {
-    //     // show_sch();
-    //     update_page(commit1, commit2);
-    // }
-    // else {
-    //     // show_pcb();
-    //     update_layer(commit1, commit2);
-    // }
+    if (selected_view == "schematic") {
+        // show_sch();
+        update_page(commit1, commit2);
+    }
+    else {
+        // show_pcb();
+        update_layer(commit1, commit2);
+    }
 }
 
 window.onload = function()
@@ -1289,10 +1265,9 @@ function createNewEmbed(src1, src2)
         viewportSelector: '.my_svg-pan-zoom_viewport',
         eventsListenerElement: document.querySelector(svgpanzoom_selector),
         onUpdatedCTM: function() {
-            console.log("Restoring last pan and zoom settgins");
             if (current_view == "show_sch") {
                 if (sch_current_zoom != sch_old_zoom) {
-                    console.log(">> RESTORING SCH PAN and ZOOM");
+                    console.log(">> Restoring SCH pan and zoom");
                     panZoom_instance.zoom(sch_current_zoom);
                     panZoom_instance.pan(sch_current_pan);
                     sch_old_zoom = sch_current_zoom;
@@ -1300,7 +1275,7 @@ function createNewEmbed(src1, src2)
             }
             else {
                 if (pcb_current_zoom != pcb_old_zoom) {
-                    console.log(">> RESTORING PCB PAN and ZOOM");
+                    console.log(">> Restoring PCB pan and zoom");
                     panZoom_instance.zoom(pcb_current_zoom);
                     panZoom_instance.pan(pcb_current_pan);
                     pcb_old_zoom = pcb_current_zoom;
@@ -1397,3 +1372,9 @@ function toogle_fullscreen()
     }
   }
 }
+
+function show_info_popup()
+{
+    document.getElementById("info-btn").click();
+}
+

@@ -317,3 +317,9 @@ a:active {
 	position:absolute; top:-1px; left:-1px; width:1px; height:1px;
 	display: none;
 }
+
+.shortcut_col {
+	width: 150px;
+	text-align: right;
+	padding-right: 15px;
+}
