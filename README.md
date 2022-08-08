@@ -74,7 +74,7 @@ Setup the environment using the following commands.
 # Kiri environment setup
 eval $(opam env)
 export KIRI_HOME=${HOME}/.local/share/kiri
-export PATH=${KIRI_HOME}/submodules/KiCad-Diff/:${PATH}
+export PATH=${KIRI_HOME}/submodules/KiCad-Diff/bin:${PATH}
 export PATH=${KIRI_HOME}/bin:${PATH}
 ```
 
