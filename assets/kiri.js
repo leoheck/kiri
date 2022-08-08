@@ -412,18 +412,20 @@ function svg_zoom_out()
 
 function manual_pan(direction)
 {
+    const step = 50;
+
     switch(direction) {
        case "up":
-            panZoom_instance.panBy({x: 0, y: -50});
+            panZoom_instance.panBy({x: 0, y: step});
             break;
        case "down":
-            panZoom_instance.panBy({x: 0, y: 50});
+            panZoom_instance.panBy({x: 0, y: -step});
             break;
        case "left":
-            panZoom_instance.panBy({x: 50, y: 0});
+            panZoom_instance.panBy({x: step, y: 0});
             break;
        case "right":
-            panZoom_instance.panBy({x: -50, y: 0});
+            panZoom_instance.panBy({x: -step, y: 0});
             break;
     }
 }
@@ -824,14 +826,14 @@ function update_layers_list(commit1, commit2, selected_id)
     for (const line of used_layers_1)
     {
         id = line.split("|")[0];
-        layer = line.split("|")[1].replace(".", "_");
+        layer = line.split("|")[1] //.replace(".", "_");
         dict[id] = [layer];
     }
 
     for (const line of used_layers_2)
     {
         id = line.split("|")[0];
-        layer = line.split("|")[1].replace(".", "_");
+        layer = line.split("|")[1] //.replace(".", "_");
 
         // Add new key
         if (! dict.hasOwnProperty(id)) {
@@ -1377,4 +1379,3 @@ function show_info_popup()
 {
     document.getElementById("info-btn").click();
 }
-
