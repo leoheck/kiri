@@ -1100,6 +1100,8 @@ function show_sch()
     // document.getElementById("diff-xlink-2-pcb").parentElement.style.display = "none";
     document.getElementById("layers_list").style.display = "none";
     document.getElementById("pcb_title").style.display = "none";
+
+    update_page(commit1, commit2);
 }
 
 function show_pcb()
@@ -1121,6 +1123,8 @@ function show_pcb()
     // document.getElementById("diff-xlink-2-sch").parentElement.style.display = "none";
     document.getElementById("pages_list").style.display = "none";
     document.getElementById("sch_title").style.display = "none";
+
+    update_layer(commit1, commit2);
 }
 
 // =======================================
@@ -1209,6 +1213,8 @@ function server_is_offline() {
 
 function createNewEmbed(src1, src2)
 {
+    console.log("createNewEmbed...");
+
     var embed = document.createElement('div');
     embed.setAttribute('id', "div-svg");
     embed.setAttribute('style', "display: inline; width: inherit; min-width: inherit; max-width: inherit; height: inherit; min-height: inherit; max-height: inherit;");
