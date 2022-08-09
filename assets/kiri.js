@@ -55,7 +55,7 @@ window.onkeydown = function(e) {
 
         old_view = current_view;
         current_view = $('#view_mode input[name="view_mode"]:checked').val();
-        console.log("current_view:", current_view)
+        console.log("current_view:", current_view);
 
         if (current_view == "show_sch") {
             show_pcb();
@@ -677,7 +677,7 @@ function update_sheets_list(commit1, commit2) {
     }
 
     // Get the current list of pages
-    var pages = $("#pages_list input:radio[name='pages']");
+    pages = $("#pages_list input:radio[name='pages']");
     const current_sheets_list = Array.from(pages).map((opt) => opt.id);
 
     // Return if the current list is equal to the new list
@@ -695,9 +695,8 @@ function update_sheets_list(commit1, commit2) {
     // rerun tooltips since they are getting ugly.
     $('[data-toggle="tooltip"]').tooltip({html: true});
     $('[data-toggle="tooltip"]').tooltip('update');
-    $('[data-toggle="tooltip"]').tooltip({boundary: 'window'})
+    $('[data-toggle="tooltip"]').tooltip({boundary: 'window'});
 
-    var pages = $("#pages_list input:radio[name='pages']");
     const optionLabels = Array.from(pages).map((opt) => opt.id);
 
     const hasOption = optionLabels.includes(selected_sheet);
@@ -826,14 +825,14 @@ function update_layers_list(commit1, commit2, selected_id)
     for (const line of used_layers_1)
     {
         id = line.split("|")[0];
-        layer = line.split("|")[1] //.replace(".", "_");
+        layer = line.split("|")[1]; //.replace(".", "_");
         dict[id] = [layer];
     }
 
     for (const line of used_layers_2)
     {
         id = line.split("|")[0];
-        layer = line.split("|")[1] //.replace(".", "_");
+        layer = line.split("|")[1]; //.replace(".", "_");
 
         // Add new key
         if (! dict.hasOwnProperty(id)) {
@@ -871,7 +870,6 @@ function update_layers_list(commit1, commit2, selected_id)
     }
 
     // Get the current list of pages
-    var layers = $("#layers_list input:radio[name='layers']");
     const current_layers_list = Array.from(layers).map((opt) => opt.value.replace("layer-", ""));
 
         // Return if the current list is equal to the new list
@@ -892,8 +890,6 @@ function update_layers_list(commit1, commit2, selected_id)
     $('[data-toggle="tooltip"]').tooltip({boundary: 'window'});
 
     // Enable back the selected layer
-
-    var layers = $("#layers_list input:radio[name='layers']");
     const optionLabels = Array.from(layers).map((opt) => opt.id);
 
     const hasOption = optionLabels.includes(selected_layer);
@@ -919,8 +915,10 @@ function update_layer() {
     var layers = $("#layers_list input:radio[name='layers']");
     var selected_layer = layers.index(layers.filter(':checked'));
 
+    var layer_id;
+
     try {
-        var layer_id = layers[selected_layer].id.split("-")[1];
+        layer_id = layers[selected_layer].id.split("-")[1];
     }
     catch(err) {
         console.log("[PCB] Image may not exist");
@@ -1258,7 +1256,7 @@ function createNewEmbed(src1, src2)
     document.getElementById('div-svg').innerHTML = svg_element;
     console.log(">>> SVG: ", embed);
 
-    svgpanzoom_selector = "#" + "svg-id"
+    svgpanzoom_selector = "#" + "svg-id";
 
     panZoom_instance = svgPanZoom(
       svgpanzoom_selector, {
@@ -1338,19 +1336,19 @@ function removeEmbed()
             pcb_old_zoom = null;
         }
 
-        panZoom_instance.destroy()
+        panZoom_instance.destroy();
 
         // Remove event listener
-        lastEmbed.removeEventListener('load', lastEventListener)
+        lastEmbed.removeEventListener('load', lastEventListener);
 
         // Null last event listener
-        lastEventListener = null
+        lastEventListener = null;
 
         // Remove embed element
-        document.getElementById('diff-container').removeChild(lastEmbed)
+        document.getElementById('diff-container').removeChild(lastEmbed);
 
         // Null reference to embed
-        lastEmbed = null
+        lastEmbed = null;
     }
 }
 
