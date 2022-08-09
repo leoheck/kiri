@@ -1383,3 +1383,8 @@ function show_info_popup()
 {
     document.getElementById("info-btn").click();
 }
+
+// Remove focus whne info buttons is clicked with shortcut i
+$('#shortcuts-modal').on('shown.bs.modal', function(e){
+    $('#info-btn').one('focus', function(e){$(this).blur();});
+});
