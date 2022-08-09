@@ -323,3 +323,13 @@ a:active {
 	text-align: right;
 	padding-right: 15px;
 }
+
+.modal-content {
+  background: #333;
+}
+
+hr {
+	background-color: white;
+	height: 1px;
+	border: 0;
+}
