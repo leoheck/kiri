@@ -1680,7 +1680,7 @@ build_main_html()
 
 	# Set project title with kicad project folder name
 	project_title=$(basename "${REPO_ABSOLUTE_PATH}")
-	echo "- Project's title: ${BTE}${LBL}${project_title}${RCO}"
+	echo "- Project's title (folder name): ${BTE}${LBL}${project_title}${RCO}"
 	sed -i "s|\[PROJECT_TITLE\]|${project_title}|g" "${WEB_DIR_PATH}/${main_html}"
 
 	# Set Kicad project's name
