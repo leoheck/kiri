@@ -50,31 +50,27 @@ insert_commits_html()
 
 		if [[ "${hash}" != "_local_" ]]; then
 
+			local path_to_git_root="$(realpath --relative-to="${KICAD_PROJ_ABSOLUTE_PATH}" "${REPO_ABSOLUTE_PATH}")"
+
 			# Check for changes in ".sch|.kicad_sch" files
-			if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${KICAD_PROJ_NESTED_PATH}" | cat | grep -q -s -E "${kicad_sch// /|}${kicad_sch_pages}"; then
+			if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${path_to_git_root}/${KICAD_PROJ_NESTED_PATH}" | cat | grep -q -s -E "${kicad_sch// /|}${kicad_sch_pages}"; then
 				sch_icon="${sch_img}"
 			else
 				sch_icon="${empty_img}"
 			fi
 
 			# Check for changes in .kicad_pcb files
-			if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${KICAD_PROJ_NESTED_PATH}" | cat | grep -q -s "${kicad_pcb}"; then
+			if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${path_to_git_root}/${KICAD_PROJ_NESTED_PATH}" | cat | grep -q -s "${kicad_pcb}"; then
 				pcb_icon="${pcb_img}"
 			else
 				pcb_icon="${empty_img}"
 			fi
 
 			# Check for changes in textual files only
-			if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${KICAD_PROJ_NESTED_PATH}" | cat | grep -q -s -vE "${kicad_sch// /|}${kicad_sch_pages}${kicad_pcb}"; then
+			if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${path_to_git_root}/${KICAD_PROJ_NESTED_PATH}" | cat | grep -q -s -vE "${kicad_sch// /|}${kicad_sch_pages}${kicad_pcb}"; then
 				txt_icon="${txt_img}"
 			else
 				txt_icon="${empty_img}"
-			fi
-
-			if [[ "${i}" == "${commit1_i}" ]] || [[ "${i}" == "${commit2_i}" ]]; then
-				checked="checked='checked'"
-			else
-				checked=""
 			fi
 
 			hash_label="${hash}"
@@ -103,12 +99,6 @@ insert_commits_html()
 				txt_icon="${empty_img}"
 			fi
 
-			if [[ "${i}" == "${commit1_i}" ]] || [[ "${i}" == "${commit2_i}" ]]; then
-				checked="checked='checked'"
-			else
-				checked=""
-			fi
-
 			hash_label="${hash}"
 			class="text-warning"
 		fi
@@ -120,7 +110,7 @@ insert_commits_html()
 
 		read -r -d '' commit_html <<-EOM
 		<!-- Commit ${i} -->
-		<input class="chkGroup" type="checkbox" id="${hash}" name="commit" value="${hash}" ${checked} onchange="update_commits()"/>
+		<input class="chkGroup" type="checkbox" id="${hash}" name="commit" value="${hash}" onchange="update_commits()">
 		<label class="text-sm-left list-group-item" style="display: block; width: 445px; margin-left: 0px;" for="${hash}">
 		    <table data-toggle="tooltip" title="${tooltip}">
 		        <tr>
@@ -192,7 +182,7 @@ insert_pages_html()
 		# IFS=
 		read -r -d '' page_html <<-EOM
 		<!-- Page ${i} -->
-		<input id="${page_name}" data-toggle="tooltip" title="${page_filename_path}" type="radio" value="${page_filename}" name="pages" ${checked} onchange="change_page()"/>
+		<input id="${page_name}" data-toggle="tooltip" title="${page_filename_path}" type="radio" value="${page_filename}" name="pages" ${checked} onchange="change_page()">
 		<label for="${page_name}" data-toggle="tooltip" title="${page_filename_path}" id="label-${page_name}" class="rounded text-sm-left list-group-item radio-box" onclick="change_page_onclick()" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
 		    <span data-toggle="tooltip" title="${page_name}" style="margin-left:0.5em; margin-right:0.1em;" class="iconify" data-icon="gridicons:pages" data-inline="false"></span>
 		    ${page_name}
@@ -320,8 +310,8 @@ insert_layers_html()
 
 		read -r -d '' layer_html <<-EOM
 		<!-- Layer ${i} -->
-		<input  id="layer-${layer_id_padding}" value="layer-${layer_name}" type="radio" name="layers" onchange="change_layer()" ${checked}/>
-		<label for="layer-${layer_id_padding}" id="label-${layer_id_padding}" data-toggle="tooltip" title="Layer ID: ${layer_id}" class="rounded text-sm-left list-group-item radio-box" onclick="change_layer_onclick()">
+		<input  id="layer-${layer_id_padding}" value="layer-${layer_name}" type="radio" name="layers" onchange="change_layer()" ${checked}>
+		<label for="layer-${layer_id_padding}" id="label-${layer_id_padding}" data-toggle="tooltip" title="${layer_id}, ${layer_name}" class="rounded text-sm-left list-group-item radio-box" onclick="change_layer_onclick()">
 		    <span style="margin-left:0.5em; margin-right:0.1em; color: ${layer_color}" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
 		    ${layer_name}
 		</label>
@@ -1525,6 +1515,7 @@ generate_layout_artifacts()
 		# Organize renamed files
 		mv "${OUTPUT_DIR_PATH}/${commit_hash_1}/layer-"*.svg "${OUTPUT_DIR_PATH}/${commit_hash_1}/kiri/pcb/" &> /dev/null
 		mv "${OUTPUT_DIR_PATH}/${commit_hash_2}/layer-"*.svg "${OUTPUT_DIR_PATH}/${commit_hash_2}/kiri/pcb/" &> /dev/null
+
 	fi
 }
 
@@ -1564,7 +1555,7 @@ generate_diffs()
 					local padding=0
 					local total="/${n_comparisons}"
 				else
-					local padding=$(($(python -c "import math; print(int(math.log10(${n_comparisons}))+1)")-1))
+					local padding=$(($(python3 -c "import math; print(int(math.log10(${n_comparisons}))+1)")-1))
 					local total=""
 				fi
 
@@ -1689,7 +1680,7 @@ build_main_html()
 
 	# Set project title with kicad project folder name
 	project_title=$(basename "${REPO_ABSOLUTE_PATH}")
-	echo "- Project's title: ${BTE}${LBL}${project_title}${RCO}"
+	echo "- Project's title (folder name): ${BTE}${LBL}${project_title}${RCO}"
 	sed -i "s|\[PROJECT_TITLE\]|${project_title}|g" "${WEB_DIR_PATH}/${main_html}"
 
 	# Set Kicad project's name
@@ -1732,11 +1723,6 @@ build_main_html()
 	sed -i "s|\[PCB_DATE\]|${pcb_date}|g" "${WEB_DIR_PATH}/${main_html}"
 	sed -i "s|\[SCH_DATE\]|${sch_date}|g" "${WEB_DIR_PATH}/${main_html}"
 
-	# Initial commit
-	echo "- Initial commits: ${BTE}${LMA}${commit_hash_1}${RCO}, ${BTE}${LCY}${commit_hash_2}${RCO}"
-	sed -i "s|\[COMMIT_1_HASH\]|${commit_hash_1}|g" "${WEB_DIR_PATH}/${main_html}"
-	sed -i "s|\[COMMIT_2_HASH\]|${commit_hash_2}|g" "${WEB_DIR_PATH}/${main_html}"
-
 	# Initial Kicad project path
 	local project_path_1="$(realpath --relative-to="${KICAD_PROJ_ABSOLUTE_PATH}" "${OUTPUT_DIR_PATH}/${commit_hash_1}/${kicad_proj_name}.${kicad_pro_extension}")"
 	local project_path_2="$(realpath --relative-to="${KICAD_PROJ_ABSOLUTE_PATH}" "${OUTPUT_DIR_PATH}/${commit_hash_2}/${kicad_proj_name}.${kicad_pro_extension}")"
@@ -1746,35 +1732,8 @@ build_main_html()
 	sed -i "s|\[COMMIT_1_KICAD_PRO\]|${project_path_1}|g" "${WEB_DIR_PATH}/${main_html}"
 	sed -i "s|\[COMMIT_2_KICAD_PRO\]|${project_path_2}|g" "${WEB_DIR_PATH}/${main_html}"
 
-	# Update initial schematic images
-	local sch_img_1="../${commit_hash_1}/kiri/sch/${kicad_proj_name}.svg"
-	local sch_img_2="../${commit_hash_2}/kiri/sch/${kicad_proj_name}.svg"
-	echo "- Initial schematic images:"
-	echo "  Sch 1: ${BTE}${LMA}$(realpath --relative-to="${KICAD_PROJ_ABSOLUTE_PATH}" "${OUTPUT_DIR_PATH}/${commit_hash_1}/${sch_img_1}")${RCO}"
-	echo "  Sch 2: ${BTE}${LCY}$(realpath --relative-to="${KICAD_PROJ_ABSOLUTE_PATH}" "${OUTPUT_DIR_PATH}/${commit_hash_2}/${sch_img_2}")${RCO}"
-	sed -i "s|\[INITIAL_COMMIT_1_SCH\]|${sch_img_1}|g" "${WEB_DIR_PATH}/${main_html}"
-	sed -i "s|\[INITIAL_COMMIT_2_SCH\]|${sch_img_2}|g" "${WEB_DIR_PATH}/${main_html}"
-
-	# Update initial layout images
-	local initial_layer_id="$(printf "%02d" "$(echo -e "${layers}" | head -1 | cut -d "|" -f1 | tr "." "_")")"
-	local initial_layer_name="$(echo -e "${layers}" | sed '/^$/d' | head -1 | cut -d "|" -f2 | tr "." "_")"
-	local pcb_img_1="../${commit_hash_1}/kiri/pcb/layer-${initial_layer_id}.svg"
-	local pcb_img_2="../${commit_hash_2}/kiri/pcb/layer-${initial_layer_id}.svg"
-	echo "- Inicial layer: id=${initial_layer_id}, name=${initial_layer_name}"
-	echo "- Initial layer images:"
-	echo "  PCB 1: ${BTE}${LMA}$(realpath --relative-to="${KICAD_PROJ_ABSOLUTE_PATH}" "${OUTPUT_DIR_PATH}/${commit_hash_1}/${pcb_img_1}")${RCO}"
-	echo "  PCB 2: ${BTE}${LCY}$(realpath --relative-to="${KICAD_PROJ_ABSOLUTE_PATH}" "${OUTPUT_DIR_PATH}/${commit_hash_2}/${pcb_img_2}")${RCO}"
-	sed -i "s|\[INITIAL_COMMIT_1_PCB\]|${pcb_img_1}|g" "${WEB_DIR_PATH}/${main_html}"
-	sed -i "s|\[INITIAL_COMMIT_2_PCB\]|${pcb_img_2}|g" "${WEB_DIR_PATH}/${main_html}"
-
 	# Change initial view to layout
 	# set_default_html_view "${kicad_sch}"
-
-	# Update server's port
-	if [[ "${WEBSERVER_PORT}" != "" ]]; then
-		echo "- Setting server's port: ${WEBSERVER_PORT}"
-		sed -i "s|var port =.*|var port = ${WEBSERVER_PORT}; // updated by kiri script|g" "${WEB_DIR_PATH}/kiri.js"
-	fi
 }
 
 archive_kiri_website()
@@ -1791,42 +1750,19 @@ archive_kiri_website()
 launch_webserver()
 {
 	if [[ "${START_SERVER}" != 0 ]]; then
-		# if grep -i -q "Microsoft" "/proc/version" &> /dev/null; then
-		# 	# Webserver alternative for Windows with WSL
-		# 	local host=127.0.0.1
-		# 	if [[ "${WEBSERVER_PORT}" == "" ]]; then
-		# 		WEBSERVER_PORT=8080
-		# 	fi
-		# 	if [[ ${LAUNCH_BROWSER} == 1 ]]; then
-		# 		cmd.exe /C start "http://${host}:${WEBSERVER_PORT}" &> /dev/null &
-		# 	fi
-		# 	echo "Starting web-server at http://${host}:${WEBSERVER_PORT}"
-		# 	echo "Hit Ctrl+C to end session"
-		# 	if python3 -m http.server -d "${WEB_DIR_PATH}/../" -b "${host}" "${WEBSERVER_PORT}" &> /dev/null; then
-		# 		pid=$!
-		# 		kill -9 $pid > /dev/null
-		# 	else
-		# 		echo
-		# 		echo -e "Error: Web-server's port ${WEBSERVER_PORT} already in use."
-		# 		echo -e "Close older kiri sessions or change the port with '-p [PORT]'"
-		# 		exit 1
-		# 	fi
-		# else
-
-			if [[ "${WEBSERVER_PORT}" != "" ]]; then
-				local webserver_port_param="-p ${WEBSERVER_PORT}"
-			fi
-			if [[ ${LAUNCH_BROWSER} == 0 ]]; then
-				server_only_flag="-S"
-			fi
-			if kiri-server "${OUTPUT_DIR_PATH}" ${webserver_port_param} ${server_only_flag} 2> /dev/null; then
-				pid=$!
-				kill -9 $pid > /dev/null
-			else
-				echo -e "Something went wrong with kiri-server, try to force the port with '-p'"
-				exit 1
-			fi
-		# fi
+		if [[ "${WEBSERVER_PORT}" != "" ]]; then
+			local webserver_port_param="-p ${WEBSERVER_PORT}"
+		fi
+		if [[ ${LAUNCH_BROWSER} == 0 ]]; then
+			server_only_flag="-S"
+		fi
+		if kiri-server "${OUTPUT_DIR_PATH}" ${webserver_port_param} ${server_only_flag} 2> /dev/null; then
+			pid=$!
+			kill -9 $pid > /dev/null
+		else
+			echo -e "Something went wrong with kiri-server, try to force the port with '-p'"
+			exit 1
+		fi
 	fi
 }
 

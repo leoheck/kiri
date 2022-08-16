@@ -1,0 +1,308 @@
+#!/bin/bash
+
+# USAGE:
+# fix_svg_vias <kicad_pcb> <svg_folder>
+
+# EXAMPLE:
+# fix_svg_vias .kiri/40ff518/kicad-blind-burried-vias.kicad_pcb .kiri/40ff518/kiri/pcb/
+
+calc()
+{
+	math_expression=$1
+	python3 -c "import math; val=${math_expression}; print(\"{:.6f}\".format(val))"
+}
+
+
+# Layers list
+# https://gitlab.com/kicad/code/kicad/-/blob/master/include/layer_ids.h#L58
+# Also, this can be extracted from the current board, which may be better...
+layer_id()
+{
+	layer_name=${1}
+
+	# Copper
+	   F_Cu=00
+	 In1_Cu=01
+	 In2_Cu=02
+	 In3_Cu=03
+	 In4_Cu=04
+     In5_Cu=05
+     In6_Cu=06
+     In7_Cu=07
+     In8_Cu=08
+     In9_Cu=09
+    In10_Cu=10
+    In11_Cu=11
+    In12_Cu=12
+    In13_Cu=13
+    In14_Cu=14
+    In15_Cu=15
+    In16_Cu=16
+    In17_Cu=17
+    In18_Cu=18
+    In19_Cu=19
+    In20_Cu=20
+    In21_Cu=21
+    In22_Cu=22
+    In23_Cu=23
+    In24_Cu=24
+    In25_Cu=25
+    In26_Cu=26
+    In27_Cu=27
+    In28_Cu=28
+    In29_Cu=29
+    In30_Cu=30
+	   B_Cu=31
+
+	# Non Copper
+	B_Mask=38
+	F_Mask=39
+
+	case "${layer_name}" in
+		"F.Cu")     layer_id="${F_Cu}"   ;;
+		"In1.Cu")   layer_id="${In1_Cu}" ;;
+		"In2.Cu")   layer_id="${In2_Cu}" ;;
+		"In3.Cu")   layer_id="${In3_Cu}" ;;
+		"In4.Cu")   layer_id="${In4_Cu}" ;;
+		"In5.Cu")   layer_id="${In5_Cu}" ;;
+		"In6.Cu")   layer_id="${In6_Cu}" ;;
+		"In7.Cu")   layer_id="${In7_Cu}" ;;
+		"In8.Cu")   layer_id="${In8_Cu}" ;;
+		"In9.Cu")   layer_id="${In9_Cu}" ;;
+		"In10.Cu")  layer_id="${In10_Cu}" ;;
+		"In11.Cu")  layer_id="${In11_Cu}" ;;
+		"In12.Cu")  layer_id="${In12_Cu}" ;;
+		"In13.Cu")  layer_id="${In13_Cu}" ;;
+		"In14.Cu")  layer_id="${In14_Cu}" ;;
+		"In15.Cu")  layer_id="${In15_Cu}" ;;
+		"In16.Cu")  layer_id="${In16_Cu}" ;;
+		"In17.Cu")  layer_id="${In17_Cu}" ;;
+		"In18.Cu")  layer_id="${In18_Cu}" ;;
+		"In19.Cu")  layer_id="${In19_Cu}" ;;
+		"In20.Cu")  layer_id="${In20_Cu}" ;;
+		"In21.Cu")  layer_id="${In21_Cu}" ;;
+		"In22.Cu")  layer_id="${In22_Cu}" ;;
+		"In23.Cu")  layer_id="${In23_Cu}" ;;
+		"In24.Cu")  layer_id="${In24_Cu}" ;;
+		"In25.Cu")  layer_id="${In25_Cu}" ;;
+		"In26.Cu")  layer_id="${In26_Cu}" ;;
+		"In27.Cu")  layer_id="${In27_Cu}" ;;
+		"In28.Cu")  layer_id="${In28_Cu}" ;;
+		"In29.Cu")  layer_id="${In29_Cu}" ;;
+		"In30.Cu")  layer_id="${In30_Cu}" ;;
+		"B.Cu")    layer_id="${B_Cu}"   ;;
+		"B.Mask")  layer_id="${B_Mask}" ;;
+		"F.Mask")  layer_id="${F_Mask}" ;;
+		*)         layer_id=""          ;;
+	esac
+
+	echo "${layer_id}"
+}
+
+number()
+{
+	padded_value="${1}"
+	printf "%d" "${padded_value}"
+}
+
+kicad_pcb="${1}"
+kicad_pcb_extension="${kicad_pcb##*.}"
+kicad_pcb_filename="${kicad_pcb%.*}"
+
+if [[ ! -f ${kicad_pcb} ]]; then
+	echo "Kicad project '${kicad_pcb}' is missing"
+	exit 1
+fi
+
+svg_folder="${2}"
+
+if [[ -z "${svg_folder}" ]]; then
+	echo "Missing SVG folder"
+	exit 1
+fi
+
+if [[ ! -d "${svg_folder}" ]]; then
+	echo "SVG folder does not exist"
+	exit 1
+fi
+
+
+#====================================================
+# Check if project has blind/burried vias
+#====================================================
+
+kicad_pro="${kicad_pcb_filename}.kicad_pro"
+
+if [[ ! -f ${kicad_pro} ]]; then
+	# echo "Not Kicad 6 project"
+	exit 1
+fi
+
+if grep -v allow_blind_buried_vias ${kicad_pcb_filename}.kicad_pro > /dev/null; then
+	allow_blind_buried_vias=$(grep "allow_blind_buried_vias" ${kicad_pcb_filename}.kicad_pro | cut -d":" -f2 | sed "s/[, \t]\+//g")
+	if [[ ! "${allow_blind_buried_vias}" == "true" ]]; then
+		# echo "Project does not allow blind/burried vias"
+		exit 1
+	fi
+else
+	# echo "Project does not have settings to allow blind/burried vias"
+	exit 1
+fi
+
+#====================================================
+# Get vias info from PCB
+#====================================================
+
+vias_list=$(grep "(via " ${kicad_pcb})
+
+IFS=$'\n'
+i=0
+for line in ${vias_list}; do
+
+	i=$((i+1))
+
+	echo
+	# echo ">> ${line}"
+	echo ">> Via $i"
+
+	blind=false
+	if echo "${line}" | grep -q "blind" > /dev/null; then
+		blind=true
+	fi
+
+	pos_x=$(echo "${line}" | cut -d"(" -f3 | sed "s/)//g" | cut -d" " -f2)
+	pos_y=$(echo "${line}" | cut -d"(" -f3 | sed "s/)//g" | cut -d" " -f3)
+
+	layer1=$(echo "${line}" | cut -d"(" -f6 | sed "s/)//g" | cut -d" " -f2 | sed "s/\"//g")
+	layer2=$(echo "${line}" | cut -d"(" -f6 | sed "s/)//g" | cut -d" " -f3 | sed "s/\"//g")
+
+	remove_unused_layers=false
+	if echo "${line}" | grep -q "remove_unused_layers" > /dev/null; then
+		remove_unused_layers=true
+	fi
+
+	cx=$(calc "${pos_x} * 1000")
+	cy=$(calc "${pos_y} * 1000")
+
+	layer1_id=$(layer_id ${layer1})
+	layer2_id=$(layer_id ${layer2})
+
+	echo -e "   blind = ${blind}"
+	echo -e "   pos_x = ${pos_x}"
+	echo -e "   pos_y = ${pos_y}"
+	echo -e "  layer1 = ${layer1}"
+	echo -e "  layer2 = ${layer2}"
+	echo -e "  remove_unused_layers = ${remove_unused_layers}"
+	echo -e "      cx = ${cx}"
+	echo -e "      cy = ${cy}"
+	echo -e "      id = ${layer1_id}"
+	echo -e "      id = ${layer2_id}"
+
+
+done
+
+echo
+echo
+
+#====================================================
+# Fix SVG files
+#====================================================
+
+for svg in ${svg_folder}/*; do
+
+	circles_list=($(grep "circle" "${svg}"))
+
+	if [[ -z ${circles_list} ]]; then
+		continue
+	fi
+
+	echo
+	echo ">> ${svg}"
+
+	IFS=$'\n'
+	# i=0
+	for circle in "${circles_list[@]}"; do
+		# 	i=$((i+1))
+
+		# 	echo
+		# 	echo "${i}. Circle"
+		# 	echo "$(echo "${circle}" | sed "s/[ \t]\+/ /g" | cut -c-$(($(tput cols)-3)))..."
+
+
+		svg_layer_id=$(echo "${svg}" | sed "s/.*\([0-9][0-9]\).svg/\1/g")
+		number_svg_layer_id=$(number ${svg_layer_id})
+
+		if [[ "${number_svg_layer_id}" -gt "31" ]] && [[ "${number_svg_layer_id}" -ne 36 ]] && [[ "${number_svg_layer_id}" -ne 37 ]]; then
+			echo "Skipping layer, ${svg_layer_id}"
+			continue
+		# else
+			# echo "GOOD, ${number_svg_layer_id}"
+			# continue
+		fi
+
+		IFS=$'\n'
+		for via in ${vias_list}; do
+
+			blind=false
+			if echo "${via}" | grep -q "blind" > /dev/null; then
+				blind=true
+			fi
+
+			# If blind, otherwise it is a normal via
+			if [[ "${blind}" == "true" ]]; then
+
+				# echo "> BLIND VIA"
+
+				pos_x=$(echo "${via}" | cut -d"(" -f3 | sed "s/)//g" | cut -d" " -f2)
+				pos_y=$(echo "${via}" | cut -d"(" -f3 | sed "s/)//g" | cut -d" " -f3)
+				cx=$(calc "${pos_x} * 1000")
+				cy=$(calc "${pos_y} * 1000")
+
+				layer1=$(echo "${via}" | cut -d"(" -f6 | sed "s/)//g" | cut -d" " -f2 | sed "s/\"//g")
+				layer2=$(echo "${via}" | cut -d"(" -f6 | sed "s/)//g" | cut -d" " -f3 | sed "s/\"//g")
+				layer1_id=$(layer_id ${layer1})
+				layer2_id=$(layer_id ${layer2})
+
+				# identify via with its position
+				# if echo "${via}" | grep -q "cx=\"${cx}\" cy=\"${cy}\""; then
+
+				number_layer1_id=$(number ${layer1_id})
+				number_layer2_id=$(number ${layer2_id})
+
+				# echo "svg_layer_id: ${number_svg_layer_id}"
+				# echo "   layer1_id: ${number_layer1_id}"
+				# echo "   layer2_id: ${number_layer2_id}"
+
+				# echo "> ${svg_layer_id} < ${layer1_id} ~ ${layer2_id} > ${svg_layer_id} | (cx=\"${cx}\" cy=\"${cy}\")"
+
+				# if svg_layer_is is in between layers
+				if [[ "${number_svg_layer_id}" -lt "${number_layer1_id}" ]] || [[ "${number_svg_layer_id}" -gt "${number_layer2_id}" ]] || [[ "${number_svg_layer_id}" -eq 36 ]] || [[ "${number_svg_layer_id}" -eq 37 ]]; then
+
+					# echo "$(echo "${circle}" | sed "s/[ \t]\+/ /g"  | cut -d"<" -f3)"
+
+					if echo "${circle}" | grep -q "cx=\"${cx}\" cy=\"${cy}\""; then
+						echo "Remove via on layer=${svg_layer_id} at cx=\"${cx}\" cy=\"${cy}\""
+						sed -i "/cx=\"${cx}\" cy=\"${cy}\"/d" "${svg}"
+					fi
+
+					# if echo "${circle}" | grep -q "cx=\"${cx}\""; then
+					# 	echo "REMOVE_BECAUSE_CX"
+					# 	sed -i "/cx=\"${cx}\"/d" "${svg}"
+					# fi
+					# if echo "${circle}" | grep -q "cy=\"${cy}\""; then
+					# 	echo "REMOVE_BECAUSE_CY"
+					# 	sed -i "/cy=\"${cy}\"/d" "${svg}"
+					# fi
+				fi
+
+			else
+
+				# echo "> NORMAL THROUGH VIA"
+				# nothing to do when the via is normal
+				continue
+
+			fi
+
+		done
+	done
+done

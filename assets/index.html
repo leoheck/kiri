@@ -3,12 +3,12 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<script integrity="" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+		<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css" integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn" crossorigin="anonymous">
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-		<link rel="icon" href="./favicon.ico" type="image/x-icon" />
-		<link rel="shortcut icon" href="./favicon.ico" type="image/x-icon" />
-		<link integrity="" rel="stylesheet" href="kiri.css">
+		<link rel="icon" href="./favicon.ico" type="image/x-icon">
+		<link rel="shortcut icon" href="./favicon.ico" type="image/x-icon">
+		<link rel="stylesheet" href="kiri.css" integrity="">
 		<title>[PROJECT_TITLE]</title>
 	</head>
 	<body>
@@ -33,13 +33,6 @@
 						<p class="text-light" >
 							<span style="margin-left:5px; margin-right:0.5em" class="iconify" data-icon="fa-solid:code-branch" data-inline="false"></span>
 							Commits
-							<small class="text-sm text-muted">
-							: Walk through using
-							(<kbd>Ctrl</kbd>)
-							<kbd><span class="iconify" data-icon="typcn-arrow-up" data-inline="false"></span></kbd> /
-							<kbd><span class="iconify" data-icon="typcn-arrow-down" data-inline="false"></span></kbd>
-							and reset with <kbd>r</kbd>
-							</small>
 						</p>
 						<div class="form-check scrollbox" style="padding: 0px 4px 8px 0px; margin: 0px; margin-right: 4px; overflow-y: scroll">
 							<form id="commits_form" class="overflow-auto scrollbox-content">
@@ -49,50 +42,53 @@
 					</div>
 				</div>
 
-				<div class="col align-self-start justify-content-start col-7 no-gutters" style="background-color: #333; padding: 0px 0px 0px 0px; margin: 0px; height: 100vh;">
+				<div class="col align-self-start justify-content-start col-7 no-gutters" style="background-color: #333; padding: 0px 0px 0px 0px; margin: 0px; height: 90vh;">
 
 					<div class="row no-gutters" style="width: 100%; padding: 0px 0px 0px 0px; margin: 0px;">
 
 						<div class="container no-gutters" style="width: 100%; flex: 1; padding: 0px 0px 0px 0px; margin: 0px;">
 
-							<div class="row no-gutters" style="width: 100%; margin: 0px 50px 10px 10px;">
+							<div class="row no-gutters" style="width: 100%; margin: 0px 0px 0px 5px;">
 
-								<form class="inline" style="padding: 0px 0px 0px 0px; margin: 20px 0px 0px 15px;">
+								<form class="inline" style="padding: 0px 0px 0px 0px; margin: 20px 0px 0px 10px;">
 									<div id="view_mode" class="form-group row btn-group btn-group-toggle" data-toggle="buttons" role="group" aria-label="View Mode">
-										<label id="show_sch_lbl" data-toggle="tooltip" title="Schematic View" class="btn btn-secondary active" onclick="show_sch()">
+										<label id="show_sch_lbl" data-toggle="tooltip" title="Schematic View (s)" class="btn btn-secondary active" onclick="show_sch()">
 											<input id="show_sch" type="radio" name="view_mode" value="show_sch" checked>
 											<span class="iconify" style="width: 20px; height: 20px;" data-icon="carbon:schematics" data-inline="false"></span>
 										</label>
-										<label id="show_pcb_lbl" data-toggle="tooltip" title="Layout View" class="btn btn-secondary" onclick="show_pcb()">
+										<label id="show_pcb_lbl" data-toggle="tooltip" title="Layout View (s)" class="btn btn-secondary" onclick="show_pcb()">
 											<input id="show_pcb" type="radio" name="view_mode" value="show_pcb" >
 											<span class="iconify" style="width: 20px; height: 20px;" data-icon="codicon:circuit-board" data-inline="false"></span>
 										</label>
 									</div>
 								</form>
 
-								<span style="width: 1.5em"></span>
-								<p class="text-light" style="padding: 0px 0px 0px 0px; margin: 25px 0px 0px 5px;">
-									<small class="text-sm">Toggle view mode with <kbd>s</kbd></small>
-								</p>
 								<span style="width: 2em"></span>
 
 								<form class="inline" style="padding: 0px 0px 0px 0px; margin: 20px 0px 0px 20px;">
 									<div id="svg_controls" class="form-group btn-group btn-group-toggle" role="group" aria-label="Zoom Level">
-										<button id="zoom-in" data-toggle="tooltip" title="Zoom In" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary" onclick="this.blur();">
+										<button id="zoom-in" data-toggle="tooltip" title="Zoom In (+)" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary" onclick="this.blur();">
 										<span class="iconify" style="width: 20px; height: 20px;" data-icon="akar-icons:zoom-in" data-inline="false"></span>
 										</button>
-										<button id="zoom-out" data-toggle="tooltip" title="Zoom Out" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary" onclick="this.blur();" >
+										<button id="zoom-out" data-toggle="tooltip" title="Zoom Out (-)" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary" onclick="this.blur();" >
 										<span class="iconify" style="width: 20px; height: 20px;" data-icon="akar-icons:zoom-out" data-inline="false"></span>
 										</button>
-										<button id="reset" data-toggle="tooltip" title="Reset View" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary" onclick="this.blur();" >
+										<button id="zoom-fit" data-toggle="tooltip" title="Fit View (0)" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary" onclick="this.blur();" >
 										<span class="iconify" style="width: 20px; height: 20px;" data-icon="carbon:center-to-fit" data-inline="false"></span>
 										</button>
 									</div>
 								</form>
-									<span style="width: 1.5em"></span>
-								<p class="text-light" style="padding: 0px 0px 0px 0px; margin: 25px 0px 0px 0px;">
-									<small class="text-sm">Zoom fit with <kbd>f</kbd></small>
-								</p>
+
+								<span style="width: 1em"></span>
+
+								<form class="inline" style="padding: 0px 0px 0px 0px; margin: 20px 0px 0px 20px;">
+									<div id="info_controls" class="form-group btn-group btn-group-toggle" role="group" aria-label="Info">
+										<button id="info-btn" data-toggle="modal" title="Info (i)" name="info_controls" type="button" aria-pressed="false" class="btn btn-secondary" data-target="#shortcuts-modal" onclick="this.blur();">
+											<span class="iconify" style="width: 20px; height: 20px;" data-icon="akar-icons:info" data-inline="false"></span>
+										</button>
+									</div>
+								</form>
+
 							</div>
 						</div>
 					</div>
@@ -105,8 +101,8 @@
 									Newer
 									<span class="text-monospace">
 										<form id="KICAD_COMMIT_1" class="form-inline" style="display: inline;" action="index.html" method="post" target="hidden_post_target">
-											<input id="commit1_hash" type="hidden" name="hash" value="[KICAD_COMMIT_1]"/>
-											<input id="commit1_kicad_pro_path" type="hidden" name="kicad_pro_path" value="[COMMIT_1_KICAD_PRO]"/>
+											<input id="commit1_hash" type="hidden" name="hash" value="[KICAD_COMMIT_1]">
+											<input id="commit1_kicad_pro_path" type="hidden" name="kicad_pro_path" value="[COMMIT_1_KICAD_PRO]">
 											(<a data-toggle="tooltip" title="Launch Kicad at this Rev" id="commit1_legend_hash" href="javascript:{}" onclick="document.getElementById('KICAD_COMMIT_1').submit();">[COMMIT_1_HASH]</a>)
 										</form>
 									</span>
@@ -117,8 +113,8 @@
 									Older
 									<span class="text-monospace">
 										<form id="KICAD_COMMIT_2" class="form-inline" style="display: inline;" action="index.html" method="post" target="hidden_post_target">
-											<input id="commit2_hash" type="hidden" name="hash" value="[KICAD_COMMIT_2]"/>
-											<input id="commit2_kicad_pro_path" type="hidden" name="kicad_pro_path" value="[COMMIT_2_KICAD_PRO]"/>
+											<input id="commit2_hash" type="hidden" name="hash" value="[KICAD_COMMIT_2]">
+											<input id="commit2_kicad_pro_path" type="hidden" name="kicad_pro_path" value="[COMMIT_2_KICAD_PRO]">
 											(<a data-toggle="tooltip" title="Launch Kicad at this Rev" id="commit2_legend_hash" href="javascript:{}" onclick="document.getElementById('KICAD_COMMIT_2').submit();">[COMMIT_2_HASH]</a>)
 										</form>
 									</span>
@@ -129,90 +125,8 @@
 								</small>
 							</div>
 
-							<div id="diff-sch" style="width: 100%; height: 94%; display: inline; padding-top: 0px;">
-								<svg id="svg-id-sch" xmlns="http://www.w3.org/2000/svg" version="1.1"
-									xmlns:xlink="http://www.w3.org/1999/xlink"
-									style="display: inline; width: inherit; min-width: inherit; max-width: inherit; height: inherit; min-height: inherit; max-height: inherit;">
-									<g>
-										<svg id="img-1-sch">
-											<defs>
-												<filter id="f1_sch">
-													<feColorMatrix in=SourceGraphic
-														type="matrix"
-														values="
-														1  0  0  0  0
-														0  1  0  1  0
-														0  0  1  1  0
-														0  0  0  1  0" />
-												</filter>
-											</defs>
-											<image id="diff-xlink-1-sch" x="0" y="0" height="100%" width="100%" filter="url(#f1_sch)"
-												onerror="this.onerror=null; imgError(this);"
-												href="[INITIAL_COMMIT_1_SCH]"
-												xlink:href="[INITIAL_COMMIT_1_SCH]"/>
-										</svg>
-										<svg id="img-2-sch-sch">
-											<defs>
-												<filter id="f2_sch">
-													<feColorMatrix in=SourceGraphic
-														type="matrix"
-														values="
-														1  0  0  1  0
-														0  1  0  0  0
-														0  0  1  0  0
-														0  0  0 .5  0" />
-												</filter>
-											</defs>
-											<image id="diff-xlink-2-sch" x="0" y="0" height="100%" width="100%" filter="url(#f2_sch)"
-												onerror="this.onerror=null; imgError(this);"
-												href="[INITIAL_COMMIT_2_SCH]"
-												xlink:href="[INITIAL_COMMIT_2_SCH]"/>
-										</svg>
-									</g>
-								</svg>
-							</div>
-
-							<div id="diff-pcb" style="width: 100%; height: 94%; display: none; padding-top: 0px">
-								<svg id="svg-id-pcb" xmlns="http://www.w3.org/2000/svg" version="1.1"
-									xmlns:xlink="http://www.w3.org/1999/xlink"
-									style="display: inline; width: inherit; min-width: inherit; max-width: inherit; height: inherit; min-height: inherit; max-height: inherit;">
-									<g>
-										<svg id="img-1-pcb">
-											<defs>
-												<filter id="f1_pcb">
-													<feColorMatrix in=SourceGraphic
-														type="matrix"
-														values="
-														1  0  0  0  0
-														0  1  0  1  0
-														0  0  1  1  0
-														0  0  0  1  0 " />
-													</filter>
-											</defs>
-											<image id="diff-xlink-1-pcb" x="0" y="0" height="100%" width="100%" filter="url(#f1_pcb)"
-												onerror="this.onerror=null; imgError(this);"
-												href="[INITIAL_COMMIT_1_PCB]"
-												xlink:href="[INITIAL_COMMIT_1_PCB]"/>
-										</svg>
-										<svg id="img-2-pcb">
-											<defs>
-												<filter id="f2_pcb">
-													<feColorMatrix in=SourceGraphic
-														type="matrix"
-														values="
-														1  0  0  1  0
-														0  1  0  0  0
-														0  0  1  0  0
-														0  0  0 .5  0" />
-												</filter>
-											</defs>
-											<image id="diff-xlink-2-pcb" x="0" y="0" height="100%" width="100%" filter="url(#f2_pcb)"
-												onerror="this.onerror=null; imgError(this);"
-												href="[INITIAL_COMMIT_2_PCB]"
-												xlink:href="[INITIAL_COMMIT_2_PCB]"/>
-										</svg>
-									</g>
-								</svg>
+							<div id="diff-container" style="width: 100%; height: 94%; display: inline; padding-top: 0px;">
+								<!-- SVGS_GOES_HERE -->
 							</div>
 
 						</div>
@@ -227,16 +141,11 @@
 							<p class="text-light">
 								<span style="margin-right:0.5em; width: 20px; height: 20px;" class="iconify" data-icon="gridicons:next-page" data-inline="false"></span>
 								Pages
-								<small class="text-sm text-muted"><br>
-									Cycle using
-									<kbd><span class="iconify" data-icon="typcn-arrow-left" data-inline="false"></span></kbd>/
-									<kbd><span class="iconify" data-icon="typcn-arrow-right" data-inline="false"></span></kbd>
-								</small>
 							</p>
-							<div class="row" style="height: 85%; width: 300px">
-								<div class="col col" style="height: 100%; width: 100%">
-									<div class="form-check scrollbox" style="height: 100%; width: 100%; padding: 0px 0px 8px 0px; margin: 0px; overflow-y: scroll">
-										<form class="overflow-auto scrollbox-content">
+							<div class="row" style="height: 85%; width: 300px;">
+								<div class="col" style="height: 100%; width: 100%">
+									<div id="pages_list_div" class="form-check scrollbox" style="height: 100%; width: 100%; padding: 0px 0px 8px 0px; margin: 0px; overflow-y: scroll; max-height: 90vh;">
+										<form id="pages_list_form" class="overflow-auto scrollbox-content">
 											<!-- FILL_PAGES_HERE -->
 										</form>
 									</div>
@@ -246,20 +155,15 @@
 					</div>
 
 					<div class="list-group no-gutters" id="layers_list" style="display: none; height: 100%;">
-						<div class="form-check no-gutters" style="width: 230px; padding-top: 1em; height: 100%; ">
+						<div class="form-check no-gutters" style="width: 180px; padding-top: 1em; height: 100%; ">
 							<p class="text-light">
 								<span style="margin-right:0.5em; width: 20px; height: 20px;" class="iconify" data-icon="teenyicons:layers-solid" data-inline="false"></span>
 								Layers
-								<small class="text-sm text-muted"><br>
-									Cycle using
-									<kbd><span class="iconify" data-icon="typcn-arrow-left" data-inline="false"></span></kbd>/
-									<kbd><span class="iconify" data-icon="typcn-arrow-right" data-inline="false"></span></kbd>
-								</small>
 							</p>
-							<div class="row" style="height: 85%; width: 300px">
-								<div class="col col" style="height: 100%; width: 100%">
-									<div class="form-check scrollbox" style="height: 100%; width: 100%; padding: 0px 0px 8px 0px; margin: 0px; overflow-y: scroll">
-										<form class="overflow-auto scrollbox-content">
+							<div class="row" style="height: 85%; width: 300px;">
+								<div class="col" style="height: 100%; width: 100%">
+									<div id="layers_list_div" class="form-check scrollbox" style="height: 100%; width: 100%; padding: 0px 0px 8px 0px; margin: 0px; overflow-y: scroll; max-height: 90vh;">
+										<form id="layers_list_form" class="overflow-auto scrollbox-content">
 											<!-- FILL_LAYERS_HERE -->
 										</form>
 									</div>
@@ -271,9 +175,129 @@
 			</div>
 		</div>
 
+		<div class="modal fade text-light" id="shortcuts-modal" tabindex="-1" role="dialog" aria-labelledby="shortcuts-modal-title" aria-hidden="true">
+			<div class="modal-dialog modal-dialog-centered" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title" id="shortcuts-modal-title">Shortcuts</h4>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+
+						<h5>Commits related</h5>
+
+						<table>
+							<tbody>
+							<tr>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd><span class="iconify" data-icon="typcn-arrow-up" data-inline="false"></span></kbd></small></td>
+								<td>Move commits par upwards</td>
+							</tr>
+							<tr>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd><span class="iconify" data-icon="typcn-arrow-down" data-inline="false"></span></kbd></small></td>
+								<td>Move commits par downwards</td>
+							</tr>
+							<tr>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>[</kbd> or <kbd>Ctrl + <span class="iconify" data-icon="typcn-arrow-up" data-inline="false"></span></kbd></small></td>
+								<td>Move 2nd commit upwards</td>
+							</tr>
+							<tr>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>]</kbd> or <kbd>Ctrl + <span class="iconify" data-icon="typcn-arrow-down" data-inline="false"></span></kbd></small></td>
+								<td>Move 2nd commit downwards</td>
+							</tr>
+							<tr>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>r</kbd></small></td>
+								<td>Reset commit selection to the top 2 commits</td>
+							</tr>
+							</tbody>
+						</table>
+
+						<hr class="hr_shortcuts">
+						<h5>View, sheets and layers</h5>
+
+						<table>
+							<tbody>
+							<tr>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>s</kbd></small></td>
+								<td>Switch Schematic/Layout view</td>
+							</tr>
+							<tr>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd><span class="iconify" data-icon="typcn-arrow-right" data-inline="false"></span></kbd> or <kbd>l</kbd></small></td>
+								<td>Select next page/layer</td>
+							</tr>
+							<tr>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd><span class="iconify" data-icon="typcn-arrow-left" data-inline="false"></span></kbd> or <kbd>k</kbd></small></td>
+								<td>Select previous page/layer</td>
+							</tr>
+							</tbody>
+						</table>
+
+						<hr class="hr_shortcuts">
+						<h5>Diff Pan and Zoom</h5>
+
+						<table>
+							<tbody>
+							<tr>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>+</kbd></small></td>
+								<td>Zoom in</td>
+							</tr>
+							<tr>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>-</kbd></small></td>
+								<td>Zoom out</td>
+							</tr>
+							<tr>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>0</kbd></small></td>
+								<td>Zoom fit</td>
+							</tr>
+							<tr>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>Alt + <span class="iconify" data-icon="typcn-arrow-up" data-inline="false"></span></kbd></small></td>
+								<td>Pan svg up</td>
+							</tr>
+							<tr>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>Alt + <span class="iconify" data-icon="typcn-arrow-down" data-inline="false"></span></kbd></small></td>
+								<td>Pan svg down</td>
+							</tr>
+							<tr>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>Alt + <span class="iconify" data-icon="typcn-arrow-left" data-inline="false"></span></kbd></small></td>
+								<td>Pan svg left</td>
+							</tr>
+							<tr>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>Alt + <span class="iconify" data-icon="typcn-arrow-right" data-inline="false"></span></kbd></small></td>
+								<td>Pan svg right</td>
+							</tr>
+							</tbody>
+						</table>
+
+						<hr class="hr_shortcuts">
+						<h5>Miscellaneous</h5>
+
+						<table>
+							<tbody>
+							<tr>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>f</kbd></small></td>
+								<td>Toggle full screen view</td>
+							</tr>
+							<tr>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>i</kbd></small></td>
+								<td>Shows this info view</td>
+							</tr>
+							</tbody>
+						</table>
+
+					</div>
+					<div class="modal-footer">
+						<small class="text-sm">
+							<a href="https://github.com/leoheck/kiri" target="_blank">Kicad Revision Inspector (KiRI)</a> by Leandro Heck
+						</small>
+					</div>
+				</div>
+			</div>
+		</div>
+
 		<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF" crossorigin="anonymous"></script>
-		<script integrity="" src="https://code.iconify.design/2/2.2.1/iconify.min.js"></script>
-		<script integrity="" src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js"></script>
-		<script integrity="" src="./kiri.js"></script>
+		<script src="https://code.iconify.design/2/2.2.1/iconify.min.js" integrity=""></script>
+		<script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js" integrity=""></script>
+		<script src="./kiri.js" integrity="" crossorigin="anonymous"></script>
 	</body>
 </html>

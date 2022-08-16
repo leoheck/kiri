@@ -47,7 +47,8 @@ find_pages()
 		file_name=$(basename "${current_sch_rel%.*}")
 		echo "${file_name}|${current_sch_rel}|${uuid}|${instance_name}|${parent_inst}"
 
-		sch_instances=($(kicad6_sheet_instances "${current_sch}"))
+		IFS=$'\n'
+		sch_instances=($(kicad6_sheet_instances "${current_sch}" | sort -n))
 
 		for inst in "${sch_instances[@]}"; do
 
