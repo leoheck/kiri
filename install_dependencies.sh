@@ -171,12 +171,16 @@ install_python_modules()
 
 init_opam()
 {
-	# Plotgitsch dependencies
-	if [[ ! -d "$HOME/.opam/4.09.1" ]]; then
-		opam init --disable-sandboxing --reinit
-		opam switch create 4.09.1
+	if [[ -z "${OPAM_VERSION}" ]]; then
+		OPAM_VERSION=4.10.2
 	fi
-	opam switch 4.09.1
+
+	if [[ ! -d "${HOME}/.opam/${OPAM_VERSION}" ]]; then
+		y | opam init --disable-sandboxing --reinit
+		opam switch create ${OPAM_VERSION}
+	fi
+
+	opam switch ${OPAM_VERSION}
 	eval "$(opam env)"
 }
 
