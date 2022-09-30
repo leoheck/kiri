@@ -832,6 +832,7 @@ function update_layers_list(commit1, commit2, selected_id)
 
     // Get current selected page name
     var layers = $("#layers_list input:radio[name='layers']");
+
     var selected_layer_element = layers.index(layers.filter(':checked'));
 
     // Save the current selected page, if any
@@ -948,7 +949,9 @@ function update_layer() {
         layer_id = layers[selected_layer].id.split("-")[1];
     }
     catch(err) {
-        console.log("[PCB] Image may not exist");
+        console.log("[PCB] Images may not exist and Kicad layout may be missing.");
+        document.getElementById("diff-xlink-1").parentElement.style.display = "none";
+        document.getElementById("diff-xlink-2").parentElement.style.display = "none";
         return;
     }
 
