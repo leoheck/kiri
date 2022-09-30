@@ -11,6 +11,9 @@ var panZoom_instance = null;
 var lastEventListener = null;
 var lastEmbed = null;
 
+var current_selected_page = 0;
+var previous_selected_page = -1;
+
 sch_current_zoom = null;
 sch_old_zoom = null;
 sch_current_pan = null;
@@ -555,13 +558,24 @@ function update_page()
     var selected_page;
     var page_name;
 
-    // Try to get the firt page
+    // if a different page was in use before, revert the selection to it
+    // TODO: maybe I have to use a list instead...
+    if (previous_selected_page > -1) {
+        pages[previous_selected_page].checked = true;
+        previous_selected_page = -1;
+    }
+
+    // try to get the first page
     try {
         selected_page = pages.index(pages.filter(':checked'));
         page_name = pages[selected_page].id;
+        current_selected_page = selected_page;
 
-    // If there is no page selected, select the firt one
+    // if there is no page selected, select the first one
+    // TODO: instead of the first item by default, a better solution would change to the next inferior index
+    // and keep decrementing until reaching a valid index
     } catch (error) {
+        previous_selected_page = current_selected_page;
         pages[0].checked = true;
         selected_page = pages.index(pages.filter(':checked'));
         page_name = pages[selected_page].id;
