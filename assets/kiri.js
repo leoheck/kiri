@@ -813,7 +813,7 @@ function pad(num, size)
     return num;
 }
 
-function update_layers_list(commit1, commit2, selected_id)
+function update_layers_list(commit1, commit2, selected_layer_idx, selected_layer_id)
 {
     var used_layers_1;
     var used_layers_2;
@@ -832,7 +832,6 @@ function update_layers_list(commit1, commit2, selected_id)
 
     // Get current selected page name
     var layers = $("#layers_list input:radio[name='layers']");
-
     var selected_layer_element = layers.index(layers.filter(':checked'));
 
     // Save the current selected page, if any
@@ -930,8 +929,14 @@ function update_layers_list(commit1, commit2, selected_id)
         layers[optionLabels.length-1].checked = true;
     }
 
+    // restore previously selected index
+    layers = $("#layers_list input:radio[name='layers']");
+    if (selected_layer_idx >= 0) {
+        layers[selected_layer_idx].checked = true;
+    }
+
     // If nothing is selected still, select the first item
-    if (!layers.filter(':checked').length) {
+    if (! layers.filter(':checked').length) {
         layers[0].checked = true;
     }
 }
@@ -941,29 +946,35 @@ function update_layer() {
     console.log("-----------------------------------------");
 
     var layers = $("#layers_list input:radio[name='layers']");
-    var selected_layer = layers.index(layers.filter(':checked'));
-
+    var selected_layer;
     var layer_id;
 
-    try {
-        layer_id = layers[selected_layer].id.split("-")[1];
+    if (layers)
+    {
+        selected_layer = layers.index(layers.filter(':checked'));
+        console.log(">>>> [selected_layer] = ", selected_layer);
+        if (selected_layer >= 0) {
+            layer_id = layers[selected_layer].id.split("-")[1];
+            console.log(">>>> [label_id_IF] = ", layer_id);
+        }
+        else {
+            try {
+                layers[0].checked = true;
+                selected_layer = layers.index(layers.filter(':checked'));
+                layer_id = layers[selected_layer].id.split("-")[1];
+                console.log(">>>> [label_id_ELSE] = ", layer_id);
+            } catch (error) {
+                console.log("[PCB] Images may not exist and Kicad layout may be missing.");
+                show_sch();
+                return;
+            }
+        }
     }
-    catch(err) {
+    else {
         console.log("[PCB] Images may not exist and Kicad layout may be missing.");
-        document.getElementById("diff-xlink-1").parentElement.style.display = "none";
-        document.getElementById("diff-xlink-2").parentElement.style.display = "none";
+        show_sch();
         return;
     }
-
-    if (! layer_id)
-    {
-        layer_id = "00";
-    }
-
-    // if ((commit1 != "") && (commit2 != "")) {
-    //     // Runs only when changing commits
-        update_layers_list(commit1, commit2, layer_id);
-    // }
 
     if (commit1 == "") {
         commit1 = document.getElementById("diff-xlink-1-pcb").href.baseVal.split("/")[1];
@@ -971,6 +982,8 @@ function update_layer() {
     if (commit2 == "") {
         commit2 = document.getElementById("diff-xlink-2-pcb").href.baseVal.split("/")[1];
     }
+
+    update_layers_list(commit1, commit2, selected_layer, layer_id);
 
     var image_path_1 = "../" + commit1 + "/kiri/pcb/layer" + "-" + layer_id + ".svg";
     var image_path_2 = "../" + commit2 + "/kiri/pcb/layer" + "-" + layer_id + ".svg";
