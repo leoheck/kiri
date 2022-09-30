@@ -552,8 +552,21 @@ function update_page()
     update_sheets_list(commit1, commit2);
 
     var pages = $("#pages_list input:radio[name='pages']");
-    var selected_page = pages.index(pages.filter(':checked'));
-    var page_name = pages[selected_page].id;
+    var selected_page;
+    var page_name;
+
+    // Try to get the firt page
+    try {
+        selected_page = pages.index(pages.filter(':checked'));
+        page_name = pages[selected_page].id;
+
+    // If there is no page selected, select the firt one
+    } catch (error) {
+        pages[0].checked = true;
+        selected_page = pages.index(pages.filter(':checked'));
+        page_name = pages[selected_page].id;
+    }
+
     var page_filename = pages[selected_page].value.replace(".kicad_sch", "").replace(".sch", "");
 
     if (commit1 == ""){
