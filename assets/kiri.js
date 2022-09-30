@@ -11,6 +11,9 @@ var panZoom_instance = null;
 var lastEventListener = null;
 var lastEmbed = null;
 
+var current_selected_page = 0;
+var previous_selected_page = -1;
+
 sch_current_zoom = null;
 sch_old_zoom = null;
 sch_current_pan = null;
@@ -552,8 +555,32 @@ function update_page()
     update_sheets_list(commit1, commit2);
 
     var pages = $("#pages_list input:radio[name='pages']");
-    var selected_page = pages.index(pages.filter(':checked'));
-    var page_name = pages[selected_page].id;
+    var selected_page;
+    var page_name;
+
+    // if a different page was in use before, revert the selection to it
+    // TODO: maybe I have to use a list instead...
+    if (previous_selected_page > -1) {
+        pages[previous_selected_page].checked = true;
+        previous_selected_page = -1;
+    }
+
+    // try to get the first page
+    try {
+        selected_page = pages.index(pages.filter(':checked'));
+        page_name = pages[selected_page].id;
+        current_selected_page = selected_page;
+
+    // if there is no page selected, select the first one
+    // TODO: instead of the first item by default, a better solution would change to the next inferior index
+    // and keep decrementing until reaching a valid index
+    } catch (error) {
+        previous_selected_page = current_selected_page;
+        pages[0].checked = true;
+        selected_page = pages.index(pages.filter(':checked'));
+        page_name = pages[selected_page].id;
+    }
+
     var page_filename = pages[selected_page].value.replace(".kicad_sch", "").replace(".sch", "");
 
     if (commit1 == ""){
@@ -702,7 +729,7 @@ function update_sheets_list(commit1, commit2) {
     const hasOption = optionLabels.includes(selected_sheet);
     if (hasOption) {
         // Keep previews selection active
-        $("#pages_list input:radio[name='pages'][value=" + selected_sheet + "]").prop('checked', true);
+        $("#pages_list input:radio[name='pages'][value='" + selected_sheet + "']").prop('checked', true);
     }
     else {
         // If old selection does not exist, maybe the list is now shorter, then select the last item...
@@ -805,6 +832,7 @@ function update_layers_list(commit1, commit2, selected_id)
 
     // Get current selected page name
     var layers = $("#layers_list input:radio[name='layers']");
+
     var selected_layer_element = layers.index(layers.filter(':checked'));
 
     // Save the current selected page, if any
@@ -921,7 +949,9 @@ function update_layer() {
         layer_id = layers[selected_layer].id.split("-")[1];
     }
     catch(err) {
-        console.log("[PCB] Image may not exist");
+        console.log("[PCB] Images may not exist and Kicad layout may be missing.");
+        document.getElementById("diff-xlink-1").parentElement.style.display = "none";
+        document.getElementById("diff-xlink-2").parentElement.style.display = "none";
         return;
     }
 
