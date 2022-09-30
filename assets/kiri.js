@@ -729,7 +729,7 @@ function update_sheets_list(commit1, commit2) {
     const hasOption = optionLabels.includes(selected_sheet);
     if (hasOption) {
         // Keep previews selection active
-        $("#pages_list input:radio[name='pages'][value=" + selected_sheet + "]").prop('checked', true);
+        $("#pages_list input:radio[name='pages'][value='" + selected_sheet + "']").prop('checked', true);
     }
     else {
         // If old selection does not exist, maybe the list is now shorter, then select the last item...
