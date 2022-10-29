@@ -453,6 +453,20 @@ tac()
 	esac
 }
 
+rename()
+{
+	istro_id="$(grep "^ID=" /etc/os-release | cut -d= -f2)"
+
+	case ${istro_id} in
+		"fedora")
+			prename "$@"
+			;;
+		*)
+			rename "$@"
+			;;
+	esac
+}
+
 # Handle Ctrl-C
 cleanup_on_exit()
 {
