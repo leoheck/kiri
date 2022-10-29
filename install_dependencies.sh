@@ -34,6 +34,8 @@ identify_linux_pkg_manager()
 	# Debian does not have "ID_LIKE"
 	if [[ "${distro_id}" == "debian" ]] || [[ "${distro_id_like}" == "debian" ]]; then
 		base_distro="debian"
+	else
+		base_distro="${distro_id}"
 	fi
 
 	case "${base_distro}" in
