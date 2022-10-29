@@ -38,25 +38,27 @@ identify_linux_pkg_manager()
 
 	case "${base_distro}" in
 		"debian") echo "apt"     ;;
-		"fedora") echo "yum"     ;;
+		"fedora") echo "dnf"     ;;
+		"redhat") echo "yum"     ;;
 		*)        echo "Unknown" ;;
 	esac
 }
 
-# =============================================
-# Linux apt-related stuff
-# =============================================
-
 linux_install_dependencies()
 {
-	case "$(identify_linux_pkg_manager)" in
+	pkg_manager="$(identify_linux_pkg_manager)"
+
+	case "${pkg_manager}" in
 		apt)
 			linux_install_software_with_apt
 			;;
-		 # yum)
+		dnf)
+			linux_install_software_with_dnf
+		 	;;
+		# yum)
 			# TODO: when someone requests it..
 			# linux_install_software_with_yum
-		 # 	;;
+		# 	;;
 		*)
 			echo "Error: Unknown system"
 			echo "Please, ask KiRI dev to adapt the dependencies installer"
@@ -64,6 +66,10 @@ linux_install_dependencies()
 			;;
 	esac
 }
+
+# =============================================
+# Linux apt-related stuff
+# =============================================
 
 linux_install_software_with_apt()
 {
@@ -88,7 +94,39 @@ linux_install_software_with_apt()
 	sudo apt install -y librsvg2-bin
 	sudo apt install -y imagemagick
 	sudo apt install -y xdotool
-	sudo apt install -y rename # this perl rename and not util-linux
+	sudo apt install -y rename # perl rename and not util-linux
+}
+
+# =============================================
+# Linux dnf-related stuff
+# =============================================
+
+linux_install_software_with_dnf()
+{
+	# Update packages knowledge
+	sudo dnf check-update
+
+	# Install base packages
+	# sudo dnf install -y git
+	# sudo dnf install -y pkg-config
+	# sudo dnf install -y dos2unix
+	# sudo dnf install -y coreutils
+	# sudo dnf install -y zenity
+
+	# sudo dnf install -y build-essential
+	# sudo dnf install -y libgtk-3-dev
+	# sudo dnf install -y libgmp-dev
+	# sudo dnf install -y python-is-python3
+	# sudo dnf install -y scour
+	# sudo dnf install -y librsvg2-bin
+
+	sudo dnf install -y opam
+	sudo dnf install -y dune
+	sudo dnf install -y python3-pip
+	sudo dnf install -y kicad
+	sudo dnf install -y ImageMagick
+	sudo dnf install -y xdotool
+	sudo dnf install -y prename # perl rename and not util-linux
 }
 
 # =============================================
