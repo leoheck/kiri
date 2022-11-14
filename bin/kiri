@@ -462,7 +462,7 @@ rename()
 			prename "$@"
 			;;
 		*)
-			rename "$@"
+			command rename "$@"
 			;;
 	esac
 }
