@@ -140,6 +140,9 @@ launch_eeschema()
 	export EESCHEMA_PID
 	export EESCHEMA_WIDS
 
+	# Force English to preserve shortcuts that depends with alt
+	export LANG=C.utf8
+
 	$(launch_virtual_display) eeschema "${kicad_sch_path}" 2> /dev/null &
 	EESCHEMA_PID=${!}
 

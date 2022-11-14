@@ -31,6 +31,9 @@ launch_kicad()
 	export KICAD_PID
 	export KICAD_WIDS
 
+	# Force English to preserve shortcuts that depends with alt
+	export LANG=C.utf8
+
 	kicad 2> /dev/null &
 	KICAD_PID=${!}
 
