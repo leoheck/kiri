@@ -228,7 +228,7 @@ init_opam()
 
 install_opam_modules()
 {
-	eval "$(opam env)"
+	#eval "$(opam env)"
 
 	# Update packages knowledge
 	opam update
