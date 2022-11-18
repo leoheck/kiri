@@ -80,6 +80,7 @@ linux_install_software_with_apt()
 
 	# Install base packages
 	sudo apt install -y git
+	sudo apt install -y bc
 	sudo apt install -y build-essential
 	sudo apt install -y libgtk-3-dev
 	sudo apt install -y libgmp-dev
@@ -122,6 +123,7 @@ linux_install_software_with_dnf()
 	# sudo dnf install -y scour
 	# sudo dnf install -y librsvg2-bin
 
+	sudo dnf install -y bc
 	sudo dnf install -y opam
 	sudo dnf install -y dune
 	sudo dnf install -y python3-pip
