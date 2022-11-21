@@ -513,6 +513,7 @@ show_help()
 	     -l|--no-server   Do not launch webserver/browser at the end
 	     -S|--server-only Start webserver but not launch browser
 	     -p|--port PORT   Set webserver port. By default it will try to use an available port.
+	     -i|--ip ADDR     Override the default 127.0.0.1 IP address
 
 	     -s|--skip-cache  Skip usage of -chache.lib on plotgitsch
 	     -6|--skip-kicad6 Skip ploting Kicad 6 schematics (.kicad.sch)
