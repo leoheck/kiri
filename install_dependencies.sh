@@ -76,28 +76,28 @@ linux_install_dependencies()
 linux_install_software_with_apt()
 {
 	# Update packages knowledge
-	sudo apt update
+	sudo apt-get update
 
 	# Install base packages
-	sudo apt install -y git
-	sudo apt install -y bc
-	sudo apt install -y build-essential
-	sudo apt install -y libgtk-3-dev
-	sudo apt install -y libgmp-dev
-	sudo apt install -y pkg-config
-	sudo apt install -y opam
-	sudo apt install -y python-is-python3
-	sudo apt install -y python3-pip
-	sudo apt install -y kicad
-	sudo apt install -y dos2unix
-	sudo apt install -y coreutils
-	sudo apt install -y zenity
-	sudo apt install -y dune
-	sudo apt install -y scour
-	sudo apt install -y librsvg2-bin
-	sudo apt install -y imagemagick
-	sudo apt install -y xdotool
-	sudo apt install -y rename # perl rename and not util-linux
+	sudo apt-get install -y git
+	sudo apt-get install -y bc
+	sudo apt-get install -y build-essential
+	sudo apt-get install -y libgtk-3-dev
+	sudo apt-get install -y libgmp-dev
+	sudo apt-get install -y pkg-config
+	sudo apt-get install -y opam
+	sudo apt-get install -y python-is-python3
+	sudo apt-get install -y python3-pip
+	sudo apt-get install -y kicad
+	sudo apt-get install -y dos2unix
+	sudo apt-get install -y coreutils
+	sudo apt-get install -y zenity
+	sudo apt-get install -y dune
+	sudo apt-get install -y scour
+	sudo apt-get install -y librsvg2-bin
+	sudo apt-get install -y imagemagick
+	sudo apt-get install -y xdotool
+	sudo apt-get install -y rename # perl rename and not util-linux
 }
 
 # =============================================
