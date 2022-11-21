@@ -744,6 +744,11 @@ command_line_parse()
 				shift
 				;;
 
+			-i|--ip)
+				IP_ADDRESS="${2}"
+				shift 2
+				;;
+
 			--*|-*)
 				echo "Unknown argument '${1}'"
 				exit 1
@@ -788,6 +793,10 @@ command_line_parse()
 	else
 		printf "ERROR: Output folder is empty\n"
 		exit 1
+	fi
+
+	if [[ -z ${IP_ADDRESS} ]]; then
+		readonly IP_ADDRESS="127.0.0.1"
 	fi
 
 	readonly WEB_DIR_PATH="${OUTPUT_DIR_PATH}/web/"
@@ -1770,7 +1779,7 @@ launch_webserver()
 		if [[ ${LAUNCH_BROWSER} == 0 ]]; then
 			server_only_flag="-S"
 		fi
-		if kiri-server "${OUTPUT_DIR_PATH}" ${webserver_port_param} ${server_only_flag} 2> /dev/null; then
+		if kiri-server -i "${IP_ADDRESS}" "${OUTPUT_DIR_PATH}" ${webserver_port_param} ${server_only_flag} 2> /dev/null; then
 			pid=$!
 			kill -9 $pid > /dev/null
 		else

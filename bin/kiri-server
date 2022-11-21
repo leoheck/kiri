@@ -95,6 +95,9 @@ def parse_cli_args():
         "-v", "--verbose", action="count", default=0, help="Increase verbosity (-vvv)"
     )
     parser.add_argument(
+        "-i", "--ip", type=str, help="Override default IP address", default="127.0.0.1",
+    )
+    parser.add_argument(
         "www_dir", metavar="WWW_DIR", help="A folder with web/index.html inside"
     )
 
@@ -108,19 +111,21 @@ def parse_cli_args():
     return args
 
 
-def launch_webserver(request_handler, port, kicad_project, server_only):
+def launch_webserver(ip, request_handler, port, kicad_project, server_only):
 
     global httpd
     httpd = socketserver.TCPServer(("", port), request_handler)
 
     with httpd:
         if args.nested:
-            url = "http://127.0.0.1:{port}/{nested_project}/web/index.html".format(
+            url = "{ip}:{port}/{nested_project}/web/index.html".format(
+                ip=ip,
                 port=str(port),
                 nested_project=kicad_project
             )
         else:
-            url = "http://127.0.0.1:{port}/web/index.html".format(
+            url = "http://{ip}:{port}/web/index.html".format(
+                ip=ip,
                 port=str(port)
             )
 
@@ -184,7 +189,7 @@ if __name__ == "__main__":
 
     if args.port:
         try:
-            launch_webserver(request_handler, args.port, kicad_project, args.server_only)
+            launch_webserver(args.ip, request_handler, args.port, kicad_project, args.server_only)
         except Exception:
             print("Specified port {port} is in use".format(port=port))
             pass
@@ -192,7 +197,7 @@ if __name__ == "__main__":
         for i in range(args.port_range):
             try:
                 port = default_port + i
-                launch_webserver(request_handler, port, kicad_project, args.server_only)
+                launch_webserver(args.ip, request_handler, port, kicad_project, args.server_only)
             except Exception:
                 # print("Specified port {port} is in use".format(port=port))
                 pass
