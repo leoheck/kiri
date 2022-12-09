@@ -98,7 +98,13 @@ else
 fi
 ```
 
+# Docker
+
+Since Kiri involves a lot of tools and complex settings there is a project that aims to use Docker to provide simple usage. This is a separate project and can be found here [Kiri-Docker](https://github.com/leoheck/kiri-docker)
+
 # Using KiRI
+
+It can be launched by running Kiri inside or out of the project's repository.
 
 ```bash
 cd [kicad_git_repo]
@@ -139,7 +145,7 @@ There is a possibility to archive generated files. to visualize generated files,
 ```bash
 tar -xvzf kiri-2021.11.18-16h39.tgz
 cd kiri
-./kiri-webserver.py .
+./kiri-server .
 ```
 
 # Examples
