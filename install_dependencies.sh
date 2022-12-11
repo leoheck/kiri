@@ -218,7 +218,7 @@ init_opam()
 	fi
 
 	if [[ ! -d "${HOME}/.opam/${OPAM_VERSION}" ]]; then
-		y | opam init --disable-sandboxing --reinit
+		yes | opam init --disable-sandboxing --reinit
 		opam switch create ${OPAM_VERSION}
 	fi
 
