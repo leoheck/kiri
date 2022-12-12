@@ -862,9 +862,10 @@ get_kiri_version()
 show_tools_versions()
 {
 	IFS= read -r -d '' VERSION <<-EOM
+	    $(basename "${0}") $(get_kiri_version)
+	    kicad $(kicad_version)
 	    plotgitsch $(plotgitsch --version)
 	    kidiff $(get_kidiff_version)
-	    $(basename "${0}") $(get_kiri_version)
 	EOM
 
 	printf "\n%s\n" "$VERSION"
