@@ -154,11 +154,13 @@ launch_eeschema()
 		WAIT_FOR_EESCHEMA_S=0.5
 	fi
 
+	echo
+	echo "Launching Eeschema..."
+
 	# Wait for eeschema to launch the project
 	while [[ "$(is_design_loaded "${kicad_sch_filename}")" -ne "1" ]]; do
 		sleep ${WAIT_FOR_EESCHEMA_S}
 		EESCHEMA_WIDS=($(xdotool search --onlyvisible --sync --classname "Eeschema" 2> /dev/null))
-		debug_eeschema_popups
 		dismiss_eeschema_popups
 	done
 
@@ -168,7 +170,7 @@ launch_eeschema()
 close_eeschema()
 {
 	local win_id=$1
-	echo "- Dismissing popup [${win_id}]"
+	echo "  Dismissing window"
 
 	xdotool key --window "${win_id}" "Esc" &> /dev/null
 	sleep "${TIME}"
@@ -182,16 +184,6 @@ kill_eeschema()
 	if ps aux | grep -q "${EESCHEMA_PID}" &> /dev/null; then
 		kill -9 "${EESCHEMA_PID}" &> /dev/null
 	fi
-}
-
-debug_eeschema_popups()
-{
-	IFS=$'\n'
-	for win_id in "${EESCHEMA_WIDS[@]}"; do
-		# xwininfo -tree -id ${id}
-		win_title=$(xwininfo -tree -id "${win_id}" 2> /dev/null | grep "xwininfo:" | cut -d" " -f5- | sed "s/\"//g")
-		echo "- [${win_id}] Win title: \"${win_title}\""
-	done
 }
 
 is_design_loaded()
@@ -218,7 +210,7 @@ is_design_loaded()
 dissmiss_configure_kicad_Settings_path()
 {
 	local win_id=$1
-	echo "- Dismissing popup [${win_id}]"
+	echo "  Dismissing window"
 
 	xdotool key --window "${win_id}" "Return" &> /dev/null
 	sleep "${TIME}"
@@ -227,25 +219,16 @@ dissmiss_configure_kicad_Settings_path()
 dissmiss_configure_symbol_library_table()
 {
 	local win_id=$1
-	echo "- Dismissing popup [${win_id}]"
+	echo "  Dismissing window"
 
 	xdotool key --window "${win_id}" "Return" &> /dev/null
 	sleep "${TIME}"
-
-	# It looks like the first option to use global lib is not selectable
-	# In this case we are going to an Empty lib (user can fix this later)
-
-	# xdotool key --window "${win_id}" "Down" &> /dev/null
-	# sleep "${TIME}"
-
-	# xdotool key --window "${win_id}" "Return" &> /dev/null
-	# sleep "${TIME}"
 }
 
 dissmiss_popup()
 {
 	local win_id=$1
-	echo "- Dismissing popup [${win_id}]"
+	echo "  Dismissing window"
 
 	xdotool key --window "${win_id}" "Escape" &> /dev/null
 	sleep "${TIME}"
@@ -257,6 +240,8 @@ dismiss_eeschema_popups()
 	for win_id in "${EESCHEMA_WIDS[@]}"; do
 
 		win_title=$(xwininfo -tree -id "${win_id}" 2>/dev/null | grep "xwininfo:" | cut -d" " -f5- | sed "s/\"//g")
+
+		echo "- Window ${win_id} title = \"${win_title}]\""
 
 		case "${win_title}" in
 
@@ -284,8 +269,7 @@ dismiss_eeschema_popups()
 				;;
 
 			*)
-				# Dismiss anyway
-				echo "Unknown popup window [${win_id}] \"${win_title}\""
+				# Unknown popup, dismiss anyway
 				dissmiss_popup "${win_id}" "${win_title}"
 				;;
 		esac
@@ -312,7 +296,7 @@ wait_until_plot_finishes()
 {
 	local plot_dir="${1}"
 	until [[ "$(ls -1 ${plot_dir}/*.svg | wc -l)" -ge "1" ]]; do
-		echo "Waiting plotting..."
+		# echo "Waiting plotting..."
 		sleep ${TIME}
 	done
 	sleep ${TIME}
@@ -400,6 +384,7 @@ main()
 	plot_schematics "${EESCHEMA_WID}" "${output_temp_dir_path}" 2> /dev/null
 	close_eeschema "${EESCHEMA_WID}" 2> /dev/null
 	kill_eeschema
+	echo
 
 	# Organize generated files for KiRI
 	svg_file_paths=($(find "${output_temp_dir_path}" -name "*.svg"))
