@@ -825,7 +825,7 @@ get_kidiff_version()
 
 	# Using standalone cloned KiDiff project
 	if [[ "${kidiff_repo_path}" == "${git_toplevel}" ]]; then
-		last_commit_hash=$(git --git-dir "${super_git_path}" rev-parse --abbrev=8 HEAD)
+		last_commit_hash=$(git --git-dir "${super_git_path}" rev-parse --short HEAD)
 		last_commit_date=$(git --git-dir "${super_git_path}" log -1 --format="%at" | xargs -I{} date -d @{} +"%Y/%m/%d %Hh%M")
 		echo "${last_commit_hash} ${last_commit_date}"
 	else
@@ -851,7 +851,7 @@ get_kiri_version()
 	git_dir_path="${tool_path}/.git"
 
 	if [[ -d "${git_dir_path}" ]]; then
-		last_commit_hash=$(git --git-dir "${git_dir_path}" rev-parse --abbrev=8 HEAD)
+		last_commit_hash=$(git --git-dir "${git_dir_path}" rev-parse --short HEAD)
 		last_commit_date=$(git --git-dir "${git_dir_path}" log -1 --format="%at" | xargs -I{} date -d @{} +"%Y/%m/%d %Hh%M")
 		echo "${last_commit_hash} ${last_commit_date}"
 	else
@@ -942,7 +942,7 @@ get_git_commits()
 
 	command_end=1>&2
 
-	local cmd="git log --abbrev=8 --date=format:'%Y-%m-%d %H:%M:%S' --pretty='format:%h | %ad | %an | %s' ${current_git_branch} -- ${files[@]}"
+	local cmd="git log --date=format:'%Y-%m-%d %H:%M:%S' --pretty='format:%h | %ad | %an | %s' ${current_git_branch} -- ${files[@]}"
 	if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" == "1" ]]; then
 		echo -e "${LBL}Get commits command${RCO}" 1>&2
 		echo -e "   ${LYE}${cmd}${RCO}" | fmt -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g' 1>&2
