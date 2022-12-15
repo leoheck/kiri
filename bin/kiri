@@ -1580,7 +1580,7 @@ generate_diffs()
 					local padding=0
 					local total="/${n_comparisons}"
 				else
-					local padding=$(($(python3 -c "import math; print(int(math.log10(${n_comparisons}))+1)")-1))
+					local padding=$(($(python3 -c "import math; print(int(math.log10(${n_comparisons}))+1)")))
 					local total=""
 				fi
 
