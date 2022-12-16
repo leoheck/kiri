@@ -1548,7 +1548,7 @@ generate_diffs()
 {
 	hashs=$(echo "${COMMITS}" | tac | cut -d' '  -f1 | tac);
 	n_hashs=$(echo "${hashs}" | wc -w | sed "s/^[ \t]\+//g")
-	n_comparisons=$(echo "${n_hashs} * $((n_hashs-1)) " | bc)
+	n_comparisons=$(python3 -c "print(${n_hashs} * $((n_hashs-1)))")
 
 	# Check for local changes
 	echo -e "\n${LBL}Artiffacts Summary${RCO}"

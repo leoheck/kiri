@@ -80,7 +80,6 @@ linux_install_software_with_apt()
 
 	# Install base packages
 	sudo apt-get install -y git
-	sudo apt-get install -y bc
 	sudo apt-get install -y build-essential
 	sudo apt-get install -y libgtk-3-dev
 	sudo apt-get install -y libgmp-dev
@@ -93,7 +92,6 @@ linux_install_software_with_apt()
 	sudo apt-get install -y coreutils
 	sudo apt-get install -y zenity
 	sudo apt-get install -y dune
-	sudo apt-get install -y scour
 	sudo apt-get install -y librsvg2-bin
 	sudo apt-get install -y imagemagick
 	sudo apt-get install -y xdotool
@@ -120,10 +118,8 @@ linux_install_software_with_dnf()
 	# sudo dnf install -y libgtk-3-dev
 	# sudo dnf install -y libgmp-dev
 	# sudo dnf install -y python-is-python3
-	# sudo dnf install -y scour
 	# sudo dnf install -y librsvg2-bin
 
-	sudo dnf install -y bc
 	sudo dnf install -y opam
 	sudo dnf install -y dune
 	sudo dnf install -y python3-pip
@@ -185,7 +181,6 @@ macos_install_brew_modules()
 	brew install findutils
 	brew install dos2unix
 	brew install coreutils
-	brew install scour
 	brew install wxpython
 	brew install wxwidgets
 	brew install librsvg
