@@ -174,7 +174,6 @@ macos_install_brew_modules()
 	brew install pkg-config
 	brew install opam
 	brew install dune
-	brew install wget
 
 	# KiRI dependencies
 	brew install gsed
@@ -215,9 +214,10 @@ init_opam()
 	if [[ ! -d "${HOME}/.opam/${OPAM_VERSION}" ]]; then
 		yes | opam init --disable-sandboxing --reinit
 		opam switch create ${OPAM_VERSION}
+	else
+		opam switch ${OPAM_VERSION}
 	fi
 
-	opam switch ${OPAM_VERSION}
 	eval "$(opam env)"
 }
 
