@@ -91,7 +91,6 @@ linux_install_software_with_apt()
 	sudo apt-get install -y dos2unix
 	sudo apt-get install -y coreutils
 	sudo apt-get install -y zenity
-	sudo apt-get install -y dune
 	sudo apt-get install -y librsvg2-bin
 	sudo apt-get install -y imagemagick
 	sudo apt-get install -y xdotool
@@ -121,7 +120,6 @@ linux_install_software_with_dnf()
 	# sudo dnf install -y librsvg2-bin
 
 	sudo dnf install -y opam
-	sudo dnf install -y dune
 	sudo dnf install -y python3-pip
 	sudo dnf install -y kicad
 	sudo dnf install -y ImageMagick
@@ -173,7 +171,6 @@ macos_install_brew_modules()
 	brew install gmp
 	brew install pkg-config
 	brew install opam
-	brew install dune
 
 	# KiRI dependencies
 	brew install gsed
