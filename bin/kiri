@@ -962,7 +962,7 @@ get_name_of_current_user()
 			username=$(id -F)
 			;;
 		*)
-			username=$(getent passwd "${USER:-Local User}" | cut -d: -f5 | cut -d, -f1;)
+			username=$(cat /etc/passwd | grep "${USER:-Local User}" | cut -d: -f5 | cut -d, -f1)
 			;;
 	esac
 
