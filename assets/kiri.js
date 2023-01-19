@@ -212,14 +212,19 @@ function toggle_sch_pcb_view() {
     update_commits();
 }
 
-function select_next_sch_or_pcb() {
+function select_next_sch_or_pcb(cycle = false) {
     if (document.getElementById("show_sch").checked) {
         pages = $("#pages_list input:radio[name='pages']");
         selected_page = pages.index(pages.filter(':checked'));
 
         new_index = selected_page + 1;
         if (new_index >= pages.length) {
-            new_index = 0;
+            if (cycle) {
+                new_index = 0;
+            }
+            else {
+                new_index = pages.length - 1;
+            }
         }
 
         pages[new_index].checked = true;
@@ -233,7 +238,12 @@ function select_next_sch_or_pcb() {
 
         new_index = selected_layer + 1;
         if (new_index >= layers.length) {
-            new_index = 0;
+            if (cycle) {
+                new_index = 0;
+            }
+            else {
+                new_index = layers.length - 1;
+            }
         }
 
         layers[new_index].checked = true;
@@ -242,14 +252,19 @@ function select_next_sch_or_pcb() {
     }
 }
 
-function select_preview_sch_or_pcb() {
+function select_preview_sch_or_pcb(cycle = false) {
     if (document.getElementById("show_sch").checked) {
         pages = $("#pages_list input:radio[name='pages']");
         selected_page = pages.index(pages.filter(':checked'));
 
         new_index = selected_page - 1;
         if (new_index < 0) {
-            new_index = pages.length - 1;
+            if (cycle) {
+                new_index = pages.length - 1;
+            }
+            else {
+                new_index = 0;
+            }
         }
 
         pages[new_index].checked = true;
@@ -263,7 +278,12 @@ function select_preview_sch_or_pcb() {
 
         new_index = selected_layer - 1;
         if (new_index < 0) {
-            new_index = layers.length - 1;
+            if (cycle) {
+                new_index = layers.length - 1;
+            }
+            else {
+                new_index = 0;
+            }
         }
 
         layers[new_index].checked = true;
@@ -319,8 +339,12 @@ Mousetrap.bind(['r', 'R'],  function(){reset_commits_selection()});
 
 // View
 Mousetrap.bind(['s', 'S'],          function(){toggle_sch_pcb_view()});
-Mousetrap.bind(['l', 'L', 'right'], function(){select_next_sch_or_pcb()});
-Mousetrap.bind(['k', 'K', 'left'],  function(){select_preview_sch_or_pcb()});
+
+Mousetrap.bind(['right'], function(){select_next_sch_or_pcb()});
+Mousetrap.bind(['left'],  function(){select_preview_sch_or_pcb()});
+
+Mousetrap.bind(['ctrl+right', 'command+right'], function(){select_next_sch_or_pcb(true)});
+Mousetrap.bind(['ctrl+left', 'command+left'],  function(){select_preview_sch_or_pcb(true)});
 
 // SVG PAN
 Mousetrap.bind('alt+up',    function(){manual_pan("up")});
