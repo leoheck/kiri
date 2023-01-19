@@ -26,376 +26,271 @@ pcb_current_pan = null;
 var selected_view = "schematic";
 
 // =======================================
-// HANDLE KEY PRESSES
+// HANDLE SHORTCUTS
 // =======================================
 
-// Awesome website
-// https://www.toptal.com/developers/keycode/
+function select_next_2_commits() {
+    commits = $("#commits_form input:checkbox[name='commit']");
 
-var keysDown = {};
+    selected_commits = [];
+    next_selected_commits = [];
 
-window.onkeydown = function(e) {
-    keysDown[e.key] = true;
-
-    var commits = "";
-    var selected_commits = [];
-    var next_selected_commits = [];
-
-    var pages = "";
-    var layers = "";
-
-    var selected_layer = "";
-    var selected_page = "";
-
-    var i = 0;
-    var new_index = 0;
-
-    // =======================================
-    // Toggle View Mode (Schematic/Layout)
-    // =======================================
-
-    if (keysDown.s || keysDown.S) {
-
-        old_view = current_view;
-        current_view = $('#view_mode input[name="view_mode"]:checked').val();
-        console.log("current_view:", current_view);
-
-        if (current_view == "show_sch") {
-            show_pcb();
-        } else {
-            show_sch();
+    for (i = 0; i < commits.length; i++) {
+        if ($("#commits_form input:checkbox[name='commit']")[i].checked) {
+            selected_commits.push(i);
+            next_selected_commits.push(i + 1);
         }
-
-        update_commits();
-
-        keysDown = {};
     }
 
-    // =======================================
-    // SVG Pan
-    // =======================================
-
-    if ( event.altKey && keysDown.ArrowUp ) {
-        manual_pan("up");
-        keysDown = {};
+    // When second commit reaches the end, moves the first commit forward (if possible)
+    if (next_selected_commits[1] >= commits.length) {
+        next_selected_commits[1] = commits.length - 1;
+        if (next_selected_commits[0] <= commits.length - 2) {
+            next_selected_commits[0] = selected_commits[0] + 1;
+        }
     }
-
-    if ( event.altKey && keysDown.ArrowDown ) {
-        manual_pan("down");
-        keysDown = {};
-    }
-
-    if ( event.altKey && keysDown.ArrowLeft ) {
-        manual_pan("left");
-        keysDown = {};
-    }
-
-    if ( event.altKey && keysDown.ArrowRight ) {
-        manual_pan("right");
-        keysDown = {};
-    }
-
-    // =======================================
-    // Next Commit Pair
-    // =======================================
-
-    if (keysDown["]"] || (event.ctrlKey && keysDown.ArrowDown)) {
-
-        commits = $("#commits_form input:checkbox[name='commit']");
-
-        selected_commits = [];
-        next_selected_commits = [];
-
-        for (i = 0; i < commits.length; i++) {
-            if ($("#commits_form input:checkbox[name='commit']")[i].checked) {
-                selected_commits.push(i);
-                next_selected_commits.push(i + 1);
-            }
-        }
-
-        // When second commit reaches the end, moves the first commit forward (if possible)
-        if (next_selected_commits[1] >= commits.length) {
-            next_selected_commits[1] = commits.length - 1;
-            if (next_selected_commits[0] <= commits.length - 2) {
-                next_selected_commits[0] = selected_commits[0] + 1;
-            }
-        }
-        else {
-            // By default does not change the first commit
-            next_selected_commits[0] = selected_commits[0];
-        }
-
-        // Fix bottom boundary
-        if (next_selected_commits[0] >= next_selected_commits[1]) {
-            next_selected_commits[0] = next_selected_commits[1] - 1;
-        }
-
-        // Fix bottom boundary
-        if (next_selected_commits[0] >= commits.length - 2) {
-            next_selected_commits[0] = commits.length - 2;
-        }
-
-        // Update selected commits
-        for (i = 0; i < selected_commits.length; i++) {
-            commits[selected_commits[i]].checked = false;
-        }
-        for (i = 0; i < selected_commits.length; i++) {
-            commits[next_selected_commits[i]].checked = true;
-        }
-
-        update_commits();
-        keysDown = {};
-    }
-
-    // =======================================
-    // =======================================
-
-    if (keysDown.ArrowDown) {
-
-        commits = $("#commits_form input:checkbox[name='commit']");
-
-        selected_commits = [];
-        next_selected_commits = [];
-
-        for (i = 0; i < commits.length; i++) {
-            if ($("#commits_form input:checkbox[name='commit']")[i].checked) {
-                selected_commits.push(i);
-                next_selected_commits.push(i + 1);
-            }
-        }
-
-        // Fix bottom boundary
-        if (next_selected_commits[1] >= commits.length - 1) {
-            next_selected_commits[1] = commits.length - 1;
-        }
-
-        // Fix bottom boundary
-        if (next_selected_commits[0] >= commits.length - 2) {
-            next_selected_commits[0] = commits.length - 2;
-        }
-
-        for (i = 0; i < selected_commits.length; i++) {
-            commits[selected_commits[i]].checked = false;
-        }
-        for (i = 0; i < selected_commits.length; i++) {
-            commits[next_selected_commits[i]].checked = true;
-        }
-
-        update_commits();
-        keysDown = {};
-    }
-
-    // =======================================
-    // Previous Commit Pair
-    // =======================================
-
-    if (keysDown["["] || (event.ctrlKey && keysDown.ArrowUp)) {
-
-        commits = $("#commits_form input:checkbox[name='commit']");
-
-        selected_commits = [];
-        next_selected_commits = [];
-
-        for (i = 0; i < commits.length; i++) {
-            if ($("#commits_form input:checkbox[name='commit']")[i].checked) {
-                selected_commits.push(i);
-                next_selected_commits.push(i - 1);
-            }
-        }
-
+    else {
         // By default does not change the first commit
         next_selected_commits[0] = selected_commits[0];
-
-        // When commits are touching, move first backwards (if possible)
-        if (next_selected_commits[1] == next_selected_commits[0]) {
-            if (next_selected_commits[0] > 0) {
-                next_selected_commits[0] = next_selected_commits[0] -1;
-            }
-        }
-
-        // Fix top boundary
-        if (next_selected_commits[0] < 0) {
-            next_selected_commits[0] = 0;
-        }
-
-        // Fix top boundary
-        if (next_selected_commits[1] <= 1) {
-            next_selected_commits[1] = 1;
-        }
-
-        // Update selected commits
-        for (i = 0; i < selected_commits.length; i++) {
-            commits[selected_commits[i]].checked = false;
-        }
-        for (i = 0; i < selected_commits.length; i++) {
-            commits[next_selected_commits[i]].checked = true;
-        }
-
-        update_commits();
-        keysDown = {};
     }
 
-    // =======================================
-    // =======================================
-
-    if (keysDown.ArrowUp) {
-
-        commits = $("#commits_form input:checkbox[name='commit']");
-
-        selected_commits = [];
-        next_selected_commits = [];
-
-        for (i = 0; i < commits.length; i++) {
-            if ($("#commits_form input:checkbox[name='commit']")[i].checked) {
-                selected_commits.push(i);
-                next_selected_commits.push(i - 1);
-            }
-        }
-
-        // Fix top boundary
-        if (next_selected_commits[0] <= 0) {
-            next_selected_commits[0] = 0;
-        }
-
-        // Fix top boundary
-        if (next_selected_commits[1] <= 1) {
-            next_selected_commits[1] = 1;
-        }
-
-        // Update selected commits
-        for (i = 0; i < selected_commits.length; i++) {
-            commits[selected_commits[i]].checked = false;
-        }
-        for (i = 0; i < selected_commits.length; i++) {
-            commits[next_selected_commits[i]].checked = true;
-        }
-
-        update_commits();
-        keysDown = {};
+    // Fix bottom boundary
+    if (next_selected_commits[0] >= next_selected_commits[1]) {
+        next_selected_commits[0] = next_selected_commits[1] - 1;
     }
 
-    // =======================================
-    // Reset commit selection (select the ones on top)
-    // =======================================
-
-    if (keysDown.r || keysDown.R) {
-
-        commits = $("#commits_form input:checkbox[name='commit']");
-        selected_commits = [];
-        for (i = 0; i < commits.length; i++) {
-            $("#commits_form input:checkbox[name='commit']")[i].checked = false;
-        }
-        for (i = 0; i < 2; i++) {
-            $("#commits_form input:checkbox[name='commit']")[i].checked = true;
-        }
-
-        update_commits();
-        keysDown = {};
+    // Fix bottom boundary
+    if (next_selected_commits[0] >= commits.length - 2) {
+        next_selected_commits[0] = commits.length - 2;
     }
 
-    // =======================================
-    // Next Schematic Page / Layout
-    // =======================================
+    // Update selected commits
+    for (i = 0; i < selected_commits.length; i++) {
+        commits[selected_commits[i]].checked = false;
+    }
+    for (i = 0; i < selected_commits.length; i++) {
+        commits[next_selected_commits[i]].checked = true;
+    }
 
-    if (keysDown.l || keysDown.L || keysDown.ArrowRight) {
-        if (document.getElementById("show_sch").checked) {
-            pages = $("#pages_list input:radio[name='pages']");
-            selected_page = pages.index(pages.filter(':checked'));
+    update_commits();
+}
 
-            new_index = selected_page + 1;
-            if (new_index >= pages.length) {
+function select_next_commit() {
+    commits = $("#commits_form input:checkbox[name='commit']");
+
+    selected_commits = [];
+    next_selected_commits = [];
+
+    for (i = 0; i < commits.length; i++) {
+        if ($("#commits_form input:checkbox[name='commit']")[i].checked) {
+            selected_commits.push(i);
+            next_selected_commits.push(i + 1);
+        }
+    }
+
+    // Fix bottom boundary
+    if (next_selected_commits[1] >= commits.length - 1) {
+        next_selected_commits[1] = commits.length - 1;
+    }
+
+    // Fix bottom boundary
+    if (next_selected_commits[0] >= commits.length - 2) {
+        next_selected_commits[0] = commits.length - 2;
+    }
+
+    for (i = 0; i < selected_commits.length; i++) {
+        commits[selected_commits[i]].checked = false;
+    }
+    for (i = 0; i < selected_commits.length; i++) {
+        commits[next_selected_commits[i]].checked = true;
+    }
+
+    update_commits();
+}
+
+function select_previows_2_commits() {
+    commits = $("#commits_form input:checkbox[name='commit']");
+
+    selected_commits = [];
+    next_selected_commits = [];
+
+    for (i = 0; i < commits.length; i++) {
+        if ($("#commits_form input:checkbox[name='commit']")[i].checked) {
+            selected_commits.push(i);
+            next_selected_commits.push(i - 1);
+        }
+    }
+
+    // By default does not change the first commit
+    next_selected_commits[0] = selected_commits[0];
+
+    // When commits are touching, move first backwards (if possible)
+    if (next_selected_commits[1] == next_selected_commits[0]) {
+        if (next_selected_commits[0] > 0) {
+            next_selected_commits[0] = next_selected_commits[0] -1;
+        }
+    }
+
+    // Fix top boundary
+    if (next_selected_commits[0] < 0) {
+        next_selected_commits[0] = 0;
+    }
+
+    // Fix top boundary
+    if (next_selected_commits[1] <= 1) {
+        next_selected_commits[1] = 1;
+    }
+
+    // Update selected commits
+    for (i = 0; i < selected_commits.length; i++) {
+        commits[selected_commits[i]].checked = false;
+    }
+    for (i = 0; i < selected_commits.length; i++) {
+        commits[next_selected_commits[i]].checked = true;
+    }
+
+    update_commits();
+}
+
+function select_previows_commit()
+{
+    commits = $("#commits_form input:checkbox[name='commit']");
+
+    selected_commits = [];
+    next_selected_commits = [];
+
+    for (i = 0; i < commits.length; i++) {
+        if ($("#commits_form input:checkbox[name='commit']")[i].checked) {
+            selected_commits.push(i);
+            next_selected_commits.push(i - 1);
+        }
+    }
+
+    // Fix top boundary
+    if (next_selected_commits[0] <= 0) {
+        next_selected_commits[0] = 0;
+    }
+
+    // Fix top boundary
+    if (next_selected_commits[1] <= 1) {
+        next_selected_commits[1] = 1;
+    }
+
+    // Update selected commits
+    for (i = 0; i < selected_commits.length; i++) {
+        commits[selected_commits[i]].checked = false;
+    }
+    for (i = 0; i < selected_commits.length; i++) {
+        commits[next_selected_commits[i]].checked = true;
+    }
+
+    update_commits();
+}
+
+function reset_commits_selection()
+{
+    commits = $("#commits_form input:checkbox[name='commit']");
+    selected_commits = [];
+    for (i = 0; i < commits.length; i++) {
+        $("#commits_form input:checkbox[name='commit']")[i].checked = false;
+    }
+    for (i = 0; i < 2; i++) {
+        $("#commits_form input:checkbox[name='commit']")[i].checked = true;
+    }
+
+    update_commits();
+}
+
+function toggle_sch_pcb_view() {
+    old_view = current_view;
+    current_view = $('#view_mode input[name="view_mode"]:checked').val();
+    if (current_view == "show_sch") {
+        show_pcb();
+    } else {
+        show_sch();
+    }
+    update_commits();
+}
+
+function select_next_sch_or_pcb(cycle = false) {
+    if (document.getElementById("show_sch").checked) {
+        pages = $("#pages_list input:radio[name='pages']");
+        selected_page = pages.index(pages.filter(':checked'));
+
+        new_index = selected_page + 1;
+        if (new_index >= pages.length) {
+            if (cycle) {
                 new_index = 0;
             }
-
-            pages[new_index].checked = true;
-
-            update_page();
-        }
-        else
-        {
-            layers = $("#layers_list input:radio[name='layers']");
-            selected_layer = layers.index(layers.filter(':checked'));
-
-            new_index = selected_layer + 1;
-            if (new_index >= layers.length) {
-                new_index = 0;
-            }
-
-            layers[new_index].checked = true;
-
-            update_layer();
-        }
-
-        keysDown = {};
-    }
-
-    // =======================================
-    // Previous Schematic Page / Layer
-    // =======================================
-
-    if (keysDown.k || keysDown.K || keysDown.ArrowLeft) {
-        if (document.getElementById("show_sch").checked) {
-            pages = $("#pages_list input:radio[name='pages']");
-            selected_page = pages.index(pages.filter(':checked'));
-
-            new_index = selected_page - 1;
-            if (new_index < 0) {
+            else {
                 new_index = pages.length - 1;
             }
-
-            pages[new_index].checked = true;
-
-            update_page();
-            update_sheets_list(commit1, commit2);
-
-        } else {
-            layers = $("#layers_list input:radio[name='layers']");
-            selected_layer = layers.index(layers.filter(':checked'));
-
-            new_index = selected_layer - 1;
-            if (new_index < 0) {
-                new_index = layers.length - 1;
-            }
-
-            layers[new_index].checked = true;
-
-            update_layer();
         }
 
-        keysDown = {};
+        pages[new_index].checked = true;
+
+        update_page();
     }
+    else
+    {
+        layers = $("#layers_list input:radio[name='layers']");
+        selected_layer = layers.index(layers.filter(':checked'));
 
-    // =======================================
-    // SVG Zoom
-    // =======================================
+        new_index = selected_layer + 1;
+        if (new_index >= layers.length) {
+            if (cycle) {
+                new_index = 0;
+            }
+            else {
+                new_index = layers.length - 1;
+            }
+        }
 
-    if (e.keyCode === 48 || e.keyCode === 96) { // Digit Zero | Numpad 0
-        svg_fit_center();
-        keysDown = {};
+        layers[new_index].checked = true;
+
+        update_layer();
     }
+}
 
-    if (e.keyCode === 187 || e.keyCode === 107) { // Plus | Numpad Plus
-        svg_zoom_in();
-        keysDown = {};
+function select_preview_sch_or_pcb(cycle = false) {
+    if (document.getElementById("show_sch").checked) {
+        pages = $("#pages_list input:radio[name='pages']");
+        selected_page = pages.index(pages.filter(':checked'));
+
+        new_index = selected_page - 1;
+        if (new_index < 0) {
+            if (cycle) {
+                new_index = pages.length - 1;
+            }
+            else {
+                new_index = 0;
+            }
+        }
+
+        pages[new_index].checked = true;
+
+        update_page();
+        update_sheets_list(commit1, commit2);
+
+    } else {
+        layers = $("#layers_list input:radio[name='layers']");
+        selected_layer = layers.index(layers.filter(':checked'));
+
+        new_index = selected_layer - 1;
+        if (new_index < 0) {
+            if (cycle) {
+                new_index = layers.length - 1;
+            }
+            else {
+                new_index = 0;
+            }
+        }
+
+        layers[new_index].checked = true;
+
+        update_layer();
     }
-
-    if (e.keyCode === 189 || e.keyCode === 109) { // Minus | Numpad Minus
-        svg_zoom_out();
-        keysDown = {};
-    }
-
-    if (keysDown.f || keysDown.F) {
-        toogle_fullscreen();
-        keysDown = {};
-    }
-
-    if (keysDown.i || keysDown.I) {
-        show_info_popup();
-        keysDown = {};
-    }
-
-    // keysDown = {};
-};
+}
 
 function svg_fit_center()
 {
@@ -432,6 +327,39 @@ function manual_pan(direction)
             break;
     }
 }
+
+// Commits
+Mousetrap.bind(['ctrl+down', 'ctrl+]','command+down', 'command+]'], function(){select_next_2_commits()});
+Mousetrap.bind(['down', ']'],      function(){select_next_commit()});
+
+Mousetrap.bind(['ctrl+up', 'ctrl+[', 'command+up', 'command+['], function(){select_previows_2_commits()});
+Mousetrap.bind(['up', '['],        function(){select_previows_commit()});
+
+Mousetrap.bind(['r', 'R'],  function(){reset_commits_selection()});
+
+// View
+Mousetrap.bind(['s', 'S'],          function(){toggle_sch_pcb_view()});
+
+Mousetrap.bind(['right'], function(){select_next_sch_or_pcb()});
+Mousetrap.bind(['left'],  function(){select_preview_sch_or_pcb()});
+
+Mousetrap.bind(['ctrl+right', 'command+right'], function(){select_next_sch_or_pcb(true)});
+Mousetrap.bind(['ctrl+left', 'command+left'],  function(){select_preview_sch_or_pcb(true)});
+
+// SVG PAN
+Mousetrap.bind('alt+up',    function(){manual_pan("up")});
+Mousetrap.bind('alt+down',  function(){manual_pan("down")});
+Mousetrap.bind('alt+left',  function(){manual_pan("left")});
+Mousetrap.bind('alt+right', function(){manual_pan("right")});
+
+// SVG ZOOM
+Mousetrap.bind('0',        function(){svg_fit_center()});
+Mousetrap.bind(['+', '='], function(){svg_zoom_in()});
+Mousetrap.bind('-',        function(){svg_zoom_out()});
+
+// Misc
+Mousetrap.bind(['f', 'F'], function(){toogle_fullscreen()});
+Mousetrap.bind(['i', 'I'], function(){show_info_popup()});
 
 // =======================================
 // =======================================
