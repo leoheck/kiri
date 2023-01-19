@@ -188,7 +188,7 @@ function select_previows_commit()
 }
 
 function reset_commits_selection()
-{ 
+{
     commits = $("#commits_form input:checkbox[name='commit']");
     selected_commits = [];
     for (i = 0; i < commits.length; i++) {
