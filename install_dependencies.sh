@@ -32,7 +32,7 @@ identify_linux_pkg_manager()
 	distro_id_like="$(grep "^ID_LIKE=" /etc/os-release | cut -d= -f2)"
 
 	# Debian does not have "ID_LIKE"
-	if [[ "${distro_id}" == "debian" ]] || [[ "${distro_id_like}" == "debian" ]]; then
+	if [[ "${distro_id}" == "debian" ]] || [[ "${distro_id_like}" =~ "debian" ]]; then
 		base_distro="debian"
 	else
 		base_distro="${distro_id}"
