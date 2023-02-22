@@ -461,7 +461,13 @@ tac()
 
 rename()
 {
-	istro_id="$(grep "^ID=" /etc/os-release | cut -d= -f2)"
+	os=$(identify_operating_system)
+
+	if [[ ${os} != "macOS" ]]; then
+		istro_id="$(grep "^ID=" /etc/os-release | cut -d= -f2)"
+	esle
+		istro_id=${os}
+	fi
 
 	case ${istro_id} in
 		"fedora")
@@ -470,6 +476,18 @@ rename()
 		*)
 			command rename "$@"
 			;;
+	esac
+}
+
+identify_operating_system()
+{
+	case "${OSTYPE}" in
+		bsd*)     echo "BSD"     ;;
+		darwin*)  echo "macOS"   ;;
+		linux*)   echo "$(identify_linux_or_wsl)" ;;
+		msys*)    echo "Windows" ;;
+		solaris*) echo "Solaris" ;;
+		*)        echo "Unknown" ;;
 	esac
 }
 
@@ -1424,7 +1442,7 @@ generate_schematic_artifacts()
 	local proj_name_1=${8}
 	local proj_name_2=${9}
 
-	if [[ -f $(which kicad-cli) ]]; then
+	if [[ -f $(which kicad-cli) ]] && [[ ! $(get_file_extension "${kicad_sch_1}") == "sch" ]] && [[ ! $(get_file_extension "${kicad_sch_2}") == "sch" ]]; then
 
 		if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]]; then
 			echo
@@ -1583,7 +1601,10 @@ generate_layout_artifacts()
 	local proj_name_1=${8}
 	local proj_name_2=${9}
 
-	if [[ -f $(which kicad-cli) ]]; then
+	# kicad-cli to plot layers works but KICAD-DIFF is faster
+	# use it only if kicad-diff is missing
+
+	if [[ -f $(which kicad-cli) ]] && [[ -n ${KIDIFF_MISSING} ]] ; then
 
 		if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]]; then
 			echo
@@ -1672,7 +1693,7 @@ generate_layout_artifacts()
 				page_frame_parameter="-f"
 			fi
 
-			local cmd="kidiff \"${kicad_pcb}\" -n --webserver-disable -a ${commit_hash_1} -b ${commit_hash_2} -o \"${OUTPUT_DIR_PATH}\" ${page_frame_parameter} ${command_end}"
+			local cmd="kidiff \"${kicad_pcb}\" -r -n --webserver-disable -a ${commit_hash_1} -b ${commit_hash_2} -o \"${OUTPUT_DIR_PATH}\" ${page_frame_parameter} ${command_end}"
 
 			if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]] || [[ "${DEBUG_KIDIFF}" == "1" ]]; then
 				echo -e "   ${LGR}${cmd}${RCO}" | fmt -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
