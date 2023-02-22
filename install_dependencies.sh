@@ -160,9 +160,10 @@ macos_install_kicad()
 macos_install_brew_modules()
 {
 	sudo spctl --master-disable
+	xcode-select --install
 
 	# Update packages knowledge
-	brew update
+	#brew update
 
 	# Base dependencies
 	brew install git
