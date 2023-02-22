@@ -3,16 +3,21 @@
 import argparse
 import os
 import sys
-
+import platform
 
 script_file_path = os.path.realpath(__file__)
 script_dir_path = os.path.dirname(script_file_path)
 script_dir_parent_path = os.path.dirname(script_dir_path)
 sys.path.insert(1, script_dir_parent_path)
 
+if platform.system() == "Darwin":
+    sys.path.insert(0, "/Applications/Kicad/kicad.app/Contents/Frameworks/python/site-packages/") # Kicad 5
+    sys.path.insert(0, "/Applications/KiCad/kicad.app/Contents/Frameworks/python/site-packages/") # Kicad 6
+    sys.path.insert(0, "/Applications/KiCad/KiCad.app/Contents/Frameworks/Python.framework/")     # Kicad 6 and 7
+
+
 from submodules.kicad_parser.kicad_pcb import *
 from submodules.kicad_parser.sexp_parser import *
-
 
 def parse_cli_args():
     parser = argparse.ArgumentParser(description="EEschema hierarchy finder")
