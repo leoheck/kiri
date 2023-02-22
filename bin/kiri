@@ -465,7 +465,7 @@ rename()
 
 	if [[ ${os} != "macOS" ]]; then
 		istro_id="$(grep "^ID=" /etc/os-release | cut -d= -f2)"
-	esle
+	else
 		istro_id=${os}
 	fi
 
@@ -477,6 +477,15 @@ rename()
 			command rename "$@"
 			;;
 	esac
+}
+
+identify_linux_or_wsl()
+{
+	if grep -qEi "(Microsoft|WSL)" /proc/version &> /dev/null ; then
+		echo "WSL"
+	else
+		echo "Linux"
+	fi
 }
 
 identify_operating_system()
