@@ -16,6 +16,10 @@ if platform.system() == "Darwin":
     sys.path.insert(0, "/Applications/Kicad/kicad.app/Contents/Frameworks/python/site-packages/")
     sys.path.insert(0, "/Applications/KiCad/kicad.app/Contents/Frameworks/python/site-packages/")
 
+if platform.system() == "Linux":
+    sys.path.insert(0, "/usr/lib/kicad/lib/python3/dist-packages/")
+
+
 import pcbnew as pn
 
 
