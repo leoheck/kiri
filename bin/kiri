@@ -1,5 +1,8 @@
 #!/bin/bash
 
+export LD_LIBRARY_PATH="/usr/lib/kicad/lib/x86_64-linux-gnu/:${LD_LIBRARY_PATH}"
+export PYTHONPATH="${PYTHONPATH}:/usr/lib/kicad/lib/python3/dist-packages/"
+
 # Kicad 5 files will be ploted with plotgitcsch
 # FORCE_PLOTTING_GRAPHICALLY env variable forces it to be ploted graphically
 # Set it with before runing Kiri with
@@ -371,7 +374,7 @@ export DRY_RUN=0
 export LAUNCH_BROWSER=1
 export PAGE_FRAME=1
 export REMOVE_KIRI_FOLDER=0
-export SELECT_LAST_N_COMMITS
+export SELECT_LASTEST_N_COMMITS
 export SKIP_CACHE_LIB=0
 export START_ON_LAYOUT_VIEW=0
 export START_SERVER=1
@@ -537,6 +540,8 @@ show_help()
 	    plotkicadsch (plotgitsch) and Kicad-Diff (kidiff) in a single easy-to-use tool.
 
 	OPTIONS:
+
+	     ls               List project commits with Kiri style
 
 	     -a|--all         Include all commits even if schematics/layout don't have changes
 	     -o|--older HASH  Show commits starting from this one
@@ -704,7 +709,7 @@ command_line_parse()
 				;;
 
 			-t|--last)
-				SELECT_LAST_N_COMMITS="${2}"
+				SELECT_LASTEST_N_COMMITS="${2}"
 				shift 2
 				;;
 
@@ -796,6 +801,11 @@ command_line_parse()
 			-i|--ip)
 				IP_ADDRESS="${2}"
 				shift 2
+				;;
+
+			ls)
+				get_git_commits | cat | nl
+				exit 0
 				;;
 
 			--*|-*)
@@ -946,7 +956,8 @@ get_schematic_vesion()
 
 		kicad_sch)
 			# Format
-			# (kicad_sch (version 20211123) (generator eeschema)
+			# (kicad_sch (version 20211123) (generator eeschema) # Kicad 6
+			# (kicad_sch (version 20230121) (generator eeschema) # Kicad 7
 			grep -i "kicad_sch" "${kicad_sch}" -m 1 | sed "s/[()]//g" | cut -d" " -f3
 			;;
 	esac
@@ -963,7 +974,8 @@ get_layout_version()
 	# (kicad_pcb (version 20171130) (host pcbnew 5.1.6-c6e7f7d~86~ubuntu20.04.1)
 	# (kicad_pcb (version 20171130) (host pcbnew 6.0.0-rc1-unknown-da35b16~65~ubuntu18.04.1)
 	# (kicad_pcb (version 20200104) (host pcbnew "(5.99.0-879-ga0698723b)")
-	# (kicad_pcb (version 20210606) (generator pcbnew)
+	# (kicad_pcb (version 20210606) (generator pcbnew)  # Kicad 6
+	# (kicad_pcb (version 20221018) (generator pcbnew)  # Kicad 7
 
 	local kicad_pcb="${1}"
 	head -n1 "${kicad_pcb}" | sed "s/[()]//g" | cut -d" " -f3
@@ -973,7 +985,7 @@ set_default_html_view()
 {
 	local kicad_sch="${1}"
 
-	# Kicad-6 boards do not have a schematic view working yet
+	# Kicad-6 boards do not have a schematic cli-exporter working yet (only my xdootool script)
 	if [[ $(get_schematic_vesion "${kicad_sch}") -ge 20211014 ]]; then
 		START_ON_LAYOUT_VIEW=1
 	fi
@@ -1088,8 +1100,8 @@ get_git_commits_list()
 		COMMITS=$(echo "${COMMITS}" | sed -n "/^${NEWER_COMMIT}/,\$p")
 	fi
 
-	if [[ -n "${SELECT_LAST_N_COMMITS}" ]]; then
-		COMMITS=$(echo "${COMMITS}" | head -n "${SELECT_LAST_N_COMMITS}")
+	if [[ -n "${SELECT_LASTEST_N_COMMITS}" ]]; then
+		COMMITS=$(echo "${COMMITS}" | head -n "${SELECT_LASTEST_N_COMMITS}")
 	fi
 
 	# Append local files only if they have changes
@@ -1117,9 +1129,10 @@ export_project_files()
 	local commit_hash="${1}"
 
 	if [[ "${DEBUG}" == "1" ]]; then
-		echo -e "\n${LBL}Retrieving commits:${RCO}"
-		echo -e "- Source path: ${KICAD_PROJ_ABSOLUTE_PATH}"
-		echo -e "- Output path: ${OUTPUT_DIR_PATH}/${commit_hash}"
+		indent=$(printf ' %.0s' {1..4})
+		echo -e "\n${indent}${LCY}Retrieving commits:${RCO}"
+		echo -e "${indent}- Source path: ${KICAD_PROJ_ABSOLUTE_PATH}"
+		echo -e "${indent}- Output path: ${OUTPUT_DIR_PATH}/${commit_hash}"
 	fi
 
 	if [[ "${commit_hash}" == "_local_" ]]; then
@@ -1128,10 +1141,6 @@ export_project_files()
 	else
 		mkdir -p "${OUTPUT_DIR_PATH}/${commit_hash}"
 		git archive --format=tar ${commit_hash} | (cd "${OUTPUT_DIR_PATH}/${commit_hash}" && tar xf -)
-	fi
-
-	if [[ "${DEBUG}" == "1" ]]; then
-		echo
 	fi
 }
 
@@ -1208,14 +1217,18 @@ create_list_of_pages()
 	local kicad_sch="${2}"
 	local pages=$(parse_schematic_pages "${kicad_sch}")
 
+	pages_file="${OUTPUT_DIR_PATH}/${commit_hash}/kiri/sch_sheets"
+
 	if [[ "${DEBUG}" == "1" ]]; then
-		echo -e "\n${kicad_sch}"
-		echo -e "${LBL}Pages:${RCO}"
-		echo -e "${pages}" | nl -s": "
+		indent=$(printf ' %.0s' {1..4})
+		echo -e "${indent}${LCY}Sch: ${RCO}${kicad_sch}"
+		echo -e "${indent}${LCY}Pages: ${RCO}${pages_file}"
+		# echo -e "${indent}${pages}" | nl -s": " | sed "s/^/${indent}/g"
+		echo
 	fi
 
-	mkdir -p "${OUTPUT_DIR_PATH}/${commit_hash}/kiri/"
-	printf "%s\n" "${pages}" > "${OUTPUT_DIR_PATH}/${commit_hash}/kiri/sch_sheets"
+	mkdir -p "$(dirname ${pages_file})"
+	printf "%s\n" "${pages}" > "${pages_file}"
 }
 
 parse_layout_layers()
@@ -1248,14 +1261,48 @@ create_list_of_layers()
 	local kicad_pcb="${2}"
 	local layers=$(parse_layout_layers "${kicad_pcb}")
 
+	layers_file="${OUTPUT_DIR_PATH}/${commit_hash}/kiri/pcb_layers"
+
 	if [[ "${DEBUG}" == "1" ]]; then
-		echo -e "\n${kicad_pcb}"
-		echo -e "${LBL}Layers:${RCO}"
-		echo -e "${layers}\n" | column -t | nl -s": "
+		indent=$(printf ' %.0s' {1..4})
+		echo -e "${indent}${LCY}PCB: ${RCO}${kicad_pcb}"
+		echo -e "${indent}${LCY}Layers: ${RCO}${layers_file}"
+		# echo -e "${indent}${layers}\n" | column -t | nl -s": " | sed "s/^/${indent}/g"
+		echo
 	fi
 
-	mkdir -p "${OUTPUT_DIR_PATH}/${commit_hash}/kiri/"
-	printf "%s\n" "${layers}" > "${OUTPUT_DIR_PATH}/${commit_hash}/kiri/pcb_layers"
+	mkdir -p "$(dirname ${layers_file})"
+	printf "%s\n" "${layers}" > "${layers_file}"
+}
+
+cmd_run()
+{
+	cmd="${1}"
+	msg="${2}"
+	end="${3}"
+	indent=$(printf ' %.0s' {1..4})
+
+	# present command description if any
+	if [[ -n "${msg}" ]] && { [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]] }; then
+		echo -e "${indent}${LCY}${msg}${RCO}"
+		echo -e "${indent}${LYE}${cmd}${RCO}" | fmt -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
+	fi
+
+	# eval the command
+	eval "${cmd}" 2>&1 ${end} | sed -e '$a\' | sed "s/^/${indent}${LGY}| /g" | sed "s/$/${RCO}/g"
+	ret="${PIPESTATUS[0]}"
+
+	# present the command status
+	if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]]; then
+		if [[ "${ret}" -gt "0" ]]; then
+			echo -e "${LRE}${BTE}${indent}status: ${ret}${RCO}"
+		else
+			echo -e "${LGR}${BTE}${indent}status: ${ret}${RCO}"
+		fi
+		echo
+	fi
+
+	return ${ret}
 }
 
 manual_schematic_plot()
@@ -1275,23 +1322,14 @@ manual_schematic_plot()
 
 		if [[ "${SKIP_KICAD_6}" == "0" ]] && [[ ! "${OSTYPE}" =~ "darwin" ]]; then
 
-			if [[ -z ${PLOTSCH_TIMEOUT} ]]; then
-				PLOTSCH_TIMEOUT=15
+			if [[ -z ${PLOT_TIMEOUT} ]]; then
+				PLOT_TIMEOUT=5
 			fi
 
-			cmd="timeout ${PLOTSCH_TIMEOUT} plot_kicad_sch ${kicad_sch} ${command_end}"
-			if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
-				echo -e "\n   ${LMA}Plotting ${commit_hash}, ${OUTPUT_DIR_PATH}/${commit_hash}/${RCO}"
-				echo -e "   ${LYE}${cmd}${RCO}" | fmt -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
-			fi
-			eval "${cmd}" ${command_end} | sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
-			ret="${PIPESTATUS[0]}"
-			if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
-				if [[ "${ret}" -gt "0" ]]; then
-					echo -e "${LRE}${BTE}   Status: ${ret}${RCO}"
-				fi
-				echo
-			fi
+			msg="# Plotting schematics ${commit_hash}"
+			cmd="timeout ${PLOT_TIMEOUT} plot_kicad_sch ${kicad_sch}"
+			end="${command_end}"
+			cmd_run "${cmd}" "${msg}" "${end}"
 
 		else
 			if [[ "${SKIP_KICAD_6}" == "1" ]]; then
@@ -1299,23 +1337,11 @@ manual_schematic_plot()
 					echo -e "   ${LBL}[Kicad 6] (${commit_hash}) Schematic plot was disabled${RCO}"
 				fi
 			else
-
 				if [[ "${OSTYPE}" =~ "darwin" ]]; then
-
-					cmd="plot_kicad_sch_macos ${kicad_sch} ${command_end}"
-					if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
-						echo -e "\n   ${LMA}Plotting ${commit_hash}, ${OUTPUT_DIR_PATH}/${commit_hash}/${RCO}"
-						echo -e "   ${LYE}${cmd}${RCO}" | fmt -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
-					fi
-					eval "${cmd}" ${command_end} | sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
-					ret="${PIPESTATUS[0]}"
-					if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
-						if [[ "${ret}" -gt "0" ]]; then
-							echo -e "${LRE}${BTE}   Status: ${ret}${RCO}"
-						fi
-						echo
-					fi
-
+					msg="# Plotting schematics ${commit_hash}"
+					cmd="plot_kicad_sch_macos ${kicad_sch}"
+					end="${command_end}"
+					cmd_run "${cmd}" "${msg}" "${end}"
 				fi
 			fi
 		fi
@@ -1341,18 +1367,11 @@ manual_schematic_plot()
 
 				if [[ -f "${kicad_cache_lib}" ]]; then
 
-					cmd="plotkicadsch -f ${kicad_sch_aux} ${cache_lib_param} -o \"${svg_dir_path}\" ${command_end}"
-					if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
-						echo -e "   ${LMA}Ploting ${commit_hash}, ${OUTPUT_DIR_PATH}/${commit_hash}/${RCO}"
-						echo -e "   ${LYE}${cmd}${RCO}" | fmt -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
-					fi
-					eval "${cmd}" ${command_end} | sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
-					ret="${PIPESTATUS[0]}"
-					if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
-						if [[ "${ret}" -gt "0" ]]; then
-							echo -e "${LRE}${BTE}   Status: ${ret}${RCO}"
-						fi
-					fi
+					msg="# Plotting schematics ${commit_hash}: $(pwd)"
+					cmd="plotkicadsch -f ${kicad_sch_aux} ${cache_lib_param} -o \"${svg_dir_path}\""
+					end="${command_end}"
+					cmd_run "${cmd}" "${msg}" "${end}"
+					ret=${?}
 
 					if [[ "${ret}" == "0" ]]; then
 
@@ -1362,71 +1381,38 @@ manual_schematic_plot()
 						if [[ -f "${svg_dir_path}/${board_name}.svg" ]]; then
 							# TODO: How to force fix of the viewbox when the images are off center?
 							plotgitsch_svg_tweaks "${svg_dir_path}/${board_name}.svg"| sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
-
-							# svg_dir_path="${OUTPUT_DIR_PATH}/${commit_hash}/kiri/sch"
-							# mkdir -p "${svg_dir_path}"
-							# cp -f "${svg_dir_path}/${board_name}.svg" "from_${board_name}.svg"
-							# cmd="git-imgdiff \"from_${board_name}.svg\""
-							# if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
-							# 	echo -e "   ${LMA}Ploting ${commit_hash}, ${OUTPUT_DIR_PATH}/${commit_hash}/${RCO}"
-							# 	echo -e "   ${LYE}${cmd}${RCO}" | fmt -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
-							# fi
-							# eval "${cmd}" ${command_end} | sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
-							# ret="${PIPESTATUS[0]}"
-							# if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
-							# 	if [[ "${ret}" -gt "0" ]]; then
-							# 		echo -e "${LRE}${BTE}   Status: ${ret}${RCO}"
-							# 	fi
-							# fi
 						fi
 
 					else
 
-						# echo -e "\n   ${LRE}Plotkicadsch has failed, using another way instead.${RCO}"
-
 						if [[ "${SKIP_KICAD_6}" == "0" ]] && [[ ! "${OSTYPE}" =~ "darwin" ]]; then
+
+							echo -e "   ${LRE}Plotkicadsch has failed (${commit_hash}), using xdotool way instead.${RCO}"
 
 							PLOTPCB_TIMEOUT=5
 
 							# TESTING: Plokicadsch has failed, then usig GUI
 							# IF THIS IS GOOD. Then it is better to organize this function main_if order here to avoid repetition
-							cmd="timeout ${PLOTPCB_TIMEOUT} plot_kicad_sch ${kicad_sch} ${command_end}"
-							ret=${?}
-							if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
-								echo -e "   ${LMA}Plotting ${commit_hash}, ${OUTPUT_DIR_PATH}/${commit_hash}/${RCO}"
-								echo -e "   ${LYE}${cmd}${RCO}" | fmt -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
-							fi
-							eval "${cmd}" | sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
-							ret="${?}"
-							if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
-								echo
-								if [[ "${ret}" -gt "0" ]]; then
-									echo -e "${LRE}${BTE}   Status: ${ret}${RCO}"
-								fi
-							fi
 
-							# plot_kicad_sch plots all pages at once, then break
+							msg="# Plotting schematics ${commit_hash}"
+							cmd="timeout ${PLOTPCB_TIMEOUT} plot_kicad_sch ${kicad_sch}"
+							end="${command_end}"
+							cmd_run "${cmd}" "${msg}" "${end}"
+
 							break
 
 						else
 
 							if [[ "${OSTYPE}" =~ "darwin" ]]; then
 
-								cmd="plot_kicad_sch_macos ${kicad_sch} ${command_end}"
-								if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
-									echo -e "\n   ${LMA}Plotting ${commit_hash}, ${OUTPUT_DIR_PATH}/${commit_hash}/${RCO}"
-									echo -e "   ${LYE}${cmd}${RCO}" | fmt -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
-								fi
-								eval "${cmd}" | sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
-								ret="${PIPESTATUS[0]}"
-								if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
-									if [[ "${ret}" -gt "0" ]]; then
-										echo -e "${LRE}${BTE}   Status: ${ret}${RCO}"
-									fi
-									echo
-								fi
+								echo -e "   ${LRE}Plotkicadsch has failed (${commit_hash}), using cliclick way instead.${RCO}"
 
-								# plot_kicad_sch_macos plots all pagest at once, then break
+								msg="# Plotting schematics ${commit_hash}"
+								cmd="plot_kicad_sch_macos ${kicad_sch}"
+								end="${command_end}"
+								cmd_run "${cmd}" "${msg}" "${end}"
+								ret=${?}
+
 								break
 							fi
 						fi
@@ -1451,7 +1437,9 @@ generate_schematic_artifacts()
 	local proj_name_1=${8}
 	local proj_name_2=${9}
 
-	if [[ -f $(which kicad-cli) ]] && [[ ! $(get_file_extension "${kicad_sch_1}") == "sch" ]] && [[ ! $(get_file_extension "${kicad_sch_2}") == "sch" ]]; then
+	if [[ -f $(which kicad-cli) ]] \
+	&& [[ $(get_file_extension "${kicad_sch_1}") != "sch" ]] \
+	&& [[ $(get_file_extension "${kicad_sch_2}") != "sch" ]]; then
 
 		if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]]; then
 			echo
@@ -1471,20 +1459,10 @@ generate_schematic_artifacts()
 		# This one is needed only once since it is always the same
 		if [[ "${i}" == "2" ]]; then
 
-			cmd="kicad-cli sch export svg --black-and-white --no-background-color --output \"${SVG1_DIR_PATH}\" \"${OUTPUT_DIR_PATH}/${commit_hash_1}/${kicad_sch_1}\" ${command_end}"
-			if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
-				echo -e "   ${LYE}${cmd}${RCO}" | fmt -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
-			fi
-			if [[ "${DRY_RUN}" == "0" ]]; then
-				eval "${cmd}" | sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
-				ret="${PIPESTATUS[0]}"
-				if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
-					if [[ "${ret}" -gt "0" ]]; then
-						echo -e "${LRE}${BTE}   Status: ${ret}${RCO}"
-					fi
-					echo
-				fi
-			fi
+			msg="# Plotting schematics ${commit_hash_2}"
+			cmd="kicad-cli sch export svg --black-and-white --no-background-color --output \"${SVG1_DIR_PATH}\" \"${OUTPUT_DIR_PATH}/${commit_hash_1}/${kicad_sch_1}\""
+			end="${command_end}"
+			cmd_run "${cmd}" "${msg}" "${end}"
 
 			# It may be necessary to rename pages
 			for kicad_sch in \"${SVG1_DIR_PATH}\"/*; do
@@ -1492,20 +1470,10 @@ generate_schematic_artifacts()
 			done
 		fi
 
-		cmd="kicad-cli sch export svg --black-and-white --no-background-color --output \"${SVG2_DIR_PATH}\" \"${OUTPUT_DIR_PATH}/${commit_hash_2}/${kicad_sch_2}\" ${command_end}"
-		if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
-			echo -e "   ${LYE}${cmd}${RCO}" | fmt -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
-		fi
-		if [[ "${DRY_RUN}" == "0" ]]; then
-			eval "${cmd}" | sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
-			ret="${PIPESTATUS[0]}"
-			if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
-				if [[ "${ret}" -gt "0" ]]; then
-					echo -e "${LRE}${BTE}   Status: ${ret}${RCO}"
-				fi
-				echo
-			fi
-		fi
+		msg="# Plotting schematics ${commit_hash_1}"
+		cmd="kicad-cli sch export svg --black-and-white --no-background-color --output \"${SVG2_DIR_PATH}\" \"${OUTPUT_DIR_PATH}/${commit_hash_2}/${kicad_sch_2}\""
+		end="${command_end}"
+		cmd_run "${cmd}" "${msg}" "${end}"
 
 		# It may be necessary to rename pages
 		for kicad_sch in \"${SVG2_DIR_PATH}\"/*; do
@@ -1566,20 +1534,11 @@ generate_schematic_artifacts()
 				export IMGDIFF_SVG2_DIR_PATH="${OUTPUT_DIR_PATH}/${commit_hash_2}/kiri/sch"
 				mkdir -p "${IMGDIFF_SVG1_DIR_PATH}"
 				mkdir -p "${IMGDIFF_SVG2_DIR_PATH}"
-				cmd="plotgitsch --keep --allow_missing ${relative_path} ${cache_lib} ${color_scheme} ${command_end}"
-				if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
-					echo -e "   ${LYE}${cmd}${RCO}" | fmt -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
-				fi
-				if [[ "${DRY_RUN}" == "0" ]]; then
-					eval "${cmd}" | sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
-					ret="${PIPESTATUS[0]}"
-					if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]] || [[ "${DEBUG_PLOTGITSCH}" = "1" ]]; then
-						if [[ "${ret}" -gt "0" ]]; then
-							echo -e "${LRE}${BTE}   Status: ${ret}${RCO}"
-						fi
-						echo
-					fi
-				fi
+
+				msg="# Plotting schematics ${commit_hash_1}, ${commit_hash_2}"
+				cmd="plotgitsch --keep --allow_missing ${relative_path} ${cache_lib} ${color_scheme}"
+				end="${command_end}"
+				cmd_run "${cmd}" "${msg}" "${end}"
 
 			else
 
@@ -1593,9 +1552,9 @@ generate_schematic_artifacts()
 		fi
 	fi
 
-	if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]] || [[ "${DEBUG_PLOTGITSCH}" == "1" ]]; then
-		echo
-	fi
+	# if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]] || [[ "${DEBUG_PLOTGITSCH}" == "1" ]]; then
+		# echo
+	# fi
 }
 
 generate_layout_artifacts()
@@ -1613,11 +1572,7 @@ generate_layout_artifacts()
 	# kicad-cli to plot layers works but KICAD-DIFF is faster
 	# use it only if kicad-diff is missing
 
-	if [[ -f $(which kicad-cli) ]] && [[ -n ${KIDIFF_MISSING} ]] ; then
-
-		if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]]; then
-			echo
-		fi
+	if [[ -f $(which kicad-cli) ]] && [[ "${KIDIFF_MISSING}" == 1 ]]; then
 
 		local command_end="&> /dev/null &"
 		if [[ "${DEBUG}" == 1 ]]; then
@@ -1633,31 +1588,20 @@ generate_layout_artifacts()
 		# This one is needed only once since it is always the same
 		if [[ "${i}" == "2" ]]; then
 
-			pcb_layers=$(grep "^[ \t]\+([0-9][0-9]* " ${OUTPUT_DIR_PATH}/${commit_hash_1}/"${kicad_pcb_1}")
-			layers_name=$(grep "^[ \t]\+([0-9][0-9]* " "${OUTPUT_DIR_PATH}/${commit_hash_1}/${kicad_pcb_1}" | sed "s/\"//g" | sed "s/^[ \t]\+//g" | cut -d" " -f2)
-			# layers_name=$(grep "^[ \t]\+([0-9][0-9]* " "${OUTPUT_DIR_PATH}/${commit_hash_1}/${kicad_pcb_1}" | cut -d"\"" -f2)
+			pcb_layers=$(grep "^[ \t]\+([0-9][0-9]* " ${OUTPUT_DIR_PATH}/${commit_hash_2}/"${kicad_pcb_2}")
+			layers_name=$(grep "^[ \t]\+([0-9][0-9]* " "${OUTPUT_DIR_PATH}/${commit_hash_2}/${kicad_pcb_2}" | sed "s/\"//g" | sed "s/^[ \t]\+//g" | cut -d" " -f2)
+			# layers_name=$(grep "^[ \t]\+([0-9][0-9]* " "${OUTPUT_DIR_PATH}/${commit_hash_2}/${kicad_pcb_2}" | cut -d"\"" -f2)
 
 			for layer_name in ${layers_name[@]}; do
-				layer_id=$(echo "${pcb_layers}" | grep "${layer_name}" | sed "s/[ \t]*(//g" | cut -d " " -f 1 | xargs printf "%02d")
-				cmd="kicad-cli pcb export svg --page-size-mode 0 --black-and-white \"${OUTPUT_DIR_PATH}/${commit_hash_1}/${kicad_pcb_1}\" --output \"${SVG1_DIR_PATH}/layer-${layer_id}.svg\" --layers \"Edge.Cuts,${layer_name}\" ${command_end}"
-				if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]]; then
-					echo -e "   ${LYE}${cmd}${RCO}" | fmt -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
-				fi
-				if [[ "${DRY_RUN}" == "0" ]]; then
-					eval "${cmd}" | sed "s/^/   ${LGY}| /g" | sed "s/,$/${RCO}/g"
-					ret="${PIPESTATUS[0]}"
-					if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]]; then
-						if [[ "${ret}" -gt "0" ]]; then
-							echo -e "${LRE}${BTE}   Status: ${ret}${RCO}"
-						fi
-						echo
-					fi
-				fi
-				if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]] || [[ "${DEBUG_KIDIFF}" == "1" ]]; then
-					echo
-				fi
-			done
 
+				layer_id=$(echo "${pcb_layers}" | grep "${layer_name}" | sed "s/[ \t]*(//g" | cut -d " " -f 1 | xargs printf "%02d")
+
+				msg="# Plotting layout ${commit_hash_2}, ${layer_name}"
+				cmd="kicad-cli pcb export svg --page-size-mode 0 --black-and-white \"${OUTPUT_DIR_PATH}/${commit_hash_2}/${kicad_pcb_2}\" --output \"${SVG1_DIR_PATH}/layer-${layer_id}.svg\" --layers \"Edge.Cuts,${layer_name}\""
+				end="${command_end}"
+				cmd_run "${cmd}" "${msg}" "${end}"
+
+			done
 		fi
 
 		pcb_layers=$(grep "^[ \t]\+([0-9][0-9]* " "${OUTPUT_DIR_PATH}/${commit_hash_2}/${kicad_pcb_2}")
@@ -1665,24 +1609,14 @@ generate_layout_artifacts()
 		# layers_name=$(grep "^[ \t]\+([0-9][0-9]* " "${OUTPUT_DIR_PATH}/${commit_hash_2}/${kicad_pcb_2}" | cut -d"\"" -f2)
 
 		for layer_name in ${layers_name[@]}; do
+
 			layer_id=$(echo "${pcb_layers}" | grep "${layer_name}" | sed "s/[ \t]*(//g" | cut -d " " -f 1 | xargs printf "%02d")
-			cmd="kicad-cli pcb export svg --page-size-mode 0 --black-and-white \"${OUTPUT_DIR_PATH}/${commit_hash_2}/${kicad_pcb_2}\" --output \"${SVG2_DIR_PATH}/layer-${layer_id}.svg\" --layers \"Edge.Cuts,${layer_name}\" ${command_end}"
-			if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]]; then
-				echo -e "   ${LYE}${cmd}${RCO}" | fmt -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
-			fi
-			if [[ "${DRY_RUN}" == "0" ]]; then
-				eval "${cmd}" | sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
-				ret="${PIPESTATUS[0]}"
-				if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]]; then
-					if [[ "${ret}" -gt "0" ]]; then
-						echo -e "${LRE}${BTE}   Status: ${ret}${RCO}"
-					fi
-					echo
-				fi
-			fi
-			if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]] || [[ "${DEBUG_KIDIFF}" == "1" ]]; then
-				echo
-			fi
+
+			msg="# Plotting layout ${commit_hash_1}, ${layer_name}"
+			cmd="kicad-cli pcb export svg --page-size-mode 0 --black-and-white \"${OUTPUT_DIR_PATH}/${commit_hash_1}/${kicad_pcb_1}\" --output \"${SVG2_DIR_PATH}/layer-${layer_id}.svg\" --layers \"Edge.Cuts,${layer_name}\""
+			end="${command_end}"
+			cmd_run "${cmd}" "${msg}" "${end}"
+
 		done
 
 	else
@@ -1702,28 +1636,17 @@ generate_layout_artifacts()
 				page_frame_parameter="-f"
 			fi
 
-			local cmd="kidiff \"${kicad_pcb}\" -r -n --webserver-disable -a ${commit_hash_1} -b ${commit_hash_2} -o \"${OUTPUT_DIR_PATH}\" ${page_frame_parameter} ${command_end}"
-
-			if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]] || [[ "${DEBUG_KIDIFF}" == "1" ]]; then
-				echo -e "   ${LGR}${cmd}${RCO}" | fmt -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
-			fi
-			if [[ "${DRY_RUN}" == "0" ]]; then
-				eval "${cmd}" | sed "s/^/   ${LGY}| /g" | sed "s/$/${RCO}/g"
-				ret="${PIPESTATUS[0]}"
-				if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]] || [[ "${DEBUG_KIDIFF}" == "1" ]]; then
-					if [[ "${ret}" -gt "0" ]]; then
-						echo -e "${LRE}${BTE}   Status: ${ret}${RCO}"
-					fi
-					echo
-				fi
-			fi
+			msg="# Plotting layouts ${commit_hash_1}, ${commit_hash_2}"
+			cmd="kidiff -k -n --webserver-disable -a ${commit_hash_1} -b ${commit_hash_2} -o \"${OUTPUT_DIR_PATH}\" ${page_frame_parameter} \"${kicad_pcb}\""
+			end="${command_end}"
+			cmd_run "${cmd}" "${msg}" "${end}"
 
 			# Revert commits back to _local_ to finish the cleanup
 			if [[ "${commit_hash_1}" == "${kicad_pcb_1}" ]]; then commit_hash_1="_local_"; fi
 			if [[ "${commit_hash_2}" == "${kicad_pcb_2}" ]]; then commit_hash_2="_local_"; fi
 
-			mkdir -p "${OUTPUT_DIR_PATH}/${commit_hash_1}/kiri/pcb/"
-			mkdir -p "${OUTPUT_DIR_PATH}/${commit_hash_2}/kiri/pcb/"
+			# mkdir -p "${OUTPUT_DIR_PATH}/${commit_hash_1}/kiri/pcb/"
+			# mkdir -p "${OUTPUT_DIR_PATH}/${commit_hash_2}/kiri/pcb/"
 
 			# Fix folder name, kidiff generates local instead of _local_
 			if [[ -d "${OUTPUT_DIR_PATH}/local/" ]]; then
@@ -1734,13 +1657,12 @@ generate_layout_artifacts()
 			fi
 
 			# Rename files folowing format: layer-xx.svg
-			rename "s/${kicad_project_name_1}-/layer-/" "${OUTPUT_DIR_PATH}/${commit_hash_1}/"*.svg &> /dev/null
-			rename "s/${kicad_project_name_2}-/layer-/" "${OUTPUT_DIR_PATH}/${commit_hash_2}/"*.svg &> /dev/null
+			rename "s/${kicad_project_name_1}-/layer-/" "${OUTPUT_DIR_PATH}/${commit_hash_1}/pcb/"*.svg &> /dev/null
+			rename "s/${kicad_project_name_2}-/layer-/" "${OUTPUT_DIR_PATH}/${commit_hash_2}/pcb/"*.svg &> /dev/null
 
-			# Organize renamed files
-			mv "${OUTPUT_DIR_PATH}/${commit_hash_1}/layer-"*.svg "${OUTPUT_DIR_PATH}/${commit_hash_1}/kiri/pcb/" &> /dev/null
-			mv "${OUTPUT_DIR_PATH}/${commit_hash_2}/layer-"*.svg "${OUTPUT_DIR_PATH}/${commit_hash_2}/kiri/pcb/" &> /dev/null
-
+			# Move files
+			mv -f "${OUTPUT_DIR_PATH}/${commit_hash_1}/pcb/" "${OUTPUT_DIR_PATH}/${commit_hash_1}/kiri/" &> /dev/null
+			mv -f "${OUTPUT_DIR_PATH}/${commit_hash_2}/pcb/" "${OUTPUT_DIR_PATH}/${commit_hash_2}/kiri/" &> /dev/null
 		fi
 	fi
 }
@@ -1811,28 +1733,32 @@ generate_3dmodels()
 
 generate_diffs()
 {
-	hashs=$(echo "${COMMITS}" | tac | cut -d' '  -f1 | tac);
-	n_hashs=$(echo "${hashs}" | wc -w | sed "s/^[ \t]\+//g")
-	n_comparisons=$(python3 -c "print(${n_hashs} * $((n_hashs-1)))")
+	local hashes
+	local n_hashes
+	local n_comparisons
+
+	hashes=$(echo "${COMMITS}" | tac | cut -d' '  -f1 | tac);
+	n_hashes=$(echo "${hashes}" | wc -w | sed "s/^[ \t]\+//g")
+	n_comparisons=$((n_hashes * $((n_hashes - 1))))
 
 	# Check for local changes
 	echo -e "\n${LBL}Artiffacts Summary${RCO}"
 	if echo "${COMMITS}" | cut -d' '  -f1 | grep "_local_" -q; then
-		echo "$((n_hashs-1)) commits and local changes, totaling $((n_comparisons+1)) possible comparisons"
+		echo "$((n_hashes-1)) commits and local changes, totaling $((n_comparisons+1)) possible comparisons"
 	else
-		echo "${n_hashs} commits, totaling ${n_comparisons} possible comparisons"
+		echo "${n_hashes} commits, totaling ${n_comparisons} possible comparisons"
 	fi
 
 	echo -e "\n${LBL}Generating artifacts (may take some time)${RCO}"
 
 	local i=0
 	IFS=$'\n'
-	for hash_1 in ${hashs}; do
+	for hash_1 in ${hashes}; do
 
 		local j=0
-		for hash_2 in ${hashs}; do
+		for hash_2 in ${hashes}; do
 
-			if [[ "${hash_1}" != "${hash_2}" ]]; then
+			if [[ "${hash_2}" != "${hash_1}" ]]; then
 
 				i=$((i+1))
 				j=$((j+1))
@@ -1841,7 +1767,7 @@ generate_diffs()
 					continue
 				fi
 
-				if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]] || [[ "${DEBUG_PLOTGITSCH}" == "1" ]] || [[ "${DEBUG_KIDIFF}" == "1" ]]; then
+				if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]]; then
 					local padding=0
 					local total="/${n_comparisons}"
 				else
@@ -1849,26 +1775,48 @@ generate_diffs()
 					local total=""
 				fi
 
-				if [[ ${j} == 1 ]]; then
-					# Commit 1
-					item=$(echo "$COMMITS" | grep "^${hash_1}")
-					printf "%${padding}d${total} %s\n" "${i}" "${item}" | cut -c -$(($(tput cols)-4))
-					# Commit 2
-					i=$((i+1))
-					item=$(echo "$COMMITS" | grep "^${hash_2}")
-					printf "%${padding}d${total} %s\n" "${i}" "${item}" | cut -c -$(($(tput cols)-4))
+				if [[ "${j}" == "1" ]]; then
+
+					commit_msg_1=$(echo "${COMMITS}" | grep "^${hash_1}")
+					commit_msg_2=$(echo "${COMMITS}" | grep "^${hash_2}")
+
+					if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]]; then
+						echo
+						padlimit=$(tput cols)
+						pad=$(printf '%*s' "${padlimit}")
+						pad=${pad// /-}
+						echo "${pad}"
+						printf "\n${LGR}# %${padding}d${total} %s\n${RCO}" "${i}" "${commit_msg_1}" | cut -c -$(($(tput cols)-4))
+						i=$((i+1))
+						printf "${LGR}# %${padding}d${total} %s${RCO}\n" "${i}" "${commit_msg_2}" | cut -c -$(($(tput cols)-4))
+					else
+						printf "%${padding}d${total} %s\n" "${i}" "${commit_msg_1}" | cut -c -$(($(tput cols)-4))
+						i=$((i+1))
+						printf "%${padding}d${total} %s\n" "${i}" "${commit_msg_2}" | cut -c -$(($(tput cols)-4))
+					fi
+
 				else
-					item=$(echo "$COMMITS" | grep "^${hash_2}")
-					printf "%${padding}d${total} %s\n" "${i}" "${item}" | cut -c -$(($(tput cols)-4))
+
+					commit_msg=$(echo "${COMMITS}" | grep "^${hash_2}")
+
+					if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]]; then
+						echo
+						padlimit=$(tput cols)
+						pad=$(printf '%*s' "${padlimit}")
+						pad=${pad// /-}
+						echo "${pad}"
+						printf "\n${LGR}# %${padding}d${total} %s${RCO}\n" "${i}" "${commit_msg}" | cut -c -$(($(tput cols)-4))
+					else
+						printf "%${padding}d${total} %s\n" "${i}" "${commit_msg}" | cut -c -$(($(tput cols)-4))
+					fi
 				fi
 
-				if [[ ${j} == 1 ]]; then
+				if [[ "${j}" == "1" ]]; then
 					mkdir -p "${OUTPUT_DIR_PATH}/${hash_1}/"
 					export_project_files "${hash_1}"
 				fi
 				mkdir -p "${OUTPUT_DIR_PATH}/${hash_2}/"
 				export_project_files "${hash_2}"
-
 
 				if [[ "${j}" == "1" ]]; then
 
@@ -1879,12 +1827,14 @@ generate_diffs()
 					local kicad_pcb_1="$(get_kicad_pcb "${OUTPUT_DIR_PATH}/${hash_1}" "${kicad_project_name_1}")"
 					local kicad_sch_pages_1="$(get_kicad_sch_pages "${OUTPUT_DIR_PATH}/${hash_1}/${kicad_sch_1}" ${hash_1})"
 					local kicad_cache_lib_1="$(get_kicad_cache_lib "${OUTPUT_DIR_PATH}/${hash_1}" "${kicad_project_name_1}")"
+
 					if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]]; then
 						echo
 					fi
 
 					show_project_files "${OUTPUT_DIR_PATH}/${hash_1}" "${kicad_pro_1}" "${kicad_sch_1}" "${kicad_pcb_1}" "${kicad_cache_lib_1}"
 				fi
+
 				local kicad_pro_2="$(get_kicad_pro "${OUTPUT_DIR_PATH}/${hash_2}")"
 				local kicad_pro_extension_2="$(get_file_extension "${kicad_pro_2}")"
 				local kicad_project_name_2="$(get_file_without_extention "${kicad_pro_2}")"
@@ -1896,10 +1846,11 @@ generate_diffs()
 				if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]]; then
 					echo
 				fi
+
 				show_project_files "${OUTPUT_DIR_PATH}/${hash_2}" "${kicad_pro_2}" "${kicad_sch_2}" "${kicad_pcb_2}" "${kicad_cache_lib_2}"
 
 				if [[ "${j}" == "1" ]]; then
-					create_project_info "${hash_1}" "${OUTPUT_DIR_PATH}/${hash_1}/${kicad_pro_1}"
+					create_project_info  "${hash_1}" "${OUTPUT_DIR_PATH}/${hash_1}/${kicad_pro_1}"
 					create_list_of_pages "${hash_1}" "${OUTPUT_DIR_PATH}/${hash_1}/${kicad_sch_1}"
 					create_list_of_layers "${hash_1}" "${OUTPUT_DIR_PATH}/${hash_1}/${kicad_pcb_1}"
 				fi
@@ -1910,7 +1861,7 @@ generate_diffs()
 				generate_schematic_artifacts "${hash_1}" "${hash_2}" "${kicad_sch_1}" "${kicad_sch_2}" "${kicad_cache_lib_1}" "${kicad_cache_lib_2}" "${i}" "${kicad_project_name_1}" "${kicad_project_name_2}"
 				generate_layout_artifacts "${hash_1}" "${hash_2}" "${kicad_pcb_1}" "${kicad_pcb_2}" "${kicad_project_name_1}" "${kicad_project_name_2}"
 
-				generate_3dmodels "${hash_1}" "${hash_2}" "${kicad_pcb_1}" "${kicad_pcb_2}" "${kicad_project_name_1}" "${kicad_project_name_2}"
+				# generate_3dmodels "${hash_1}" "${hash_2}" "${kicad_pcb_1}" "${kicad_pcb_2}" "${kicad_project_name_1}" "${kicad_project_name_2}"
 			fi
 		done
 	done
@@ -1969,9 +1920,6 @@ build_main_html()
 	# Insert layers list
 	echo "- Adding layers list in ${main_html}"
 	insert_layers_html "${WEB_DIR_PATH}/${main_html}"
-
-# ======
-# TODO: These parsing text needs to work for .sch and .kicad_sch
 
 	# Set project title with kicad project folder name
 	project_title=$(basename "${REPO_ABSOLUTE_PATH}")
@@ -2141,18 +2089,25 @@ show_project_files()
 
 	local kicad_sch_pages="$(get_kicad_sch_pages "${kicad_project_path}/${kicad_sch}")"
 
-	if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]] || [[ "${DEBUG_PLOTGITSCH}" == "1" ]] || [[ "${DEBUG_KIDIFF}" == "1" ]]; then
-		echo "     project_path: ${kicad_project_path}"
-		echo "          project: ${kicad_pro}"
-		echo "        schematic: ${kicad_sch}"
+	indent=$(printf ' %.0s' {1..4})
+	commit_hash=$(basename "${kicad_project_path}")
+	if [[ ${commit_hash} == "." ]]; then
+		commit_hash="local"
+	fi
+
+	if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]]; then
+		echo -e "${indent}${LCY}# Rev ${commit_hash} files${RCO}"
+		echo "${indent}     project_path: ${kicad_project_path}"
+		echo "${indent}          project: ${kicad_pro}"
+		echo "${indent}        schematic: ${kicad_sch}"
 		if [[ -n "${kicad_sch_pages}" ]]; then
 			padding=$(printf ' %.0s' {1..19})
-			echo -e "  extra_sch_files: $(echo -e "${kicad_sch_pages}" | sed "s/^/${padding}/g" | sed '1s/[ ]\+//')"
+			echo -e "${indent}  extra_sch_files: $(echo -e "${kicad_sch_pages}" | sed "s/^/${indent}${padding}/g" | sed '1s/[ ]\+//')"
 		fi
 		if [[ -n "${kicad_cache_lib}" ]]; then
-			echo -e "        cache.lib: ${kicad_cache_lib}"
+			echo -e "${indent}        cache.lib: ${kicad_cache_lib}"
 		fi
-		echo "           layout: ${kicad_pcb}"
+		echo "${indent}           layout: ${kicad_pcb}"
 		echo
 	fi
 }
