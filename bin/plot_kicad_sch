@@ -90,7 +90,8 @@ get_window_tile()
 
 set_default_plot_settings()
 {
-	local eeschema_json="${HOME}/.config/kicad/6.0/eeschema.json"
+	# local eeschema_json="${HOME}/.config/kicad/6.0/eeschema.json"
+	local eeschema_json="${HOME}/.config/kicad/7.0/eeschema.json"
 
 	# "plot": {
 	#   "background_color": false,
@@ -213,7 +214,7 @@ is_design_loaded()
 dissmiss_configure_kicad_Settings_path()
 {
 	local win_id=$1
-	echo "  Dismissing window"
+	echo "  Dismissing Config Kicad Settings"
 
 	xdotool key --window "${win_id}" "Return" &> /dev/null
 	sleep "${TIME}"
@@ -222,7 +223,7 @@ dissmiss_configure_kicad_Settings_path()
 dissmiss_configure_symbol_library_table()
 {
 	local win_id=$1
-	echo "  Dismissing window"
+	echo "  Dismissing Config Table"
 
 	xdotool key --window "${win_id}" "Return" &> /dev/null
 	sleep "${TIME}"
@@ -231,9 +232,32 @@ dissmiss_configure_symbol_library_table()
 dissmiss_popup()
 {
 	local win_id=$1
-	echo "  Dismissing window"
+	echo "  Dismissing popup window"
 
 	xdotool key --window "${win_id}" "Escape" &> /dev/null
+	sleep "${TIME}"
+}
+
+dissmiss_save_changes()
+{
+	# DOES NOT WORK
+
+	local win_id=$1
+	echo "  Dismissing Save Changes"
+
+	sleep "${TIME}"
+
+	# discard changes
+	xdotool key --window "${win_id}" "Right"
+	sleep "${TIME}"
+
+	xdotool key --window "${win_id}" "Right"
+	sleep "${TIME}"
+
+	xdotool key --window "${win_id}" "Right"
+	sleep "${TIME}"
+
+	xdotool key --window "${win_id}" "Return" &> /dev/null
 	sleep "${TIME}"
 }
 
@@ -264,11 +288,25 @@ dismiss_eeschema_popups()
 			"Loading Schematic")
 				;;
 
+			"KiCad Schematic Editor Error")
+				;;
+
+			"Confirmation")
+				;;
+
 			"${project_name} [${project_name}/] — Schematic Editor")
 				;;
 
-			"Project Rescue Helper"|"Error*"|"Warning*")
+			"*Project Rescue Helper*"|"Error*"|"Warning*")
 				dissmiss_popup "${win_id}" "${win_title}"
+				;;
+
+			"]")
+				dissmiss_save_changes "${win_id}" "${win_title}"
+				;;
+
+			"Save Changes*")
+				dissmiss_save_changes "${win_id}" "${win_title}"
 				;;
 
 			*)
