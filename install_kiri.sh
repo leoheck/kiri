@@ -13,6 +13,7 @@ CR=$(tput sgr0)    # Color Reset
 
 export KIRI_INSTALL_PATH
 export KIRI_HOME
+export KIRI_BRANCH
 
 install_kiri()
 {
@@ -25,6 +26,7 @@ install_kiri()
 		if which git &> /dev/null; then
 			git clone --recurse-submodules -j8 https://github.com/leoheck/kiri.git "${KIRI_HOME}/kiri"
 			cd "${KIRI_HOME}/kiri/" || exit
+			git checkout ${KIRI_BRANCH}
 		else
 			echo "Git is missing, please use install_dependencies script"
 			exit 1
@@ -97,11 +99,17 @@ show_initial_message()
 		KIRI_HOME="${HOME}/.local/share"
 	fi
 
+	if [[ -n "${KIRI_BRANCH}" ]]; then
+		KIRI_BRANCH="main"
+	fi
+
 	read -r -d '' ENV_SETUP_NOTE <<-EOM
 	${CI}${CB}Installing KiRI${CR}
 
 	Installation path ${KIRI_HOME}
 	Change it using KIRI_INSTALL_PATH environment variable
+
+	KIRI_BRANCH variable can be used to test other branches of Kiri
 
 	Hit ENTER to continue or Ctrl+C to leave. 
 	EOM
