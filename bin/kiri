@@ -1803,7 +1803,7 @@ generate_diffs()
 	if echo "${COMMITS}" | cut -d' '  -f1 | grep "_local_" -q; then
 		echo "$((n_hashes-1)) commits ${BTE}plus local changes${RCO} ($((n_comparisons)) comparisons)"
 	else
-		echo "${n_hashes} commits, totaling ${n_comparisons} possible comparisons"
+		echo "${n_hashes} commits (${n_comparisons} comparisons)"
 	fi
 
 	echo -e "\n${LBL}Generating artifacts (may take some time)${RCO}"
