@@ -1107,7 +1107,7 @@ get_git_commits_list()
 	# Append local files only if they have changes
 	if ! git_files_have_changes "${kicad_pcb}" "${kicad_sch}" "${extra_sch_files}"; then
 		IFS= read -r -d '' COMMITS <<-EOM
-		_local_ | $(date "+%Y-%m-%d %H:%M:%S") | $(get_name_of_current_user "${USER}") | Local, not commited changes
+		_local_ | $(date "+%Y-%m-%d %H:%M:%S") | $(get_name_of_current_user "${USER}") | Not commited changes
 		${COMMITS}
 		EOM
 	fi
@@ -1209,8 +1209,8 @@ create_project_info()
 	local kicad_pro="${2}"
 	local kicad_sch="${3}"
 	local kicad_pcb="${4}"
-	mkdir -p "${OUTPUT_DIR_PATH}/${commit_hash}/kiri/"
-	printf "%s\n" "${kicad_pro}" > "${OUTPUT_DIR_PATH}/${commit_hash}/kiri/pro_infos"
+	mkdir -p "${OUTPUT_DIR_PATH}/${commit_hash}/_KIRI_/"
+	printf "%s\n" "${kicad_pro}" > "${OUTPUT_DIR_PATH}/${commit_hash}/_KIRI_/pro_infos"
 
 	# sch_version=$(grep -E -o -i -m 1 "version [0-9]+" "${kicad_sch}" | cut -d" " -f2)
 	# pcb_version=$(grep -E -o -i -m 1 "version [0-9]+" "${kicad_pcb}" | cut -d" " -f2)
@@ -1250,9 +1250,9 @@ create_project_info()
 		*) kicad_version="Unknown"
 	esac
 
-	printf "kicad version = %s\n" "${kicad_version}" >> "${OUTPUT_DIR_PATH}/${commit_hash}/kiri/pro_infos"
-	printf "sch version = %s\n" "${sch_version}" >> "${OUTPUT_DIR_PATH}/${commit_hash}/kiri/pro_infos"
-	printf "pcb version = %s\n" "${pcb_version}" >> "${OUTPUT_DIR_PATH}/${commit_hash}/kiri/pro_infos"
+	printf "kicad version = %s\n" "${kicad_version}" >> "${OUTPUT_DIR_PATH}/${commit_hash}/_KIRI_/pro_infos"
+	printf "sch version = %s\n" "${sch_version}" >> "${OUTPUT_DIR_PATH}/${commit_hash}/_KIRI_/pro_infos"
+	printf "pcb version = %s\n" "${pcb_version}" >> "${OUTPUT_DIR_PATH}/${commit_hash}/_KIRI_/pro_infos"
 
 	if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]]; then
 		echo -e "${indent}${LCY}# Rev ${commit_hash} project info${RCO}"
@@ -1273,7 +1273,7 @@ create_list_of_pages()
 	local kicad_sch="${2}"
 	local pages=$(parse_schematic_pages "${kicad_sch}")
 
-	pages_file="${OUTPUT_DIR_PATH}/${commit_hash}/kiri/sch_sheets"
+	pages_file="${OUTPUT_DIR_PATH}/${commit_hash}/_KIRI_/sch_sheets"
 
 	if [[ "${DEBUG}" == "1" ]]; then
 		indent=$(printf ' %.0s' {1..4})
@@ -1317,7 +1317,7 @@ create_list_of_layers()
 	local kicad_pcb="${2}"
 	local layers=$(parse_layout_layers "${kicad_pcb}")
 
-	layers_file="${OUTPUT_DIR_PATH}/${commit_hash}/kiri/pcb_layers"
+	layers_file="${OUTPUT_DIR_PATH}/${commit_hash}/_KIRI_/pcb_layers"
 
 	if [[ "${DEBUG}" == "1" ]]; then
 		indent=$(printf ' %.0s' {1..4})
@@ -1408,7 +1408,7 @@ manual_schematic_plot()
 
 			all_kicad_sch_files=("${kicad_sch}" $(get_kicad_sch_pages "${kicad_sch}" ${commit_hash}))
 
-			svg_dir_path="${OUTPUT_DIR_PATH}/${commit_hash}/kiri/sch"
+			svg_dir_path="${OUTPUT_DIR_PATH}/${commit_hash}/_KIRI_/sch"
 			mkdir -p "${svg_dir_path}"
 
 			IFS=$'\n'
@@ -1507,8 +1507,8 @@ generate_schematic_artifacts()
 		fi
 
 		# Configure git-imagediff used by plotgitsch
-		export SVG1_DIR_PATH="${OUTPUT_DIR_PATH}/${commit_hash_1}/kiri/sch"
-		export SVG2_DIR_PATH="${OUTPUT_DIR_PATH}/${commit_hash_2}/kiri/sch"
+		export SVG1_DIR_PATH="${OUTPUT_DIR_PATH}/${commit_hash_1}/_KIRI_/sch"
+		export SVG2_DIR_PATH="${OUTPUT_DIR_PATH}/${commit_hash_2}/_KIRI_/sch"
 		mkdir -p "${SVG1_DIR_PATH}"
 		mkdir -p "${SVG2_DIR_PATH}"
 
@@ -1586,8 +1586,8 @@ generate_schematic_artifacts()
 				fi
 
 				# Configure git-imagediff used by plotgitsch
-				export IMGDIFF_SVG1_DIR_PATH="${OUTPUT_DIR_PATH}/${commit_hash_1}/kiri/sch"
-				export IMGDIFF_SVG2_DIR_PATH="${OUTPUT_DIR_PATH}/${commit_hash_2}/kiri/sch"
+				export IMGDIFF_SVG1_DIR_PATH="${OUTPUT_DIR_PATH}/${commit_hash_1}/_KIRI_/sch"
+				export IMGDIFF_SVG2_DIR_PATH="${OUTPUT_DIR_PATH}/${commit_hash_2}/_KIRI_/sch"
 				mkdir -p "${IMGDIFF_SVG1_DIR_PATH}"
 				mkdir -p "${IMGDIFF_SVG2_DIR_PATH}"
 
@@ -1636,8 +1636,8 @@ generate_layout_artifacts()
 		fi
 
 		# Configure git-imagediff used by plotgitsch
-		export SVG1_DIR_PATH="${OUTPUT_DIR_PATH}/${commit_hash_1}/kiri/pcb"
-		export SVG2_DIR_PATH="${OUTPUT_DIR_PATH}/${commit_hash_2}/kiri/pcb"
+		export SVG1_DIR_PATH="${OUTPUT_DIR_PATH}/${commit_hash_1}/_KIRI_/pcb"
+		export SVG2_DIR_PATH="${OUTPUT_DIR_PATH}/${commit_hash_2}/_KIRI_/pcb"
 		mkdir -p "${SVG1_DIR_PATH}"
 		mkdir -p "${SVG2_DIR_PATH}"
 
@@ -1701,8 +1701,8 @@ generate_layout_artifacts()
 			if [[ "${commit_hash_1}" == "${kicad_pcb_1}" ]]; then commit_hash_1="_local_"; fi
 			if [[ "${commit_hash_2}" == "${kicad_pcb_2}" ]]; then commit_hash_2="_local_"; fi
 
-			# mkdir -p "${OUTPUT_DIR_PATH}/${commit_hash_1}/kiri/pcb/"
-			# mkdir -p "${OUTPUT_DIR_PATH}/${commit_hash_2}/kiri/pcb/"
+			# mkdir -p "${OUTPUT_DIR_PATH}/${commit_hash_1}/_KIRI_/pcb/"
+			# mkdir -p "${OUTPUT_DIR_PATH}/${commit_hash_2}/_KIRI_/pcb/"
 
 			# Fix folder name, kidiff generates local instead of _local_
 			if [[ -d "${OUTPUT_DIR_PATH}/local/" ]]; then
@@ -1717,8 +1717,8 @@ generate_layout_artifacts()
 			rename "s/${kicad_project_name_2}-/layer-/" "${OUTPUT_DIR_PATH}/${commit_hash_2}/pcb/"*.svg &> /dev/null
 
 			# Move files
-			mv -f "${OUTPUT_DIR_PATH}/${commit_hash_1}/pcb/" "${OUTPUT_DIR_PATH}/${commit_hash_1}/kiri/" &> /dev/null
-			mv -f "${OUTPUT_DIR_PATH}/${commit_hash_2}/pcb/" "${OUTPUT_DIR_PATH}/${commit_hash_2}/kiri/" &> /dev/null
+			mv -f "${OUTPUT_DIR_PATH}/${commit_hash_1}/pcb/" "${OUTPUT_DIR_PATH}/${commit_hash_1}/_KIRI_/" &> /dev/null
+			mv -f "${OUTPUT_DIR_PATH}/${commit_hash_2}/pcb/" "${OUTPUT_DIR_PATH}/${commit_hash_2}/_KIRI_/" &> /dev/null
 		fi
 	fi
 }
@@ -1745,41 +1745,41 @@ generate_3dmodels()
 	# if [[ ! -f "${OUTPUT_DIR_PATH}/${commit_hash_1}/board.step" ]]; then
 	# 	echo "Exporting ${commit_hash_1} .kicad_pcb to .step"
 	# 	kicad2step --no-virtual --subst-models \
-	# 		-o "${OUTPUT_DIR_PATH}/${commit_hash_1}/kiri/3d_model/board.step" \
+	# 		-o "${OUTPUT_DIR_PATH}/${commit_hash_1}/_KIRI_/3d_model/board.step" \
 	# 		"${OUTPUT_DIR_PATH}/${commit_hash_1}/board.step"
 	# fi
 
 	# if [[ ! -f "${OUTPUT_DIR_PATH}/${commit_hash_2}/board.step" ]]; then
 	# 	echo "Exporting ${commit_hash_2} .kicad_pcb to .step"
 	# 	kicad2step --no-virtual --subst-models \
-	# 		-o "${OUTPUT_DIR_PATH}/${commit_hash_2}/kiri/3d_model/board.step" \
+	# 		-o "${OUTPUT_DIR_PATH}/${commit_hash_2}/_KIRI_/3d_model/board.step" \
 	# 		"${OUTPUT_DIR_PATH}/${commit_hash_2}/board.step"
 	# fi
 
-	mkdir -p "${OUTPUT_DIR_PATH}/${commit_hash_1}/kiri/3d_model/"
-	mkdir -p "${OUTPUT_DIR_PATH}/${commit_hash_2}/kiri/3d_model/"
+	mkdir -p "${OUTPUT_DIR_PATH}/${commit_hash_1}/_KIRI_/3d_model/"
+	mkdir -p "${OUTPUT_DIR_PATH}/${commit_hash_2}/_KIRI_/3d_model/"
 
 	# Convert step to to gltf
-	if [[ -f "${OUTPUT_DIR_PATH}/${commit_hash_1}/${kicad_project_name_1}.step" ]] && [[ ! -f "${OUTPUT_DIR_PATH}/${commit_hash_1}/kiri/3d_model/${kicad_project_name_1}.gltf" ]]; then
+	if [[ -f "${OUTPUT_DIR_PATH}/${commit_hash_1}/${kicad_project_name_1}.step" ]] && [[ ! -f "${OUTPUT_DIR_PATH}/${commit_hash_1}/_KIRI_/3d_model/${kicad_project_name_1}.gltf" ]]; then
 
 		if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]]; then
 			echo -e "   ${LCY}${commit_hash_1}, converting 3d model from .step to .glft/.glb${RCO}"
 		fi
 
-		cd "${OUTPUT_DIR_PATH}/${commit_hash_1}/kiri/3d_model/"
+		cd "${OUTPUT_DIR_PATH}/${commit_hash_1}/_KIRI_/3d_model/"
 		stp2gltf "../../${kicad_project_name_1}.step" "${kicad_project_name_1}.gltf" "${kicad_project_name_1}" | \
 		sed "s/^/   | /g" #&> /dev/null
 		echo
 		cd - &> /dev/null
 	fi
 
-	if [[ -f "${OUTPUT_DIR_PATH}/${commit_hash_2}/${kicad_project_name_2}.step" ]] && [[ ! -f "${OUTPUT_DIR_PATH}/${commit_hash_2}/kiri/3d_model/${kicad_project_name_2}.gltf" ]]; then
+	if [[ -f "${OUTPUT_DIR_PATH}/${commit_hash_2}/${kicad_project_name_2}.step" ]] && [[ ! -f "${OUTPUT_DIR_PATH}/${commit_hash_2}/_KIRI_/3d_model/${kicad_project_name_2}.gltf" ]]; then
 
 		if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]]; then
 			echo -e "   ${LCY}${commit_hash_2}, converting 3d model from .step to .glft/.glb${RCO}"
 		fi
 
-		cd "${OUTPUT_DIR_PATH}/${commit_hash_2}/kiri/3d_model/"
+		cd "${OUTPUT_DIR_PATH}/${commit_hash_2}/_KIRI_/3d_model/"
 		stp2gltf "../../${kicad_project_name_2}.step" "${kicad_project_name_2}.gltf" "${kicad_project_name_2}" | \
 		sed "s/^/   | /g" #&> /dev/null
 		echo
@@ -1889,6 +1889,10 @@ generate_diffs()
 					fi
 
 					show_project_files "${OUTPUT_DIR_PATH}/${hash_1}" "${kicad_pro_1}" "${kicad_sch_1}" "${kicad_pcb_1}" "${kicad_cache_lib_1}"
+					create_project_info  "${hash_1}" "${OUTPUT_DIR_PATH}/${hash_1}/${kicad_pro_1}" "${OUTPUT_DIR_PATH}/${hash_1}/${kicad_sch_1}" "${OUTPUT_DIR_PATH}/${hash_1}/${kicad_pcb_1}"
+					create_list_of_pages "${hash_1}" "${OUTPUT_DIR_PATH}/${hash_1}/${kicad_sch_1}"
+					create_list_of_layers "${hash_1}" "${OUTPUT_DIR_PATH}/${hash_1}/${kicad_pcb_1}"
+
 				fi
 
 				local kicad_pro_2="$(get_kicad_pro "${OUTPUT_DIR_PATH}/${hash_2}")"
@@ -1904,12 +1908,6 @@ generate_diffs()
 				fi
 
 				show_project_files "${OUTPUT_DIR_PATH}/${hash_2}" "${kicad_pro_2}" "${kicad_sch_2}" "${kicad_pcb_2}" "${kicad_cache_lib_2}"
-
-				if [[ "${j}" == "1" ]]; then
-					create_project_info  "${hash_1}" "${OUTPUT_DIR_PATH}/${hash_1}/${kicad_pro_1}" "${OUTPUT_DIR_PATH}/${hash_1}/${kicad_sch_1}" "${OUTPUT_DIR_PATH}/${hash_1}/${kicad_pcb_1}"
-					create_list_of_pages "${hash_1}" "${OUTPUT_DIR_PATH}/${hash_1}/${kicad_sch_1}"
-					create_list_of_layers "${hash_1}" "${OUTPUT_DIR_PATH}/${hash_1}/${kicad_pcb_1}"
-				fi
 				create_project_info "${hash_2}" "${OUTPUT_DIR_PATH}/${hash_2}/${kicad_pro_2}" "${OUTPUT_DIR_PATH}/${hash_2}/${kicad_sch_2}" "${OUTPUT_DIR_PATH}/${hash_2}/${kicad_pcb_2}"
 				create_list_of_pages "${hash_2}" "${OUTPUT_DIR_PATH}/${hash_2}/${kicad_sch_2}"
 				create_list_of_layers "${hash_2}" "${OUTPUT_DIR_PATH}/${hash_2}/${kicad_pcb_2}"

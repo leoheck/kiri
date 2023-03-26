@@ -518,8 +518,8 @@ function update_page()
         commit2 = document.getElementById("diff-xlink-2-sch").href.baseVal.split("/")[1];
     }
 
-    var image_path_1 = "../" + commit1 + "/kiri/sch/" + page_filename + ".svg";
-    var image_path_2 = "../" + commit2 + "/kiri/sch/" + page_filename + ".svg";
+    var image_path_1 = "../" + commit1 + "/_KIRI_/sch/" + page_filename + ".svg";
+    var image_path_2 = "../" + commit2 + "/_KIRI_/sch/" + page_filename + ".svg";
 
     console.log("[SCH] page_filename =", page_filename);
     console.log("[SCH]  image_path_1 =", image_path_1);
@@ -585,8 +585,8 @@ function update_sheets_list(commit1, commit2) {
 
     // Data format: ID|LAYER
 
-    data1 = loadFile("../" + commit1 + "/kiri/sch_sheets" + url_timestamp(commit1)).split("\n").filter((a) => a);
-    data2 = loadFile("../" + commit2 + "/kiri/sch_sheets" + url_timestamp(commit2)).split("\n").filter((a) => a);
+    data1 = loadFile("../" + commit1 + "/_KIRI_/sch_sheets" + url_timestamp(commit1)).split("\n").filter((a) => a);
+    data2 = loadFile("../" + commit2 + "/_KIRI_/sch_sheets" + url_timestamp(commit2)).split("\n").filter((a) => a);
 
     var sheets = [];
 
@@ -771,11 +771,11 @@ function update_layers_list(commit1, commit2, selected_layer_idx, selected_layer
         console.log("There isn't a layer selected");
     }
 
-    // File = ../[COMMIT]/kiri/pcb_layers
+    // File = ../[COMMIT]/_KIRI_/pcb_layers
     // Format = ID|LAYER
 
-    used_layers_1 = loadFile("../" + commit1 + "/kiri/pcb_layers" + url_timestamp(commit1)).split("\n").filter((a) => a);
-    used_layers_2 = loadFile("../" + commit2 + "/kiri/pcb_layers" + url_timestamp(commit2)).split("\n").filter((a) => a);
+    used_layers_1 = loadFile("../" + commit1 + "/_KIRI_/pcb_layers" + url_timestamp(commit1)).split("\n").filter((a) => a);
+    used_layers_2 = loadFile("../" + commit2 + "/_KIRI_/pcb_layers" + url_timestamp(commit2)).split("\n").filter((a) => a);
 
     for (const line of used_layers_1)
     {
@@ -913,8 +913,8 @@ function update_layer() {
 
     update_layers_list(commit1, commit2, selected_layer, layer_id);
 
-    var image_path_1 = "../" + commit1 + "/kiri/pcb/layer" + "-" + layer_id + ".svg";
-    var image_path_2 = "../" + commit2 + "/kiri/pcb/layer" + "-" + layer_id + ".svg";
+    var image_path_1 = "../" + commit1 + "/_KIRI_/pcb/layer" + "-" + layer_id + ".svg";
+    var image_path_2 = "../" + commit2 + "/_KIRI_/pcb/layer" + "-" + layer_id + ".svg";
 
     console.log("[PCB]      layer_id =", layer_id);
     console.log("[PCB]  image_path_1 =", image_path_1);
