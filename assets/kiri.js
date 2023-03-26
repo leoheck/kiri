@@ -518,8 +518,8 @@ function update_page()
         commit2 = document.getElementById("diff-xlink-2-sch").href.baseVal.split("/")[1];
     }
 
-    var image_path_1 = "../" + commit1 + "/" + "kiri/sch/" + page_filename + ".svg";
-    var image_path_2 = "../" + commit2 + "/" + "kiri/sch/" + page_filename + ".svg";
+    var image_path_1 = "../" + commit1 + "/kiri/sch/" + page_filename + ".svg";
+    var image_path_2 = "../" + commit2 + "/kiri/sch/" + page_filename + ".svg";
 
     console.log("[SCH] page_filename =", page_filename);
     console.log("[SCH]  image_path_1 =", image_path_1);
