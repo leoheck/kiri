@@ -3,11 +3,17 @@
 KiRI is small tool to experiment having a visual diff tool for Kicad.
 It uses [Kicad-Diff](https://github.com/Gasman2014/KiCad-Diff) to generate layout diffs and [Plotgitsch](https://github.com/jnavila/plotkicadsch) or [xdotool](https://github.com/jordansissel/xdotool)/[cliclick](https://github.com/BlueM/cliclick) to generate schematic diffs.
 
-It currently supports projects of `Kicad 5.*` and `Kicad 6.*` using `git` for source management.
+It currently supports projects of `Kicad 5`, `Kicad 6` and `Kicad 7` using `git` for source management.
 
-Schematics on `Kicad 6` are handled graphically by [xdotool](https://github.com/jordansissel/xdotool) on Linux/Windows and by [cliclick](https://github.com/BlueM/cliclick) on macOS.
+If `Kicad 7` is available, schematics of projects created with Kicad 6 and Kicad 7 are plotted using the new `kicad-cli`.
 
-Cliclick neeeds `System Preferences → Security & Privacy → Accessibility` for Terminal enabled.
+If only `Kicad 6` is available, schematics are handled graphically by [xdotool](https://github.com/jordansissel/xdotool) on Linux/Windows and by [cliclick](https://github.com/BlueM/cliclick) on macOS.
+
+For `Kicad 5` projects, schematics are generated with Plotgitsch.
+
+Cliclick on macOS needs `System Preferences → Security & Privacy → Accessibility` for Terminal enabled.
+
+Kicad-Diff is used to plot layouts of all versions of the Kicad (even if Kicad 7 is installed since it is much faster than kicad-cli).
 
 ## Installing
 
@@ -15,18 +21,21 @@ To install this tool with on any Operating System, open a terminal and execute t
 
 > Windows users must use WSL/WSL2. See, [Environment preparation on Windows](#Environment-preparation-on-Windows) section.
 
-> macOS users must have `homebrew` installed 
+> macOS users must have `homebrew` installed
 
-Installing (and Resintalling) dependencies
+Installing (and Reinstalling) dependencies
 ```bash
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/leoheck/kiri/main/install_dependencies.sh)"
 ```
 
 Installing (and Reinstalling) KiRI
 ```bash
-# The default installation path is "${HOME}/.local/share" 
-# It can be changed which the KIRI_INSTALL_PATH environment variable.
-# Example: export KIRI_INSTALL_PATH=/home/$USER/Documents/
+# The default installation path is "${HOME}/.local/share"
+# It can be changed which the KIRI_INSTALL_PATH environment variable:
+export KIRI_INSTALL_PATH=${HOME}/.local/share
+
+# To test a different branch of Kiri, use the following environment variable:
+export KIRI_BRANCH=main
 ```
 
 ```bash
@@ -35,6 +44,7 @@ bash -c "INSTALL_KIRI_REMOTELLY=1; \
 ```
 
 > xdotool, used to plot schematics of Kicad 6 (.kicad_sch) requires a X Window System Server. Some of the alternatives include [Xming](https://sourceforge.net/projects/xming/), [Cygwin](https://x.cygwin.com/), and [Mobaterm](https://mobaxterm.mobatek.net/).
+
 
 ### Environment preparation on Windows
 
