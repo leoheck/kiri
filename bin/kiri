@@ -1339,7 +1339,7 @@ cmd_run()
 	indent=$(printf ' %.0s' {1..4})
 
 	# present command description if any
-	if [[ -n "${msg}" ]] && { [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]] }; then
+	if [[ -n "${msg}" && ("${VERBOSE}" == "1" || "${DEBUG}" == "1") ]]; then
 		echo -e "${indent}${LCY}${msg}${RCO}"
 		echo -e "${indent}${LYE}${cmd}${RCO}" | fmt -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
 	fi
