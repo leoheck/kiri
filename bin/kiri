@@ -1107,7 +1107,7 @@ get_git_commits_list()
 	# Append local files only if they have changes
 	if ! git_files_have_changes "${kicad_pcb}" "${kicad_sch}" "${extra_sch_files}"; then
 		IFS= read -r -d '' COMMITS <<-EOM
-		_local_ | $(date "+%Y-%m-%d %H:%M:%S") | $(get_name_of_current_user "${USER}") | Not commited changes
+		_local_ | $(date "+%Y-%m-%d %H:%M:%S") | $(get_name_of_current_user "${USER}") | Local changes not committed
 		${COMMITS}
 		EOM
 	fi
