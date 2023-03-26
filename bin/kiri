@@ -1795,12 +1795,13 @@ generate_diffs()
 
 	hashes=$(echo "${COMMITS}" | tac | cut -d' '  -f1 | tac);
 	n_hashes=$(echo "${hashes}" | wc -w | sed "s/^[ \t]\+//g")
-	n_comparisons=$((n_hashes * $((n_hashes - 1))))
+	# n_comparisons=$((n_hashes * $((n_hashes - 1))))
+	n_comparisons=$(python -c "import math; print((int)(math.factorial(${n_hashes}) / (math.factorial(2) * math.factorial(${n_hashes} - 2))))")
 
 	# Check for local changes
 	echo -e "\n${LBL}Artiffacts Summary${RCO}"
 	if echo "${COMMITS}" | cut -d' '  -f1 | grep "_local_" -q; then
-		echo "$((n_hashes-1)) commits and local changes, totaling $((n_comparisons+1)) possible comparisons"
+		echo "$((n_hashes-1)) commits ${BTE}plus local changes${RCO} ($((n_comparisons)) comparisons)"
 	else
 		echo "${n_hashes} commits, totaling ${n_comparisons} possible comparisons"
 	fi
@@ -1937,7 +1938,7 @@ build_main_html()
 	# Remove Kidiff leftovers
 	rm -rf "${WEB_DIR_PATH}/triptych"
 
-	echo -e "\n${LBL}Assembling the HTML${RCO}"
+	echo -e "\n${LBL}${LBL}Assembling the HTML${RCO}"
 
 	# Copy assets
 	main_html=index.html
@@ -1964,65 +1965,74 @@ build_main_html()
 	local layers=$(create_unified_layers_list)
 
 	# Insert commits list
-	echo "- Adding commits list in ${main_html}"
+	echo "- Adding list of commits"
 	insert_commits_html "${WEB_DIR_PATH}/${main_html}" "${commit1_i}" "${commit2_i}"
 
 	# Insert pages list
-	echo "- Adding schematic pages list in ${main_html}"
+	echo "- Adding list of pages"
 	insert_pages_html "${WEB_DIR_PATH}/${main_html}" "${commit_hash_1}" "${commit_hash_2}"
 
 	# Insert layers list
-	echo "- Adding layers list in ${main_html}"
+	echo "- Adding list of layers"
 	insert_layers_html "${WEB_DIR_PATH}/${main_html}"
+
+	echo -e "\n${LBL}${LBL}Latest rev ${commit_hash_1}${RCO}"
 
 	# Set project title with kicad project folder name
 	project_title=$(basename "${REPO_ABSOLUTE_PATH}")
 	echo "- Project's title (folder name): ${BTE}${LBL}${project_title}${RCO}"
 	sed -i "s|\[PROJECT_TITLE\]|${project_title}|g" "${WEB_DIR_PATH}/${main_html}"
 
+	local _kicad_pro="$(get_kicad_pro ${OUTPUT_DIR_PATH}/${commit_hash_1}/*pro)"
+	local _kicad_pro_extension="$(get_file_extension "${_kicad_pro}")"
+	local _kicad_proj_name="$(get_file_without_extention "${_kicad_pro}")"
+	local _kicad_sch="$(get_kicad_sch "${KICAD_PROJ_ABSOLUTE_PATH}" "${_kicad_proj_name}" "${_kicad_pro_extension}")"
+	local _kicad_pcb="$(get_kicad_pcb "${KICAD_PROJ_ABSOLUTE_PATH}" "${_kicad_proj_name}")"
+
 	# Set Kicad project's name
-	echo "- Project's name: ${BTE}${LBL}${kicad_proj_name}${RCO}"
-	sed -i "s|var board_name =.*|var board_name = \"${kicad_proj_name}\"; // updated by kiri script|g" "${WEB_DIR_PATH}/kiri.js"
+	echo "- Project's name (file name): ${BTE}${LBL}${_kicad_proj_name}${RCO}"
+	sed -i "s|var board_name =.*|var board_name = \"${_kicad_proj_name}\"; // updated by kiri script|g" "${WEB_DIR_PATH}/kiri.js"
 
 	# Set schematic and board titles
-	local sch_title=$(grep -i "title " "${kicad_sch}" -m1 2> /dev/null | sed "s/^[ \t]\+//g" | cut -d" " -f 2- | sed "s/[)\"]//g")
+	local sch_title=$(grep -i "title " "${_kicad_sch}" -m1 2> /dev/null | sed "s/^[ \t]\+//g" | cut -d" " -f 2- | sed "s/[)\"]//g")
 	local sch_label="${sch_title}"
-	local pcb_title=$(grep -i "(title .*)" "${kicad_pcb}" -m1 2> /dev/null | sed "s/^[ \t]\+//g" | cut -d" " -f 2- | sed "s/[)\"]//g")
+	local pcb_title=$(grep -i "(title .*)" "${_kicad_pcb}" -m1 2> /dev/null | sed "s/^[ \t]\+//g" | cut -d" " -f 2- | sed "s/[)\"]//g")
 	local pcb_label="${pcb_title}"
 	if [[ -z "${sch_title}" ]]; then sch_title="{sch_title}"; sch_label="${BTE}${LRE}[missing]${RCO}"; fi
 	if [[ -z "${pcb_title}" ]]; then pcb_title="{pcb_title}"; pcb_label="${BTE}${LRE}[missing]${RCO}"; fi
-	echo "- Sch Title: ${BTE}${LMA}${sch_label}${RCO}"
-	echo "- PCB Title: ${BTE}${LCY}${pcb_label}${RCO}"
+	echo "- Sch title: ${BTE}${LMA}${sch_label}${RCO}"
+	echo "- PCB title: ${BTE}${LCY}${pcb_label}${RCO}"
 	sed -i "s|\[SCH_TITLE\]|Sch \| ${sch_title}|g" "${WEB_DIR_PATH}/${main_html}"
 	sed -i "s|\[PCB_TITLE\]|PCB \| ${pcb_title}|g" "${WEB_DIR_PATH}/${main_html}"
 
 	# Set schematic and board revision
-	local sch_revision=$(grep -i "Rev" "${kicad_sch}" -m1 2> /dev/null | sed "s/^[ \t]\+//g" | sed "s/[()]//g" | cut -d" " -f2- | sed "s/\"//g")
+	local sch_revision=$(grep -i "Rev" "${_kicad_sch}" -m1 2> /dev/null | sed "s/^[ \t]\+//g" | sed "s/[()]//g" | cut -d" " -f2- | sed "s/\"//g")
 	local sch_label="${sch_revision}"
-	local pcb_revision=$(grep "(rev " "${kicad_pcb}" -m1 2> /dev/null | sed "s/^[ \t]\+//g" | sed "s/[()]//g" | cut -d" " -f2- | sed "s/\"//g")
+	local pcb_revision=$(grep "(rev " "${_kicad_pcb}" -m1 2> /dev/null | sed "s/^[ \t]\+//g" | sed "s/[()]//g" | cut -d" " -f2- | sed "s/\"//g")
 	local pcb_label="${pcb_revision}"
 	if [[ -z "${pcb_revision}" ]]; then pcb_revision="{pcb_rev}"; pcb_label="${BTE}${LRE}[missing]${RCO}"; fi
 	if [[ -z "${sch_revision}" ]]; then sch_revision="{sch_rev}"; sch_label="${BTE}${LRE}[missing]${RCO}"; fi
-	echo "- Sch Revision: ${BTE}${LMA}${sch_label}${RCO}"
-	echo "- PCB Revision: ${BTE}${LCY}${pcb_label}${RCO}"
+	echo "- Sch revision: ${BTE}${LMA}${sch_label}${RCO}"
+	echo "- PCB revision: ${BTE}${LCY}${pcb_label}${RCO}"
 	sed -i "s|\[SCH_REVISION\]|${sch_revision}|g" "${WEB_DIR_PATH}/${main_html}"
 	sed -i "s|\[PCB_REVISION\]|${pcb_revision}|g" "${WEB_DIR_PATH}/${main_html}"
 
 	# Set schematic and board date
-	local sch_date=$(grep -i "date" "${kicad_sch}" -m1 2> /dev/null | sed "s/^[ \t]\+//g" | sed "s/[()]//g" | cut -d" " -f2 | sed "s/\"//g")
+	local sch_date=$(grep -i "date" "${_kicad_sch}" -m1 2> /dev/null | sed "s/^[ \t]\+//g" | sed "s/[()]//g" | cut -d" " -f2 | sed "s/\"//g")
 	local sch_label="${sch_date}"
-	local pcb_date=$(grep "(date " "${kicad_pcb}" -m1 2> /dev/null | sed "s/^[ \t]\+//g" | sed "s/[()]//g" | cut -d" " -f2 | sed "s/\"//g")
+	local pcb_date=$(grep "(date " "${_kicad_pcb}" -m1 2> /dev/null | sed "s/^[ \t]\+//g" | sed "s/[()]//g" | cut -d" " -f2 | sed "s/\"//g")
 	local pcb_label="${pcb_date}"
 	if [[ -z "${sch_date}" ]]; then sch_date="{sch_date}"; sch_label="${BTE}${LRE}[missing]${RCO}"; fi
 	if [[ -z "${pcb_date}" ]]; then pcb_date="{pcb_date}"; pcb_label="${BTE}${LRE}[missing]${RCO}"; fi
-	echo "- Sch Date: ${BTE}${LMA}${sch_label}${RCO}"
-	echo "- PCB Date: ${BTE}${LCY}${pcb_label}${RCO}"
+	echo "- Sch date: ${BTE}${LMA}${sch_label}${RCO}"
+	echo "- PCB date: ${BTE}${LCY}${pcb_label}${RCO}"
 	sed -i "s|\[PCB_DATE\]|${pcb_date}|g" "${WEB_DIR_PATH}/${main_html}"
 	sed -i "s|\[SCH_DATE\]|${sch_date}|g" "${WEB_DIR_PATH}/${main_html}"
 
 	# Initial Kicad project path
 	local project_path_1="$(realpath --relative-to="${KICAD_PROJ_ABSOLUTE_PATH}" "${OUTPUT_DIR_PATH}/${commit_hash_1}/${kicad_proj_name}.${kicad_pro_extension}")"
 	local project_path_2="$(realpath --relative-to="${KICAD_PROJ_ABSOLUTE_PATH}" "${OUTPUT_DIR_PATH}/${commit_hash_2}/${kicad_proj_name}.${kicad_pro_extension}")"
+	echo -e "\n${LBL}${LBL}Kiri main page${RCO}"
 	echo "- Initial project path:"
 	echo "  Pro 1: ${BTE}${LMA}${project_path_1}${RCO}"
 	echo "  Pro 2: ${BTE}${LCY}${project_path_2}${RCO}"
