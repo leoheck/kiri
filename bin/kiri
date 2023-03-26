@@ -1207,8 +1207,64 @@ create_project_info()
 {
 	local commit_hash="${1}"
 	local kicad_pro="${2}"
+	local kicad_sch="${3}"
+	local kicad_pcb="${4}"
 	mkdir -p "${OUTPUT_DIR_PATH}/${commit_hash}/kiri/"
 	printf "%s\n" "${kicad_pro}" > "${OUTPUT_DIR_PATH}/${commit_hash}/kiri/pro_infos"
+
+	# sch_version=$(grep -E -o -i -m 1 "version [0-9]+" "${kicad_sch}" | cut -d" " -f2)
+	# pcb_version=$(grep -E -o -i -m 1 "version [0-9]+" "${kicad_pcb}" | cut -d" " -f2)
+
+	sch_version=$(get_layout_version ${kicad_sch})
+	pcb_version=$(get_layout_version ${kicad_pcb})
+
+	# EESchema Schematic File Version 4
+	# (kicad_sch (version 20211123) (generator eeschema) # Kicad 6
+	# (kicad_sch (version 20230121) (generator eeschema) # Kicad 7
+
+	# (kicad_pcb (version 4) (host kicad "dummy file") )
+	# (kicad_pcb (version 20171130) (host pcbnew "(5.0.0-rc2-76-gb5f63567d)")
+	# (kicad_pcb (version 20171130)	(host pcbnew "(5.1.5)-3")
+	# (kicad_pcb (version 20171130) (host pcbnew "(5.1.6)-1")
+	# (kicad_pcb (version 20171130) (host pcbnew "(5.1.9)-1")
+	# (kicad_pcb (version 20171130) (host pcbnew "(5.1.10)-1")
+	# (kicad_pcb (version 20171130) (host pcbnew 5.0.0-rc3-unknown-eaf938c~65~ubuntu18.04.1)
+	# (kicad_pcb (version 20171130) (host pcbnew 5.0.1-33cea8e~67~ubuntu18.04.1)
+	# (kicad_pcb (version 20171130) (host pcbnew 5.1.5+dfsg1-2~bpo10+1)
+	# (kicad_pcb (version 20171130) (host pcbnew 5.1.6-c6e7f7d~86~ubuntu20.04.1)
+	# (kicad_pcb (version 20171130) (host pcbnew 5.1.6-c6e7f7d~87~ubuntu20.04.1)
+	# (kicad_pcb (version 20171130) (host pcbnew 5.1.7-a382d34a8~87~ubuntu20.04.1)
+	# (kicad_pcb (version 20171130) (host pcbnew 6.0.0-rc1-unknown-da35b16~65~ubuntu18.04.1)
+	# (kicad_pcb (version 20200104) (host pcbnew "(5.99.0-879-ga0698723b)")
+	# (kicad_pcb (version 20211014) (generator pcbnew)  # Kicad 6 ??
+	# (kicad_pcb (version 20210606) (generator pcbnew)  # Kicad 6
+	# (kicad_pcb (version 20221018) (generator pcbnew)  # Kicad 7
+
+	case ${pcb_version} in
+		       4) kicad_version="4"    ;;
+		20171130) kicad_version="5"    ;;
+		20200104) kicad_version="5.99" ;;
+		20210606) kicad_version="6"    ;;
+		20211014) kicad_version="6"    ;;
+		20221018) kicad_version="7"    ;;
+		*) kicad_version="Unknown"
+	esac
+
+	printf "kicad version = %s\n" "${kicad_version}" >> "${OUTPUT_DIR_PATH}/${commit_hash}/kiri/pro_infos"
+	printf "sch version = %s\n" "${sch_version}" >> "${OUTPUT_DIR_PATH}/${commit_hash}/kiri/pro_infos"
+	printf "pcb version = %s\n" "${pcb_version}" >> "${OUTPUT_DIR_PATH}/${commit_hash}/kiri/pro_infos"
+
+	if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]]; then
+		echo -e "${indent}${LCY}# Rev ${commit_hash} project info${RCO}"
+		echo "${indent}    Kicad Version: ${kicad_version}"
+		echo "${indent}      Sch Version: ${sch_version}"
+		echo "${indent}      PCB Version: ${pcb_version}"
+		echo
+	fi
+
+	# Probing...
+	echo "# $(grep -E -i -m 1 "version [0-9]+" "${kicad_sch}")" >> "/tmp/sch_info"
+	echo "# $(grep -E -i -m 1 "version [0-9]+" "${kicad_pcb}")" >> "/tmp/pcb_info"
 }
 
 create_list_of_pages()
@@ -1850,11 +1906,11 @@ generate_diffs()
 				show_project_files "${OUTPUT_DIR_PATH}/${hash_2}" "${kicad_pro_2}" "${kicad_sch_2}" "${kicad_pcb_2}" "${kicad_cache_lib_2}"
 
 				if [[ "${j}" == "1" ]]; then
-					create_project_info  "${hash_1}" "${OUTPUT_DIR_PATH}/${hash_1}/${kicad_pro_1}"
+					create_project_info  "${hash_1}" "${OUTPUT_DIR_PATH}/${hash_1}/${kicad_pro_1}" "${OUTPUT_DIR_PATH}/${hash_1}/${kicad_sch_1}" "${OUTPUT_DIR_PATH}/${hash_1}/${kicad_pcb_1}"
 					create_list_of_pages "${hash_1}" "${OUTPUT_DIR_PATH}/${hash_1}/${kicad_sch_1}"
 					create_list_of_layers "${hash_1}" "${OUTPUT_DIR_PATH}/${hash_1}/${kicad_pcb_1}"
 				fi
-				create_project_info "${hash_2}" "${OUTPUT_DIR_PATH}/${hash_2}/${kicad_pro_2}"
+				create_project_info "${hash_2}" "${OUTPUT_DIR_PATH}/${hash_2}/${kicad_pro_2}" "${OUTPUT_DIR_PATH}/${hash_2}/${kicad_sch_2}" "${OUTPUT_DIR_PATH}/${hash_2}/${kicad_pcb_2}"
 				create_list_of_pages "${hash_2}" "${OUTPUT_DIR_PATH}/${hash_2}/${kicad_sch_2}"
 				create_list_of_layers "${hash_2}" "${OUTPUT_DIR_PATH}/${hash_2}/${kicad_pcb_2}"
 
