@@ -1215,7 +1215,7 @@ create_project_info()
 	# sch_version=$(grep -E -o -i -m 1 "version [0-9]+" "${kicad_sch}" | cut -d" " -f2)
 	# pcb_version=$(grep -E -o -i -m 1 "version [0-9]+" "${kicad_pcb}" | cut -d" " -f2)
 
-	sch_version=$(get_layout_version ${kicad_sch})
+	sch_version=$(get_schematic_vesion ${kicad_sch})
 	pcb_version=$(get_layout_version ${kicad_pcb})
 
 	# EESchema Schematic File Version 4
