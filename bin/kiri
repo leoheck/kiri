@@ -1796,7 +1796,7 @@ generate_diffs()
 	hashes=$(echo "${COMMITS}" | tac | cut -d' '  -f1 | tac);
 	n_hashes=$(echo "${hashes}" | wc -w | sed "s/^[ \t]\+//g")
 	# n_comparisons=$((n_hashes * $((n_hashes - 1))))
-	n_comparisons=$(python -c "import math; print((int)(math.factorial(${n_hashes}) / (math.factorial(2) * math.factorial(${n_hashes} - 2))))")
+	n_comparisons=$(python3 -c "import math; print((int)(math.factorial(${n_hashes}) / (math.factorial(2) * math.factorial(${n_hashes} - 2))))")
 
 	# Check for local changes
 	echo -e "\n${LBL}Artiffacts Summary${RCO}"
@@ -1950,8 +1950,8 @@ build_main_html()
 	cp -f "${KIRI_HOME_PATH}/assets/redirect.html" "${WEB_DIR_PATH}/../index.html"
 	cp -f "${KIRI_HOME_PATH}/bin/kiri-server"      "${OUTPUT_DIR_PATH}/"
 
-	# cp -rf "${KIRI_HOME_PATH}/assets/3dmodels"      "${WEB_DIR_PATH}/"
-	cp -rf "${KIRI_HOME_PATH}/assets/gltfc"         "${WEB_DIR_PATH}/"
+	# cp -rf "${KIRI_HOME_PATH}/assets/3dmodels"   "${WEB_DIR_PATH}/"
+	# cp -rf "${KIRI_HOME_PATH}/assets/gltfc"      "${WEB_DIR_PATH}/"
 
 	# Index of the initial commits (in the COMMITS list)
 	commit1_i=0
