@@ -5,7 +5,7 @@
 
 readlink_osx()
 {
-	TARGET_FILE=$1
+	TARGET_FILE="${1}"
 
 	cd "$(dirname "${TARGET_FILE}")" || exit
 	TARGET_FILE=$(basename "${TARGET_FILE}")
@@ -22,42 +22,44 @@ readlink_osx()
 	# for the directory we're in and appending the target file.
 	PHYS_DIR=$(pwd -P)
 
-	RESULT="$PHYS_DIR/${TARGET_FILE}"
-
-	echo "${RESULT}"
+	echo "${PHYS_DIR}/${TARGET_FILE}"
 }
 
+main()
+{
+	case ${OSTYPE} in
 
-case ${OSTYPE} in
+		# macOS
+		darwin*)
 
-	# macOS
-	darwin*)
+			script_path=$(readlink_osx "${0}")
+			script_dir_path=$(dirname "${script_path}")
+			script_filename=$(basename "${script_path}")
 
-		SCRIPT_FILE_PATH=$(readlink_osx "${0}")
-		SCRIPTPATH=$(dirname "${SCRIPT_FILE_PATH}")
-		SCRIPTNAME=$(basename "${SCRIPT_FILE_PATH}")
+			export PYTHONPATH="${script_dir_path}/../":"${PYTHONPATH}"
 
-		kicad_app_path=/Applications/Kicad/kicad.app/
-		if [[ ! -d ${kicad_app_path} ]]; then
-			kicad_app_path=/Applications/KiCad/KiCad.app/
-		fi
+			kicad_app_path="/Applications/Kicad/kicad.app/"
+			python="${kicad_app_path}/Contents/Frameworks/Python.framework/Versions/Current/bin/python"
+			if [[ ! -d ${kicad_app_path} ]]; then
+				kicad_app_path=/Applications/KiCad/KiCad.app/
+				python="${kicad_app_path}/Contents/Frameworks/Python.framework/Versions/Current/bin/python3"
+			fi
 
-		export PYTHONPATH="${SCRIPTPATH}/../":"${PYTHONPATH}"
+			if [[ -f "${python}" ]]; then
+				${python} "${script_dir_path}/${script_filename}.py" "$@"
+			fi
+			;;
 
-		if [[ -f ${kicad_app_path}/Contents/Frameworks/Python.framework/Versions/Current/bin/python ]]; then
-			${kicad_app_path}/Contents/Frameworks/Python.framework/Versions/Current/bin/python "${SCRIPTPATH}/${SCRIPTNAME}.py" "$@"
-		else
-			${kicad_app_path}/Contents/Frameworks/Python.framework/Versions/Current/bin/python3 "${SCRIPTPATH}/${SCRIPTNAME}.py" "$@"
-		fi
-		;;
+		# Linux
+		*)
+			script_path=$(readlink -f "$0")
+			script_dir_path=$(dirname "${script_path}")
+			script_filename=$(basename "${script_path}")
+			export PYTHONPATH="${script_dir_path}/../":"${PYTHONPATH}"
+			env python3 "${script_dir_path}/${script_filename}.py" "$@"
+			;;
 
-	# Linux
-	*)
-		SCRIPT_FILE_PATH=$(readlink -f "$0")
-		SCRIPTPATH=$(dirname "${SCRIPT_FILE_PATH}")
-		SCRIPTNAME=$(basename "${SCRIPT_FILE_PATH}")
-		export PYTHONPATH="${SCRIPTPATH}/../":"${PYTHONPATH}"
-		env python3 "${SCRIPTPATH}/${SCRIPTNAME}.py" "$@"
-		;;
+	esac
+}
 
-esac
+main $*
