@@ -3,6 +3,9 @@
 export LD_LIBRARY_PATH="/usr/lib/kicad/lib/x86_64-linux-gnu/:${LD_LIBRARY_PATH}"
 export PYTHONPATH="${PYTHONPATH}:/usr/lib/kicad/lib/python3/dist-packages/"
 
+# kicad-cli on macOS (to avoid using shitty clickclick)
+export PATH=/Applications/KiCad/KiCad.app/Contents/MacOS/:${PATH}
+
 # Kicad 5 files will be ploted with plotgitcsch
 # FORCE_PLOTTING_GRAPHICALLY env variable forces it to be ploted graphically
 # Set it with before runing Kiri with
