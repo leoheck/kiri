@@ -480,7 +480,7 @@ rename()
 			prename "$@"
 			;;
 		"arch"|"manjaro")
-			prename "$@"
+			perl-rename "$@"
 			;;
 		*)
 			command rename "$@"
