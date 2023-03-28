@@ -39,10 +39,12 @@ identify_linux_pkg_manager()
 	fi
 
 	case "${base_distro}" in
-		"debian") echo "apt"     ;;
-		"fedora") echo "dnf"     ;;
-		"redhat") echo "yum"     ;;
-		*)        echo "Unknown" ;;
+		"debian")   echo "apt"     ;;
+		"fedora")   echo "dnf"     ;;
+		"redhat")   echo "yum"     ;;
+		"arch")     echo "pacman"  ;;
+		"manjaro")  echo "pacman"  ;;
+		*)          echo "Unknown" ;;
 	esac
 }
 
@@ -56,11 +58,14 @@ linux_install_dependencies()
 			;;
 		dnf)
 			linux_install_software_with_dnf
-		 	;;
+			;;
 		# yum)
 			# TODO: when someone requests it..
 			# linux_install_software_with_yum
 		# 	;;
+		pacman)
+			linux_install_software_with_pacman
+			;;
 		*)
 			echo "Error: Unknown system"
 			echo "Please, ask KiRI dev to adapt the dependencies installer"
@@ -134,6 +139,23 @@ linux_install_software_with_dnf()
 # linux_install_software_with_yum()
 # {
 # }
+
+# =============================================
+# Linux yum-related stuff
+# =============================================
+
+linux_install_software_with_pacman()
+{
+	sudo pacman -Syu make
+	sudo pacman -Syu patch
+	sudo pacman -Syu dos2unix
+	sudo pacman -Syu opam
+	sudo pamac install python-pip
+	sudo pacman -Syu kicad
+	sudo pamac install imagemagick
+	sudo pamac install xdotool
+	sudo pamac install perl-rename
+}
 
 # =============================================
 # macOS Related stuff
