@@ -1499,7 +1499,7 @@ generate_schematic_artifacts()
 	local proj_name_1=${8}
 	local proj_name_2=${9}
 
-	if [[ -f $(which kicad-cli 2>&1 > /dev/null) ]] \
+	if [[ -f $(which kicad-cli 2> /dev/null) ]] \
 	&& [[ $(get_file_extension "${kicad_sch_1}") != "sch" ]] \
 	&& [[ $(get_file_extension "${kicad_sch_2}") != "sch" ]]; then
 
@@ -1634,7 +1634,7 @@ generate_layout_artifacts()
 	# kicad-cli to plot layers works but KICAD-DIFF is faster
 	# use it only if kicad-diff is missing
 
-	if [[ -f $(which kicad-cli 2>&1 > /dev/null) ]] && [[ "${KIDIFF_MISSING}" == 1 ]]; then
+	if [[ -f $(which kicad-cli 2> /dev/null) ]] && [[ "${KIDIFF_MISSING}" == 1 ]]; then
 
 		local command_end="&> /dev/null &"
 		if [[ "${DEBUG}" == 1 ]]; then
