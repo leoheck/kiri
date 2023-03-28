@@ -479,6 +479,9 @@ rename()
 		"fedora")
 			prename "$@"
 			;;
+		"arch"|"manjaro")
+			prename "$@"
+			;;
 		*)
 			command rename "$@"
 			;;
