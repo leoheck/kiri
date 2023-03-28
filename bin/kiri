@@ -2220,7 +2220,7 @@ main()
 	trap "exit 1" TERM
 	trap cleanup_on_exit INT
 
-	readonly KIRI_HOME_PATH="$(dirname "$(dirname "${0}")")"
+	readonly KIRI_HOME_PATH="$(dirname "$(dirname "$(readlink -f "${0}")")")"
 
 	check_required_tools
 
