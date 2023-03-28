@@ -231,8 +231,9 @@ dissmiss_configure_symbol_library_table()
 
 dissmiss_popup()
 {
-	local win_id=$1
-	echo "  Dismissing popup window"
+	local win_id="${1}"
+	local win_title="${2}"
+	echo "  Dismissing Popup Window $win_id, title = \"${win_title}\""
 
 	xdotool key --window "${win_id}" "Escape" &> /dev/null
 	sleep "${TIME}"
@@ -264,11 +265,12 @@ dissmiss_save_changes()
 dismiss_eeschema_popups()
 {
 	IFS=$'\n'
+
 	for win_id in "${EESCHEMA_WIDS[@]}"; do
 
 		win_title=$(xwininfo -tree -id "${win_id}" 2>/dev/null | grep "xwininfo:" | cut -d" " -f5- | sed "s/\"//g")
 
-		echo "- Window ${win_id} title = \"${win_title}]\""
+		echo "- Window ${win_id}, title = \"${win_title}\""
 
 		case "${win_title}" in
 
