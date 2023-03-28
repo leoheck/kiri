@@ -146,15 +146,15 @@ linux_install_software_with_dnf()
 
 linux_install_software_with_pacman()
 {
-	sudo pacman -S make
-	sudo pacman -S patch
-	sudo pacman -S dos2unix
-	sudo pacman -S opam
-	sudo pacman -S python-pip
-	sudo pacman -S kicad
-	sudo pacman -S imagemagick
-	sudo pacman -S xdotool
-	sudo pacman -S perl-rename
+	yes | sudo pacman -S make
+	yes | sudo pacman -S patch
+	yes | sudo pacman -S dos2unix
+	yes | sudo pacman -S opam
+	yes | sudo pacman -S python-pip
+	yes | sudo pacman -S kicad
+	yes | sudo pacman -S imagemagick
+	yes | sudo pacman -S xdotool
+	yes | sudo pacman -S perl-rename
 }
 
 # =============================================
