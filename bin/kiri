@@ -641,7 +641,7 @@ launch_project_selector_gui()
 {
 	local file_path
 
-	if [[ -n ${DISPLAY} ]]; then
+	if [[ -z ${DISPLAY} ]]; then
 		export DISPLAY=:1.0
 	fi
 
