@@ -957,14 +957,14 @@ get_schematic_vesion()
 		sch)
 			# Format:
 			# EESchema Schematic File Version 4
-			grep -i "File Version" "${kicad_sch}" -m 1 | cut -d" " -f5
+			grep -i "File Version" "${kicad_sch}" -m 1 | cut -d" " -f5 | tr -d '\0'
 			;;
 
 		kicad_sch)
 			# Format
 			# (kicad_sch (version 20211123) (generator eeschema) # Kicad 6
 			# (kicad_sch (version 20230121) (generator eeschema) # Kicad 7
-			grep -i "kicad_sch" "${kicad_sch}" -m 1 | sed "s/[()]//g" | cut -d" " -f3
+			grep -i "kicad_sch" "${kicad_sch}" -m 1 | sed "s/[()]//g" | cut -d" " -f3 | tr -d '\0'
 			;;
 	esac
 }
@@ -984,7 +984,7 @@ get_layout_version()
 	# (kicad_pcb (version 20221018) (generator pcbnew)  # Kicad 7
 
 	local kicad_pcb="${1}"
-	head -n1 "${kicad_pcb}" | sed "s/[()]//g" | cut -d" " -f3
+	head -n1 "${kicad_pcb}" | sed "s/[()]//g" | cut -d" " -f3 | tr -d '\0'
 }
 
 set_default_html_view()
@@ -1217,9 +1217,6 @@ create_project_info()
 	local kicad_pcb="${4}"
 	mkdir -p "${OUTPUT_DIR_PATH}/${commit_hash}/_KIRI_/"
 	printf "%s\n" "${kicad_pro}" > "${OUTPUT_DIR_PATH}/${commit_hash}/_KIRI_/pro_infos"
-
-	# sch_version=$(grep -E -o -i -m 1 "version [0-9]+" "${kicad_sch}" | cut -d" " -f2)
-	# pcb_version=$(grep -E -o -i -m 1 "version [0-9]+" "${kicad_pcb}" | cut -d" " -f2)
 
 	sch_version=$(get_schematic_vesion ${kicad_sch})
 	pcb_version=$(get_layout_version ${kicad_pcb})
