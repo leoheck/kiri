@@ -1,37 +1,18 @@
-# Installing KiRI
 
-To install this tool with on any Operating System, open a terminal and execute the following commands:
+# Installing KiRI Dependencies
 
-> Windows users must use WSL/WSL2. See, [Environment preparation on Windows](#Environment-preparation-on-Windows) section.
+To install this tool on any Operating System, open a terminal and execute the following commands:
 
-> macOS users must have `homebrew` installed
+> Windows users must use WSL/WSL2. See, [Windows preparation](#Windows-preparation) section.
 
-Installing (and Reinstalling) dependencies
+> MacOS users must have `homebrew`. See, [MacOS preparation](#MacOS-preparation) section for extra details.
+
+Installing (and reinstalling) dependencies:
 ```bash
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/leoheck/kiri/main/install_dependencies.sh)"
 ```
 
-Installing (and Reinstalling) KiRI
-```bash
-# The default installation path is "${HOME}/.local/share"
-# It can be changed which the KIRI_INSTALL_PATH environment variable:
-export KIRI_INSTALL_PATH=${HOME}/.local/share
-
-# To test a different branch of Kiri, use the following environment variable:
-export KIRI_BRANCH=main
-```
-
-```bash
-bash -c "INSTALL_KIRI_REMOTELLY=1; \
-    $(curl -fsSL https://raw.githubusercontent.com/leoheck/kiri/main/install_kiri.sh)"
-```
-
-> xdotool, used to plot schematics of Kicad 6 (.kicad_sch) requires a X Window System Server. Some of the alternatives include [Xming](https://sourceforge.net/projects/xming/), [Cygwin](https://x.cygwin.com/), and [Mobaterm](https://mobaxterm.mobatek.net/).
-
-
-> Cliclick on macOS needs `System Preferences → Security & Privacy → Accessibility` for Terminal enabled.
-
-### Environment preparation on Windows
+## Windows Preparation
 
 [Configure WSL](https://www.tenforums.com/tutorials/46769-enable-disable-windows-subsystem-linux-wsl-windows-10-a.html)
 
@@ -57,23 +38,47 @@ wsl --set-default-version 2
 wsl --install -d ubuntu
 ```
 
-After, install dependencies and Kiri by running script in the [Installing](#Installing) section
+Also, if Kicad 6 is installed, `xdotool` is used to plot schematics (`.kicad_sch`) and it requires a X Window System Server. Some of the alternatives include [Xming](https://sourceforge.net/projects/xming/), [Cygwin](https://x.cygwin.com/), and [Mobaterm](https://mobaxterm.mobatek.net/).
 
-## Setting up the environment
+## MacOS Preparation
 
-Setup the environment using the following commands.
+After installing dependencies on macOS, if Kicad 6 is installed, it uses `cliclick` to plot schematics which needs `System Preferences → Security & Privacy → Accessibility` enabled for the Terminal.
+
+# Installing KiRI
+
+Installing (and reinstalling) KiRI:
+```bash
+# Install KiRI
+bash -c "INSTALL_KIRI_REMOTELLY=1; \
+    $(curl -fsSL https://raw.githubusercontent.com/leoheck/kiri/main/install_kiri.sh)"
+```
+
+The follwoing variables can be used to change the installation path and KiRI's branch, if needed.
+
+```bash
+# The default installation path is "${HOME}/.local/share"
+# It can be changed which the KIRI_INSTALL_PATH environment variable:
+export KIRI_INSTALL_PATH=${HOME}/.local/share
+
+# To test a different branch of Kiri, use the following environment variable:
+export KIRI_BRANCH=main
+```
+
+# Post-Installation
+
+Setup the environment using following commands.
 
 > Make sure `KIRI_HOME` is the right path to the installation folder
 
 ```bash
-# Kiri environment setup
+# KiRI Environment
 eval $(opam env)
 export KIRI_HOME=${HOME}/.local/share/kiri
 export PATH=${KIRI_HOME}/submodules/KiCad-Diff/bin:${PATH}
 export PATH=${KIRI_HOME}/bin:${PATH}
 ```
 
-On Windows/WSL, it is needed to launch the XServer (e.g `Xming`) and also have the `DISPLAY` set correctly
+On Windows/WSL, it is needed to launch the XServer (e.g `Xming`) and also have the `DISPLAY` set correctly.
 Add the following lines in the end of the `~/.bashrc`, `~/.zshrc` to set DISPLAY.
 Also, launch `kicad` manually or any other GUI tool like `xeyes` to test if X11 is working.
 
@@ -95,4 +100,4 @@ fi
 
 # Docker
 
-Since Kiri involves a lot of tools and complex settings there is a project that aims to use Docker to provide simple usage. This is a separate project and can be found here [Kiri-Docker](https://github.com/leoheck/kiri-docker)
+Since KiRI involves a bunch of tools and some complex settings, there is a repo that shares a Docker image to provide simple use. This is a separate project and can be found here [Kiri-Docker](https://github.com/leoheck/kiri-docker)
