@@ -31,7 +31,7 @@ KiRI can be launched with the following command, anywhere, inside or outside of 
 kiri [OPTIONS] [KICAD_PROJECT_FILE]
 ```
 
-`KICAD_PROJECT_FILE` can be passed, but it can also be omitted. If running from inside the repo, it will use the "*.pro" or "*.kicad_pro" available. If both are present (which is not good), it will ask your choice. The same happens is running outside of the repository without passing the `KICAD_PROJECT_FILE`.
+`KICAD_PROJECT_FILE` can be passed, but it can also be omitted. If running from inside the repo, it will use the `.pro` or `.kicad_pro` available. If both are present (which is not good), it will ask your choice. The same happens is running outside of the repository without passing the `KICAD_PROJECT_FILE`.
 
 
 ## Command line options (aka Help)
@@ -80,7 +80,7 @@ Browsing the layout view walking through and comparing each layer of the layout,
     <img src="misc/kiri_pcb.png" width="820" alt="Layout View">
 </p>
 
-Here is the comparison when the project is updated from using Kicad 5 (`.sch`) to Kicad 6 (`.kicad_sch`).
+Here is the comparison of the schematics when the project is updated from using Kicad 5 (`.sch`) to Kicad 6 (`.kicad_sch`).
 
 <p align="center">
     <img src="misc/kicad_sch_v6.png" width="820" alt="Layout View">
