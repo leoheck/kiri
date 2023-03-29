@@ -53,17 +53,17 @@ cd kiri
 ./kiri-server .
 ```
 
-# Kicad (PCBNew) Integration
+# Kicad Integration
 
-It is still possible to integrate KiRI with PCBNew by adding a button to its toolbar.
+It is possible to integrate KiRI with PCBNew by adding a button to its toolbar with the following command:
 
 ```bash
 # Create folder if it does not exist
-mkdir -p ~/.kicad/scripting/plugins
+mkdir -p "~/.kicad/scripting/plugins"
 
 # Copy the plugin there
-cd kiri
-cp -r kicad_plugin ~/.kicad/scripting/plugins/kiri
+cd ./kiri
+cp -r "./kicad/plugin/kiri_v6/" "~/.kicad/scripting/plugins/kiri"
 ```
 
 # KiRI Screenshots
