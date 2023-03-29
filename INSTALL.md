@@ -48,7 +48,6 @@ After installing dependencies on macOS, if Kicad 6 is installed, it uses `clicli
 
 Installing (and reinstalling) KiRI:
 ```bash
-# Install KiRI
 bash -c "INSTALL_KIRI_REMOTELLY=1; \
     $(curl -fsSL https://raw.githubusercontent.com/leoheck/kiri/main/install_kiri.sh)"
 ```
