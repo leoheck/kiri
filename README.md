@@ -7,13 +7,13 @@ Currently projects made with Kicad 5, 6 and 7 are supported.
 
 KiRi uses internally existing tools to export schematics and layout to SVG images that can be later compared.
 
-So, when exporting schematics to SVG images:
+So, when exporting schematics pages to SVG images:
 
 - if Kicad 7 is installed, the new `kicad-cli` is used for both projects made with Kicad 6 and 7
 - if Kicad 6 is installed, schematics are exported using [xdotool](https://github.com/jordansissel/xdotool) on Linux/Windows and [cliclick](https://github.com/BlueM/cliclick) on macOS, using the GUI.
 - if Kicad 5 is installed, [Plotgitsch](https://github.com/jnavila/plotkicadsch) and `plotgitsch` are used to export the schematics
 
-When exporting the layout to SVG images:
+When exporting the layout layers in SVG images:
 
 - [Kicad-Diff](https://github.com/Gasman2014/KiCad-Diff) is used for all supported Kicad versions using `pcbnew` library available in python. `kicad-cli` is not used on Kicad 6 and 7 projects because it is slower than the python script since each layer has to be exported individually and this tool cannot do that at once.
 
