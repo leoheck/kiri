@@ -538,7 +538,7 @@ show_help()
 	IFS= read -r -d '' HELP_MESSAGE <<-EOM
 	USAGE:
 
-	    kiri [OPTIONS] [KICAD_PROJECT]
+	    kiri [OPTIONS] [KICAD_PROJECT_FILE]
 
 	DESCRIPTION:
 
@@ -578,9 +578,9 @@ show_help()
 	     -y|--dry-run     Run without generate artifacts
 	     -V|--verbose     Verbose
 
-	KICAD_PROJECT:
+	KICAD_PROJECT_FILE:
 
-	    KICAD_PROJECT file is optional.
+	    KICAD_PROJECT_FILE is optional.
 	    If it is missing the GUI file selector will be loaded
 
 	EXAMPLES:
