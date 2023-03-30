@@ -25,6 +25,8 @@ pcb_current_pan = null;
 // Variables updated by Kiri
 var selected_view = "schematic";
 
+var is_fullscreen = false;
+
 // =======================================
 // HANDLE SHORTCUTS
 // =======================================
@@ -566,6 +568,8 @@ function update_page()
             }
         });
     }
+
+    update_fullscreen_label();
 }
 
 function update_sheets_list(commit1, commit2) {
@@ -813,7 +817,7 @@ function update_layers_list(commit1, commit2, selected_layer_idx, selected_layer
         var input_html = `
         <!-- Generated Layer ${id} -->
         <input  id="layer-${id_pad}" value="layer-${layer_names}" type="radio" name="layers" onchange="update_layer()">
-        <label for="layer-${id_pad}" id="label-${id_pad}" data-toggle="tooltip" title="${id}, ${layer_names}" class="rounded text-sm-left list-group-item radio-box" onclick="update_layer_onclick()">
+        <label for="layer-${id_pad}" id="label-layer-${id_pad}" data-toggle="tooltip" title="${id}, ${layer_names}" class="rounded text-sm-left list-group-item radio-box" onclick="update_layer_onclick()">
             <span style="margin-left:0.5em; margin-right:0.1em; color:${color}" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
             ${layer_names}
         </label>
@@ -955,6 +959,8 @@ function update_layer() {
             }
         });
     }
+
+    update_fullscreen_label();
 }
 
 // =======================================
@@ -1323,6 +1329,45 @@ function removeEmbed()
     }
 }
 
+function update_fullscreen_label()
+{
+    fullscreen_label = document.getElementById("fullscreen_label");
+
+    commit1 = document.getElementById("commit1_hash").value;
+    commit2 = document.getElementById("commit2_hash").value;
+
+    if (current_view == "show_sch")
+    {
+        pages = $("#pages_list input:radio[name='pages']");
+        selected_page = pages.index(pages.filter(':checked'));
+        page_name = document.getElementById("label-" + pages[selected_page].id).innerHTML;
+        name = page_name;
+    }
+    else
+    {
+        layers = $("#layers_list input:radio[name='layers']");
+        selected_layer = layers.index(layers.filter(':checked'));
+        layer_name = document.getElementById("label-" + layers[selected_layer].id).innerHTML;
+        name = layer_name;
+    }
+
+    label = commit1 + " | " + commit2 + " | " + name;
+
+    _html = "<div id=\"fullscreen_label\" class=\"alert alert-dark border border-dark position-absolute top-0 start-50 translate-middle\" role=\"alert\">" + label + "</div>";
+
+    if (fullscreen_label)
+    {
+        fullscreen_label.innerHTML = label;
+    }
+    else
+    {
+        if (is_fullscreen) {
+            element = $('#diff-container').get(0);
+            element.insertAdjacentHTML("afterbegin", _html);
+        }
+    }
+}
+
 function toogle_fullscreen()
 {
   if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement)
@@ -1336,6 +1381,11 @@ function toogle_fullscreen()
     } else if (document.msExitFullscreen) {
       document.msExitFullscreen();
     }
+
+    is_fullscreen = false;
+    const box = document.getElementById('fullscreen_label');
+    box.remove();
+
   } else {
     element = $('#diff-container').get(0);
     if (element.requestFullscreen) {
@@ -1347,6 +1397,9 @@ function toogle_fullscreen()
     } else if (element.msRequestFullscreen) {
       element.msRequestFullscreen();
     }
+
+    is_fullscreen = true;
+    update_fullscreen_label()
   }
 }
 
