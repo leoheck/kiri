@@ -132,7 +132,7 @@ insert_commits_html()
 		                </svg>
 		            </td>
 		            <td style="white-space:nowrap; overflow: hidden; text-overflow: ellipsis;">
-		                <span class="text-success font-weight-normal">${hash_label}</span> <span class="text-muted"> | </span> ${sch_icon} ${pcb_icon} ${txt_icon} <span class="text-muted font-weight-normal"> | ${date} | ${user}</span>
+		                <span class="text-muted"> $(printf "%02d" ${i}) | </span> <span class="text-success font-weight-normal">${hash_label}</span> <span class="text-muted"> | </span> ${sch_icon} ${pcb_icon} ${txt_icon} <span class="text-muted font-weight-normal"> | ${date} | ${user}</span>
 		            </td>
 		        </tr>
 		        <tr>
@@ -323,7 +323,7 @@ insert_layers_html()
 		read -r -d '' layer_html <<-EOM
 		<!-- Layer ${i} -->
 		<input  id="layer-${layer_id_padding}" value="layer-${layer_name}" type="radio" name="layers" onchange="change_layer()" ${checked}>
-		<label for="layer-${layer_id_padding}" id="label-${layer_id_padding}" data-toggle="tooltip" title="${layer_id}, ${layer_name}" class="rounded text-sm-left list-group-item radio-box" onclick="change_layer_onclick()">
+		<label for="layer-${layer_id_padding}" id="label-layer-${layer_id_padding}" data-toggle="tooltip" title="${layer_id}, ${layer_name}" class="rounded text-sm-left list-group-item radio-box" onclick="change_layer_onclick()">
 		    <span style="margin-left:0.5em; margin-right:0.1em; color: ${layer_color}" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
 		    ${layer_name}
 		</label>

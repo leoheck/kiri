@@ -214,6 +214,9 @@ macos_install_brew_modules()
 
 install_python_modules()
 {
+	# python3 -m venv ./venv/
+	# source venv/bin/activate
+
 	# Kicad-Diff dependencies
 	yes | pip3 install "pillow>8.2.0"
 	yes | pip3 install "six>=1.15.0"
