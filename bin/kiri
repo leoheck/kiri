@@ -1515,6 +1515,8 @@ generate_schematic_artifacts()
 		# Configure git-imagediff used by plotgitsch
 		export SVG1_DIR_PATH="${OUTPUT_DIR_PATH}/${commit_hash_1}/_KIRI_/sch"
 		export SVG2_DIR_PATH="${OUTPUT_DIR_PATH}/${commit_hash_2}/_KIRI_/sch"
+		readonly PAGES_FILE_1="${OUTPUT_DIR_PATH}/${commit_hash_1}/_KIRI_/sch_sheets"
+		readonly PAGES_FILE_2="${OUTPUT_DIR_PATH}/${commit_hash_2}/_KIRI_/sch_sheets"
 		mkdir -p "${SVG1_DIR_PATH}"
 		mkdir -p "${SVG2_DIR_PATH}"
 
@@ -1526,10 +1528,13 @@ generate_schematic_artifacts()
 			end="${command_end}"
 			cmd_run "${cmd}" "${msg}" "${end}"
 
-			# It may be necessary to rename pages
-			for kicad_sch in \"${SVG1_DIR_PATH}\"/*; do
-				rename "s/${proj_name_1}-//g" "${kicad_sch}"
-			done
+			# kicad-cli exports the files using the sheet's title, not its file name
+			original_ifs="${IFS}"
+			IFS="|"
+			while read file_name current_sch_rel uuid instance_name parent_inst; do
+				mv "${SVG1_DIR_PATH}/${parent_inst}.svg" "${SVG1_DIR_PATH}/${file_name}.svg"
+			done < "${PAGES_FILE_1}"
+			IFS="${original_ifs}"
 		fi
 
 		msg="# Plotting schematics ${commit_hash_1}"
@@ -1537,10 +1542,13 @@ generate_schematic_artifacts()
 		end="${command_end}"
 		cmd_run "${cmd}" "${msg}" "${end}"
 
-		# It may be necessary to rename pages
-		for kicad_sch in \"${SVG2_DIR_PATH}\"/*; do
-			rename "s/${proj_name_2}-//g" "${kicad_sch}"
-		done
+		# kicad-cli exports the files using the sheet's title, not its file name
+		original_ifs="${IFS}"
+		IFS="|"
+		while read file_name current_sch_rel uuid instance_name parent_inst; do
+			mv "${SVG2_DIR_PATH}/${parent_inst}.svg" "${SVG2_DIR_PATH}/${file_name}.svg"
+		done < "${PAGES_FILE_2}"
+		IFS="${original_ifs}"
 
 	else
 
