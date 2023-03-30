@@ -175,7 +175,7 @@ insert_pages_html()
 
 		local page_name=$(echo "${page}" | cut -d'|' -f1 | sed "s/^[ \t]\+//g" | sed "s/[ \t]\+$//g")
 		local page_filename_path=$(echo "${page}" | cut -d'|' -f2 | sed "s/^[ \t]\+//g" | sed "s/[ \t]\+$//g")
-		local page_filename=$(echo "${page_filename_path}" | xargs basename)
+		local page_filename=$(echo "${page_filename_path}" | xargs -d '\n' basename)
 
 		if echo -e "${pages_to_skip}" | grep -s "${page_filename_path}" > /dev/null; then
 			continue
