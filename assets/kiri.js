@@ -25,6 +25,8 @@ pcb_current_pan = null;
 // Variables updated by Kiri
 var selected_view = "schematic";
 
+var is_fullscreen = false;
+
 // =======================================
 // HANDLE SHORTCUTS
 // =======================================
@@ -566,6 +568,8 @@ function update_page()
             }
         });
     }
+
+    update_fullscreen_label();
 }
 
 function update_sheets_list(commit1, commit2) {
@@ -955,6 +959,8 @@ function update_layer() {
             }
         });
     }
+
+    update_fullscreen_label();
 }
 
 // =======================================
@@ -1325,7 +1331,7 @@ function removeEmbed()
 
 function update_fullscreen_label()
 {
-    element = $('#diff-container').get(0);
+    fullscreen_label = document.getElementById("fullscreen_label");
 
     commit1 = document.getElementById("commit1_hash").value;
     commit2 = document.getElementById("commit2_hash").value;
@@ -1336,7 +1342,7 @@ function update_fullscreen_label()
         selected_page = pages.index(pages.filter(':checked'));
         page_name = document.getElementById("label-" + pages[selected_page].id).innerHTML;
         name = page_name;
-    } 
+    }
     else
     {
         layers = $("#layers_list input:radio[name='layers']");
@@ -1348,7 +1354,18 @@ function update_fullscreen_label()
     label = commit1 + " | " + commit2 + " | " + name;
 
     _html = "<div id=\"fullscreen_label\" class=\"alert alert-dark border border-dark position-absolute top-0 start-50 translate-middle\" role=\"alert\">" + label + "</div>";
-    element.insertAdjacentHTML("afterbegin", _html);
+
+    if (fullscreen_label)
+    {
+        fullscreen_label.innerHTML = label;
+    }
+    else
+    {
+        if (is_fullscreen) {
+            element = $('#diff-container').get(0);
+            element.insertAdjacentHTML("afterbegin", _html);
+        }
+    }
 }
 
 function toogle_fullscreen()
@@ -1365,9 +1382,9 @@ function toogle_fullscreen()
       document.msExitFullscreen();
     }
 
-    var elem = document.getElementById("#fullscreen_label");
-    elem.hide()
-    elem.parentNode.removeChild(elem);
+    is_fullscreen = false;
+    const box = document.getElementById('fullscreen_label');
+    box.remove();
 
   } else {
     element = $('#diff-container').get(0);
@@ -1381,6 +1398,7 @@ function toogle_fullscreen()
       element.msRequestFullscreen();
     }
 
+    is_fullscreen = true;
     update_fullscreen_label()
   }
 }
