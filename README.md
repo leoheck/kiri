@@ -104,8 +104,12 @@ A quick and old demo on the Youtube.
 
 <p align="center">
 Are you enjoying using this tool, feel free to pay me a beer :). Cheers!
-https://www.paypal.com/donate/?hosted_button_id=EPV73V7C5N4CJ
 </p>
+
+<p align="center">
+    <a href="https://www.paypal.com/donate/?hosted_button_id=EPV73V7C5N4CJ"><img src="misc/donate_btn.gif"></a>
+</p>
+
 
 <!-- <p align="center">
     <img src="misc/donation-qr-code.png" alt="Paypal Donation QR-Code">
