@@ -654,7 +654,7 @@ function update_sheets_list(commit1, commit2) {
     // rerun tooltips since they are getting ugly.
     $('[data-toggle="tooltip"]').tooltip({html: true});
     $('[data-toggle="tooltip"]').tooltip('update');
-    $('[data-toggle="tooltip"]').tooltip({boundary: 'window'});
+    $('[data-toggle="tooltip"]').tooltip({boundary: 'body'});
 
     const optionLabels = Array.from(pages).map((opt) => opt.id);
 
@@ -846,7 +846,7 @@ function update_layers_list(commit1, commit2, selected_layer_idx, selected_layer
     // Update html tooltips
     $('[data-toggle="tooltip"]').tooltip({html:true});
     $('[data-toggle="tooltip"]').tooltip('update');
-    $('[data-toggle="tooltip"]').tooltip({boundary: 'window'});
+    $('[data-toggle="tooltip"]').tooltip({boundary: 'body'});
 
     // Enable back the selected layer
     const optionLabels = Array.from(layers).map((opt) => opt.id);
@@ -1013,7 +1013,7 @@ $(document).ready(function()
 {
     $('[data-toggle="tooltip"]').tooltip({html:true});
     $('[data-toggle="tooltip"]').tooltip('update');
-    $('[data-toggle="tooltip"]').tooltip({boundary: 'window'});
+    $('[data-toggle="tooltip"]').tooltip({boundary: 'body'});
 });
 
 // Limit commits list with 2 checked commits at most
