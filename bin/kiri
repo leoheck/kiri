@@ -2223,6 +2223,7 @@ main()
 	local kicad_cache_lib="$(get_kicad_cache_lib "${KICAD_PROJ_ABSOLUTE_PATH}" "${kicad_proj_name}")"
 	show_project_files "${KICAD_PROJ_ABSOLUTE_PATH}" "${kicad_pro}" "${kicad_sch}" "${kicad_pcb}" "${kicad_cache_lib}"
 
+	rm -rf "${OUTPUT_DIR_PATH}/_local"
 	if [[ "${REMOVE_KIRI_FOLDER}" == 1 ]]; then
 		echo -e "\n${LBL}Output folder:${RCO} $(realpath --relative-to="${KICAD_PROJ_ABSOLUTE_PATH}" "${OUTPUT_DIR_PATH}")"
 		echo -e "${LYE}Removing leftovers from the previous run${RCO}"
