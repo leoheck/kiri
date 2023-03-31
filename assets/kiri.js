@@ -1341,29 +1341,59 @@ function update_fullscreen_label()
         pages = $("#pages_list input:radio[name='pages']");
         selected_page = pages.index(pages.filter(':checked'));
         page_name = document.getElementById("label-" + pages[selected_page].id).innerHTML;
-        name = page_name;
+        view_item = "Page " + page_name;
     }
     else
     {
         layers = $("#layers_list input:radio[name='layers']");
         selected_layer = layers.index(layers.filter(':checked'));
         layer_name = document.getElementById("label-" + layers[selected_layer].id).innerHTML;
-        name = layer_name;
+        view_item = "Layer " + layer_name;
     }
 
-    label = commit1 + " | " + commit2 + " | " + name;
-
-    _html = "<div id=\"fullscreen_label\" class=\"alert alert-dark border border-dark position-absolute top-0 start-50 translate-middle\" role=\"alert\">" + label + "</div>";
-
-    if (fullscreen_label)
+    if (is_fullscreen)
     {
-        fullscreen_label.innerHTML = label;
-    }
-    else
-    {
-        if (is_fullscreen) {
-            element = $('#diff-container').get(0);
-            element.insertAdjacentHTML("afterbegin", _html);
+        if (fullscreen_label)
+        {
+            document.getElementById("commit1_fs").innerHTML = `(<a id="commit1_legend_hash">${commit1}</a>)`;
+            document.getElementById("commit2_fs").innerHTML = `(<a id="commit2_legend_hash">${commit2}</a>)`;
+            document.getElementById("view_item_fs").innerHTML = view_item;
+        }
+        else
+        {
+            label = `
+                <div id="fullscreen_label" class="alert alert-dark border border-dark rounded-pill position-absolute top-10 start-50 translate-middle" style="background-color: #333;" role="alert">
+                    <span id=commit1_legend_fs style="margin-left:0em; margin-right:0.2em; color: #00FFFF; width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
+                    <small class="text-sm text-light">
+                        Newer
+                        <span id="commit1_fs" class="text-monospace">(<a id="commit1_legend_hash">${commit1}</a>)</span>
+                    </small>
+
+                    <span style="display: inline; width: 3em;"></span>
+                    <span id="commit2_legend_fs" style="display: inline; margin-left:1em; margin-right:0.2em; color: #880808; width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
+                    <small class="text-sm text-light">
+                        Older
+                        <span id="commit2_fs" class="text-monospace">(<a id="commit2_legend_hash">${commit2}</a>)</span>
+                    </small>
+
+                    <span style="display: inline; width: 3em;"></span>
+                    <span id="commit3_legend_fs" style="margin-left:1em; margin-right:0.2em; color: #807F7F; width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
+                    <small class="text-sm text-light">
+                        Unchanged
+                    </small>
+
+                    <small class="text-sm text-muted" style="margin-left:1em; margin-right:0.2em;">
+                        |
+                    </small>
+                    <span style="display: inline; width: 3em;"></span>
+                    <small id="view_item_fs" class="text-sm text-light" style="margin-left:1em; margin-right:0.2em;">
+                        ${view_item}
+                    </small>
+                </div>
+            `
+
+            const element = $('#diff-container').get(0);
+            element.insertAdjacentHTML("afterbegin", label);
         }
     }
 }
