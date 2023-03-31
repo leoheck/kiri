@@ -196,7 +196,7 @@ insert_pages_html()
 		<!-- Page ${i} -->
 		<input id="${page_name}" data-toggle="tooltip" title="${page_filename_path}" type="radio" value="${page_filename}" name="pages" ${checked} onchange="change_page()">
 		<label for="${page_name}" data-toggle="tooltip" title="${page_filename_path}" id="label-${page_name}" class="rounded text-sm-left list-group-item radio-box" onclick="change_page_onclick()" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-		    <span data-toggle="tooltip" title="${page_name}" style="margin-left:0.5em; margin-right:0.1em;" class="iconify" data-icon="gridicons:pages" data-inline="false"></span>
+		    <span data-toggle="tooltip" title="${page_filename_path}" style="margin-left:0.5em; margin-right:0.1em;" class="iconify" data-icon="gridicons:pages" data-inline="false"></span>
 		    ${page_name}
 		</label>
 		EOM
