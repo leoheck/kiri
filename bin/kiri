@@ -1881,6 +1881,8 @@ generate_diffs()
 				if [[ "${j}" == "1" ]]; then
 
 					local kicad_pro_1="$(get_kicad_pro "${OUTPUT_DIR_PATH}/${hash_1}")"
+					if [[ ! -f "${kicad_pro_1}" ]]; then continue; fi
+
 					local kicad_pro_extension_1="$(get_file_extension "${kicad_pro_1}")"
 					local kicad_project_name_1="$(get_file_without_extention "${kicad_pro_1}")"
 					local kicad_sch_1="$(get_kicad_sch "${OUTPUT_DIR_PATH}/${hash_1}" "${kicad_project_name_1}" "${kicad_pro_extension_1}")"
@@ -1900,6 +1902,8 @@ generate_diffs()
 				fi
 
 				local kicad_pro_2="$(get_kicad_pro "${OUTPUT_DIR_PATH}/${hash_2}")"
+				if [[ ! -f "${kicad_pro_2}" ]]; then continue; fi
+
 				local kicad_pro_extension_2="$(get_file_extension "${kicad_pro_2}")"
 				local kicad_project_name_2="$(get_file_without_extention "${kicad_pro_2}")"
 				local kicad_sch_2="$(get_kicad_sch "${OUTPUT_DIR_PATH}/${hash_2}" "${kicad_project_name_2}" "${kicad_pro_extension_2}")"
@@ -2155,6 +2159,7 @@ show_project_files()
 	local kicad_cache_lib="${5}"
 
 	local kicad_sch_pages="$(get_kicad_sch_pages "${kicad_project_path}/${kicad_sch}")"
+	local extra_kicad_sch_pages=$(echo "${kicad_sch_pages}" | sed "s/${kicad_sch}//g" | sed '/^[[:space:]]*$/d')
 
 	indent=$(printf ' %.0s' {1..4})
 	commit_hash=$(basename "${kicad_project_path}")
@@ -2167,9 +2172,9 @@ show_project_files()
 		echo "${indent}     project_path: ${kicad_project_path}"
 		echo "${indent}          project: ${kicad_pro}"
 		echo "${indent}        schematic: ${kicad_sch}"
-		if [[ -n "${kicad_sch_pages}" ]]; then
+		if [[ -n "${extra_kicad_sch_pages}" ]]; then
 			padding=$(printf ' %.0s' {1..19})
-			echo -e "${indent}  extra_sch_files: $(echo -e "${kicad_sch_pages}" | sed "s/^/${indent}${padding}/g" | sed '1s/[ ]\+//')"
+			echo -e "${indent}  extra_sch_files: $(echo -e "${extra_kicad_sch_pages}" | sed "s/^/${indent}${padding}/g" | sed '1s/[ ]\+//')"
 		fi
 		if [[ -n "${kicad_cache_lib}" ]]; then
 			echo -e "${indent}        cache.lib: ${kicad_cache_lib}"
@@ -2223,6 +2228,7 @@ main()
 	local kicad_cache_lib="$(get_kicad_cache_lib "${KICAD_PROJ_ABSOLUTE_PATH}" "${kicad_proj_name}")"
 	show_project_files "${KICAD_PROJ_ABSOLUTE_PATH}" "${kicad_pro}" "${kicad_sch}" "${kicad_pcb}" "${kicad_cache_lib}"
 
+	rm -rf "${OUTPUT_DIR_PATH}/_local_"
 	if [[ "${REMOVE_KIRI_FOLDER}" == 1 ]]; then
 		echo -e "\n${LBL}Output folder:${RCO} $(realpath --relative-to="${KICAD_PROJ_ABSOLUTE_PATH}" "${OUTPUT_DIR_PATH}")"
 		echo -e "${LYE}Removing leftovers from the previous run${RCO}"
