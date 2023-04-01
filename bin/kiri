@@ -1881,7 +1881,9 @@ generate_diffs()
 				if [[ "${j}" == "1" ]]; then
 
 					local kicad_pro_1="$(get_kicad_pro "${OUTPUT_DIR_PATH}/${hash_1}")"
-					if [[ ! -f "${kicad_pro_1}" ]]; then continue; fi
+					if [[ ! -f "${OUTPUT_DIR_PATH}/${hash_1}/${kicad_pro_1}" ]]; then
+						continue;
+					fi
 
 					local kicad_pro_extension_1="$(get_file_extension "${kicad_pro_1}")"
 					local kicad_project_name_1="$(get_file_without_extention "${kicad_pro_1}")"
@@ -1902,7 +1904,9 @@ generate_diffs()
 				fi
 
 				local kicad_pro_2="$(get_kicad_pro "${OUTPUT_DIR_PATH}/${hash_2}")"
-				if [[ ! -f "${kicad_pro_2}" ]]; then continue; fi
+				if [[ ! -f "${OUTPUT_DIR_PATH}/${hash_2}/${kicad_pro_2}" ]]; then
+					continue;
+				fi
 
 				local kicad_pro_extension_2="$(get_file_extension "${kicad_pro_2}")"
 				local kicad_project_name_2="$(get_file_without_extention "${kicad_pro_2}")"
