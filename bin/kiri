@@ -166,12 +166,12 @@ insert_pages_html()
 	local page_html
 	local pages_html
 
-	local pages=$(cat "${OUTPUT_DIR_PATH}/sch_sheets")
+	local pages=($(cat "${OUTPUT_DIR_PATH}/sch_sheets"))
 	local pages_to_skip
 
 	local i=0
 	IFS=$'\n'
-	for page in ${pages}; do
+	for page in ${pages[@]}; do
 
 		local page_name=$(echo "${page}" | cut -d'|' -f1 | sed "s/^[ \t]\+//g" | sed "s/[ \t]\+$//g")
 		local page_filename_path=$(echo "${page}" | cut -d'|' -f2 | sed "s/^[ \t]\+//g" | sed "s/[ \t]\+$//g")
@@ -190,6 +190,8 @@ insert_pages_html()
 		fi
 
 		i=$((i + 1))
+
+		# page_name_id=$(echo "${page_name}" | sed "s/ /__/g")
 
 		# IFS=
 		read -r -d '' page_html <<-EOM

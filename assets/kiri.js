@@ -593,11 +593,25 @@ function update_sheets_list(commit1, commit2) {
     data2 = loadFile("../" + commit2 + "/_KIRI_/sch_sheets" + url_timestamp(commit2)).split("\n").filter((a) => a);
 
     var sheets = [];
+    var pages_name = [];
+    var pages_name_id = [];
+    var pages_filename_path = [];
+    var pages_filename = [];
 
     for (const d of data1)
     {
         sheet = d.split("|")[0];
         sheets.push(sheet);
+
+        page_name = d.split("|")[0];
+        page_name_id = page_name.replace(" ", "__");
+        page_filename_path = d.split("|")[1];
+        page_filename = d.split("|")[0];
+
+        pages_name.push(page_name);
+        pages_name_id.push(page_name_id);
+        pages_filename_path.push(page_filename_path);
+        pages_filename.push(page_filename);
     }
 
     for (const d of data2)
@@ -607,11 +621,26 @@ function update_sheets_list(commit1, commit2) {
         {
             sheets.push(sheet);
         }
+
+        page_name = d.split("|")[0];
+        page_name_id = page_name.replace(" ", "__");
+        page_filename_path = d.split("|")[1];
+        page_filename = d.split("|")[0];
+
+        if (! pages_name.includes(page_name)) { pages_name.push(page_name); }
+        if (! pages_name_id.includes(page_name_id)) { pages_name_id.push(page_name_id); }
+        if (! pages_filename_path.includes(page_filename_path)) { pages_filename_path.push(page_filename_path); }
+        if (! pages_filename.includes(page_filename)) { pages_filename.push(page_filename); }
     }
 
     // sheets.sort();
     // sheets = Array.from(new Set(sheets.sort()));
+
     sheets = Array.from(new Set(sheets));
+    pages_name = Array.from(new Set(pages_name));
+    pages_name_id = Array.from(new Set(pages_name_id));
+    pages_filename_path = Array.from(new Set(pages_filename_path));
+    pages_filename = Array.from(new Set(pages_filename));
 
     console.log("[SCH]  Sheets =", sheets.length);
     console.log("sheets", sheets);
@@ -619,20 +648,40 @@ function update_sheets_list(commit1, commit2) {
     var new_sheets_list = [];
     var form_inputs_html;
 
+    var i = 0;
     for (const sheet of sheets)
     {
+        // var input_html = `
+        // <!-- Javascript Generated Page ${i} -->
+        // <input id="${sheet}" data-toggle="tooltip" title="${sheet}" type="radio" value="${sheet}" name="pages" onchange="update_page()">
+        // <label for="${sheet}" data-toggle="tooltip" title="${sheet}" id="label-${sheet}" class="rounded text-sm-left list-group-item radio-box" onclick="update_page_onclick()" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+        //     <span data-toggle="tooltip" title="${sheet}" style="margin-left:0.5em; margin-right:0.1em;" class="iconify" data-icon="gridicons:pages" data-inline="false"></span>
+        //     ${sheet}
+        // </label>
+        // `;
+
+        // var input_html = `
+        // <input id="${pages_name_id[i]}" data-toggle="tooltip" title="${pages_filename_path[i]}" type="radio" value="${pages_filename[i]}" name="pages" onchange="change_page()">
+        // <label for="${pages_name_id[i]}" data-toggle="tooltip" title="${pages_filename_path[i]}" id="label-${pages_name[i]}" class="rounded text-sm-left list-group-item radio-box" onclick="change_page_onclick()" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+        //     <span data-toggle="tooltip" title="${pages_filename_path[i]}" style="margin-left:0.5em; margin-right:0.1em;" class="iconify" data-icon="gridicons:pages" data-inline="false"></span>
+        //     ${pages_name[i]}
+        // </label>
+        // `;
+
         var input_html = `
-        <input id="${sheet}" data-toggle="tooltip" title="${sheet}" type="radio" value="${sheet}" name="pages" onchange="update_page()">
-            <label for="${sheet}" data-toggle="tooltip" title="${sheet}" id="label-${sheet}" class="rounded text-sm-left list-group-item radio-box" onclick="update_page_onclick()" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                <span data-toggle="tooltip" title="${sheet}" style="margin-left:0.5em; margin-right:0.1em;" class="iconify" data-icon="gridicons:pages" data-inline="false"></span>
-                ${sheet}
-            </label>
+        <!-- Javascript Generated Page ${i} -->
+        <input id="${sheet}" data-toggle="tooltip" title="${pages_filename_path[i]}" type="radio" value="${sheet}" name="pages" onchange="update_page()">
+        <label for="${sheet}" data-toggle="tooltip" title="${pages_filename_path[i]}" id="label-${sheet}" class="rounded text-sm-left list-group-item radio-box" onclick="update_page_onclick()" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+            <span data-toggle="tooltip" title="${pages_filename_path[i]}" style="margin-left:0.5em; margin-right:0.1em;" class="iconify" data-icon="gridicons:pages" data-inline="false"></span>
+            ${sheet}
         </label>
         `;
 
         new_sheets_list.push(sheet);
 
         form_inputs_html = form_inputs_html + input_html;
+
+        i++;
     }
 
     // Get the current list of pages
@@ -815,7 +864,7 @@ function update_layers_list(commit1, commit2, selected_layer_idx, selected_layer
         color = layer_color(id);
 
         var input_html = `
-        <!-- Generated Layer ${id} -->
+        <!-- Javascript Generated Layer ${id} -->
         <input  id="layer-${id_pad}" value="layer-${layer_names}" type="radio" name="layers" onchange="update_layer()">
         <label for="layer-${id_pad}" id="label-layer-${id_pad}" data-toggle="tooltip" title="${id}, ${layer_names}" class="rounded text-sm-left list-group-item radio-box" onclick="update_layer_onclick()">
             <span style="margin-left:0.5em; margin-right:0.1em; color:${color}" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
