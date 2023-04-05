@@ -1515,8 +1515,8 @@ generate_schematic_artifacts()
 		# Configure git-imagediff used by plotgitsch
 		export SVG1_DIR_PATH="${OUTPUT_DIR_PATH}/${commit_hash_1}/_KIRI_/sch"
 		export SVG2_DIR_PATH="${OUTPUT_DIR_PATH}/${commit_hash_2}/_KIRI_/sch"
-		readonly PAGES_FILE_1="${OUTPUT_DIR_PATH}/${commit_hash_1}/_KIRI_/sch_sheets"
-		readonly PAGES_FILE_2="${OUTPUT_DIR_PATH}/${commit_hash_2}/_KIRI_/sch_sheets"
+		PAGES_FILE_1="${OUTPUT_DIR_PATH}/${commit_hash_1}/_KIRI_/sch_sheets"
+		PAGES_FILE_2="${OUTPUT_DIR_PATH}/${commit_hash_2}/_KIRI_/sch_sheets"
 		mkdir -p "${SVG1_DIR_PATH}"
 		mkdir -p "${SVG2_DIR_PATH}"
 
