@@ -218,7 +218,7 @@ install_python_modules()
 	# source venv/bin/activate
 
 	# Kicad-Diff dependencies
-	yes | pip3 install -r requirements.txt
+	yes | pip3 install -r python-requirements.txt
 }
 
 init_opam()
