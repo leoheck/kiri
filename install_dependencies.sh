@@ -218,14 +218,7 @@ install_python_modules()
 	# source venv/bin/activate
 
 	# Kicad-Diff dependencies
-	yes | pip3 install "pillow>8.2.0"
-	yes | pip3 install "six>=1.15.0"
-	yes | pip3 install "dateutils>=0.6.12"
-	yes | pip3 install "python_dateutil>=2.8.1"
-	yes | pip3 install "pytz>=2021.1"
-	yes | pip3 install "pathlib>=1.0.1"
-	yes | pip3 install "wxpython>=4.0.7"
-	yes | pip3 install "wxwidgets>=1.0.5"
+	yes | pip3 install -r requirements.txt
 }
 
 init_opam()
