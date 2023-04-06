@@ -827,10 +827,10 @@ command_line_parse()
 	done
 
 	# Select Kicad project with GUI if it was not passed
-	# if [[ -z "${kicad_pro_path}" ]]; then
-		# kicad_pro_path="$(launch_project_selector_gui)"
-	# fi
-	kicad_pro_path=/${HOME}
+	if [[ -z "${kicad_pro_path}" ]]; then
+		kicad_pro_path="$(launch_project_selector_gui)"
+	fi
+	# kicad_pro_path=/${HOME}
 
 	KICAD_PRO_ABSOLUTE_PATH=$(realpath "${kicad_pro_path/#\~/$HOME}" 2> /dev/null)
 	if [[ ! -f ${KICAD_PRO_ABSOLUTE_PATH} ]]; then
