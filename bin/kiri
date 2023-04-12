@@ -1518,7 +1518,7 @@ generate_schematic_artifacts()
 			cmd_run "${cmd}" "${msg}" "${end}"
 
 			# It may be necessary to rename pages
-			for kicad_sch in \"${SVG1_DIR_PATH}\"/*; do
+			for kicad_sch in "${SVG1_DIR_PATH}"/*; do
 				rename "s/${proj_name_1}-//g" "${kicad_sch}"
 			done
 		fi
@@ -1529,7 +1529,7 @@ generate_schematic_artifacts()
 		cmd_run "${cmd}" "${msg}" "${end}"
 
 		# It may be necessary to rename pages
-		for kicad_sch in \"${SVG2_DIR_PATH}\"/*; do
+		for kicad_sch in "${SVG2_DIR_PATH}"/*; do
 			rename "s/${proj_name_2}-//g" "${kicad_sch}"
 		done
 
