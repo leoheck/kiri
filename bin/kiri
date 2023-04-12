@@ -826,29 +826,25 @@ command_line_parse()
 		esac
 	done
 
-	# Select Kicad project with GUI if it was not passed
-	if [[ -z "${kicad_pro_path}" ]]; then
-		kicad_pro_path="$(launch_project_selector_gui)"
-	fi
-	# kicad_pro_path=/${HOME}
-
 	KICAD_PRO_ABSOLUTE_PATH=$(realpath "${kicad_pro_path/#\~/$HOME}" 2> /dev/null)
 	if [[ ! -f ${KICAD_PRO_ABSOLUTE_PATH} ]]; then
-		local kicad_pro_path=$(find ./ -maxdepth 1 -name "*\.pro" -o -name "*\.kicad_pro")
+		if [[ -n ${kicad_pro_path} ]]; then
+			echo "Kicad pro (${kicad_pro_path}) does not exist"
+		fi
+		local kicad_pro_path=$(find ./ -maxdepth 1 -name "*\.pro" -o -name "*\.kicad_pro" | head -n1)
+		if [[ -f ${kicad_pro_path} ]]; then
+			echo "Using Kicad project ${kicad_pro_path}"
+		fi
 		KICAD_PRO_ABSOLUTE_PATH=$(realpath "${kicad_pro_path}" 2> /dev/null)
-		if [[ ! -f ${KICAD_PRO_ABSOLUTE_PATH} ]]; then
-			kicad_pro_path="$(launch_project_selector_gui)"
-			KICAD_PRO_ABSOLUTE_PATH=$(realpath "${kicad_pro_path/#\~/$HOME}" 2> /dev/null)
 			if [[ ! -f ${KICAD_PRO_ABSOLUTE_PATH} ]]; then
-				printf "ERROR: Kicad's project file (.pro, .kicad_pro) \"%s\" is missing.\n\n" "${KICAD_PRO_ABSOLUTE_PATH}"
+				printf "Kicad project is missing.\n\n"
 				exit 1
 			fi
-		fi
 	fi
 
 	readonly KICAD_PRO_ABSOLUTE_PATH
 	readonly REPO_ABSOLUTE_PATH="$(get_project_repo_abspath)"
-	readonly KICAD_PROJ_NESTED_PATH="$(get_project_nested_path)"
+	KICAD_PROJ_NESTED_PATH="$(get_project_nested_path)"
 
 	readonly KICAD_PROJ_ABSOLUTE_PATH="${REPO_ABSOLUTE_PATH}/${KICAD_PROJ_NESTED_PATH}"
 	cd "${KICAD_PROJ_ABSOLUTE_PATH}" || exit
@@ -1056,9 +1052,13 @@ git_files_have_changes()
 
 	uniq_files=($(for f in "${files[@]}"; do echo "${f}"; done | sort -u))
 
+	# Testing, it looks like this variable is not needed even for nested projects
+	# here it is being overwritten
+	KICAD_PROJ_NESTED_PATH="."
+
 	for file in "${uniq_files[@]}"; do
 		if [[ -n "${file}" ]]; then
-			if ! git diff --exit-code -- "${KICAD_PROJ_NESTED_PATH}/${file}" > /dev/null; then
+			if ! git diff --quiet -- "${KICAD_PROJ_NESTED_PATH}/${file}"; then
 				if [[ "${DEBUG}" == "1" ]]; then
 					echo "[x] ${KICAD_PROJ_NESTED_PATH}/${file}" 2>&1
 				fi
@@ -1512,6 +1512,8 @@ generate_schematic_artifacts()
 		# Configure git-imagediff used by plotgitsch
 		export SVG1_DIR_PATH="${OUTPUT_DIR_PATH}/${commit_hash_1}/_KIRI_/sch"
 		export SVG2_DIR_PATH="${OUTPUT_DIR_PATH}/${commit_hash_2}/_KIRI_/sch"
+		PAGES_FILE_1="${OUTPUT_DIR_PATH}/${commit_hash_1}/_KIRI_/sch_sheets"
+		PAGES_FILE_2="${OUTPUT_DIR_PATH}/${commit_hash_2}/_KIRI_/sch_sheets"
 		mkdir -p "${SVG1_DIR_PATH}"
 		mkdir -p "${SVG2_DIR_PATH}"
 
@@ -1523,10 +1525,15 @@ generate_schematic_artifacts()
 			end="${command_end}"
 			cmd_run "${cmd}" "${msg}" "${end}"
 
-			# It may be necessary to rename pages
-			for kicad_sch in \"${SVG1_DIR_PATH}\"/*; do
-				rename "s/${proj_name_1}-//g" "${kicad_sch}"
-			done
+			# kicad-cli exports the files using the sheet's title, not its file name
+			original_ifs="${IFS}"
+			IFS="|"
+			while read file_name current_sch_rel uuid instance_name parent_inst; do
+				if [ "${parent_inst}" != "${file_name}" ]; then
+					mv "${SVG1_DIR_PATH}/${parent_inst}.svg" "${SVG1_DIR_PATH}/${file_name}.svg"
+				fi
+			done < "${PAGES_FILE_1}"
+			IFS="${original_ifs}"
 		fi
 
 		msg="# Plotting schematics ${commit_hash_1}"
@@ -1534,10 +1541,15 @@ generate_schematic_artifacts()
 		end="${command_end}"
 		cmd_run "${cmd}" "${msg}" "${end}"
 
-		# It may be necessary to rename pages
-		for kicad_sch in \"${SVG2_DIR_PATH}\"/*; do
-			rename "s/${proj_name_2}-//g" "${kicad_sch}"
-		done
+		# kicad-cli exports the files using the sheet's title, not its file name
+		original_ifs="${IFS}"
+		IFS="|"
+		while read file_name current_sch_rel uuid instance_name parent_inst; do
+			if [ "${parent_inst}" != "${file_name}" ]; then
+				mv "${SVG2_DIR_PATH}/${parent_inst}.svg" "${SVG2_DIR_PATH}/${file_name}.svg"
+			fi
+		done < "${PAGES_FILE_2}"
+		IFS="${original_ifs}"
 
 	else
 
