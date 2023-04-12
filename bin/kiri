@@ -826,24 +826,14 @@ command_line_parse()
 		esac
 	done
 
-	# Select Kicad project with GUI if it was not passed
-	if [[ -z "${kicad_pro_path}" ]]; then
-		kicad_pro_path="$(launch_project_selector_gui)"
-	fi
-	# kicad_pro_path=/${HOME}
-
 	KICAD_PRO_ABSOLUTE_PATH=$(realpath "${kicad_pro_path/#\~/$HOME}" 2> /dev/null)
 	if [[ ! -f ${KICAD_PRO_ABSOLUTE_PATH} ]]; then
-		local kicad_pro_path=$(find ./ -maxdepth 1 -name "*\.pro" -o -name "*\.kicad_pro")
+		local kicad_pro_path=$(find ./ -maxdepth 1 -name "*\.pro" -o -name "*\.kicad_pro" | head -n1)
 		KICAD_PRO_ABSOLUTE_PATH=$(realpath "${kicad_pro_path}" 2> /dev/null)
-		if [[ ! -f ${KICAD_PRO_ABSOLUTE_PATH} ]]; then
-			kicad_pro_path="$(launch_project_selector_gui)"
-			KICAD_PRO_ABSOLUTE_PATH=$(realpath "${kicad_pro_path/#\~/$HOME}" 2> /dev/null)
 			if [[ ! -f ${KICAD_PRO_ABSOLUTE_PATH} ]]; then
-				printf "ERROR: Kicad's project file (.pro, .kicad_pro) \"%s\" is missing.\n\n" "${KICAD_PRO_ABSOLUTE_PATH}"
+				printf "Kicad project is missing.\n\n"
 				exit 1
 			fi
-		fi
 	fi
 
 	readonly KICAD_PRO_ABSOLUTE_PATH
