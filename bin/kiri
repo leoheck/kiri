@@ -838,7 +838,7 @@ command_line_parse()
 
 	readonly KICAD_PRO_ABSOLUTE_PATH
 	readonly REPO_ABSOLUTE_PATH="$(get_project_repo_abspath)"
-	readonly KICAD_PROJ_NESTED_PATH="$(get_project_nested_path)"
+	KICAD_PROJ_NESTED_PATH="$(get_project_nested_path)"
 
 	readonly KICAD_PROJ_ABSOLUTE_PATH="${REPO_ABSOLUTE_PATH}/${KICAD_PROJ_NESTED_PATH}"
 	cd "${KICAD_PROJ_ABSOLUTE_PATH}" || exit
@@ -1046,9 +1046,13 @@ git_files_have_changes()
 
 	uniq_files=($(for f in "${files[@]}"; do echo "${f}"; done | sort -u))
 
+	# Testing, it looks like this variable is not needed even for nested projects
+	# here it is being overwritten
+	KICAD_PROJ_NESTED_PATH="."
+
 	for file in "${uniq_files[@]}"; do
 		if [[ -n "${file}" ]]; then
-			if ! git diff --exit-code -- "${KICAD_PROJ_NESTED_PATH}/${file}" > /dev/null; then
+			if ! git diff --quiet -- "${KICAD_PROJ_NESTED_PATH}/${file}"; then
 				if [[ "${DEBUG}" == "1" ]]; then
 					echo "[x] ${KICAD_PROJ_NESTED_PATH}/${file}" 2>&1
 				fi
