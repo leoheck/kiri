@@ -828,7 +828,13 @@ command_line_parse()
 
 	KICAD_PRO_ABSOLUTE_PATH=$(realpath "${kicad_pro_path/#\~/$HOME}" 2> /dev/null)
 	if [[ ! -f ${KICAD_PRO_ABSOLUTE_PATH} ]]; then
+		if [[ -n ${kicad_pro_path} ]]; then
+			echo "Kicad pro (${kicad_pro_path}) does not exist"
+		fi
 		local kicad_pro_path=$(find ./ -maxdepth 1 -name "*\.pro" -o -name "*\.kicad_pro" | head -n1)
+		if [[ -f ${kicad_pro_path} ]]; then
+			echo "Using Kicad project ${kicad_pro_path}"
+		fi
 		KICAD_PRO_ABSOLUTE_PATH=$(realpath "${kicad_pro_path}" 2> /dev/null)
 			if [[ ! -f ${KICAD_PRO_ABSOLUTE_PATH} ]]; then
 				printf "Kicad project is missing.\n\n"
