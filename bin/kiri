@@ -1371,7 +1371,14 @@ manual_schematic_plot()
 	local kicad_cache_lib="${3}"
 
 	local command_end="&> /dev/null"
-	if [[ "${DEBUG}" == 1 ]] || [[ "${DEBUG_PLOTGITSCH}" == 1 ]]; then
+
+	# verbose shows errors only
+	if [[ "${VERBOSE}" == "1" ]]; then
+		command_end="2>&1 >/dev/null"
+	fi
+
+	# debug shows the whole output
+	if [[ "${DEBUG}" == "1" ]] || [[ "${DEBUG_PLOTGITSCH}" == "1" ]]; then
 		command_end=""
 	fi
 
@@ -1505,7 +1512,14 @@ generate_schematic_artifacts()
 		fi
 
 		local command_end="&> /dev/null"
-		if [[ "${DEBUG}" == 1 ]]; then
+
+		# verbose shows errors only
+		if [[ "${VERBOSE}" == "1" ]]; then
+			command_end="2>&1 >/dev/null"
+		fi
+
+		# debug shows the whole output
+		if [[ "${DEBUG}" == "1" ]]; then
 			command_end=""
 		fi
 
@@ -1560,7 +1574,14 @@ generate_schematic_artifacts()
 			fi
 
 			local command_end="&> /dev/null"
-			if [[ "${DEBUG}" == 1 ]] || [[ "${DEBUG_PLOTGITSCH}" == 1 ]]; then
+
+			# verbose shows errors only
+			if [[ "${VERBOSE}" == "1" ]]; then
+				command_end="2>&1 >/dev/null"
+			fi
+
+			# debug shows the whole output
+			if [[ "${DEBUG}" == "1" ]] || [[ "${DEBUG_PLOTGITSCH}" == "1" ]]; then
 				command_end=""
 			fi
 
@@ -1695,7 +1716,14 @@ generate_layout_artifacts()
 		if [[ ! "${KIDIFF_MISSING}" == 1 ]]; then
 
 			local command_end="&> /dev/null"
-			if [[ "${DEBUG}" == 1 ]] || [[ "${DEBUG_KIDIFF}" == 1 ]]; then
+
+			# verbose shows errors only
+			if [[ "${VERBOSE}" == "1" ]]; then
+				command_end="2>&1 >/dev/null"
+			fi
+
+			# debug shows the whole output
+			if [[ "${DEBUG}" == "1" ]] || [[ "${DEBUG_KIDIFF}" == "1" ]]; then
 				command_end=""
 			fi
 
@@ -1748,7 +1776,14 @@ generate_3dmodels()
 	local kicad_project_name_2="${6}"
 
 	local command_end="&> /dev/null"
-	if [[ "${DEBUG}" == 1 ]]; then
+
+	# verbose shows errors only
+	if [[ "${VERBOSE}" == "1" ]]; then
+		command_end="2>&1 >/dev/null"
+	fi
+
+	# debug shows the whole output
+	if [[ "${DEBUG}" == "1" ]]; then
 		command_end=""
 	fi
 
