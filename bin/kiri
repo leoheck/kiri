@@ -1344,6 +1344,7 @@ cmd_run()
 	# present command description if any
 	if [[ -n "${msg}" && ("${VERBOSE}" == "1" || "${DEBUG}" == "1") ]]; then
 		echo -e "${indent}${LCY}${msg}${RCO}"
+		echo -e "${indent}${LMA}DIR: $(pwd)${RCO}"
 		echo -e "${indent}${LYE}${cmd}${RCO}" | fmt -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g'
 	fi
 
@@ -1791,48 +1792,46 @@ generate_3dmodels()
 		return
 	fi
 
-	# Export step, if missing
-	# if [[ ! -f "${OUTPUT_DIR_PATH}/${commit_hash_1}/board.step" ]]; then
-	# 	echo "Exporting ${commit_hash_1} .kicad_pcb to .step"
-	# 	kicad2step --no-virtual --subst-models \
-	# 		-o "${OUTPUT_DIR_PATH}/${commit_hash_1}/_KIRI_/3d_model/board.step" \
-	# 		"${OUTPUT_DIR_PATH}/${commit_hash_1}/board.step"
-	# fi
-
-	# if [[ ! -f "${OUTPUT_DIR_PATH}/${commit_hash_2}/board.step" ]]; then
-	# 	echo "Exporting ${commit_hash_2} .kicad_pcb to .step"
-	# 	kicad2step --no-virtual --subst-models \
-	# 		-o "${OUTPUT_DIR_PATH}/${commit_hash_2}/_KIRI_/3d_model/board.step" \
-	# 		"${OUTPUT_DIR_PATH}/${commit_hash_2}/board.step"
-	# fi
+	end="${command_end}"
 
 	mkdir -p "${OUTPUT_DIR_PATH}/${commit_hash_1}/_KIRI_/3d_model/"
 	mkdir -p "${OUTPUT_DIR_PATH}/${commit_hash_2}/_KIRI_/3d_model/"
 
+	# Export step, if missing
+	if [[ ! -f "${OUTPUT_DIR_PATH}/${commit_hash_1}/${kicad_project_name_1}.step" ]]; then
+		msg="# Exporting ${commit_hash_1} .kicad_pcb to .step"
+		cmd="kicad-cli pcb export step --subst-models -f -o \"${OUTPUT_DIR_PATH}/${commit_hash_1}/_KIRI_/3d_model/${kicad_project_name_1}.step\" \"${kicad_pcb_1}\""
+		cmd_run "${cmd}" "${msg}" "${end}"
+	else
+		# echo "${commit_hash_1}, 3D Model ${OUTPUT_DIR_PATH}/${commit_hash_1}/${kicad_project_name_1}.step found"
+		cp -f "${OUTPUT_DIR_PATH}/${commit_hash_1}/${kicad_project_name_1}.step" "${OUTPUT_DIR_PATH}/${commit_hash_1}/_KIRI_/3d_model/"
+	fi
+
+	# Export step, if missing
+	if [[ ! -f "${OUTPUT_DIR_PATH}/${commit_hash_2}/${kicad_project_name_2}.step" ]]; then
+		msg="# Exporting ${commit_hash_2} .kicad_pcb to .step"
+		cmd="kicad-cli pcb export step --subst-models -f -o \"${OUTPUT_DIR_PATH}/${commit_hash_2}/_KIRI_/3d_model/${kicad_project_name_2}.step\" \"${kicad_pcb_2}\""
+		cmd_run "${cmd}" "${msg}" "${end}"
+	else
+		# echo "${commit_hash_2}, 3D Model ${OUTPUT_DIR_PATH}/${commit_hash_2}/${kicad_project_name_2}.step found"
+		cp -f "${OUTPUT_DIR_PATH}/${commit_hash_2}/${kicad_project_name_2}.step" "${OUTPUT_DIR_PATH}/${commit_hash_2}/_KIRI_/3d_model/"
+	fi
+
 	# Convert step to to gltf
-	if [[ -f "${OUTPUT_DIR_PATH}/${commit_hash_1}/${kicad_project_name_1}.step" ]] && [[ ! -f "${OUTPUT_DIR_PATH}/${commit_hash_1}/_KIRI_/3d_model/${kicad_project_name_1}.gltf" ]]; then
-
-		if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]]; then
-			echo -e "   ${LCY}${commit_hash_1}, converting 3d model from .step to .glft/.glb${RCO}"
-		fi
-
+	if [[ -f "${OUTPUT_DIR_PATH}/${commit_hash_1}/_KIRI_/3d_model/${kicad_project_name_1}.step" ]] && [[ ! -f "${OUTPUT_DIR_PATH}/${commit_hash_1}/_KIRI_/3d_model/${kicad_project_name_1}.gltf" ]]; then
 		cd "${OUTPUT_DIR_PATH}/${commit_hash_1}/_KIRI_/3d_model/"
-		stp2gltf "../../${kicad_project_name_1}.step" "${kicad_project_name_1}.gltf" "${kicad_project_name_1}" | \
-		sed "s/^/   | /g" #&> /dev/null
-		echo
+		msg="# Converting ${commit_hash_1} 3D Model from .step to .gltf/.bin"
+		cmd="stp2gltf ${kicad_project_name_1}.step ${kicad_project_name_1}.gltf ${kicad_project_name_1}.bin"
+		cmd_run "${cmd}" "${msg}" "${end}"
 		cd - &> /dev/null
 	fi
 
-	if [[ -f "${OUTPUT_DIR_PATH}/${commit_hash_2}/${kicad_project_name_2}.step" ]] && [[ ! -f "${OUTPUT_DIR_PATH}/${commit_hash_2}/_KIRI_/3d_model/${kicad_project_name_2}.gltf" ]]; then
-
-		if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" = "1" ]]; then
-			echo -e "   ${LCY}${commit_hash_2}, converting 3d model from .step to .glft/.glb${RCO}"
-		fi
-
+	# Convert step to to gltf
+	if [[ -f "${OUTPUT_DIR_PATH}/${commit_hash_2}/_KIRI_/3d_model/${kicad_project_name_2}.step" ]] && [[ ! -f "${OUTPUT_DIR_PATH}/${commit_hash_2}/_KIRI_/3d_model/${kicad_project_name_2}.gltf" ]]; then
 		cd "${OUTPUT_DIR_PATH}/${commit_hash_2}/_KIRI_/3d_model/"
-		stp2gltf "../../${kicad_project_name_2}.step" "${kicad_project_name_2}.gltf" "${kicad_project_name_2}" | \
-		sed "s/^/   | /g" #&> /dev/null
-		echo
+		msg="# Converting ${commit_hash_2} 3D Model from .step to .gltf/.bin"
+		cmd="stp2gltf ${kicad_project_name_2}.step ${kicad_project_name_2}.gltf ${kicad_project_name_2}.bin"
+		cmd_run "${cmd}" "${msg}" "${end}"
 		cd - &> /dev/null
 	fi
 }
@@ -1974,7 +1973,7 @@ generate_diffs()
 				generate_schematic_artifacts "${hash_1}" "${hash_2}" "${kicad_sch_1}" "${kicad_sch_2}" "${kicad_cache_lib_1}" "${kicad_cache_lib_2}" "${i}" "${kicad_project_name_1}" "${kicad_project_name_2}"
 				generate_layout_artifacts "${hash_1}" "${hash_2}" "${kicad_pcb_1}" "${kicad_pcb_2}" "${kicad_project_name_1}" "${kicad_project_name_2}"
 
-				# generate_3dmodels "${hash_1}" "${hash_2}" "${kicad_pcb_1}" "${kicad_pcb_2}" "${kicad_project_name_1}" "${kicad_project_name_2}"
+				generate_3dmodels "${hash_1}" "${hash_2}" "${kicad_pcb_1}" "${kicad_pcb_2}" "${kicad_project_name_1}" "${kicad_project_name_2}"
 			fi
 		done
 	done
@@ -2008,8 +2007,8 @@ build_main_html()
 	cp -f "${KIRI_HOME_PATH}/assets/redirect.html" "${WEB_DIR_PATH}/../index.html"
 	cp -f "${KIRI_HOME_PATH}/bin/kiri-server"      "${OUTPUT_DIR_PATH}/"
 
-	# cp -rf "${KIRI_HOME_PATH}/assets/3dmodels"   "${WEB_DIR_PATH}/"
-	# cp -rf "${KIRI_HOME_PATH}/assets/gltfc"      "${WEB_DIR_PATH}/"
+	# Testing
+	cp -rf "${KIRI_HOME_PATH}/assets/gltfc"         "${WEB_DIR_PATH}/"
 
 	# Index of the initial commits (in the COMMITS list)
 	commit1_i=0
