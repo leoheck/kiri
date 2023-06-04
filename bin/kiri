@@ -1121,7 +1121,7 @@ get_git_commits_list()
 	# Commits list has to have 2 commits at least
 	if [[ $(echo "${COMMITS}" | wc -l ) -lt 2 ]]; then
 		echo "Leaving, less than 2 commits found"
-		exit 1
+		exit 0
 	fi
 
 	if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]]; then
