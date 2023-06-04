@@ -1161,7 +1161,7 @@ function check_server_status()
         server_is_offline();
     };
 
-    img.src = "/web/favicon.ico" + url_timestamp();
+    img.src = "favicon.ico" + url_timestamp();
 
     setTimeout(check_server_status, 5000);
 }
