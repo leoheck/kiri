@@ -52,7 +52,7 @@ bash -c "INSTALL_KIRI_REMOTELLY=1; \
     $(curl -fsSL https://raw.githubusercontent.com/leoheck/kiri/main/install_kiri.sh)"
 ```
 
-The follwoing variables can be used to change the installation path and KiRI's branch, if needed.
+The following variables can be used to change the installation path and KiRI's branch, if needed.
 
 ```bash
 # The default installation path is "${HOME}/.local/share"
