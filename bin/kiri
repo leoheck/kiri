@@ -554,6 +554,7 @@ show_help()
 	     -o|--older HASH  Show commits starting from this one. It uses the short hash.
 	     -n|--newer HASH  Show commits until this one. It uses the short hash.
 	     -t|--last VAL    Show last N commits.
+	     -g|--git-diff X  Use git style comparison where X is "commit..commit"
 
 	     -l|--no-server   Do not launch webserver/browser at the end
 	     -S|--server-only Start webserver but not launch browser
@@ -690,6 +691,11 @@ command_line_parse()
 
 			-d|--output-dir)
 				local output_dir=${2}
+				shift 2
+				;;
+
+			-g|--git-diff)
+				GIT_DIFF="${2}"
 				shift 2
 				;;
 
@@ -1091,56 +1097,71 @@ get_git_commits_list()
 	local kicad_pcb="${3}"
 	local extra_sch_files="${4}"
 
-	if [[ "${ALL_COMMITS}" == "1" ]]; then
-		COMMITS=$(get_git_commits)
-	else
-		COMMITS=$(get_git_commits "${kicad_sch}" "${extra_sch_files}" "${kicad_pcb}")
-	fi
-
-	# Append local files only if they have changes
-	if ! git_files_have_changes "${kicad_pcb}" "${kicad_sch}" "${extra_sch_files}"; then
-		IFS= read -r -d '' COMMITS <<-EOM
-		_local_ | $(date "+%Y-%m-%d %H:%M:%S") | $(get_name_of_current_user "${USER}") | Local changes not committed
-		${COMMITS}
+	if [[ -n ${GIT_DIFF} ]]; then
+		commit1=$(echo "${GIT_DIFF}" | sed "s/[\. ]\+/ /g" | cut -d" " -f1)
+		commit2=$(echo "${GIT_DIFF}" | sed "s/[\. ]\+/ /g" | cut -d" " -f2)
+		commit1_hash=$(git log --date=format:'%Y-%m-%d %H:%M:%S' --pretty='format:%h | %ad | %an | %s' -n1 ${commit1})
+		commit2_hash=$(git log --date=format:'%Y-%m-%d %H:%M:%S' --pretty='format:%h | %ad | %an | %s' -n1 ${commit2})
+		echo "Commit 1: ${commit1_hash} (${commit1})"
+		echo "Commit 2: ${commit2_hash} (${commit2})"
+		read -r -d '' COMMITS <<- EOM
+			${commit1_hash} (${commit1})
+			${commit2_hash} (${commit2})
 		EOM
-	fi
-
-	if [[ -n "${OLDER_COMMIT}" ]]; then
-		if grep -q "^${OLDER_COMMIT}" <<< ${COMMITS}; then
-			if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]]; then
-				commit_info=$(grep -s "^${OLDER_COMMIT}" <<< ${COMMITS})
-				echo "  Older commit: ${commit_info}"
-			fi
-			COMMITS=$(echo "${COMMITS}" | sed "/^${OLDER_COMMIT}/q")
+		# exit
+	else
+		if [[ "${ALL_COMMITS}" == "1" ]]; then
+			COMMITS=$(get_git_commits)
 		else
-			echo -e "\n${LYE}Warning:${RCO} There is no OLDER_COMMIT=${OLDER_COMMIT} hash in the commits list"
+			COMMITS=$(get_git_commits "${kicad_sch}" "${extra_sch_files}" "${kicad_pcb}")
 		fi
-	fi
 
-	if [[ -n "${NEWER_COMMIT}" ]]; then
-		if grep -q "^${NEWER_COMMIT}" <<< ${COMMITS}; then
-			if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]]; then
-				commit_info=$(grep -s "^${NEWER_COMMIT}" <<< ${COMMITS})
-				echo "  Newer commit: ${commit_info}"
-				echo
+		# Append local files only if they have changes
+		if ! git_files_have_changes "${kicad_pcb}" "${kicad_sch}" "${extra_sch_files}"; then
+			IFS= read -r -d '' COMMITS <<-EOM
+			_local_ | $(date "+%Y-%m-%d %H:%M:%S") | $(get_name_of_current_user "${USER}") | Local changes not committed
+			${COMMITS}
+			EOM
+		fi
+
+		if [[ -n "${OLDER_COMMIT}" ]]; then
+			if grep -q "^${OLDER_COMMIT}" <<< ${COMMITS}; then
+				if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]]; then
+					commit_info=$(grep -s "^${OLDER_COMMIT}" <<< ${COMMITS})
+					echo "  Older commit: ${commit_info}"
+				fi
+				COMMITS=$(echo "${COMMITS}" | sed "/^${OLDER_COMMIT}/q")
+			else
+				echo -e "\n${LYE}Warning:${RCO} There is no OLDER_COMMIT=${OLDER_COMMIT} hash in the commits list"
 			fi
-			COMMITS=$(echo "${COMMITS}" | sed -n "/^${NEWER_COMMIT}/,\$p")
-		else
-			echo -e "\n${LYE}Warning:${RCO} There is no NEWER_COMMIT=${OLDER_COMMIT} hash in the commits list"
 		fi
-	fi
 
-	if [[ -n "${SELECT_LASTEST_N_COMMITS}" ]]; then
-		COMMITS=$(echo "${COMMITS}" | head -n "${SELECT_LASTEST_N_COMMITS}")
-	fi
+		if [[ -n "${NEWER_COMMIT}" ]]; then
+			if grep -q "^${NEWER_COMMIT}" <<< ${COMMITS}; then
+				if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]]; then
+					commit_info=$(grep -s "^${NEWER_COMMIT}" <<< ${COMMITS})
+					echo "  Newer commit: ${commit_info}"
+					echo
+				fi
+				COMMITS=$(echo "${COMMITS}" | sed -n "/^${NEWER_COMMIT}/,\$p")
+			else
+				echo -e "\n${LYE}Warning:${RCO} There is no NEWER_COMMIT=${OLDER_COMMIT} hash in the commits list"
+			fi
+		fi
 
-	if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]]; then
-		echo -e "${LBL}\nCommits list${RCO}"
-		echo "${COMMITS}" | column -t -s "|" | nl | cut -c -$(($(tput cols)-4))
+		if [[ -n "${SELECT_LASTEST_N_COMMITS}" ]]; then
+			COMMITS=$(echo "${COMMITS}" | head -n "${SELECT_LASTEST_N_COMMITS}")
+		fi
+
+		if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]]; then
+			echo -e "${LBL}\nCommits list${RCO}"
+			echo "${COMMITS}" | column -t -s "|" | nl | cut -c -$(($(tput cols)-4))
+		fi
+
 	fi
 
 	# Commits list has to have 2 commits at least
-	if [[ $(echo "${COMMITS}" | wc -l ) -lt 2 ]]; then
+	if [[ $(echo -e "${COMMITS}" | wc -l ) -lt 2 ]]; then
 		echo -e "\n${LRE}Leaving, less than 2 commits found${RCO}"
 		exit 0
 	fi
