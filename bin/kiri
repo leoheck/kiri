@@ -547,12 +547,13 @@ show_help()
 
 	OPTIONS:
 
-	     ls               List project commits with Kiri style
+	     ls               List commits with changes in *_sch/kicad_pcb
+	     lsa              List all commits of the project
 
 	     -a|--all         Include all commits even if schematics/layout don't have changes
-	     -o|--older HASH  Show commits starting from this one
-	     -n|--newer HASH  Show commits until this one delimited by this one
-	     -t|--last VAL    Show last N commits
+	     -o|--older HASH  Show commits starting from this one. It uses the short hash.
+	     -n|--newer HASH  Show commits until this one. It uses the short hash.
+	     -t|--last VAL    Show last N commits.
 
 	     -l|--no-server   Do not launch webserver/browser at the end
 	     -S|--server-only Start webserver but not launch browser
@@ -810,6 +811,11 @@ command_line_parse()
 				;;
 
 			ls)
+				get_git_commits ".*sch" "*.kicad_pcb" | cat | nl
+				exit 0
+				;;
+
+			lsa)
 				get_git_commits | cat | nl
 				exit 0
 				;;
@@ -1091,25 +1097,6 @@ get_git_commits_list()
 		COMMITS=$(get_git_commits "${kicad_sch}" "${extra_sch_files}" "${kicad_pcb}")
 	fi
 
-	if [[ -n "${OLDER_COMMIT}" ]]; then
-		if [[ "${VERBOSE}" == "1" ]]; then
-			echo "  Older commit: ${OLDER_COMMIT}"
-		fi
-		COMMITS=$(echo "${COMMITS}" | sed "/^${OLDER_COMMIT}/q")
-	fi
-
-	if [[ -n "${NEWER_COMMIT}" ]]; then
-		if [[ "${VERBOSE}" == "1" ]]; then
-			echo "  Newer commit: ${NEWER_COMMIT}"
-			echo
-		fi
-		COMMITS=$(echo "${COMMITS}" | sed -n "/^${NEWER_COMMIT}/,\$p")
-	fi
-
-	if [[ -n "${SELECT_LASTEST_N_COMMITS}" ]]; then
-		COMMITS=$(echo "${COMMITS}" | head -n "${SELECT_LASTEST_N_COMMITS}")
-	fi
-
 	# Append local files only if they have changes
 	if ! git_files_have_changes "${kicad_pcb}" "${kicad_sch}" "${extra_sch_files}"; then
 		IFS= read -r -d '' COMMITS <<-EOM
@@ -1118,15 +1105,44 @@ get_git_commits_list()
 		EOM
 	fi
 
-	# Commits list has to have 2 commits at least
-	if [[ $(echo "${COMMITS}" | wc -l ) -lt 2 ]]; then
-		echo "Leaving, less than 2 commits found"
-		exit 0
+	if [[ -n "${OLDER_COMMIT}" ]]; then
+		if grep -q "^${OLDER_COMMIT}" <<< ${COMMITS}; then
+			if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]]; then
+				commit_info=$(grep -s "^${OLDER_COMMIT}" <<< ${COMMITS})
+				echo "  Older commit: ${commit_info}"
+			fi
+			COMMITS=$(echo "${COMMITS}" | sed "/^${OLDER_COMMIT}/q")
+		else
+			echo -e "\n${LYE}Warning:${RCO} There is no OLDER_COMMIT=${OLDER_COMMIT} hash in the commits list"
+		fi
+	fi
+
+	if [[ -n "${NEWER_COMMIT}" ]]; then
+		if grep -q "^${NEWER_COMMIT}" <<< ${COMMITS}; then
+			if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]]; then
+				commit_info=$(grep -s "^${NEWER_COMMIT}" <<< ${COMMITS})
+				echo "  Newer commit: ${commit_info}"
+				echo
+			fi
+			COMMITS=$(echo "${COMMITS}" | sed -n "/^${NEWER_COMMIT}/,\$p")
+		else
+			echo -e "\n${LYE}Warning:${RCO} There is no NEWER_COMMIT=${OLDER_COMMIT} hash in the commits list"
+		fi
+	fi
+
+	if [[ -n "${SELECT_LASTEST_N_COMMITS}" ]]; then
+		COMMITS=$(echo "${COMMITS}" | head -n "${SELECT_LASTEST_N_COMMITS}")
 	fi
 
 	if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]]; then
-		echo -e "\n${LBL}Commits list${RCO}"
+		echo -e "${LBL}\nCommits list${RCO}"
 		echo "${COMMITS}" | column -t -s "|" | nl | cut -c -$(($(tput cols)-4))
+	fi
+
+	# Commits list has to have 2 commits at least
+	if [[ $(echo "${COMMITS}" | wc -l ) -lt 2 ]]; then
+		echo -e "\n${LRE}Leaving, less than 2 commits found${RCO}"
+		exit 0
 	fi
 }
 
@@ -1892,11 +1908,11 @@ generate_diffs()
 						pad=$(printf '%*s' "${padlimit}")
 						pad=${pad// /-}
 						echo "${pad}"
-						printf "\n${LGR}# %${padding}d${total} %s\n${RCO}" "${i}" "${commit_msg_1}" | cut -c -$(($(tput cols)-4))
+						printf "\n${LGR}# %${padding}d${total} %s${RCO}" "${i}" "${commit_msg_1}" | cut -c -$(($(tput cols)-4))
 						i=$((i+1))
 						printf "${LGR}# %${padding}d${total} %s${RCO}\n" "${i}" "${commit_msg_2}" | cut -c -$(($(tput cols)-4))
 					else
-						printf "%${padding}d${total} %s\n" "${i}" "${commit_msg_1}" | cut -c -$(($(tput cols)-4))
+						printf "%${padding}d${total} %s" "${i}" "${commit_msg_1}" | cut -c -$(($(tput cols)-4))
 						i=$((i+1))
 						printf "%${padding}d${total} %s\n" "${i}" "${commit_msg_2}" | cut -c -$(($(tput cols)-4))
 					fi
