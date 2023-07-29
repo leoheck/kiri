@@ -2045,7 +2045,7 @@ build_main_html()
 	cp -f "${KIRI_HOME_PATH}/bin/kiri-server"      "${OUTPUT_DIR_PATH}/"
 
 	# Testing
-	cp -rf "${KIRI_HOME_PATH}/assets/gltfc"         "${WEB_DIR_PATH}/"
+	cp -rf "${KIRI_HOME_PATH}/assets/gltfc"         "${WEB_DIR_PATH}/" &> /dev/null
 
 	# Index of the initial commits (in the COMMITS list)
 	commit1_i=0
