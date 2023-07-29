@@ -1572,7 +1572,7 @@ generate_schematic_artifacts()
 		# This one is needed only once since it is always the same
 		if [[ "${i}" == "2" ]]; then
 
-			msg="# Plotting schematics ${commit_hash_2}"
+			msg="# Plotting schematics ${commit_hash_1}"
 			cmd="kicad-cli sch export svg --black-and-white --no-background-color --output \"${SVG1_DIR_PATH}\" \"${OUTPUT_DIR_PATH}/${commit_hash_1}/${kicad_sch_1}\""
 			end="${command_end}"
 			cmd_run "${cmd}" "${msg}" "${end}"
@@ -1588,7 +1588,7 @@ generate_schematic_artifacts()
 			IFS="${original_ifs}"
 		fi
 
-		msg="# Plotting schematics ${commit_hash_1}"
+		msg="# Plotting schematics ${commit_hash_2}"
 		cmd="kicad-cli sch export svg --black-and-white --no-background-color --output \"${SVG2_DIR_PATH}\" \"${OUTPUT_DIR_PATH}/${commit_hash_2}/${kicad_sch_2}\""
 		end="${command_end}"
 		cmd_run "${cmd}" "${msg}" "${end}"
