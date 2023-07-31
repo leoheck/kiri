@@ -441,6 +441,18 @@ readlink()
 	esac
 }
 
+realpath()
+{
+	case ${OSTYPE} in
+		darwin*)
+			grealpath "$@"
+			;;
+		*)
+			command realpath "$@"
+			;;
+	esac
+}
+
 sed()
 {
 	case ${OSTYPE} in

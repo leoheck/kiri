@@ -4,6 +4,30 @@ kicad_pro="${1}"
 kicad_pro_extension="${kicad_pro##*.}"
 kicad_pro_filename="${kicad_pro%.*}"
 
+realpath()
+{
+	case ${OSTYPE} in
+		darwin*)
+			grealpath "$@"
+			;;
+		*)
+			command realpath "$@"
+			;;
+	esac
+}
+
+sed()
+{
+	case ${OSTYPE} in
+		darwin*)
+			gsed "$@"
+			;;
+		*)
+			command sed "$@"
+			;;
+	esac
+}
+
 if [[ ! -f ${kicad_pro} ]]; then
 	echo "Kicad project '${kicad_pro}' is missing"
 	exit 1

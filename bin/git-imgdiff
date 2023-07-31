@@ -13,6 +13,18 @@ readonly added_color="008FFF"
 readonly unchanged_color="FFFFFF"
 readonly background_color="222222"
 
+realpath()
+{
+	case ${OSTYPE} in
+		darwin*)
+			grealpath "$@"
+			;;
+		*)
+			command realpath "$@"
+			;;
+	esac
+}
+
 sed()
 {
 	case ${OSTYPE} in
