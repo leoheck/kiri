@@ -500,6 +500,18 @@ rename()
 	esac
 }
 
+xargs()
+{
+	case ${OSTYPE} in
+		darwin*)
+			gxargs "$@"
+			;;
+		*)
+			command xargs "$@"
+			;;
+	esac
+}
+
 identify_linux_or_wsl()
 {
 	if grep -qEi "(Microsoft|WSL)" /proc/version &> /dev/null ; then
