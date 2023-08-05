@@ -131,23 +131,23 @@ fi
 # Check if project has blind/burried vias
 #====================================================
 
-kicad_pro="${kicad_pcb_filename}.kicad_pro"
+# kicad_pro="${kicad_pcb_filename}.kicad_pro"
 
-if [[ ! -f ${kicad_pro} ]]; then
-	# echo "Not Kicad 6 project"
-	exit 1
-fi
+# if [[ ! -f ${kicad_pro} ]]; then
+# 	# echo "Not Kicad 6 project"
+# 	exit 1
+# fi
 
-if grep -v allow_blind_buried_vias ${kicad_pcb_filename}.kicad_pro > /dev/null; then
-	allow_blind_buried_vias=$(grep "allow_blind_buried_vias" ${kicad_pcb_filename}.kicad_pro | cut -d":" -f2 | sed "s/[, \t]\+//g")
-	if [[ ! "${allow_blind_buried_vias}" == "true" ]]; then
-		# echo "Project does not allow blind/burried vias"
-		exit 1
-	fi
-else
-	# echo "Project does not have settings to allow blind/burried vias"
-	exit 1
-fi
+# if grep -v allow_blind_buried_vias ${kicad_pcb_filename}.kicad_pro > /dev/null; then
+# 	allow_blind_buried_vias=$(grep "allow_blind_buried_vias" ${kicad_pcb_filename}.kicad_pro | cut -d":" -f2 | sed "s/[, \t]\+//g")
+# 	if [[ ! "${allow_blind_buried_vias}" == "true" ]]; then
+# 		# echo "Project does not allow blind/burried vias"
+# 		exit 1
+# 	fi
+# else
+# 	# echo "Project does not have settings to allow blind/burried vias"
+# 	exit 1
+# fi
 
 #====================================================
 # Get vias info from PCB
@@ -208,7 +208,7 @@ echo
 # Fix SVG files
 #====================================================
 
-for svg in ${svg_folder}/*; do
+for svg in ${svg_folder}/*.svg; do
 
 	circles_list=($(grep "circle" "${svg}"))
 
