@@ -1442,3 +1442,8 @@ function show_info_popup()
 $('#shortcuts-modal').on('shown.bs.modal', function(e){
     $('#info-btn').one('focus', function(e){$(this).blur();});
 });
+
+function change_page()
+{
+    update_page();
+}
