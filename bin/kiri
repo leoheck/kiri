@@ -586,9 +586,11 @@ show_help()
 	     -i|--ip ADDR     Override the default 127.0.0.1 IP address
 
 	     -s|--skip-cache  Skip usage of -chache.lib on plotgitsch
-	     -6|--skip-kicad6 Skip ploting Kicad 6 schematics (.kicad.sch)
+	     -6|--skip-kicad6 S
+	     kip ploting Kicad 6 schematics (.kicad.sch)
 	     -u|--layout      Force starting with the Layout view selected
 	     -f|--page-frame  Disable page frame for PCB
+	     -k|--kicad-cli   Force kicad-cli to plot layout
 
 	     -d|--output-dir  Change output folder path/name
 	     -r|--remove      Remove generated folder before running it
@@ -832,6 +834,11 @@ command_line_parse()
 
 			-6|--skip-kicad6)
 				SKIP_KICAD_6=1
+				shift
+				;;
+
+			-k|--kicad-cli)
+				PLOT_LAYOUT_WITH_KICAD_CLI=1
 				shift
 				;;
 
@@ -1726,7 +1733,7 @@ generate_layout_artifacts()
 	# kicad-cli to plot layers works but KICAD-DIFF is faster
 	# use it only if kicad-diff is missing
 
-	if [[ -f $(which kicad-cli 2> /dev/null) ]] && [[ "${KIDIFF_MISSING}" == 1 ]]; then
+	if [[ -f $(which kicad-cli 2> /dev/null) ]] && [[ ${PLOT_LAYOUT_WITH_KICAD_CLI} == 1 ]]; then
 
 		local command_end="&> /dev/null &"
 		if [[ "${DEBUG}" == 1 ]]; then
