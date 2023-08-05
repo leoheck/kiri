@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Wrapper for the kicad_version.py script
+# Wrapper for the kicad6_sheet_instances.py script
 # It should work on Linux, Mac and possibly on Windows
 
 readlink_osx()
@@ -35,7 +35,6 @@ main()
 			script_path=$(readlink_osx "${0}")
 			script_dir_path=$(dirname "${script_path}")
 			script_filename=$(basename "${script_path}")
-
 			export PYTHONPATH="${script_dir_path}/../":"${PYTHONPATH}"
 
 			kicad_app_path="/Applications/Kicad/kicad.app/"
