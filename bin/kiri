@@ -1916,7 +1916,7 @@ generate_diffs()
 	n_comparisons=$(python3 -c "import math; print((int)(math.factorial(${n_hashes}) / (math.factorial(2) * math.factorial(${n_hashes} - 2))))")
 
 	# Check for local changes
-	echo -e "\n${LBL}Artiffacts Summary${RCO}"
+	echo -e "\n${LBL}Artifacts Summary${RCO}"
 	if echo "${COMMITS}" | cut -d' '  -f1 | grep "_local_" -q; then
 		echo "$((n_hashes-1)) commits ${BTE}plus local changes${RCO} ($((n_comparisons)) comparisons)"
 	else
