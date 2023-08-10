@@ -1825,8 +1825,8 @@ generate_layout_artifacts()
 			fi
 
 			# Rename files folowing format: layer-xx.svg
-			rename "s/${kicad_project_name_1}-/layer-/" "${OUTPUT_DIR_PATH}/${commit_hash_1}/pcb/"*.svg &> /dev/null
-			rename "s/${kicad_project_name_2}-/layer-/" "${OUTPUT_DIR_PATH}/${commit_hash_2}/pcb/"*.svg &> /dev/null
+			rename "s/${kicad_project_name_1}-(\d+).svg\$/layer-\${1}.svg/" "${OUTPUT_DIR_PATH}/${commit_hash_1}/pcb/"*.svg
+                       rename "s/${kicad_project_name_2}-(\d+).svg\$/layer-\${1}.svg/" "${OUTPUT_DIR_PATH}/${commit_hash_2}/pcb/"*.svg
 
 			# Move files
 			mv -f "${OUTPUT_DIR_PATH}/${commit_hash_1}/pcb/" "${OUTPUT_DIR_PATH}/${commit_hash_1}/_KIRI_/" &> /dev/null
