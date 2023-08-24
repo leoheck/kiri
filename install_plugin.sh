@@ -3,7 +3,8 @@
 # Install Kicad plugin
 # For this plugin work, KiRI, kidiff and plotgitsh must be in the enviromnment variable PATH
 
-install_kiri_if_using_kicad_5()
+# Kicad = 5
+install_kiri_for_kicad_5()
 {
 	if [[ -d "${HOME}/.kicad" ]]; then
 
@@ -23,17 +24,19 @@ install_kiri_if_using_kicad_5()
 	fi
 }
 
-install_kiri_if_using_kicad_6()
+# Kicad >= 6
+install_kiri_for_kicad()
 {
-	# Kicad 6 is installed
-	if [[ -d "$HOME/.local/share/kicad/6.0/" ]]; then
+	kicad_version=$1
+
+	if [[ -d "$HOME/.local/share/kicad/${kicad_version}/" ]]; then
 
 		case "${OSTYPE}" in
 			darwin*)
 				KICAD_PLUGINS_PATH="$HOME/Library/Preferences/Kicad/scripting/plugins"
 				;;
 			*)
-				KICAD_PLUGINS_PATH="$HOME/.local/share/kicad/6.0/scripting/plugins"
+				KICAD_PLUGINS_PATH="$HOME/.local/share/kicad/${kicad_version}/scripting/plugins"
 				;;
 		esac
 
@@ -54,8 +57,12 @@ main()
 		fi
 	fi
 
-	install_kiri_if_using_kicad_5
-	install_kiri_if_using_kicad_6
+	kicad_version=$(kicad_version.py | cut -d"." -f1-2)
+
+	case ${kicad_version} in
+		5.0) install_kiri_for_kicad_5 ;;
+		*) install_kiri_for_kicad "${kicad_version}" ;;
+	esac
 }
 
 main
