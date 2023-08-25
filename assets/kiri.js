@@ -200,6 +200,18 @@ function reset_commits_selection()
         $("#commits_form input:checkbox[name='commit']")[i].checked = true;
     }
 
+    // reset visibility of the diff images
+    $("#diff-xlink-1").css('visibility', 'visible')
+    $("#commit1_legend").css('visibility', 'visible');
+    $("#commit1_legend_text").css('visibility', 'visible');
+    $("#commit1_legend_fs").css('visibility', 'visible');
+    $("#commit1_legend_text_fs").css('visibility', 'visible');
+    $("#diff-xlink-2").css('visibility', 'visible')
+    $("#commit2_legend").css('visibility', 'visible');
+    $("#commit2_legend_text").css('visibility', 'visible');
+    $("#commit2_legend_fs").css('visibility', 'visible');
+    $("#commit2_legend_text_fs").css('visibility', 'visible');
+
     update_commits();
 }
 
@@ -216,21 +228,55 @@ function toggle_sch_pcb_view() {
 
 function toggle_old_commit_visibility()
 {
-    var x = document.getElementById("diff-xlink-1");
-    if (x.style.display === "none") {
-        x.style.display = "block";
+    if ($("#diff-xlink-1").css('visibility') === "hidden")
+    {
+        $("#diff-xlink-1").css('visibility', 'visible')
+        $("#commit1_legend").css('visibility', 'visible');
+        $("#commit1_legend_text").css('visibility', 'visible');
+        $("#commit1_legend_fs").css('visibility', 'visible');
+        $("#commit1_legend_text_fs").css('visibility', 'visible');
     } else {
-        x.style.display = "none";
+        $("#diff-xlink-1").css('visibility', 'hidden')
+        $("#commit1_legend").css('visibility', 'hidden');
+        $("#commit1_legend_text").css('visibility', 'hidden');
+        $("#commit1_legend_fs").css('visibility', 'hidden');
+        $("#commit1_legend_text_fs").css('visibility', 'hidden');
+    }
+
+    // enable the other image back
+    if ($("#diff-xlink-1").css('visibility') == "hidden") {
+        $("#diff-xlink-2").css('visibility', 'visible')
+        $("#commit2_legend").css('visibility', 'visible');
+        $("#commit2_legend_text").css('visibility', 'visible');
+        $("#commit2_legend_fs").css('visibility', 'visible');
+        $("#commit2_legend_text_fs").css('visibility', 'visible');
     }
 }
 
 function toggle_new_commit_visibility()
 {
-    var x = document.getElementById("diff-xlink-2");
-    if (x.style.display === "none") {
-        x.style.display = "block";
+    if ($("#diff-xlink-2").css('visibility') === "hidden")
+    {
+        $("#diff-xlink-2").css('visibility', 'visible')
+        $("#commit2_legend").css('visibility', 'visible');
+        $("#commit2_legend_text").css('visibility', 'visible');
+        $("#commit2_legend_fs").css('visibility', 'visible');
+        $("#commit2_legend_text_fs").css('visibility', 'visible');
     } else {
-        x.style.display = "none";
+        $("#diff-xlink-2").css('visibility', 'hidden')
+        $("#commit2_legend").css('visibility', 'hidden');
+        $("#commit2_legend_text").css('visibility', 'hidden');
+        $("#commit2_legend_fs").css('visibility', 'hidden');
+        $("#commit2_legend_text_fs").css('visibility', 'hidden');
+    }
+
+    // enable the other image back
+    if ($("#diff-xlink-2").css('visibility') == "hidden") {
+        $("#diff-xlink-1").css('visibility', 'visible')
+        $("#commit1_legend").css('visibility', 'visible');
+        $("#commit1_legend_text").css('visibility', 'visible');
+        $("#commit1_legend_fs").css('visibility', 'visible');
+        $("#commit1_legend_text_fs").css('visibility', 'visible');
     }
 }
 
@@ -362,8 +408,8 @@ Mousetrap.bind(['r', 'R'],  function(){reset_commits_selection()});
 // View
 Mousetrap.bind(['s', 'S'],  function(){toggle_sch_pcb_view()});
 
-Mousetrap.bind(['q', 'Q'],  function(){toggle_new_commit_visibility()});
-Mousetrap.bind(['w', 'W'],  function(){toggle_old_commit_visibility()});
+Mousetrap.bind(['q', 'Q'],  function(){toggle_old_commit_visibility()});
+Mousetrap.bind(['w', 'W'],  function(){toggle_new_commit_visibility()});
 
 Mousetrap.bind(['right'], function(){select_next_sch_or_pcb()});
 Mousetrap.bind(['left'],  function(){select_preview_sch_or_pcb()});
@@ -1387,14 +1433,14 @@ function update_fullscreen_label()
             label = `
                 <div id="fullscreen_label" class="alert alert-dark border border-dark rounded-pill position-absolute top-10 start-50 translate-middle" style="background-color: #333;" role="alert">
                     <span id=commit1_legend_fs style="margin-left:0em; margin-right:0.2em; color: #00FFFF; width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
-                    <small class="text-sm text-light">
+                    <small id=commit1_legend_text_fs class="text-sm text-light">
                         Newer
                         <span id="commit1_fs" class="text-monospace">(<a id="commit1_legend_hash">${commit1}</a>)</span>
                     </small>
 
                     <span style="display: inline; width: 3em;"></span>
                     <span id="commit2_legend_fs" style="display: inline; margin-left:1em; margin-right:0.2em; color: #880808; width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
-                    <small class="text-sm text-light">
+                    <small id=commit2_legend_text_fs class="text-sm text-light">
                         Older
                         <span id="commit2_fs" class="text-monospace">(<a id="commit2_legend_hash">${commit2}</a>)</span>
                     </small>
