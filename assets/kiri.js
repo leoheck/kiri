@@ -214,6 +214,26 @@ function toggle_sch_pcb_view() {
     update_commits();
 }
 
+function toggle_old_commit_visibility()
+{
+    var x = document.getElementById("diff-xlink-1");
+    if (x.style.display === "none") {
+        x.style.display = "block";
+    } else {
+        x.style.display = "none";
+    }
+}
+
+function toggle_new_commit_visibility()
+{
+    var x = document.getElementById("diff-xlink-2");
+    if (x.style.display === "none") {
+        x.style.display = "block";
+    } else {
+        x.style.display = "none";
+    }
+}
+
 function select_next_sch_or_pcb(cycle = false) {
     if (document.getElementById("show_sch").checked) {
         pages = $("#pages_list input:radio[name='pages']");
@@ -340,7 +360,10 @@ Mousetrap.bind(['up', '['],        function(){select_previows_commit()});
 Mousetrap.bind(['r', 'R'],  function(){reset_commits_selection()});
 
 // View
-Mousetrap.bind(['s', 'S'],          function(){toggle_sch_pcb_view()});
+Mousetrap.bind(['s', 'S'],  function(){toggle_sch_pcb_view()});
+
+Mousetrap.bind(['q', 'Q'],  function(){toggle_new_commit_visibility()});
+Mousetrap.bind(['w', 'W'],  function(){toggle_old_commit_visibility()});
 
 Mousetrap.bind(['right'], function(){select_next_sch_or_pcb()});
 Mousetrap.bind(['left'],  function(){select_preview_sch_or_pcb()});
@@ -1191,8 +1214,9 @@ function createNewEmbed(src1, src2)
     console.log("createNewEmbed...");
 
     var embed = document.createElement('div');
-    embed.setAttribute('id', "div-svg");
-    embed.setAttribute('style', "display: inline; width: inherit; min-width: inherit; max-width: inherit; height: inherit; min-height: inherit; max-height: inherit;");
+    embed.setAttribute('id', "diff-container");
+    embed.setAttribute('class', "position-relative");
+    embed.setAttribute('style', "width: 100%; height: 94%; display: inline; padding-top: 0px;");
 
     var svg_element = `
     <svg id="svg-id" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" style="display: inline; width: inherit; min-width: inherit; max-width: inherit; height: inherit; min-height: inherit; max-height: inherit;">
@@ -1207,7 +1231,7 @@ function createNewEmbed(src1, src2)
                               0.0  0.0  0.0  1.0  0.0">
                   </filter>
               </defs>
-              <image id="diff-xlink-1" x="0" y="0" height="100%" width="100%" filter="url(#filter-1)"
+              <image id="diff-xlink-1" height="100%" width="100%" filter="url(#filter-1)"
                   onerror="this.onerror=null; imgError(this);"
                   href="${src1}" xlink:href="${src1}"/>
           </svg>
@@ -1221,7 +1245,7 @@ function createNewEmbed(src1, src2)
                               0.0  0.0  0.0  0.5  0.0">
                   </filter>
               </defs>
-              <image id="diff-xlink-2" x="0" y="0" height="100%" width="100%" filter="url(#filter-2)"
+              <image id="diff-xlink-2" height="100%" width="100%" filter="url(#filter-2)"
                   onerror="this.onerror=null; imgError(this);"
                   href="${src2}" xlink:href="${src2}"/>
           </svg>
@@ -1229,8 +1253,8 @@ function createNewEmbed(src1, src2)
     </svg>
     `;
 
-    document.getElementById('diff-container').appendChild(embed);
-    document.getElementById('div-svg').innerHTML = svg_element;
+    document.getElementById('diff-container').replaceWith(embed);
+    document.getElementById('diff-container').innerHTML = svg_element;
     console.log(">>> SVG: ", embed);
 
     svgpanzoom_selector = "#" + "svg-id";
@@ -1243,8 +1267,8 @@ function createNewEmbed(src1, src2)
         minZoom: 1,
         maxZoom: 20,
         zoomScaleSensitivity: 0.1,
-        fit: true, // cannot be used, bug? (this one must be here to change the default)
-        contain: false,
+        fit: false, // cannot be used, bug? (this one must be here to change the default)
+        contain: true,
         viewportSelector: '.my_svg-pan-zoom_viewport',
         eventsListenerElement: document.querySelector(svgpanzoom_selector),
         onUpdatedCTM: function() {
@@ -1264,7 +1288,6 @@ function createNewEmbed(src1, src2)
                     pcb_old_zoom = pcb_current_zoom;
                 }
             }
-
         }
     });
 
@@ -1322,7 +1345,7 @@ function removeEmbed()
         lastEventListener = null;
 
         // Remove embed element
-        document.getElementById('diff-container').removeChild(lastEmbed);
+        // document.getElementById('diff-container').removeChild(lastEmbed);
 
         // Null reference to embed
         lastEmbed = null;
