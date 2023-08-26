@@ -427,7 +427,7 @@ Mousetrap.bind(['+', '='], function(){svg_zoom_in()});
 Mousetrap.bind('-',        function(){svg_zoom_out()});
 
 // Misc
-Mousetrap.bind(['f', 'F'], function(){toogle_fullscreen()});
+Mousetrap.bind(['f', 'F'], function(){toggle_fullscreen()});
 Mousetrap.bind(['i', 'I'], function(){show_info_popup()});
 
 // =======================================
@@ -611,30 +611,27 @@ function update_page()
         document.getElementById("diff-xlink-1").setAttributeNS('http://www.w3.org/1999/xlink', 'href', image_path_timestamp_1);
         document.getElementById("diff-xlink-2").setAttributeNS('http://www.w3.org/1999/xlink', 'href', image_path_timestamp_2);
 
-        if_url_exists(image_path_timestamp_1, function(exists)
-        {
-            if (exists == true)
-            {
-                document.getElementById("diff-xlink-1").parentElement.style.display = 'inline';
-            }
-            else
-            {
+        if_url_exists(image_path_timestamp_1, function(exists) {
+            if (exists == true) {
+                document.getElementById("diff-xlink-1").parentElement.style.display = 'inline' }
+            else {
                 document.getElementById("diff-xlink-1").parentElement.style.display = "none";
             }
         });
 
-        if_url_exists(image_path_timestamp_2, function(exists)
-        {
-            if (exists == true)
-            {
+        if_url_exists(image_path_timestamp_2, function(exists) {
+            if (exists == true) {
                 document.getElementById("diff-xlink-2").parentElement.style.display = 'inline';
             }
-            else
-            {
+            else {
                 document.getElementById("diff-xlink-2").parentElement.style.display = "none";
             }
         });
     }
+
+    // keep images visibility the same as the legend
+    $("#diff-xlink-1").css('visibility', $("#commit1_legend").css('visibility'))
+    $("#diff-xlink-2").css('visibility', $("#commit2_legend").css('visibility'))
 
     update_fullscreen_label();
 }
@@ -1010,8 +1007,7 @@ function update_layer() {
 
         if_url_exists(image_path_timestamp_1, function(exists) {
             if (exists == true) {
-                document.getElementById("diff-xlink-1").parentElement.style.display = 'inline';
-            }
+                document.getElementById("diff-xlink-1").parentElement.style.display = 'inline' }
             else {
                 document.getElementById("diff-xlink-1").parentElement.style.display = "none";
             }
@@ -1026,6 +1022,10 @@ function update_layer() {
             }
         });
     }
+
+    // keep images visibility the same as the legend
+    $("#diff-xlink-1").css('visibility', $("#commit1_legend").css('visibility'))
+    $("#diff-xlink-2").css('visibility', $("#commit2_legend").css('visibility'))
 
     update_fullscreen_label();
 }
@@ -1262,6 +1262,9 @@ function createNewEmbed(src1, src2)
     embed.setAttribute('class', "position-relative");
     embed.setAttribute('style', "width: 100%; height: 94%; display: inline; padding-top: 0px;");
 
+    // WORKING WITH FILTERS..
+    // https://fecolormatrix.com/
+
     var svg_element = `
     <svg id="svg-id" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" style="display: inline; width: inherit; min-width: inherit; max-width: inherit; height: inherit; min-height: inherit; max-height: inherit;">
       <g class="my_svg-pan-zoom_viewport">
@@ -1473,7 +1476,7 @@ function update_fullscreen_label()
     }
 }
 
-function toogle_fullscreen()
+function toggle_fullscreen()
 {
   if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement)
   {
