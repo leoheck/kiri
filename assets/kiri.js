@@ -245,10 +245,13 @@ function toggle_old_commit_visibility()
     // enable the other image back
     if ($("#diff-xlink-1").css('visibility') == "hidden") {
         $("#diff-xlink-2").css('visibility', 'visible')
+        $("#diff-xlink-2").css('filter', 'url(#filter-22)') /// FILTER_WHITE
         $("#commit2_legend").css('visibility', 'visible');
         $("#commit2_legend_text").css('visibility', 'visible');
         $("#commit2_legend_fs").css('visibility', 'visible');
         $("#commit2_legend_text_fs").css('visibility', 'visible');
+    } else {
+        $("#diff-xlink-2").css('filter', 'url(#filter-2)') /// FILTER_DEFAULT
     }
 }
 
@@ -271,10 +274,13 @@ function toggle_new_commit_visibility()
     // enable the other image back
     if ($("#diff-xlink-2").css('visibility') == "hidden") {
         $("#diff-xlink-1").css('visibility', 'visible')
+        $("#diff-xlink-1").css('filter', 'url(#filter-12)') /// FILTER_WHITE
         $("#commit1_legend").css('visibility', 'visible');
         $("#commit1_legend_text").css('visibility', 'visible');
         $("#commit1_legend_fs").css('visibility', 'visible');
         $("#commit1_legend_text_fs").css('visibility', 'visible');
+    } else {
+        $("#diff-xlink-1").css('filter', 'url(#filter-1)') /// FILTER_DEFAULT
     }
 }
 
@@ -1277,6 +1283,13 @@ function createNewEmbed(src1, src2)
                               0.0  0.0  1.0  1.0  0.0
                               0.0  0.0  0.0  1.0  0.0">
                   </filter>
+                  <filter id="filter-12">
+                      <feColorMatrix in=SourceGraphic type="matrix"
+                      values="-1.0   0.0   0.0  1.0  1.0
+                               0.0  -1.0   0.0  0.0  1.0
+                               0.0   0.0  -1.0  0.0  1.0
+                               0.0   0.0   0.0  0.6  0.0">
+                  </filter>
               </defs>
               <image id="diff-xlink-1" height="100%" width="100%" filter="url(#filter-1)"
                   onerror="this.onerror=null; imgError(this);"
@@ -1290,6 +1303,13 @@ function createNewEmbed(src1, src2)
                               0.0  1.0  0.0  0.0  0.0
                               0.0  0.0  1.0  0.0  0.0
                               0.0  0.0  0.0  0.5  0.0">
+                  </filter>
+                  <filter id="filter-22">
+                      <feColorMatrix in=SourceGraphic type="matrix"
+                      values="-1.0   0.0   0.0  1.0  1.0
+                               0.0  -1.0   0.0  0.0  1.0
+                               0.0   0.0  -1.0  0.0  1.0
+                               0.0   0.0   0.0  0.6  0.0">
                   </filter>
               </defs>
               <image id="diff-xlink-2" height="100%" width="100%" filter="url(#filter-2)"
