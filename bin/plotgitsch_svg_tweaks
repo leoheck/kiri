@@ -18,12 +18,15 @@ main()
 {
 	svg_path="${1}"
 
-	echo "Updating ${svg_path}"
+	# echo "Updating ${svg_path}"
 
 	if [[ -f "${svg_path}" ]]; then
 
 		# Fix a bug with plotgitsh that adds a bunch of <0x00> charactes in the svg
 		sed -i 's/\x0//g' "${svg_path}" &> /dev/null
+
+		# Break lines better
+		sed -i 's|><|>\n<|g' "${svg_path}" &> /dev/null
 
 		# Background has to be transparent
 		sed -i 's/fill="#FFFFFF"/fill="#FFFFFF00"/g' "${svg_path}" &> /dev/null
@@ -36,21 +39,10 @@ main()
 		# Stroke
 		sed -i 's/stroke="#800000"/stroke="#000000FF"/g' "${svg_path}" &> /dev/null
 
-		cp -f "${svg_path}" "${svg_path}.orig.svg"
-		rsvg-convert -a -w 1000 -f svg "${svg_path}.orig.svg" -o "${svg_path}" 2>/dev/null
-		rm -rf "${svg_path}.orig.svg"
-
-		cp -f "${svg_path}" "${svg_path}_copy"
-		inkscape --batch-process --actions="select-all:all; AlignHorizontalCenter; AlignVerticalCenter; export-filename:cropped.svg; export-do; export-filename:cropped.png; export-do;" "${svg_path}"
-		rm -rf "${svg_path}_copy"
-
-
-
-
-
-		# cp -f "${svg_path}" "${svg_path}_copy"
-		# scour --enable-viewboxing "${svg_path}_copy" "${svg_path}"
-		# rm -rf "${svg_path}_copy"
+		# Fix svg somehow
+		# cp -f "${svg_path}" "${svg_path}.orig.svg"
+		# rsvg-convert -a -w 1000 -f svg "${svg_path}.orig.svg" -o "${svg_path}" 2>/dev/null
+		# rm -rf "${svg_path}.orig.svg"
 	fi
 }
 
