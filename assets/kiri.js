@@ -1266,15 +1266,16 @@ function createNewEmbed(src1, src2)
     var embed = document.createElement('div');
     embed.setAttribute('id', "diff-container");
     embed.setAttribute('class', "position-relative");
-    embed.setAttribute('style', "width: 100%; height: 94%; display: inline; padding-top: 0px;");
+    embed.setAttribute('style', "padding: 0px; height: 94%;");
 
     // WORKING WITH FILTERS..
     // https://fecolormatrix.com/
 
     var svg_element = `
-    <svg id="svg-id" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" style="display: inline; width: inherit; min-width: inherit; max-width: inherit; height: inherit; min-height: inherit; max-height: inherit;">
+    <svg id="svg-id" style="margin: 0px; width: 100%; height: 100%;"
+             xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" >
       <g class="my_svg-pan-zoom_viewport">
-          <svg id="img-1" style="display: inline;">
+          <svg id="img-1">
               <defs>
                   <filter id="filter-1">
                       <feColorMatrix in=SourceGraphic type="matrix"
@@ -1295,7 +1296,7 @@ function createNewEmbed(src1, src2)
                   onerror="this.onerror=null; imgError(this);"
                   href="${src1}" xlink:href="${src1}"/>
           </svg>
-          <svg id="img-2" style="display: inline;">
+          <svg id="img-2">
               <defs>
                   <filter id="filter-2">
                       <feColorMatrix in=SourceGraphic type="matrix"
@@ -1324,18 +1325,18 @@ function createNewEmbed(src1, src2)
     document.getElementById('diff-container').innerHTML = svg_element;
     console.log(">>> SVG: ", embed);
 
-    svgpanzoom_selector = "#" + "svg-id";
+    svgpanzoom_selector = "#svg-id";
 
     panZoom_instance = svgPanZoom(
       svgpanzoom_selector, {
         zoomEnabled: true,
         controlIconsEnabled: false,
         center: true,
-        minZoom: 1,
+        minZoom: 0.5,
         maxZoom: 20,
-        zoomScaleSensitivity: 0.1,
+        zoomScaleSensitivity: 0.12,
+        contain: false,
         fit: false, // cannot be used, bug? (this one must be here to change the default)
-        contain: true,
         viewportSelector: '.my_svg-pan-zoom_viewport',
         eventsListenerElement: document.querySelector(svgpanzoom_selector),
         onUpdatedCTM: function() {

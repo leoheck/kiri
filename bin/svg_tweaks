@@ -1,0 +1,55 @@
+#!/bin/bash
+
+# Fix x,y of sick kicad svg viewbox, manually
+
+# Example of usage: 
+# find .kiri -name "*.svg" -exec svg_tweaks {} -10 -30 \;
+
+# Example 2, runing it after kiri:
+# kiri -r -l && find .kiri -name "*.svg" -exec svg_tweaks {} -10 -30 \; && kiri
+
+sed()
+{
+	case ${OSTYPE} in
+		darwin*)
+			gsed "$@"
+			;;
+		*)
+			command sed "$@"
+			;;
+	esac
+}
+
+main()
+{
+	svg_path="${1}"
+	x="${2}"
+	y="${3}"
+
+	echo "Tweaking ${svg_path}"
+
+	if [[ -f "${svg_path}" ]]; then
+
+		# update viewbox
+		if [[ -n ${x} ]] && [[ -n ${x} ]]; then
+
+			# _x=$(grep -o 'viewBox=".*"' "${svg_path}" | cut -d\" -f2 | cut -d" " -f1)
+			# _y=$(grep -o 'viewBox=".*"' "${svg_path}" | cut -d\" -f2 | cut -d" " -f2)
+
+			w=$(grep -o 'viewBox=".*"' "${svg_path}" | cut -d\" -f2 | cut -d" " -f3)
+			h=$(grep -o 'viewBox=".*"' "${svg_path}" | cut -d\" -f2 | cut -d" " -f4)
+			# echo "w=$w"
+			# echo "h=$h"
+
+			new_w=$(echo "${w} - (${x})" | bc)
+			new_h=$(echo "${h} - (${y})" | bc)
+
+			viewbox="viewBox=\"${x} ${y} ${new_w} ${new_h}\""
+			# echo ${viewbox}
+
+			sed -i "s/viewBox=\".*\"/${viewbox}/g" "${svg_path}"
+		fi
+	fi
+}
+
+main "${@}"
