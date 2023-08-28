@@ -600,9 +600,9 @@ show_help()
 	     -h|--help        Show help
 
 	     -sxy|--sch_xy x,y
-	                      Set x,y of svg viewBox for Schematics (worakround for problematic SVG's of Kicad)
+	                      Set x,y of svg viewBox for Schematics (workaround for problematic SVG's of Kicad)
 	     -pxy|--pcb_xy x,y
-	                      Set x,y of svg viewBox for PCBs (worakround for problematic SVG's of Kicad)
+	                      Set x,y of svg viewBox for PCBs (workaround for problematic SVG's of Kicad)
 
 	     -X|--super-debug Tons of things
 	     -D|--debug       Extra info
