@@ -7,6 +7,8 @@ var commit2;
 var old_view;
 var current_view;
 
+current_diff_filter = "diff" // diff or normal
+
 var panZoom_instance = null;
 var lastEventListener = null;
 var lastEmbed = null;
@@ -229,12 +231,14 @@ function toggle_sch_pcb_view() {
 function toggle_old_commit_visibility()
 {
     if ($("#diff-xlink-1").css('visibility') === "hidden") {
+        current_diff_filter = "diff";
         $("#diff-xlink-1").css('visibility', 'visible')
         $("#commit1_legend").css('visibility', 'visible');
         $("#commit1_legend_text").css('visibility', 'visible');
         $("#commit1_legend_fs").css('visibility', 'visible');
         $("#commit1_legend_text_fs").css('visibility', 'visible');
     } else {
+        current_diff_filter = "normal";
         $("#diff-xlink-1").css('visibility', 'hidden')
         $("#commit1_legend").css('visibility', 'hidden');
         $("#commit1_legend_text").css('visibility', 'hidden');
@@ -251,6 +255,7 @@ function toggle_old_commit_visibility()
         $("#commit2_legend_fs").css('visibility', 'visible');
         $("#commit2_legend_text_fs").css('visibility', 'visible');
     } else {
+        $("#diff-xlink-1").css('filter', 'url(#filter-1)') /// FILTER_DEFAULT
         $("#diff-xlink-2").css('filter', 'url(#filter-2)') /// FILTER_DEFAULT
     }
 }
@@ -258,12 +263,14 @@ function toggle_old_commit_visibility()
 function toggle_new_commit_visibility()
 {
     if ($("#diff-xlink-2").css('visibility') === "hidden") {
+        current_diff_filter = "diff";
         $("#diff-xlink-2").css('visibility', 'visible')
         $("#commit2_legend").css('visibility', 'visible');
         $("#commit2_legend_text").css('visibility', 'visible');
         $("#commit2_legend_fs").css('visibility', 'visible');
         $("#commit2_legend_text_fs").css('visibility', 'visible');
     } else {
+        current_diff_filter = "normal";
         $("#diff-xlink-2").css('visibility', 'hidden')
         $("#commit2_legend").css('visibility', 'hidden');
         $("#commit2_legend_text").css('visibility', 'hidden');
@@ -281,6 +288,7 @@ function toggle_new_commit_visibility()
         $("#commit1_legend_text_fs").css('visibility', 'visible');
     } else {
         $("#diff-xlink-1").css('filter', 'url(#filter-1)') /// FILTER_DEFAULT
+        $("#diff-xlink-2").css('filter', 'url(#filter-2)') /// FILTER_DEFAULT
     }
 }
 
@@ -1380,6 +1388,17 @@ function createNewEmbed(src1, src2)
         panZoom_instance.resetZoom();
         panZoom_instance.center();
     });
+
+    if (current_diff_filter === "diff")
+    {
+        $("#diff-xlink-1").css('filter', 'url(#filter-1)') /// FILTER_DIFF
+        $("#diff-xlink-2").css('filter', 'url(#filter-2)') /// FILTER_DIFF
+    }
+    else
+    {
+        $("#diff-xlink-1").css('filter', 'url(#filter-12)') /// FILTER_WHITE
+        $("#diff-xlink-2").css('filter', 'url(#filter-22)') /// FILTER_WHITE
+    }
 
     return embed;
 }
