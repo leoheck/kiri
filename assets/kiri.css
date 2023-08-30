@@ -141,15 +141,15 @@ html, body {
    ==============================
 */
 
-#div-svg {
-	/*border: 1px solid #111;*/
+#diff-container {
+/*	border: 1px solid #111;*/
 	margin-top: 15px;
 	background-color: #222;
 	border-radius: 5px;
 }
 
 #svg-id {
-	/*border: 1px solid #111;*/
+/*	border: 1px solid #111;*/
 	margin-top: 15px;
 	background-color: #222;
 	border-radius: 5px;

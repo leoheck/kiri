@@ -586,8 +586,8 @@ show_help()
 	     -i|--ip ADDR     Override the default 127.0.0.1 IP address
 
 	     -s|--skip-cache  Skip usage of -chache.lib on plotgitsch
-	     -6|--skip-kicad6 S
-	     kip ploting Kicad 6 schematics (.kicad.sch)
+	     -6|--skip-kicad6 Skip ploting Kicad 6 schematics (.kicad.sch)
+
 	     -u|--layout      Force starting with the Layout view selected
 	     -f|--page-frame  Disable page frame for PCB
 	     -k|--kicad-cli   Force kicad-cli to plot layout
@@ -598,6 +598,11 @@ show_help()
 
 	     -v|--version     Show version
 	     -h|--help        Show help
+
+	     -sxy|--sch_xy x,y
+	                      Set x,y of svg viewBox for Schematics (workaround for problematic SVG's of Kicad)
+	     -pxy|--pcb_xy x,y
+	                      Set x,y of svg viewBox for PCBs (workaround for problematic SVG's of Kicad)
 
 	     -X|--super-debug Tons of things
 	     -D|--debug       Extra info
@@ -844,6 +849,16 @@ command_line_parse()
 
 			-i|--ip)
 				IP_ADDRESS="${2}"
+				shift 2
+				;;
+
+			-pxy|--pcb_xy)
+				PCB_SVG_VIEWBOX_XY="${2}"
+				shift 2
+				;;
+
+			-sxy|--sch_xy)
+				SCH_SVG_VIEWBOX_XY="${2}"
 				shift 2
 				;;
 
@@ -2041,10 +2056,46 @@ generate_diffs()
 				generate_schematic_artifacts "${hash_1}" "${hash_2}" "${kicad_sch_1}" "${kicad_sch_2}" "${kicad_cache_lib_1}" "${kicad_cache_lib_2}" "${i}" "${kicad_project_name_1}" "${kicad_project_name_2}"
 				generate_layout_artifacts "${hash_1}" "${hash_2}" "${kicad_pcb_1}" "${kicad_pcb_2}" "${kicad_project_name_1}" "${kicad_project_name_2}"
 
+				if [[ -n ${SCH_SVG_VIEWBOX_XY} ]]; then
+					update_svg_viewport "${hash_1}" "${hash_2}" "${i}" "sch"
+				fi
+
+				if [[ -n ${PCB_SVG_VIEWBOX_XY} ]]; then
+					update_svg_viewport "${hash_1}" "${hash_2}" "${i}" "pcb"
+				fi
+
 				# generate_3dmodels "${hash_1}" "${hash_2}" "${kicad_pcb_1}" "${kicad_pcb_2}" "${kicad_project_name_1}" "${kicad_project_name_2}"
 			fi
 		done
 	done
+}
+
+update_svg_viewport()
+{
+	local commit_hash_1="${1}"
+	local commit_hash_2="${2}"
+	local i="${3}"
+	local view="${4}"
+
+	if [[ ${view} == "sch" ]]; then
+		x=$(echo ${SCH_SVG_VIEWBOX_XY} | cut -d, -f1)
+		y=$(echo ${SCH_SVG_VIEWBOX_XY} | cut -d, -f2)
+	else
+		x=$(echo ${PCB_SVG_VIEWBOX_XY} | cut -d, -f1)
+		y=$(echo ${PCB_SVG_VIEWBOX_XY} | cut -d, -f2)
+	fi
+
+	local command_end="> /dev/null"
+	if [[ "${DEBUG}" == 1 ]]; then
+		command_end=""
+	fi
+
+	# This one is needed only once since it is always the same
+	if [[ "${i}" == "2" ]]; then
+		find ".kiri/${commit_hash_1}/_KIRI_/${view}" -name "*.svg" -exec svg_tweaks {} ${x} ${y} \; > /dev/null
+	fi
+
+	find ".kiri/${commit_hash_2}/_KIRI_/${view}" -name "*.svg" -exec svg_tweaks {} ${x} ${y} \; > /dev/null
 }
 
 build_main_html()

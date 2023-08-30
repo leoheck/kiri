@@ -7,6 +7,8 @@ var commit2;
 var old_view;
 var current_view;
 
+current_diff_filter = "diff" // diff or normal
+
 var panZoom_instance = null;
 var lastEventListener = null;
 var lastEmbed = null;
@@ -200,6 +202,31 @@ function reset_commits_selection()
         $("#commits_form input:checkbox[name='commit']")[i].checked = true;
     }
 
+    // reset visibility of the diff images
+    $("#diff-xlink-1").css('visibility', 'visible')
+    $("#commit1_legend").css('visibility', 'visible');
+    $("#commit1_legend_text").css('visibility', 'visible');
+    $("#commit1_legend_fs").css('visibility', 'visible');
+    $("#commit1_legend_text_fs").css('visibility', 'visible');
+    $("#commit1_legend").css('color', '#00FFFF');
+    $("#commit1_legend_fs").css('color', '#00FFFF');
+
+    $("#diff-xlink-2").css('visibility', 'visible')
+    $("#commit2_legend").css('visibility', 'visible');
+    $("#commit2_legend_text").css('visibility', 'visible');
+    $("#commit2_legend_fs").css('visibility', 'visible');
+    $("#commit2_legend_text_fs").css('visibility', 'visible');
+    $("#commit2_legend").css('color', '#880808');
+    $("#commit2_legend_fs").css('color', '#880808');
+
+    $("#commit3_legend").css('visibility', 'visible');
+    $("#commit3_legend_text").css('visibility', 'visible');
+    $("#commit3_legend_fs").css('visibility', 'visible');
+    $("#commit3_legend_text_fs").css('visibility', 'visible');
+
+    $("#diff-xlink-1").css('filter', 'url(#filter-1)') /// FILTER_DEFAULT
+    $("#diff-xlink-2").css('filter', 'url(#filter-2)') /// FILTER_DEFAULT
+
     update_commits();
 }
 
@@ -212,6 +239,118 @@ function toggle_sch_pcb_view() {
         show_sch();
     }
     update_commits();
+}
+
+function toggle_old_commit_visibility()
+{
+    if ($("#diff-xlink-1").css('visibility') === "hidden")
+    {
+        current_diff_filter = "diff";
+        $("#diff-xlink-1").css('visibility', 'visible')
+        $("#commit1_legend").css('visibility', 'visible');
+        $("#commit1_legend_text").css('visibility', 'visible');
+        $("#commit1_legend_fs").css('visibility', 'visible');
+        $("#commit1_legend_text_fs").css('visibility', 'visible');
+
+        $("#commit3_legend").css('visibility', 'visible');
+        $("#commit3_legend_text").css('visibility', 'visible');
+        $("#commit3_legend_fs").css('visibility', 'visible');
+        $("#commit3_legend_text_fs").css('visibility', 'visible');
+    }
+    else
+    {
+        current_diff_filter = "single";
+        $("#diff-xlink-1").css('visibility', 'hidden')
+        $("#commit1_legend").css('visibility', 'hidden');
+        $("#commit1_legend_text").css('visibility', 'hidden');
+        $("#commit1_legend_fs").css('visibility', 'hidden');
+        $("#commit1_legend_text_fs").css('visibility', 'hidden');
+
+        $("#commit3_legend").css('visibility', 'hidden');
+        $("#commit3_legend_text").css('visibility', 'hidden');
+        $("#commit3_legend_fs").css('visibility', 'hidden');
+        $("#commit3_legend_text_fs").css('visibility', 'hidden');
+    }
+
+    // enable the other image back
+    if ($("#diff-xlink-1").css('visibility') === "hidden")
+    {
+        $("#diff-xlink-2").css('visibility', 'visible')
+        $("#diff-xlink-2").css('filter', 'url(#filter-22)') /// FILTER_WHITE
+        $("#commit2_legend").css('visibility', 'visible');
+        $("#commit2_legend_text").css('visibility', 'visible');
+        $("#commit2_legend_fs").css('visibility', 'visible');
+        $("#commit2_legend_text_fs").css('visibility', 'visible');
+
+        $("#commit2_legend").css('color', '#a7a7a7');
+        $("#commit2_legend_fs").css('color', '#a7a7a7');
+    }
+    else
+    {
+        $("#diff-xlink-1").css('filter', 'url(#filter-1)') /// FILTER_DEFAULT
+        $("#diff-xlink-2").css('filter', 'url(#filter-2)') /// FILTER_DEFAULT
+
+        $("#commit1_legend").css('color', '#00FFFF');
+        $("#commit1_legend_fs").css('color', '#00FFFF');
+        $("#commit2_legend").css('color', '#880808');
+        $("#commit2_legend_fs").css('color', '#880808');
+    }
+}
+
+function toggle_new_commit_visibility()
+{
+    if ($("#diff-xlink-2").css('visibility') === "hidden")
+    {
+        current_diff_filter = "diff";
+        $("#diff-xlink-2").css('visibility', 'visible')
+        $("#commit2_legend").css('visibility', 'visible');
+        $("#commit2_legend_text").css('visibility', 'visible');
+        $("#commit2_legend_fs").css('visibility', 'visible');
+        $("#commit2_legend_text_fs").css('visibility', 'visible');
+
+        $("#commit3_legend").css('visibility', 'visible');
+        $("#commit3_legend_text").css('visibility', 'visible');
+        $("#commit3_legend_fs").css('visibility', 'visible');
+        $("#commit3_legend_text_fs").css('visibility', 'visible');
+    }
+    else
+    {
+        current_diff_filter = "single";
+        $("#diff-xlink-2").css('visibility', 'hidden')
+        $("#commit2_legend").css('visibility', 'hidden');
+        $("#commit2_legend_text").css('visibility', 'hidden');
+        $("#commit2_legend_fs").css('visibility', 'hidden');
+        $("#commit2_legend_text_fs").css('visibility', 'hidden');
+
+        $("#commit3_legend").css('visibility', 'hidden');
+        $("#commit3_legend_text").css('visibility', 'hidden');
+        $("#commit3_legend_fs").css('visibility', 'hidden');
+        $("#commit3_legend_text_fs").css('visibility', 'hidden');
+    }
+
+    // enable the other image back
+    if ($("#diff-xlink-2").css('visibility') === "hidden")
+    {
+        $("#diff-xlink-1").css('visibility', 'visible')
+        $("#diff-xlink-1").css('filter', 'url(#filter-12)') /// FILTER_WHITE
+        $("#commit1_legend").css('visibility', 'visible');
+        $("#commit1_legend_text").css('visibility', 'visible');
+        $("#commit1_legend_fs").css('visibility', 'visible');
+        $("#commit1_legend_text_fs").css('visibility', 'visible');
+
+        $("#commit1_legend").css('color', '#a7a7a7');
+        $("#commit1_legend_text_fs").css('color', '#a7a7a7');
+    }
+    else
+    {
+        $("#diff-xlink-1").css('filter', 'url(#filter-1)') /// FILTER_DEFAULT
+        $("#diff-xlink-2").css('filter', 'url(#filter-2)') /// FILTER_DEFAULT
+
+        $("#commit1_legend").css('color', '#00FFFF');
+        $("#commit1_legend_fs").css('color', '#00FFFF');
+        $("#commit2_legend").css('color', '#880808');
+        $("#commit2_legend_fs").css('color', '#880808');
+    }
 }
 
 function select_next_sch_or_pcb(cycle = false) {
@@ -340,7 +479,13 @@ Mousetrap.bind(['up', '['],        function(){select_previows_commit()});
 Mousetrap.bind(['r', 'R'],  function(){reset_commits_selection()});
 
 // View
-Mousetrap.bind(['s', 'S'],          function(){toggle_sch_pcb_view()});
+Mousetrap.bind(['s', 'S'],  function(){toggle_sch_pcb_view()});
+
+Mousetrap.bind(['q', 'Q'],  function(){toggle_old_commit_visibility()});
+Mousetrap.bind(['w', 'W'],  function(){toggle_new_commit_visibility()});
+
+Mousetrap.bind(['alt+q', 'alt+Q'],  function(){toggle_new_commit_visibility()});
+Mousetrap.bind(['alt+w', 'alt+W'],  function(){toggle_old_commit_visibility()});
 
 Mousetrap.bind(['right'], function(){select_next_sch_or_pcb()});
 Mousetrap.bind(['left'],  function(){select_preview_sch_or_pcb()});
@@ -360,7 +505,7 @@ Mousetrap.bind(['+', '='], function(){svg_zoom_in()});
 Mousetrap.bind('-',        function(){svg_zoom_out()});
 
 // Misc
-Mousetrap.bind(['f', 'F'], function(){toogle_fullscreen()});
+Mousetrap.bind(['f', 'F'], function(){toggle_fullscreen()});
 Mousetrap.bind(['i', 'I'], function(){show_info_popup()});
 
 // =======================================
@@ -544,30 +689,27 @@ function update_page()
         document.getElementById("diff-xlink-1").setAttributeNS('http://www.w3.org/1999/xlink', 'href', image_path_timestamp_1);
         document.getElementById("diff-xlink-2").setAttributeNS('http://www.w3.org/1999/xlink', 'href', image_path_timestamp_2);
 
-        if_url_exists(image_path_timestamp_1, function(exists)
-        {
-            if (exists == true)
-            {
-                document.getElementById("diff-xlink-1").parentElement.style.display = 'inline';
-            }
-            else
-            {
+        if_url_exists(image_path_timestamp_1, function(exists) {
+            if (exists == true) {
+                document.getElementById("diff-xlink-1").parentElement.style.display = 'inline' }
+            else {
                 document.getElementById("diff-xlink-1").parentElement.style.display = "none";
             }
         });
 
-        if_url_exists(image_path_timestamp_2, function(exists)
-        {
-            if (exists == true)
-            {
+        if_url_exists(image_path_timestamp_2, function(exists) {
+            if (exists == true) {
                 document.getElementById("diff-xlink-2").parentElement.style.display = 'inline';
             }
-            else
-            {
+            else {
                 document.getElementById("diff-xlink-2").parentElement.style.display = "none";
             }
         });
     }
+
+    // keep images visibility the same as the legend
+    $("#diff-xlink-1").css('visibility', $("#commit1_legend").css('visibility'))
+    $("#diff-xlink-2").css('visibility', $("#commit2_legend").css('visibility'))
 
     update_fullscreen_label();
 }
@@ -943,8 +1085,7 @@ function update_layer() {
 
         if_url_exists(image_path_timestamp_1, function(exists) {
             if (exists == true) {
-                document.getElementById("diff-xlink-1").parentElement.style.display = 'inline';
-            }
+                document.getElementById("diff-xlink-1").parentElement.style.display = 'inline' }
             else {
                 document.getElementById("diff-xlink-1").parentElement.style.display = "none";
             }
@@ -959,6 +1100,10 @@ function update_layer() {
             }
         });
     }
+
+    // keep images visibility the same as the legend
+    $("#diff-xlink-1").css('visibility', $("#commit1_legend").css('visibility'))
+    $("#diff-xlink-2").css('visibility', $("#commit2_legend").css('visibility'))
 
     update_fullscreen_label();
 }
@@ -1191,13 +1336,18 @@ function createNewEmbed(src1, src2)
     console.log("createNewEmbed...");
 
     var embed = document.createElement('div');
-    embed.setAttribute('id', "div-svg");
-    embed.setAttribute('style', "display: inline; width: inherit; min-width: inherit; max-width: inherit; height: inherit; min-height: inherit; max-height: inherit;");
+    embed.setAttribute('id', "diff-container");
+    embed.setAttribute('class', "position-relative");
+    embed.setAttribute('style', "padding: 0px; height: 94%;");
+
+    // WORKING WITH FILTERS..
+    // https://fecolormatrix.com/
 
     var svg_element = `
-    <svg id="svg-id" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" style="display: inline; width: inherit; min-width: inherit; max-width: inherit; height: inherit; min-height: inherit; max-height: inherit;">
+    <svg id="svg-id" style="margin: 0px; width: 100%; height: 100%;"
+             xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" >
       <g class="my_svg-pan-zoom_viewport">
-          <svg id="img-1" style="display: inline;">
+          <svg id="img-1">
               <defs>
                   <filter id="filter-1">
                       <feColorMatrix in=SourceGraphic type="matrix"
@@ -1206,12 +1356,19 @@ function createNewEmbed(src1, src2)
                               0.0  0.0  1.0  1.0  0.0
                               0.0  0.0  0.0  1.0  0.0">
                   </filter>
+                  <filter id="filter-12">
+                      <feColorMatrix in=SourceGraphic type="matrix"
+                      values="-1.0   0.0   0.0  1.0  1.0
+                               0.0  -1.0   0.0  0.0  1.0
+                               0.0   0.0  -1.0  0.0  1.0
+                               0.0   0.0   0.0  0.6  0.0">
+                  </filter>
               </defs>
-              <image id="diff-xlink-1" x="0" y="0" height="100%" width="100%" filter="url(#filter-1)"
+              <image id="diff-xlink-1" height="100%" width="100%" filter="url(#filter-1)"
                   onerror="this.onerror=null; imgError(this);"
                   href="${src1}" xlink:href="${src1}"/>
           </svg>
-          <svg id="img-2" style="display: inline;">
+          <svg id="img-2">
               <defs>
                   <filter id="filter-2">
                       <feColorMatrix in=SourceGraphic type="matrix"
@@ -1220,8 +1377,15 @@ function createNewEmbed(src1, src2)
                               0.0  0.0  1.0  0.0  0.0
                               0.0  0.0  0.0  0.5  0.0">
                   </filter>
+                  <filter id="filter-22">
+                      <feColorMatrix in=SourceGraphic type="matrix"
+                      values="-1.0   0.0   0.0  1.0  1.0
+                               0.0  -1.0   0.0  0.0  1.0
+                               0.0   0.0  -1.0  0.0  1.0
+                               0.0   0.0   0.0  0.6  0.0">
+                  </filter>
               </defs>
-              <image id="diff-xlink-2" x="0" y="0" height="100%" width="100%" filter="url(#filter-2)"
+              <image id="diff-xlink-2" height="100%" width="100%" filter="url(#filter-2)"
                   onerror="this.onerror=null; imgError(this);"
                   href="${src2}" xlink:href="${src2}"/>
           </svg>
@@ -1229,22 +1393,22 @@ function createNewEmbed(src1, src2)
     </svg>
     `;
 
-    document.getElementById('diff-container').appendChild(embed);
-    document.getElementById('div-svg').innerHTML = svg_element;
+    document.getElementById('diff-container').replaceWith(embed);
+    document.getElementById('diff-container').innerHTML = svg_element;
     console.log(">>> SVG: ", embed);
 
-    svgpanzoom_selector = "#" + "svg-id";
+    svgpanzoom_selector = "#svg-id";
 
     panZoom_instance = svgPanZoom(
       svgpanzoom_selector, {
         zoomEnabled: true,
         controlIconsEnabled: false,
         center: true,
-        minZoom: 1,
+        minZoom: 0.5,
         maxZoom: 20,
-        zoomScaleSensitivity: 0.1,
-        fit: true, // cannot be used, bug? (this one must be here to change the default)
+        zoomScaleSensitivity: 0.12,
         contain: false,
+        fit: false, // cannot be used, bug? (this one must be here to change the default)
         viewportSelector: '.my_svg-pan-zoom_viewport',
         eventsListenerElement: document.querySelector(svgpanzoom_selector),
         onUpdatedCTM: function() {
@@ -1264,7 +1428,6 @@ function createNewEmbed(src1, src2)
                     pcb_old_zoom = pcb_current_zoom;
                 }
             }
-
         }
     });
 
@@ -1289,6 +1452,17 @@ function createNewEmbed(src1, src2)
         panZoom_instance.resetZoom();
         panZoom_instance.center();
     });
+
+    if (current_diff_filter === "diff")
+    {
+        $("#diff-xlink-1").css('filter', 'url(#filter-1)') /// FILTER_DIFF
+        $("#diff-xlink-2").css('filter', 'url(#filter-2)') /// FILTER_DIFF
+    }
+    else
+    {
+        $("#diff-xlink-1").css('filter', 'url(#filter-12)') /// FILTER_WHITE
+        $("#diff-xlink-2").css('filter', 'url(#filter-22)') /// FILTER_WHITE
+    }
 
     return embed;
 }
@@ -1364,21 +1538,21 @@ function update_fullscreen_label()
             label = `
                 <div id="fullscreen_label" class="alert alert-dark border border-dark rounded-pill position-absolute top-10 start-50 translate-middle" style="background-color: #333;" role="alert">
                     <span id=commit1_legend_fs style="margin-left:0em; margin-right:0.2em; color: #00FFFF; width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
-                    <small class="text-sm text-light">
+                    <small id=commit1_legend_text_fs class="text-sm text-light">
                         Newer
                         <span id="commit1_fs" class="text-monospace">(<a id="commit1_legend_hash">${commit1}</a>)</span>
                     </small>
 
                     <span style="display: inline; width: 3em;"></span>
                     <span id="commit2_legend_fs" style="display: inline; margin-left:1em; margin-right:0.2em; color: #880808; width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
-                    <small class="text-sm text-light">
+                    <small id=commit2_legend_text_fs class="text-sm text-light">
                         Older
                         <span id="commit2_fs" class="text-monospace">(<a id="commit2_legend_hash">${commit2}</a>)</span>
                     </small>
 
                     <span style="display: inline; width: 3em;"></span>
                     <span id="commit3_legend_fs" style="margin-left:1em; margin-right:0.2em; color: #807F7F; width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
-                    <small class="text-sm text-light">
+                    <small id="commit3_legend_text_fs" class="text-sm text-light">
                         Unchanged
                     </small>
 
@@ -1394,11 +1568,19 @@ function update_fullscreen_label()
 
             const element = $('#diff-container').get(0);
             element.insertAdjacentHTML("afterbegin", label);
+
+            var visibility1 = $("#diff-xlink-1").css('visibility');
+            $("#commit1_legend_fs").css('visibility', visibility1)
+            $("#commit1_legend_text_fs").css('visibility', visibility1)
+
+            var visibility2 = $("#diff-xlink-2").css('visibility');
+            $("#commit2_legend_fs").css('visibility', visibility2)
+            $("#commit2_legend_text_fs").css('visibility', visibility2)
         }
     }
 }
 
-function toogle_fullscreen()
+function toggle_fullscreen()
 {
   if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement)
   {
