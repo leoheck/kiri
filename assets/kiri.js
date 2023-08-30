@@ -1496,7 +1496,7 @@ function removeEmbed()
         lastEventListener = null;
 
         // Remove embed element
-        // document.getElementById('diff-container').removeChild(lastEmbed);
+        document.getElementById('diff-container').removeChild(lastEmbed);
 
         // Null reference to embed
         lastEmbed = null;
