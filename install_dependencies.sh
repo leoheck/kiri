@@ -43,6 +43,7 @@ identify_linux_pkg_manager()
 		"fedora")   echo "dnf"     ;;
 		"redhat")   echo "yum"     ;;
 		"arch")     echo "pacman"  ;;
+		"archarm")  echo "pacman"  ;;
 		"manjaro")  echo "pacman"  ;;
 		*)          echo "Unknown" ;;
 	esac
