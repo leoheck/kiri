@@ -1399,12 +1399,13 @@ function createNewEmbed(src1, src2)
 
     svgpanzoom_selector = "#svg-id";
 
+
     panZoom_instance = svgPanZoom(
       svgpanzoom_selector, {
         zoomEnabled: true,
         controlIconsEnabled: false,
         center: true,
-        minZoom: 0.5,
+        minZoom: 1,
         maxZoom: 20,
         zoomScaleSensitivity: 0.12,
         contain: false,
@@ -1496,7 +1497,7 @@ function removeEmbed()
         lastEventListener = null;
 
         // Remove embed element
-        document.getElementById('diff-container').removeChild(lastEmbed);
+        // document.getElementById('diff-container').removeChild(lastEmbed);
 
         // Null reference to embed
         lastEmbed = null;
