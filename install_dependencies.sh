@@ -215,11 +215,20 @@ macos_install_brew_modules()
 
 install_python_modules()
 {
-	# python3 -m venv ./venv/
-	# source venv/bin/activate
+	if [[ -z "${KIRI_HOME}" ]]; then
+		KIRI_HOME="./"
+	fi
+
+	# python_venv_path="${KIRI_HOME}/venv/"
+
+	# if [[ ! -d ${python_venv_path} ]]; then
+		# python3 -m venv ${KIRI_HOME}/venv/
+	# fi
+
+	# source "${python_venv_path}/bin/activate"
 
 	# Kicad-Diff dependencies
-	if [[ ! -z "${KIRI_HOME}" && -f "${KIRI_HOME}/python-requirements.txt" ]]; then
+	if [[ -f "${KIRI_HOME}/python-requirements.txt" ]]; then
 		yes | pip3 install -r "${KIRI_HOME}/python-requirements.txt"
 	else
 		yes | pip3 install -r https://raw.githubusercontent.com/leoheck/kiri/main/python-requirements.txt
