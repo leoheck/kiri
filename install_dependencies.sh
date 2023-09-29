@@ -219,7 +219,11 @@ install_python_modules()
 	# source venv/bin/activate
 
 	# Kicad-Diff dependencies
-	yes | pip3 install -r python-requirements.txt
+	if [[ ! -z "${KIRI_HOME}" && -f "${KIRI_HOME}/python-requirements.txt" ]]; then
+		yes | pip3 install -r "${KIRI_HOME}/python-requirements.txt"
+	else
+		yes | pip3 install -r https://raw.githubusercontent.com/leoheck/kiri/main/python-requirements.txt
+	fi
 }
 
 init_opam()
