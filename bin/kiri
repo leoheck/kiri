@@ -1764,16 +1764,16 @@ generate_layout_artifacts()
 		# This one is needed only once since it is always the same
 		if [[ "${i}" == "2" ]]; then
 
-			pcb_layers=$(grep "^[ \t]\+([0-9][0-9]* " ${OUTPUT_DIR_PATH}/${commit_hash_2}/"${kicad_pcb_2}")
-			layers_name=$(grep "^[ \t]\+([0-9][0-9]* " "${OUTPUT_DIR_PATH}/${commit_hash_2}/${kicad_pcb_2}" | sed "s/\"//g" | sed "s/^[ \t]\+//g" | cut -d" " -f2)
-			# layers_name=$(grep "^[ \t]\+([0-9][0-9]* " "${OUTPUT_DIR_PATH}/${commit_hash_2}/${kicad_pcb_2}" | cut -d"\"" -f2)
+			pcb_layers=$(grep "^[ \t]\+([0-9][0-9]* " ${OUTPUT_DIR_PATH}/${commit_hash_1}/"${kicad_pcb_1}")
+			layers_name=$(grep "^[ \t]\+([0-9][0-9]* " "${OUTPUT_DIR_PATH}/${commit_hash_1}/${kicad_pcb_1}" | sed "s/\"//g" | sed "s/^[ \t]\+//g" | cut -d" " -f2)
+			# layers_name=$(grep "^[ \t]\+([0-9][0-9]* " "${OUTPUT_DIR_PATH}/${commit_hash_1}/${kicad_pcb_1}" | cut -d"\"" -f2)
 
 			for layer_name in ${layers_name[@]}; do
 
 				layer_id=$(echo "${pcb_layers}" | grep "${layer_name}" | sed "s/[ \t]*(//g" | cut -d " " -f 1 | xargs printf "%02d")
 
-				msg="# Plotting layout ${commit_hash_2}, ${layer_name}"
-				cmd="kicad-cli pcb export svg --page-size-mode 0 --black-and-white \"${OUTPUT_DIR_PATH}/${commit_hash_2}/${kicad_pcb_2}\" --output \"${SVG1_DIR_PATH}/layer-${layer_id}.svg\" --layers \"Edge.Cuts,${layer_name}\""
+				msg="# Plotting layout ${commit_hash_1}, ${kicad_pcb_1} - ${layer_name}"
+				cmd="kicad-cli pcb export svg --page-size-mode 0 --black-and-white \"${OUTPUT_DIR_PATH}/${commit_hash_1}/${kicad_pcb_1}\" --output \"${SVG1_DIR_PATH}/layer-${layer_id}.svg\" --layers \"Edge.Cuts,${layer_name}\""
 				end="${command_end}"
 				cmd_run "${cmd}" "${msg}" "${end}"
 
@@ -1788,8 +1788,8 @@ generate_layout_artifacts()
 
 			layer_id=$(echo "${pcb_layers}" | grep "${layer_name}" | sed "s/[ \t]*(//g" | cut -d " " -f 1 | xargs printf "%02d")
 
-			msg="# Plotting layout ${commit_hash_1}, ${layer_name}"
-			cmd="kicad-cli pcb export svg --page-size-mode 0 --black-and-white \"${OUTPUT_DIR_PATH}/${commit_hash_1}/${kicad_pcb_1}\" --output \"${SVG2_DIR_PATH}/layer-${layer_id}.svg\" --layers \"Edge.Cuts,${layer_name}\""
+			msg="# Plotting layout ${commit_hash_2}, ${kicad_pcb_2} - ${layer_name}"
+			cmd="kicad-cli pcb export svg --page-size-mode 0 --black-and-white \"${OUTPUT_DIR_PATH}/${commit_hash_2}/${kicad_pcb_2}\" --output \"${SVG2_DIR_PATH}/layer-${layer_id}.svg\" --layers \"Edge.Cuts,${layer_name}\""
 			end="${command_end}"
 			cmd_run "${cmd}" "${msg}" "${end}"
 
