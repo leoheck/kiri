@@ -10,6 +10,12 @@ forced_exit()
 {
 	kill -9 "${XVFB_PID}" &> /dev/null
 	kill -9 "${KICAD_PID}" &> /dev/null
+
+	# Restore original keyboard layout
+	if [[ -n "${original_kbd_lang}" ]]; then
+		setxkbmap "${original_kbd_lang}" &> /dev/null
+	fi
+
 	exit 1
 }
 
