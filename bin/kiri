@@ -580,6 +580,13 @@ show_help()
 	     -t|--last VAL    Show last N commits.
 	     -g|--git-diff X  Use git style comparison where X is "commit..commit"
 
+	     -c|--diff HASH..HASH
+	                      Compare 2 commits only
+	                      Examples:
+	                           -c 1a8168c..0807c21
+	                           -c HEAD~1..0807c21
+	                           -c HEAD~1..LOCAL
+
 	     -l|--no-server   Do not launch webserver/browser at the end
 	     -S|--server-only Start webserver but not launch browser
 	     -p|--port PORT   Set webserver port. By default it will try to use an available port.
@@ -747,18 +754,23 @@ command_line_parse()
 				shift
 				;;
 
+			-c|--diff)
+				DIFF_COMMITS="${2}"
+				shift 2
+				;;
+
 			-n|--newer)
 				NEWER_COMMIT="${2}"
 				shift 2
 				;;
 
-			-t|--last)
-				SELECT_LASTEST_N_COMMITS="${2}"
+			-o|--older)
+				OLDER_COMMIT="${2}"
 				shift 2
 				;;
 
-			-o|--older)
-				OLDER_COMMIT="${2}"
+			-t|--last)
+				SELECT_LASTEST_N_COMMITS="${2}"
 				shift 2
 				;;
 
@@ -1202,6 +1214,43 @@ get_git_commits_list()
 
 		if [[ -n "${SELECT_LASTEST_N_COMMITS}" ]]; then
 			COMMITS=$(echo "${COMMITS}" | head -n "${SELECT_LASTEST_N_COMMITS}")
+		fi
+
+		if [[ -n "${DIFF_COMMITS}" ]]; then
+			COMMITS=$(get_git_commits)
+			IFS= read -r -d '' COMMITS <<-EOM
+			_local_ | $(date "+%Y-%m-%d %H:%M:%S") | $(get_name_of_current_user "${USER}") | Local changes not committed
+			${COMMITS}
+			EOM
+
+			commit_a=$(echo "${DIFF_COMMITS}" | sed "s/[\.]\+/ /g" | cut -d" " -f1)
+			commit_b=$(echo "${DIFF_COMMITS}" | sed "s/[\.]\+/ /g" | cut -sd" " -f2)
+			if [[ -z "${commit_b}" ]]; then
+				commit_b="_local_"
+			fi
+
+			shopt -s nocasematch
+			local_pattern="[.]*local[.]*"
+			if [[ ${commit_a} =~ ${local_pattern} ]]; then
+				commit_a="_local_"
+			fi
+			if [[ ${commit_b} =~ ${local_pattern} ]]; then
+				commit_b="_local_"
+			fi
+
+			shopt -u nocasematch
+			head_pattern="HEAD[.]*"
+			if [[ ${commit_a} =~ ${head_pattern} ]]; then
+				commit_a=$(git rev-parse --short ${commit_a})
+			fi
+			if [[ ${commit_b} =~ ${head_pattern} ]]; then
+				commit_b=$(git rev-parse --short ${commit_b})
+			fi
+
+			COMMITS=$(echo "${COMMITS}" | grep -Ew "${commit_a}|${commit_b}")
+
+			echo -e "$COMMITS"
+			exit 1
 		fi
 
 		if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]]; then
