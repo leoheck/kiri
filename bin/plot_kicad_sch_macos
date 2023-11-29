@@ -129,8 +129,17 @@ launch_plot_window()
 wait_until_plot_finishes()
 {
 	local plot_dir="${1}"
-	echo "Waiting to plot..."
-	until [[ "$(ls -1 ${plot_dir}/*.svg | wc -l)" -ge "1" ]]; do
+
+	case ${kicad_sch_extension} in
+		"sch")
+			numof_sheets=$(grep -i "^Sheet" ${kicad_sch_path} | cut -d" " -f3)
+			;;
+		"kicad_sch")
+			numof_sheets=$(jq '.sheets | length' ${kicad_prj})
+			;;
+	esac
+
+	until [[ "$(ls -1 ${plot_dir}/*.svg | wc -l)" -ge ${numof_sheets} ]]; do
 		sleep 0.1
 		cliclick w:${TIME}
 	done
@@ -158,7 +167,7 @@ plot_schematics()
 main()
 {
 	trap "exit 1" TERM
-	trap ctrl_c INT
+	trap ctrl_c SIGINT
 
 	local kicad_sch_path="${1}"
 	local output_dir_path="${2}"
@@ -216,7 +225,7 @@ main()
 		echo "> ${svg_file}"
 	done
 
-	mkdir -p "${output_dir_path}/kiri/sch/" &> /dev/null
+	mkdir -p "${output_dir_path}/_KIRI_/sch/" &> /dev/null
 
 	echo "Renaming files:"
 	if [[ -n ${svg_file_paths} ]]; then
@@ -224,12 +233,12 @@ main()
 		for svg_file in "${svg_file_paths[@]}"; do
 
 			svg_file_name=$(basename "${svg_file%.*}")
-			match_line_no=$(cat "${output_dir_path}/kiri/sch_sheets" | grep -m1 -n "|${svg_file_name}$" | cut -d":" -f1)
+			match_line_no=$(cat "${output_dir_path}/_KIRI_/sch_sheets" | grep -m1 -n "|${svg_file_name}$" | cut -d":" -f1)
 
 			if [[ -n "${match_line_no}" ]]; then
-				new_svg_file="$(sed -n ${match_line_no}p "${output_dir_path}/kiri/sch_sheets" | cut -f1 -d"|").svg"
-				echo "${svg_file} -> ${output_dir_path}/kiri/sch/${new_svg_file}" 2>&1
-				cp -f "${svg_file}" "${output_dir_path}/kiri/sch/${new_svg_file}" 2> /dev/null
+				new_svg_file="$(sed -n ${match_line_no}p "${output_dir_path}/_KIRI_/sch_sheets" | cut -f1 -d"|").svg"
+				echo "${svg_file} -> ${output_dir_path}/_KIRI_/sch/${new_svg_file}" 2>&1
+				cp -f "${svg_file}" "${output_dir_path}/_KIRI_/sch/${new_svg_file}" 2> /dev/null
 			fi
 		done
 	fi
