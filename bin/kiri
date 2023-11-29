@@ -604,6 +604,8 @@ show_help()
 	     -pxy|--pcb_xy x,y
 	                      Set x,y of svg viewBox for PCBs (workaround for problematic SVG's of Kicad)
 
+	     -R|--raw-svg)    Disable svg optimization
+
 	     -X|--super-debug Tons of things
 	     -D|--debug       Extra info
 	    -dp|--debug-sch   Show Plotgitsch stdout and stderr
@@ -658,8 +660,6 @@ check_required_tools()
 
 	readonly PLOTGITSCH_MISSING=$(is_tool_avail "plotgitsch" ${no_exit})
 	readonly KIDIFF_MISSING=$(is_tool_avail "kidiff" ${no_exit})
-
-	is_tool_avail "dos2unix"
 
 	case ${OSTYPE} in
 		darwin*)
@@ -860,6 +860,11 @@ command_line_parse()
 			-sxy|--sch_xy)
 				SCH_SVG_VIEWBOX_XY="${2}"
 				shift 2
+				;;
+
+			-R|--raw-svg)
+				DO_NOT_OPTIMIZE_SVG=1
+				shift 1
 				;;
 
 			ls)
@@ -1728,6 +1733,21 @@ generate_schematic_artifacts()
 		fi
 	fi
 
+	if which svgo &> /dev/null; then
+		if [[ -z ${DO_NOT_OPTIMIZE_SVG} ]]; then
+			if [[ "${i}" == "2" ]]; then
+				msg="# Optimizing svg for web, ${commit_hash_1}"
+				cmd="optimize_svg_for_web ${OUTPUT_DIR_PATH}/${commit_hash_1}/_KIRI_/sch"
+				end="${command_end}"
+				cmd_run "${cmd}" "${msg}" "${end}"
+			fi
+			msg="# Optimizing svg for web, ${commit_hash_2}"
+			cmd="optimize_svg_for_web ${OUTPUT_DIR_PATH}/${commit_hash_2}/_KIRI_/sch"
+			end="${command_end}"
+			cmd_run "${cmd}" "${msg}" "${end}"
+		fi
+	fi
+
 	# if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]] || [[ "${DEBUG_PLOTGITSCH}" == "1" ]]; then
 		# echo
 	# fi
@@ -1846,6 +1866,21 @@ generate_layout_artifacts()
 			# Move files
 			mv -f "${OUTPUT_DIR_PATH}/${commit_hash_1}/pcb/" "${OUTPUT_DIR_PATH}/${commit_hash_1}/_KIRI_/" &> /dev/null
 			mv -f "${OUTPUT_DIR_PATH}/${commit_hash_2}/pcb/" "${OUTPUT_DIR_PATH}/${commit_hash_2}/_KIRI_/" &> /dev/null
+		fi
+	fi
+
+	if which svgo &> /dev/null; then
+		if [[ -z ${DO_NOT_OPTIMIZE_SVG} ]]; then
+			if [[ "${i}" == "2" ]]; then
+				msg="# Optimizing svg for web, ${commit_hash_1}"
+				cmd="optimize_svg_for_web ${OUTPUT_DIR_PATH}/${commit_hash_1}/_KIRI_/pcb"
+				end="${command_end}"
+				cmd_run "${cmd}" "${msg}" "${end}"
+			fi
+			msg="# Optimizing svg for web, ${commit_hash_2}"
+			cmd="optimize_svg_for_web ${OUTPUT_DIR_PATH}/${commit_hash_2}/_KIRI_/pcb"
+			end="${command_end}"
+			cmd_run "${cmd}" "${msg}" "${end}"
 		fi
 	fi
 }
