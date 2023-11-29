@@ -11,13 +11,13 @@ main()
 	total="${#svgs[@]}"
 	i=0
 
-	for svg in ${svgs[@]}; do
+	for svg in "${svgs[@]}"; do
 		i=$((i+1))
-		orig_size=$(du -sh ${svg}  | tr "\t" " " | cut -d" " -f1)
+		orig_size=$(du -sh "${svg}" | tr "\t" " " | cut -d" " -f1)
 		cmd="svgo -q --precision 2 --pretty --final-newline -i ${svg}"
-		eval ${cmd}
-		new_size=$(du -sh ${svg}  | tr "\t" " " | cut -d" " -f1)
-		printf "%3d/%d | %4s > %4s | %s\n" ${i} ${total} "${orig_size}" "${new_size}" "${svg}"
+		eval "${cmd}"
+		new_size=$(du -sh "${svg}" | tr "\t" " " | cut -d" " -f1)
+		printf "%3d/%d | %4s > %4s | %s\n" "${i}" "${total}" "${orig_size}" "${new_size}" "${svg}"
 	done
 }
 
