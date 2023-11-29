@@ -1407,7 +1407,7 @@ function createNewEmbed(src1, src2)
         center: true,
         minZoom: 1,
         maxZoom: 20,
-        zoomScaleSensitivity: 0.12,
+        zoomScaleSensitivity: 0.22,
         contain: false,
         fit: false, // cannot be used, bug? (this one must be here to change the default)
         viewportSelector: '.my_svg-pan-zoom_viewport',
