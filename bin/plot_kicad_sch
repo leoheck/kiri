@@ -338,8 +338,17 @@ launch_plot_window()
 wait_until_plot_finishes()
 {
 	local plot_dir="${1}"
-	until [[ "$(ls -1 ${plot_dir}/*.svg | wc -l)" -ge "1" ]]; do
-		# echo "Waiting plotting..."
+
+	case ${kicad_sch_extension} in
+		"sch")
+			numof_sheets=$(grep -i "^Sheet" ${kicad_sch_path} | cut -d" " -f3)
+			;;
+		"kicad_sch")
+			numof_sheets=$(jq '.sheets | length' ${kicad_prj})
+			;;
+	esac
+
+	until [[ "$(ls -1 ${plot_dir}/*.svg | wc -l)" -ge ${numof_sheets} ]]; do
 		sleep ${TIME}
 	done
 	sleep ${TIME}
@@ -364,8 +373,13 @@ plot_schematics()
 
 main()
 {
+	if ! which xdotool &> /dev/null; then
+		echo "xdotool is missing"
+		exit 1
+	fi
+
 	trap "exit 1" TERM
-	trap ctrl_c INT
+	trap ctrl_c SIGINT
 
 	# Set keyboard to us
 	original_kbd_lang=$(setxkbmap -query | grep layout | tr -s ' ' | cut -d" " -f2)

@@ -82,7 +82,7 @@ get_kicad_full_version()
 main()
 {
 	trap "exit 1" TERM
-	trap forced_exit INT
+	trap forced_exit SIGINT
 
 	if [[ "$(get_current_display_server)" != "x11" ]] && [[ "$(get_current_display_server)" != "wayland" ]]; then
 		echo "Error: Uknown \"$(get_current_display_server)\" display server"
