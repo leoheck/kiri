@@ -1542,7 +1542,9 @@ manual_schematic_plot()
 
 						if [[ "${SKIP_KICAD_6}" == "0" ]] && [[ ! "${OSTYPE}" =~ "darwin" ]]; then
 
-							echo -e "    ${LRE}Plotkicadsch has failed. Trying it with xdotool...${RCO}"
+							if [[ "${DEBUG}" == "1" ]] || [[ "${DEBUG_PLOTGITSCH}" == "1" ]]; then
+								echo -e "    ${LRE}Plotkicadsch has failed. Trying it with xdotool...${RCO}"
+							fi
 
 							PLOTPCB_TIMEOUT=5
 
@@ -1560,7 +1562,9 @@ manual_schematic_plot()
 
 							if [[ "${OSTYPE}" =~ "darwin" ]]; then
 
-								echo -e "    ${LRE}Plotkicadsch has failed. Trying it with cliclick...${RCO}"
+								if [[ "${DEBUG}" == "1" ]] || [[ "${DEBUG_PLOTGITSCH}" == "1" ]]; then
+									echo -e "    ${LRE}Plotkicadsch has failed. Trying it with cliclick...${RCO}"
+								fi
 
 								msg="# Plotting schematics, ${commit_hash}"
 								cmd="plot_kicad_sch_macos ${kicad_sch}"
