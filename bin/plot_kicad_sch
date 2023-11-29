@@ -147,7 +147,7 @@ launch_eeschema()
 	C_UTF8=$(locale -a | grep -i "C.utf" | head)
 	export LC_ALL=${C_UTF8}
 
-	$(launch_virtual_display) eeschema "${kicad_sch_path}" 2> /dev/null &
+	$(launch_virtual_display) eeschema "${kicad_sch_path}" &> /dev/null &
 	EESCHEMA_PID=${!}
 
 	# list windows
@@ -451,7 +451,7 @@ main()
 		echo "> ${svg_file}"
 	done
 
-	mkdir -p "${output_dir_path}/kiri/sch/" &> /dev/null
+	mkdir -p "${output_dir_path}/_KIRI_/sch/" &> /dev/null
 
 	echo "Renaming files:"
 	if [[ -n ${svg_file_paths} ]]; then
@@ -459,12 +459,12 @@ main()
 		for svg_file in "${svg_file_paths[@]}"; do
 
 			svg_file_name=$(basename "${svg_file%.*}")
-			match_line_no=$(cat "${output_dir_path}/kiri/sch_sheets" | grep -m1 -n "|${svg_file_name}$" | cut -d":" -f1)
+			match_line_no=$(cat "${output_dir_path}/_KIRI_/sch_sheets" | grep -m1 -n "|${svg_file_name}$" | cut -d":" -f1)
 
 			if [[ -n "${match_line_no}" ]]; then
-				new_svg_file="$(sed -n ${match_line_no}p "${output_dir_path}/kiri/sch_sheets" | cut -f1 -d"|").svg"
-				echo "${svg_file} -> ${output_dir_path}/kiri/sch/${new_svg_file}" 2>&1
-				cp -f "${svg_file}" "${output_dir_path}/kiri/sch/${new_svg_file}" 2> /dev/null
+				new_svg_file="$(sed -n ${match_line_no}p "${output_dir_path}/_KIRI_/sch_sheets" | cut -f1 -d"|").svg"
+				echo "${svg_file} -> ${output_dir_path}/_KIRI_/sch/${new_svg_file}" 2>&1
+				cp -f "${svg_file}" "${output_dir_path}/_KIRI_/sch/${new_svg_file}" 2> /dev/null
 			fi
 		done
 	fi
