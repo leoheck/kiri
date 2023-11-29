@@ -94,7 +94,6 @@ linux_install_software_with_apt()
 	sudo apt-get install -y python-is-python3
 	sudo apt-get install -y python3-pip
 	sudo apt-get install -y kicad
-	sudo apt-get install -y dos2unix
 	sudo apt-get install -y coreutils
 	sudo apt-get install -y zenity
 	sudo apt-get install -y librsvg2-bin
@@ -115,7 +114,6 @@ linux_install_software_with_dnf()
 	# Install base packages
 	# sudo dnf install -y git
 	# sudo dnf install -y pkg-config
-	# sudo dnf install -y dos2unix
 	# sudo dnf install -y coreutils
 	# sudo dnf install -y zenity
 
@@ -149,7 +147,6 @@ linux_install_software_with_pacman()
 {
 	yes | sudo pacman -S make
 	yes | sudo pacman -S patch
-	yes | sudo pacman -S dos2unix
 	yes | sudo pacman -S opam
 	yes | sudo pacman -S python-pip
 	yes | sudo pacman -S kicad
@@ -199,7 +196,6 @@ macos_install_brew_modules()
 	# KiRI dependencies
 	brew install gsed
 	brew install findutils
-	brew install dos2unix
 	brew install coreutils
 	brew install wxpython
 	brew install wxwidgets
