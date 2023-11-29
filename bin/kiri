@@ -554,7 +554,7 @@ cleanup_on_exit()
 kiri_kill()
 {
 	# Auxiliar function to exit form inside functions
-	kill -s TERM "${KIRI_PID}"
+	kill -s TERM "${KIRI_PID}" &> /dev/null
 }
 
 show_help()
@@ -1481,7 +1481,7 @@ manual_schematic_plot()
 				PLOT_TIMEOUT=5
 			fi
 
-			msg="# Plotting schematics ${commit_hash}"
+			msg="# Plotting schematics, ${commit_hash}"
 			cmd="timeout ${PLOT_TIMEOUT} plot_kicad_sch ${kicad_sch}"
 			end="${command_end}"
 			cmd_run "${cmd}" "${msg}" "${end}"
@@ -1493,7 +1493,7 @@ manual_schematic_plot()
 				fi
 			else
 				if [[ "${OSTYPE}" =~ "darwin" ]]; then
-					msg="# Plotting schematics ${commit_hash}"
+					msg="# Plotting schematics, ${commit_hash}"
 					cmd="plot_kicad_sch_macos ${kicad_sch}"
 					end="${command_end}"
 					cmd_run "${cmd}" "${msg}" "${end}"
@@ -1522,7 +1522,7 @@ manual_schematic_plot()
 
 				if [[ -f "${kicad_cache_lib}" ]]; then
 
-					msg="# Plotting schematics ${commit_hash}: $(pwd)"
+					msg="# Plotting schematics, ${commit_hash}: $(pwd)"
 					cmd="plotkicadsch -f ${kicad_sch_aux} ${cache_lib_param} -o \"${svg_dir_path}\""
 					end="${command_end}"
 					cmd_run "${cmd}" "${msg}" "${end}"
@@ -1542,14 +1542,14 @@ manual_schematic_plot()
 
 						if [[ "${SKIP_KICAD_6}" == "0" ]] && [[ ! "${OSTYPE}" =~ "darwin" ]]; then
 
-							echo -e "   ${LRE}Plotkicadsch has failed (${commit_hash}), using xdotool way instead.${RCO}"
+							echo -e "    ${LRE}Plotkicadsch has failed. Trying it with xdotool...${RCO}"
 
 							PLOTPCB_TIMEOUT=5
 
 							# TESTING: Plokicadsch has failed, then usig GUI
 							# IF THIS IS GOOD. Then it is better to organize this function main_if order here to avoid repetition
 
-							msg="# Plotting schematics ${commit_hash}"
+							msg="# Plotting schematics, ${commit_hash}"
 							cmd="timeout ${PLOTPCB_TIMEOUT} plot_kicad_sch ${kicad_sch}"
 							end="${command_end}"
 							cmd_run "${cmd}" "${msg}" "${end}"
@@ -1560,9 +1560,9 @@ manual_schematic_plot()
 
 							if [[ "${OSTYPE}" =~ "darwin" ]]; then
 
-								echo -e "   ${LRE}Plotkicadsch has failed (${commit_hash}), using cliclick way instead.${RCO}"
+								echo -e "    ${LRE}Plotkicadsch has failed. Trying it with cliclick...${RCO}"
 
-								msg="# Plotting schematics ${commit_hash}"
+								msg="# Plotting schematics, ${commit_hash}"
 								cmd="plot_kicad_sch_macos ${kicad_sch}"
 								end="${command_end}"
 								cmd_run "${cmd}" "${msg}" "${end}"
@@ -1623,7 +1623,7 @@ generate_schematic_artifacts()
 		# This one is needed only once since it is always the same
 		if [[ "${i}" == "2" ]]; then
 
-			msg="# Plotting schematics ${commit_hash_1}"
+			msg="# Plotting schematics, ${commit_hash_1}"
 			cmd="kicad-cli sch export svg --black-and-white --no-background-color --output \"${SVG1_DIR_PATH}\" \"${OUTPUT_DIR_PATH}/${commit_hash_1}/${kicad_sch_1}\""
 			end="${command_end}"
 			cmd_run "${cmd}" "${msg}" "${end}"
@@ -1639,7 +1639,7 @@ generate_schematic_artifacts()
 			IFS="${original_ifs}"
 		fi
 
-		msg="# Plotting schematics ${commit_hash_2}"
+		msg="# Plotting schematics, ${commit_hash_2}"
 		cmd="kicad-cli sch export svg --black-and-white --no-background-color --output \"${SVG2_DIR_PATH}\" \"${OUTPUT_DIR_PATH}/${commit_hash_2}/${kicad_sch_2}\""
 		end="${command_end}"
 		cmd_run "${cmd}" "${msg}" "${end}"
@@ -1716,7 +1716,7 @@ generate_schematic_artifacts()
 				mkdir -p "${IMGDIFF_SVG1_DIR_PATH}"
 				mkdir -p "${IMGDIFF_SVG2_DIR_PATH}"
 
-				msg="# Plotting schematics ${commit_hash_1}, ${commit_hash_2}"
+				msg="# Plotting schematics, ${commit_hash_1}, ${commit_hash_2}"
 				cmd="plotgitsch --keep --allow_missing ${relative_path} ${cache_lib} ${color_scheme}"
 				end="${command_end}"
 				cmd_run "${cmd}" "${msg}" "${end}"
@@ -2276,7 +2276,7 @@ launch_webserver()
 		fi
 		if kiri-server -i "${IP_ADDRESS}" "${OUTPUT_DIR_PATH}" ${webserver_port_param} ${server_only_flag} 2> /dev/null; then
 			pid=$!
-			kill -9 $pid > /dev/null
+			kill -9 ${pid} &> /dev/null
 		else
 			echo -e "Something went wrong with kiri-server, try to force the port with '-p'"
 			exit 1
