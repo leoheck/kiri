@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# Some svg improvements for web
+
+main()
+{
+	svg_dirpath=${1}
+
+	svgs=($(find "${svg_dirpath}" -name "*.svg"))
+
+	total="${#svgs[@]}"
+	i=0
+
+	for svg in ${svgs[@]}; do
+		i=$((i+1))
+		orig_size=$(du -sh ${svg}  | tr "\t" " " | cut -d" " -f1)
+		cmd="svgo -q --final-newline -i ${svg}"
+		eval ${cmd}
+		new_size=$(du -sh ${svg}  | tr "\t" " " | cut -d" " -f1)
+		printf "%3d/%d | %4s > %4s | %s\n" ${i} ${total} "${orig_size}" "${new_size}" "${cmd}"
+	done
+}
+
+main "${@}"
