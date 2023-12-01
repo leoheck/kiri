@@ -2,7 +2,9 @@
 
 # Some svg improvements for web
 
-source /home/lheck/Dropbox/Documents4/kiri/bin/kiri-venv/bin/activate
+if [[ -f /home/lheck/Dropbox/Documents4/kiri/bin/kiri-venv/bin/activate ]]; then
+	source /home/lheck/Dropbox/Documents4/kiri/bin/kiri-venv/bin/activate
+fi
 
 main()
 {
