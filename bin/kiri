@@ -2236,12 +2236,12 @@ build_main_html()
 	insert_commits_html "${WEB_DIR_PATH}/${main_html}" "${commit1_i}" "${commit2_i}"
 
 	# Insert pages list
-	echo "- Adding list of pages"
-	insert_pages_html "${WEB_DIR_PATH}/${main_html}" "${commit_hash_1}" "${commit_hash_2}"
+	# echo "- Adding list of pages"
+	# insert_pages_html "${WEB_DIR_PATH}/${main_html}" "${commit_hash_1}" "${commit_hash_2}"
 
 	# Insert layers list
-	echo "- Adding list of layers"
-	insert_layers_html "${WEB_DIR_PATH}/${main_html}"
+	# echo "- Adding list of layers"
+	# insert_layers_html "${WEB_DIR_PATH}/${main_html}"
 
 	echo -e "\n${LBL}${LBL}Latest rev ${commit_hash_1}${RCO}"
 
