@@ -2,6 +2,8 @@
 
 # Some svg improvements for web
 
+source /home/lheck/Dropbox/Documents4/kiri/bin/kiri-venv/bin/activate
+
 main()
 {
 	svg_dirpath=${1}
@@ -11,13 +13,16 @@ main()
 	total="${#svgs[@]}"
 	i=0
 
-	for svg in ${svgs[@]}; do
+	for svg in "${svgs[@]}"; do
 		i=$((i+1))
-		orig_size=$(du -sh ${svg}  | tr "\t" " " | cut -d" " -f1)
-		cmd="svgo -q --precision 2 --pretty --final-newline -i ${svg}"
-		eval ${cmd}
-		new_size=$(du -sh ${svg}  | tr "\t" " " | cut -d" " -f1)
-		printf "%3d/%d | %4s > %4s | %s\n" ${i} ${total} "${orig_size}" "${new_size}" "${svg}"
+		orig_size=$(du -sh "${svg}" | tr "\t" " " | cut -d" " -f1)
+		# cmd="svgo -q --precision 2 --pretty --final-newline -i ${svg}"
+		# cmd="svgcleaner ${svg} ${svg}"
+		cmd="scour -i ${svg} -o output.svg --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none"
+		eval "${cmd}"
+		mv output.svg "${svg}"
+		new_size=$(du -sh "${svg}" | tr "\t" " " | cut -d" " -f1)
+		printf "%3d/%d | %4s > %4s | %s\n" "${i}" "${total}" "${orig_size}" "${new_size}" "${svg}"
 	done
 }
 

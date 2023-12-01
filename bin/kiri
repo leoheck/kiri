@@ -1786,7 +1786,7 @@ generate_schematic_artifacts()
 		fi
 	fi
 
-	if which svgo &> /dev/null; then
+	if which scour &> /dev/null; then
 		if [[ -z ${DO_NOT_OPTIMIZE_SVG} ]]; then
 			if [[ "${i}" == "2" ]]; then
 				msg="# Optimizing svg for web, ${commit_hash_1}"
@@ -2213,6 +2213,9 @@ build_main_html()
 	cp -f "${KIRI_HOME_PATH}/assets/favicon.ico"   "${WEB_DIR_PATH}/"
 	cp -f "${KIRI_HOME_PATH}/assets/redirect.html" "${WEB_DIR_PATH}/../index.html"
 	cp -f "${KIRI_HOME_PATH}/bin/kiri-server"      "${OUTPUT_DIR_PATH}/"
+
+	# cp -f "${KIRI_HOME_PATH}/assets/layer_colors_classic.css" "${WEB_DIR_PATH}/layer_colors.css"
+	cp -f "${KIRI_HOME_PATH}/assets/layer_colors_default.css" "${WEB_DIR_PATH}/layer_colors.css"
 
 	# Testing
 	cp -rf "${KIRI_HOME_PATH}/assets/gltfc"         "${WEB_DIR_PATH}/" &> /dev/null

@@ -725,7 +725,7 @@ function update_sheets_list(commit1, commit2) {
         selected_sheet = pages[selected_page].id;
     }
     catch(err) {
-        selected_page = "";
+        selected_sheet = "";
         console.log("There isn't a sheet selected");
     }
 
@@ -807,11 +807,16 @@ function update_sheets_list(commit1, commit2) {
     }
     else {
         // If old selection does not exist, maybe the list is now shorter, then select the last item...
-        pages[optionLabels.length-1].checked = true;
+        if (optionLabels.length) {
+            layers[optionLabels.length-1].checked = true;
+        }
+        if (optionLabels.length) {
+            pages[optionLabels.length-1].checked = true;
+        }
     }
 
     // If nothing is selected still, select the first item
-    if (!pages.filter(':checked').length) {
+    if (pages.length && !pages.filter(':checked').length) {
         pages[0].checked = true;
     }
 }
@@ -908,7 +913,7 @@ function update_layers_list(commit1, commit2, selected_layer_idx, selected_layer
     var layers = $("#layers_list input:radio[name='layers']");
     var selected_layer_element = layers.index(layers.filter(':checked'));
 
-    // Save the current selected page, if any
+    // Save the current selected layer, if any
     try {
         selected_layer = layers[selected_layer_element].id;
     }
@@ -954,26 +959,39 @@ function update_layers_list(commit1, commit2, selected_layer_idx, selected_layer
         id = parseInt(layer_id);
         id_pad = pad(id, 2);
         layer_name = layer_names[0];
-        color = layer_color(id);
+        // color = layer_color(id);
 
-        var input_html = `
-        <!-- Generated Layer ${id} -->
-        <input  id="layer-${id_pad}" value="layer-${layer_names}" type="radio" name="layers" onchange="update_layer()">
-        <label for="layer-${id_pad}" id="label-layer-${id_pad}" data-toggle="tooltip" title="${id}, ${layer_names}" class="rounded text-sm-left list-group-item radio-box" onclick="update_layer_onclick()">
-            <span style="margin-left:0.5em; margin-right:0.1em; color:${color}" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
-            ${layer_names}
-        </label>
-        `;
+        layer_svg_1 = "../" + commit1 + "/_KIRI_/pcb/layer-" + id_pad + ".svg"
+        layer_svg_2 = "../" + commit2 + "/_KIRI_/pcb/layer-" + id_pad + ".svg"
+        svg_content_1 = loadFile(layer_svg_1);
+        svg_content_2 = loadFile(layer_svg_2);
+        if (svg_content_1 === svg_content_2)
+        {
+            console.log("Skipping layer with no changes:")
+            console.log(">", layer_svg_1)
+            console.log(">", layer_svg_2)
+        }
+        else
+        {
+            var input_html = `
+            <!-- Generated Layer ${id} -->
+            <input  id="layer-${id_pad}" value="layer-${layer_names}" type="radio" name="layers" onchange="update_layer()">
+            <label for="layer-${id_pad}" id="label-layer-${id_pad}" data-toggle="tooltip" title="${id}, ${layer_names}" class="rounded text-sm-left list-group-item radio-box" onclick="update_layer_onclick()">
+                <span class="iconify layer_color_margin layer_color_${id}" data-icon="teenyicons-square-solid" data-inline="false"></span>
+                ${layer_names}
+            </label>
+            `;
 
-        new_layers_list.push(layer_names.toString());
+            new_layers_list.push(layer_names.toString());
 
-        form_inputs_html = form_inputs_html + input_html;
+            form_inputs_html = form_inputs_html + input_html;
+        }
     }
 
-    // Get the current list of pages
+    // Get the current list of layers
     const current_layers_list = Array.from(layers).map((opt) => opt.value.replace("layer-", ""));
 
-        // Return if the current list is equal to the new list
+    // Return if the current list is equal to the new list
     console.log("current_layers_list = ", current_layers_list);
     console.log("new_layers_list = ", new_layers_list);
     if (current_layers_list.toString() === new_layers_list.toString()) {
@@ -1015,6 +1033,66 @@ function update_layers_list(commit1, commit2, selected_layer_idx, selected_layer
     }
 }
 
+function hide_layers_without_changes(commit1, commit2, selected_layer_idx, selected_layer_id) {
+
+    // Get current selected page name
+    var layers = $("#layers_list input:radio[name='layers']");
+    var selected_layer_element = layers.index(layers.filter(':checked'));
+
+    console.log("=====================================================")
+    console.log(layers)
+    console.log("=====================================================")
+
+    for (var i = 0; i < layers.length; i++)
+    {
+        // layer_id = layers[i].id.split("-")[1];
+        layer_id = layers[i].id;
+
+        console.log("+++++ LAYER_ID:", layers[i]);
+
+        layer_svg_1 = "../" + commit1 + "/_KIRI_/pcb/" + layer_id + ".svg"
+        layer_svg_2 = "../" + commit2 + "/_KIRI_/pcb/" + layer_id + ".svg"
+
+        svg_content_1 = loadFile(layer_svg_1);
+        svg_content_2 = loadFile(layer_svg_2);
+
+        console.log("!!!!!!!!!!!", document.getElementById(layer_id).style.display);
+
+
+        if (svg_content_1 === svg_content_2)
+        {
+            console.log("==FILES_ARE_EQUAL==");
+            // document.getElementById(layer_id).remove();
+            // document.getElementById("layer-" + layer_id).remove();
+            // document.getElementById(layer_id).style.display = "none";
+            // document.getElementById("label-" + layer_id).style.display = "none";
+
+            // document.getElementById(layer_id).disabled = true; // DOING NOTHING
+            // document.getElementById(layer_id).readOnly = true; // DOING NOTHING
+            // document.getElementById(layer_id).checked = false;
+            document.getElementById(layer_id).style.display = "none";
+            document.getElementById("label-" + layer_id).style.display = "none";
+            // document.getElementById("label-" + layer_id).disabled = true; // DOING NOTHING
+            // document.getElementById("label-" + layer_id).readOnly = true; // DOING NOTHING
+        }
+        else
+        {
+            console.log("___FILES_DIFFER___");
+            // document.getElementById(layer_id).style.display = "";
+            // document.getElementById("label-" + layer_id).style.display = "";
+
+            // document.getElementById(layer_id).disabled = false; // DOING NOTHING
+            // document.getElementById(layer_id).readOnly = false; // DOING NOTHING
+            // document.getElementById(layer_id).checked = true;
+            document.getElementById(layer_id).style.display = "";
+            // document.getElementById("label-" + layer_id).style.display = "";
+            // document.getElementById("label-" + layer_id).disabled = false; // DOING NOTHING
+            // document.getElementById("label-" + layer_id).readOnly = false; // DOING NOTHING
+
+        }
+    }
+}
+
 function update_layer() {
 
     console.log("-----------------------------------------");
@@ -1038,9 +1116,15 @@ function update_layer() {
                 layer_id = layers[selected_layer].id.split("-")[1];
                 console.log(">>>> [label_id_ELSE] = ", layer_id);
             } catch (error) {
-                console.log("[PCB] Images may not exist and Kicad layout may be missing.");
-                show_sch();
-                return;
+                if (layers.length == 0) {
+                    selected_layer = -1
+                    layer_id = ""
+                }
+                else {
+                    console.log("[PCB] Images may not exist and Kicad layout may be missing.");
+                    show_sch();
+                    return;
+                }
             }
         }
     }
@@ -1059,6 +1143,8 @@ function update_layer() {
 
     update_layers_list(commit1, commit2, selected_layer, layer_id);
 
+    // hide_layers_without_changes(commit1, commit2, selected_layer, layer_id);
+
     var image_path_1 = "../" + commit1 + "/_KIRI_/pcb/layer" + "-" + layer_id + ".svg";
     var image_path_2 = "../" + commit2 + "/_KIRI_/pcb/layer" + "-" + layer_id + ".svg";
 
@@ -1075,7 +1161,7 @@ function update_layer() {
         removeEmbed();
         lastEmbed = createNewEmbed(image_path_timestamp_1, image_path_timestamp_2);
     }
-    else
+    else if (layer_id != "")
     {
         document.getElementById("diff-xlink-1").href.baseVal = image_path_timestamp_1;
         document.getElementById("diff-xlink-2").href.baseVal = image_path_timestamp_2;
