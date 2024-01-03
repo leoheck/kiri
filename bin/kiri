@@ -23,7 +23,7 @@ if [[ -n "${SUPER_DEBUG_EXIT_ON_ERROR}" ]]; then
 	set -xe
 fi
 
-insert_commits_html()
+create_commits_file()
 {
 	# GIT COMMITS FORMAT
 	# local   | 2021-01-22 17:21:39 | Leandro Heck | Local changes
@@ -36,11 +36,6 @@ insert_commits_html()
 
 	local commit_html
 	local commits_html
-
-	local empty_img='<span class="iconify" style="padding-left: 0px; padding-right: 0px; width: 14px; height: 14px; color: #ff0000;" data-inline="false"; data-icon="bx:bx-x"></span>'
-	local   sch_img='<span class="iconify" style="padding-left: 0px; padding-right: 0px; width: 14px; height: 14px; color: #A6E22E;" data-inline="false"; data-icon="carbon:schematics"></span>'
-	local   pcb_img='<span class="iconify" style="padding-left: 0px; padding-right: 0px; width: 14px; height: 14px; color: #F92672;" data-inline="false"; data-icon="codicon:circuit-board"></span>'
-	local   txt_img='<span class="iconify" style="padding-left: 0px; padding-right: 0px; width: 14px; height: 14px; color: #888888;" data-inline="false"; data-icon="bi:file-earmark-text"></span>'
 
 	local i=0
 	IFS=$'\n'
@@ -66,165 +61,57 @@ insert_commits_html()
 
 			# Check for changes in ".sch|.kicad_sch" files
 			if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${path_to_git_root}/${KICAD_PROJ_NESTED_PATH}" | cat | grep -q -s -E "${kicad_sch// /|}${kicad_sch_pages}"; then
-				sch_icon="${sch_img}"
+				sch_icon="True"
 			else
-				sch_icon="${empty_img}"
+				sch_icon="False"
 			fi
 
 			# Check for changes in .kicad_pcb files
 			if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${path_to_git_root}/${KICAD_PROJ_NESTED_PATH}" | cat | grep -q -s "${kicad_pcb}"; then
-				pcb_icon="${pcb_img}"
+				pcb_icon="True"
 			else
-				pcb_icon="${empty_img}"
+				pcb_icon="False"
 			fi
 
 			# Check for changes in textual files only
 			if git log --name-only --pretty='format:' -1 -U "${hash}" -- "${path_to_git_root}/${KICAD_PROJ_NESTED_PATH}" | cat | grep -q -s -vE "${kicad_sch// /|}${kicad_sch_pages}${kicad_pcb}"; then
-				txt_icon="${txt_img}"
+				txt_icon="True"
 			else
-				txt_icon="${empty_img}"
+				txt_icon="False"
 			fi
-
-			hash_label="${hash}"
-			class="text-info"
 
 		else
 
 			# Check for changes in ".sch|.kicad_sch" files
 			if git status -uno  | grep -q -s -E "${kicad_pro}${kicad_sch// /|}${kicad_pcb}${kicad_sch_pages}"; then
-				sch_icon="${sch_img}"
+				sch_icon="True"
 			else
-				sch_icon="${empty_img}"
+				sch_icon="False"
 			fi
 
 			# Check for changes in .kicad_pcb files
 			if git status -uno  | grep -q -s -E "${kicad_pcb}"; then
-				pcb_icon="${pcb_img}"
+				pcb_icon="True"
 			else
-				pcb_icon="${empty_img}"
+				pcb_icon="False"
 			fi
 
 			# Check for changes in textual files only
 			if git status -uno  | grep -q -s -vE "${kicad_pro}${kicad_sch// /|}${kicad_pcb}${kicad_sch_pages}"; then
-				txt_icon="${txt_img}"
+				txt_icon="True"
 			else
-				txt_icon="${empty_img}"
+				txt_icon="False"
 			fi
-
-			hash_label="${hash}"
-			class="text-warning"
 		fi
 
 		i=$((i + 1))
 
-		html_new_line="&#013;"
-		tooltip="<div>Commit: ${hash}</br>Date: ${date}</br>Author: ${user}</br>Description:</br>${text}</div>"
-
-		read -r -d '' commit_html <<-EOM
-		<!-- Commit ${i} -->
-		<input class="chkGroup" type="checkbox" id="${hash}" name="commit" value="${hash}" onchange="update_commits()">
-		<label class="text-sm-left list-group-item" style="display: block; width: 445px; margin-left: 0px;" for="${hash}">
-		    <table data-toggle="tooltip" title="${tooltip}">
-		        <tr>
-		            <td rowspan=2 style="vertical-align: top; width: 1.8em;">
-		                <svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" width="15" height="15">
-		                    <path d="M7.5 10.5a3 3 0 010-6m0 6a3 3 0 000-6m0 6V15m0-10.5V0" stroke="currentColor"></path>
-		                </svg>
-		            </td>
-		            <td style="white-space:nowrap; overflow: hidden; text-overflow: ellipsis;">
-		                <span class="text-muted"> $(printf "%02d" ${i}) | </span> <span class="text-success font-weight-normal">${hash_label}</span> <span class="text-muted"> | </span> ${sch_icon} ${pcb_icon} ${txt_icon} <span class="text-muted font-weight-normal"> | ${date} | ${user}</span>
-		            </td>
-		        </tr>
-		        <tr>
-		            <td>
-		                <em class="${class}" style=" line-height: 0.7;">${text}</em>
-		            </td>
-		        </tr>
-		    </table>
-		</label>
-		EOM
-
+		commit_html="${hash}|${date}|${user}|${text}|${sch_icon}|${pcb_icon}|${txt_icon}"
 		commits_html="${commits_html}${commit_html}\n"
 
 	done
 
-	indent=$(printf '\t%.0s' {1..8})
-
-	# shellcheck disable=SC2086,SC2001
-	commits_html="$(echo -e "${commits_html}" | sed "s|^|${indent}|g" | sed "s|@|-|g" | tee "${OUTPUT_DIR_PATH}/commits.html")"
-
-	line_no=$(($(grep -n "FILL_COMMITS_HERE" "${html_path}" | cut -d":" -f1) + 1))
-	sed -i "${line_no} e cat \"${OUTPUT_DIR_PATH}/commits.html\"" "${html_path}"
-}
-
-insert_pages_html()
-{
-	local html_path="${1}"
-	local commit_hash_1="${2}"
-	local commit_hash_2="${3}"
-
-	local page_html
-	local pages_html
-
-	local pages=$(cat "${OUTPUT_DIR_PATH}/sch_sheets")
-	local pages_to_skip
-
-	local i=0
-	IFS=$'\n'
-	for page in ${pages}; do
-
-		local page_name=$(echo "${page}" | cut -d'|' -f1 | sed "s/^[ \t]\+//g" | sed "s/[ \t]\+$//g")
-		local page_filename_path=$(echo "${page}" | cut -d'|' -f2 | sed "s/^[ \t]\+//g" | sed "s/[ \t]\+$//g")
-		local page_filename=$(echo "${page_filename_path}" | xargs -d '\n' basename)
-
-		if echo -e "${pages_to_skip}" | grep -s "${page_filename_path}" > /dev/null; then
-			continue
-		else
-			pages_to_skip="${pages_to_skip}\n${page_filename_path}"
-		fi
-
-		if [[ "${i}" == "0" ]]; then
-			checked='checked="checked"'
-		else
-			checked=""
-		fi
-
-		i=$((i + 1))
-
-		# IFS=
-		read -r -d '' page_html <<-EOM
-		<!-- Page ${i} -->
-		<input id="${page_name}" data-toggle="tooltip" title="${page_filename_path}" type="radio" value="${page_filename}" name="pages" ${checked} onchange="change_page()">
-		<label for="${page_name}" data-toggle="tooltip" title="${page_filename_path}" id="label-${page_name}" class="rounded text-sm-left list-group-item radio-box" onclick="change_page_onclick()" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-		    <span data-toggle="tooltip" title="${page_filename_path}" style="margin-left:0.5em; margin-right:0.1em;" class="iconify" data-icon="gridicons:pages" data-inline="false"></span>
-		    ${page_name}
-		</label>
-		EOM
-
-		pages_html="${pages_html}${page_html}\n"
-
-	done
-
-	indent=$(printf '\t%.0s' {1..11})
-
-	# shellcheck disable=SC2086,SC2001
-	pages_html="$(echo -e "${pages_html}" | sed "s|^|${indent}|g" | sed "s|@|-|g" | tee "${OUTPUT_DIR_PATH}/pages.html")"
-
-	line_no=$(($(grep -n "FILL_PAGES_HERE" "${html_path}" | cut -d":" -f1) + 1))
-	sed -i "${line_no} e cat \"${OUTPUT_DIR_PATH}/pages.html\"" "${html_path}"
-}
-
-create_unified_sheets_list()
-{
-	# Remove duplicates keeping the order
-	local sheets=$(find "${OUTPUT_DIR_PATH}" -mindepth 3 -maxdepth 3 -name "sch_sheets" -exec cat -n {} \; | sort -k2 -k1n | sort -u -t"|" -k1,1 | uniq -f1 | sort -nk1,1 | cut -f2-)
-	echo -e "${sheets}" | sed '/^$/d' | tee "${OUTPUT_DIR_PATH}/sch_sheets"
-}
-
-create_unified_layers_list()
-{
-	local layers=$(find "${OUTPUT_DIR_PATH}" -mindepth 3 -maxdepth 3 -name "pcb_layers" -exec cat {} \; | sort -u -t"|" -k1,1)
-	echo -e "${layers}" | sed '/^$/d' | tee "${OUTPUT_DIR_PATH}/pcb_layers"
+	echo -e "${commits_html}" > "${OUTPUT_DIR_PATH}/commits"
 }
 
 get_layer_color()
@@ -289,58 +176,6 @@ get_layer_color()
 	echo "${layer_color}"
 }
 
-insert_layers_html()
-{
-	local html_path="${1}"
-
-	local layer
-	local layers
-
-	local checked
-
-	local layer_html
-	local layers_html
-
-	local layers=$(cat "${OUTPUT_DIR_PATH}/pcb_layers")
-
-	i=0
-	IFS=$'\n'
-	for layer in ${layers}; do
-
-		local layer_id=$(echo "${layer}" | cut -d "|" -f1)
-		local layer_id_padding=$(printf "%02d" "$layer_id")
-		local layer_name=$(echo "${layer}" | cut -d "|" -f2 | sed "s/\./_/g")
-		local layer_color=$(get_layer_color "${layer_id}")
-
-		if [[ "${i}" == "0" ]]; then
-			checked="checked='checked'"
-		else
-			checked=""
-		fi
-
-		i=$((i + 1))
-
-		read -r -d '' layer_html <<-EOM
-		<!-- Layer ${i} -->
-		<input  id="layer-${layer_id_padding}" value="layer-${layer_name}" type="radio" name="layers" onchange="change_layer()" ${checked}>
-		<label for="layer-${layer_id_padding}" id="label-layer-${layer_id_padding}" data-toggle="tooltip" title="${layer_id}, ${layer_name}" class="rounded text-sm-left list-group-item radio-box" onclick="change_layer_onclick()">
-		    <span style="margin-left:0.5em; margin-right:0.1em; color: ${layer_color}" class="iconify" data-icon="teenyicons-square-solid" data-inline="false"></span>
-		    ${layer_name}
-		</label>
-		EOM
-
-		layers_html="${layers_html}${layer_html}\n"
-
-	done
-
-	indent=$(printf '\t%.0s' {1..11})
-
-	# shellcheck disable=SC2086,SC2001
-	layers_html="$(echo -e "${layers_html}" | sed "s|^|${indent}|g" | sed "s|@|-|g" | tee "${OUTPUT_DIR_PATH}/layers.html")"
-
-	line_no=$(($(grep -n "FILL_LAYERS_HERE" "${html_path}" | cut -d":" -f1) + 1))
-	sed -i "${line_no} e cat \"${OUTPUT_DIR_PATH}/layers.html\"" "${html_path}"
-}
 
 # ==========================================================================================
 # ==========================================================================================
@@ -370,7 +205,7 @@ export COMMITS
 # GLOBAL FLAGS WITH DEFAULT OPTIONS
 export ALL_COMMITS=0
 export ARCHIVE_PROJECT=0
-export DEBUG=0
+export DEBUG=1
 export DEBUG_KIDIFF=0
 export DEBUG_PLOTGITSCH=0
 export DRY_RUN=0
@@ -2197,28 +2032,28 @@ build_main_html()
 	local kicad_cache_lib="$(get_kicad_cache_lib "${KICAD_PROJ_ABSOLUTE_PATH}" "${kicad_proj_name}")"
 	show_project_files "${KICAD_PROJ_ABSOLUTE_PATH}" "${kicad_pro}" "${kicad_sch}" "${kicad_pcb}" "${kicad_cache_lib}"
 
-	mkdir -p "${WEB_DIR_PATH}/"
+	# mkdir -p "${WEB_DIR_PATH}/"
 
 	# Remove Kidiff leftovers
-	rm -rf "${WEB_DIR_PATH}/triptych"
+	# rm -rf "${WEB_DIR_PATH}/triptych"
 
 	echo -e "\n${LBL}${LBL}Assembling the HTML${RCO}"
 
 	# Copy assets
 	main_html=index.html
-	cp -f "${KIRI_HOME_PATH}/assets/${main_html}"  "${WEB_DIR_PATH}/"
-	cp -f "${KIRI_HOME_PATH}/assets/kiri.js"       "${WEB_DIR_PATH}/"
-	cp -f "${KIRI_HOME_PATH}/assets/kiri.css"      "${WEB_DIR_PATH}/"
-	cp -f "${KIRI_HOME_PATH}/assets/blank.svg"     "${WEB_DIR_PATH}/"
-	cp -f "${KIRI_HOME_PATH}/assets/favicon.ico"   "${WEB_DIR_PATH}/"
-	cp -f "${KIRI_HOME_PATH}/assets/redirect.html" "${WEB_DIR_PATH}/../index.html"
+	cp -f "${KIRI_HOME_PATH}/assets/${main_html}"  "${OUTPUT_DIR_PATH}/"
+	cp -f "${KIRI_HOME_PATH}/assets/kiri.js"       "${OUTPUT_DIR_PATH}/"
+	cp -f "${KIRI_HOME_PATH}/assets/kiri.css"      "${OUTPUT_DIR_PATH}/"
+	cp -f "${KIRI_HOME_PATH}/assets/blank.svg"     "${OUTPUT_DIR_PATH}/"
 	cp -f "${KIRI_HOME_PATH}/bin/kiri-server"      "${OUTPUT_DIR_PATH}/"
 
 	# cp -f "${KIRI_HOME_PATH}/assets/layer_colors_classic.css" "${WEB_DIR_PATH}/layer_colors.css"
-	cp -f "${KIRI_HOME_PATH}/assets/layer_colors_default.css" "${WEB_DIR_PATH}/layer_colors.css"
+	cp -f "${KIRI_HOME_PATH}/assets/layer_colors_default.css" "${OUTPUT_DIR_PATH}/layer_colors.css"
+	cp -rf "${KIRI_HOME_PATH}/assets/utils"         "${OUTPUT_DIR_PATH}/"
+	cp -rf "${KIRI_HOME_PATH}/assets/images"        "${OUTPUT_DIR_PATH}/"
 
 	# Testing
-	cp -rf "${KIRI_HOME_PATH}/assets/gltfc"         "${WEB_DIR_PATH}/" &> /dev/null
+	# cp -rf "${KIRI_HOME_PATH}/assets/gltfc"         "${WEB_DIR_PATH}/" &> /dev/null
 
 	# Index of the initial commits (in the COMMITS list)
 	commit1_i=0
@@ -2228,27 +2063,16 @@ build_main_html()
 	local commit_hash_1=$(echo "${COMMITS}" | head -n$((commit1_i + 1)) | tail -n1 | cut -d" " -f1)
 	local commit_hash_2=$(echo "${COMMITS}" | head -n$((commit2_i + 1)) | tail -n1 | cut -d" " -f1)
 
-	local sheets=$(create_unified_sheets_list)
-	local layers=$(create_unified_layers_list)
-
 	# Insert commits list
 	echo "- Adding list of commits"
-	insert_commits_html "${WEB_DIR_PATH}/${main_html}" "${commit1_i}" "${commit2_i}"
-
-	# Insert pages list
-	# echo "- Adding list of pages"
-	# insert_pages_html "${WEB_DIR_PATH}/${main_html}" "${commit_hash_1}" "${commit_hash_2}"
-
-	# Insert layers list
-	# echo "- Adding list of layers"
-	# insert_layers_html "${WEB_DIR_PATH}/${main_html}"
+	create_commits_file "${WEB_DIR_PATH}/${main_html}" "${commit1_i}" "${commit2_i}"
 
 	echo -e "\n${LBL}${LBL}Latest rev ${commit_hash_1}${RCO}"
 
 	# Set project title with kicad project folder name
 	project_title=$(basename "${REPO_ABSOLUTE_PATH}")
 	echo "- Project's title (folder name): ${BTE}${LBL}${project_title}${RCO}"
-	sed -i "s|\[PROJECT_TITLE\]|${project_title}|g" "${WEB_DIR_PATH}/${main_html}"
+	echo "${project_title}" > "${OUTPUT_DIR_PATH}/project"
 
 	local _kicad_pro="$(get_kicad_pro ${OUTPUT_DIR_PATH}/${commit_hash_1}/*pro)"
 	local _kicad_pro_extension="$(get_file_extension "${_kicad_pro}")"
@@ -2258,7 +2082,7 @@ build_main_html()
 
 	# Set Kicad project's name
 	echo "- Project's name (file name): ${BTE}${LBL}${_kicad_proj_name}${RCO}"
-	sed -i "s|var board_name =.*|var board_name = \"${_kicad_proj_name}\"; // updated by kiri script|g" "${WEB_DIR_PATH}/kiri.js"
+	# sed -i "s|var board_name =.*|var board_name = \"${_kicad_proj_name}\"; // updated by kiri script|g" "${WEB_DIR_PATH}/kiri.js"
 
 	# Set schematic and board titles
 	local sch_title=$(grep -i "title " "${_kicad_sch}" -m1 2> /dev/null | sed "s/^[ \t]\+//g" | cut -d" " -f 2- | sed "s/[)\"]//g")
@@ -2269,8 +2093,6 @@ build_main_html()
 	if [[ -z "${pcb_title}" ]]; then pcb_title="{pcb_title}"; pcb_label="${BTE}${LRE}[missing]${RCO}"; fi
 	echo "- Sch title: ${BTE}${LMA}${sch_label}${RCO}"
 	echo "- PCB title: ${BTE}${LCY}${pcb_label}${RCO}"
-	sed -i "s|\[SCH_TITLE\]|Sch \| ${sch_title}|g" "${WEB_DIR_PATH}/${main_html}"
-	sed -i "s|\[PCB_TITLE\]|PCB \| ${pcb_title}|g" "${WEB_DIR_PATH}/${main_html}"
 
 	# Set schematic and board revision
 	local sch_revision=$(grep -i "Rev" "${_kicad_sch}" -m1 2> /dev/null | sed "s/^[ \t]\+//g" | sed "s/[()]//g" | cut -d" " -f2- | sed "s/\"//g")
@@ -2281,8 +2103,6 @@ build_main_html()
 	if [[ -z "${sch_revision}" ]]; then sch_revision="{sch_rev}"; sch_label="${BTE}${LRE}[missing]${RCO}"; fi
 	echo "- Sch revision: ${BTE}${LMA}${sch_label}${RCO}"
 	echo "- PCB revision: ${BTE}${LCY}${pcb_label}${RCO}"
-	sed -i "s|\[SCH_REVISION\]|${sch_revision}|g" "${WEB_DIR_PATH}/${main_html}"
-	sed -i "s|\[PCB_REVISION\]|${pcb_revision}|g" "${WEB_DIR_PATH}/${main_html}"
 
 	# Set schematic and board date
 	local sch_date=$(grep -i "date" "${_kicad_sch}" -m1 2> /dev/null | sed "s/^[ \t]\+//g" | sed "s/[()]//g" | cut -d" " -f2 | sed "s/\"//g")
@@ -2293,8 +2113,9 @@ build_main_html()
 	if [[ -z "${pcb_date}" ]]; then pcb_date="{pcb_date}"; pcb_label="${BTE}${LRE}[missing]${RCO}"; fi
 	echo "- Sch date: ${BTE}${LMA}${sch_label}${RCO}"
 	echo "- PCB date: ${BTE}${LCY}${pcb_label}${RCO}"
-	sed -i "s|\[PCB_DATE\]|${pcb_date}|g" "${WEB_DIR_PATH}/${main_html}"
-	sed -i "s|\[SCH_DATE\]|${sch_date}|g" "${WEB_DIR_PATH}/${main_html}"
+
+	echo "${sch_title}|${sch_revision}|${sch_date}" >> "${OUTPUT_DIR_PATH}/project"
+	echo "${pcb_title}|${pcb_revision}|${pcb_date}" >> "${OUTPUT_DIR_PATH}/project"
 
 	# Initial Kicad project path
 	local project_path_1="$(realpath --relative-to="${KICAD_PROJ_ABSOLUTE_PATH}" "${OUTPUT_DIR_PATH}/${commit_hash_1}/${kicad_proj_name}.${kicad_pro_extension}")"
@@ -2303,8 +2124,8 @@ build_main_html()
 	echo "- Initial project path:"
 	echo "  Pro 1: ${BTE}${LMA}${project_path_1}${RCO}"
 	echo "  Pro 2: ${BTE}${LCY}${project_path_2}${RCO}"
-	sed -i "s|\[COMMIT_1_KICAD_PRO\]|${project_path_1}|g" "${WEB_DIR_PATH}/${main_html}"
-	sed -i "s|\[COMMIT_2_KICAD_PRO\]|${project_path_2}|g" "${WEB_DIR_PATH}/${main_html}"
+	# sed -i "s|\[COMMIT_1_KICAD_PRO\]|${project_path_1}|g" "${WEB_DIR_PATH}/${main_html}"
+	# sed -i "s|\[COMMIT_2_KICAD_PRO\]|${project_path_2}|g" "${WEB_DIR_PATH}/${main_html}"
 
 	# Change initial view to layout
 	# set_default_html_view "${kicad_sch}"

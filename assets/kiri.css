@@ -31,6 +31,9 @@ html, body {
 
 .list-group-item {
 	user-select: none;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .list-group input[type="checkbox"] {
@@ -59,6 +62,18 @@ html, body {
 
 .list-group input[type="checkbox"]:checked + .list-group-item:before {
 	color: inherit;
+}
+
+.removed_item {
+	color: #FF0000;
+}
+
+.added_item {
+	color: #00FF00;
+}
+
+.normal_item {
+	color: #dbdbdb;
 }
 
 /* ==============================
@@ -144,117 +159,19 @@ html, body {
 #diff-container {
 /*	border: 1px solid #111;*/
 	margin-top: 15px;
-	background-color: #222;
+	background-color: #000000;
 	border-radius: 5px;
 }
 
 #svg-id {
 /*	border: 1px solid #111;*/
 	margin-top: 15px;
-	background-color: #222;
 	border-radius: 5px;
 }
 
-/* ==============================
-   Layers colors
-   ==============================
-*/
+/* Keep it separated for simple parsing */
+#svg-id { background-color: #ffffff; }
 
-.F_Cu {
-	filter : invert(28%) sepia(50%) saturate(2065%) hue-rotate(334deg) brightness(73%) contrast(97%);
-}
-
-.In1_Cu {
-	filter : invert(69%) sepia(39%) saturate(1246%) hue-rotate(17deg) brightness(97%) contrast(104%);
-}
-
-.In2_Cu {
-	filter : invert(14%) sepia(79%) saturate(5231%) hue-rotate(293deg) brightness(91%) contrast(119%);
-}
-
-.In3_Cu {
-	filter : invert(14%) sepia(79%) saturate(5231%) hue-rotate(293deg) brightness(91%) contrast(119%);
-}
-
-.In4_Cu {
-	filter : invert(14%) sepia(79%) saturate(5231%) hue-rotate(293deg) brightness(91%) contrast(119%);
-}
-
-.B_Cu {
-	filter : invert(44%) sepia(14%) saturate(2359%) hue-rotate(70deg) brightness(103%) contrast(82%);
-}
-
-.F_Mask {
-	filter : invert(27%) sepia(51%) saturate(1920%) hue-rotate(269deg) brightness(89%) contrast(96%);
-}
-
-.B_Mask {
-	filter : invert(22%) sepia(56%) saturate(2652%) hue-rotate(277deg) brightness(94%) contrast(87%);
-}
-
-.F_Paste {
-	filter : invert(57%) sepia(60%) saturate(6%) hue-rotate(314deg) brightness(92%) contrast(99%);
-}
-
-.B_Paste {
-	filter : invert(91%) sepia(47%) saturate(4033%) hue-rotate(139deg) brightness(82%) contrast(91%);
-}
-
-.F_SilkS {
-	filter : invert(46%) sepia(44%) saturate(587%) hue-rotate(132deg) brightness(101%) contrast(85%);
-}
-
-.B_SilkS {
-	filter : invert(14%) sepia(27%) saturate(2741%) hue-rotate(264deg) brightness(95%) contrast(102%);
-}
-
-.Edge_Cuts {
-	filter : invert(79%) sepia(79%) saturate(401%) hue-rotate(6deg) brightness(88%) contrast(88%);
-}
-
-.Margin {
-	filter : invert(74%) sepia(71%) saturate(5700%) hue-rotate(268deg) brightness(89%) contrast(84%);
-}
-
-.Dwgs_User {
-	filter : invert(40%) sepia(68%) saturate(7431%) hue-rotate(203deg) brightness(89%) contrast(98%);
-}
-
-.Cmts_User {
-	filter : invert(73%) sepia(10%) saturate(1901%) hue-rotate(171deg) brightness(95%) contrast(102%);
-}
-
-.Eco1_User {
-	filter : invert(25%) sepia(98%) saturate(2882%) hue-rotate(109deg) brightness(90%) contrast(104%);
-}
-
-.Eco2_User {
-	filter : invert(85%) sepia(21%) saturate(5099%) hue-rotate(12deg) brightness(91%) contrast(102%);
-}
-
-.F_Fab {
-	filter : invert(71%) sepia(21%) saturate(4662%) hue-rotate(21deg) brightness(103%) contrast(100%);
-}
-
-.B_Fab {
-	filter : invert(60%) sepia(0%) saturate(0%) hue-rotate(253deg) brightness(87%) contrast(90%);
-}
-
-.F_Adhes {
-	filter : invert(38%) sepia(49%) saturate(1009%) hue-rotate(254deg) brightness(88%) contrast(86%);
-}
-
-.B_Adhes {
-	filter : invert(24%) sepia(48%) saturate(2586%) hue-rotate(218deg) brightness(88%) contrast(92%);
-}
-
-.F_CrtYd {
-	filter : invert(73%) sepia(1%) saturate(0%) hue-rotate(116deg) brightness(92%) contrast(91%);
-}
-
-.B_CrtYd {
-	filter : invert(79%) sepia(92%) saturate(322%) hue-rotate(3deg) brightness(89%) contrast(92%);
-}
 
 /* ==============================
 ** ============================*/
@@ -289,8 +206,18 @@ label#layers, label#pages {
 	background-color: rgba(0,0,0,0.8);
 	z-index: 2;
 	cursor: pointer;
+	color: #FFFFFF;
+	text-align: center;
+	vertical-align: center;
+	font-size: 5em;
+	line-height: 100%;
 }
 
+#server_offline span {
+  display: inline-block;
+  vertical-align: middle;
+  line-height: normal;
+}
 /* ==============================
 ** ============================*/
 
@@ -339,4 +266,385 @@ hr {
 	background-color: white;
 	height: 1px;
 	border: 0;
+}
+
+/*
+  This trick is used to make icons from SVG files, they use the currentColor
+*/
+.icon-sheet-page, .icon-commits, .icon-control-sch, .icon-control-pcb, .icon-control-zin, .icon-control-zout, .icon-control-center,
+.icon-control-info, .icon-commit1, .icon-commit1-fs, .icon-commit2, .icon-commit2-fs, .icon-commit3, .icon-commit3-fs,
+.icon-sch-modif, .icon-pcb-modif, .icon-sheets, .icon-layers, .layer_color_margin, .icon-commit, .icon-x-modif {
+	display: inline-block;
+	background-color: currentColor;
+	-webkit-mask-image: var(--svg);
+	mask-image: var(--svg);
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	-webkit-mask-size: 100% 100%;
+	mask-size: 100% 100%;
+}
+
+.icon-sheet-page {
+	margin-left: 0.5em;
+	margin-right: 0.1em;
+	width: 1em;
+	height: 1em;
+	--svg: url('./images/pages.svg');
+}
+
+.icon-commits {
+	margin-left: 5px;
+	margin-right:0.5em;
+	width: 1em;
+	height: 1em;
+	--svg: url('./images/code-branch-solid.svg');
+}
+
+.icon-control {
+	width: 20px;
+	height: 20px;
+}
+
+.icon-control-sch, .icon-control-pcb, .icon-control-zin, .icon-control-zout, .icon-control-center, .icon-control-info {
+	display: block;
+	width: 20px;
+	height: 20px;
+	margin: 0.2em;
+}
+
+.icon-control-sch {
+	--svg: url('./images/schematics.svg');
+}
+
+.icon-control-pcb {
+	--svg: url('./images/circuit-board.svg');
+}
+
+.icon-control-zin {
+	--svg: url('./images/zoom-in.svg');
+}
+
+.icon-control-zout {
+	--svg: url('./images/zoom-out.svg');
+}
+
+.icon-control-center {
+	--svg: url('./images/center-to-fit.svg');
+}
+
+.icon-control-info {
+	--svg: url('./images/info.svg');
+}
+
+.icon-commit1, .icon-commit1-fs, .icon-commit2, .icon-commit2-fs, .icon-commit3, .icon-commit3-fs {
+	width: 10px;
+	height: 10px;
+	--svg: url('./images/square-solid.svg');
+}
+
+.icon-commit1, .icon-commit1-fs {
+	margin-right: 0.2em;
+}
+
+.icon-commit1 {
+	margin-left: 0.5em;
+}
+
+.icon-commit1-fs {
+	margin-left: 0em;
+}
+
+.icon-commit1-color {
+	color: #00FF00;
+}
+
+.icon-commit2, .icon-commit2-fs {
+	margin-left: 1em;
+	margin-right:0.2em;
+	color: #FF0000;
+}
+
+.icon-commit2-color {
+	color: #FF0000;
+}
+
+.commit-standalone-color {
+	color: #A7A7A7;
+}
+
+.icon-commit3, .icon-commit3-fs {
+	margin-left:1em;
+	margin-right:0.2em;
+	color: #FFA000;
+}
+
+
+.icon-sch-modif, .icon-pcb-modif, .icon-x-modif {
+	padding-left: 0px;
+	padding-right: 0px;
+	width: 14px;
+	height: 14px;
+}
+
+.icon-sch-modif {
+	--svg: url('./images/schematics.svg');
+	color: #A6E22E;
+}
+
+.icon-pcb-modif {
+	--svg: url('./images/circuit-board.svg');
+	color: #F92672;
+}
+
+.icon-x-modif {
+	--svg: url('./images/x.svg');
+	color: #FF0000;
+}
+
+.icon-sheets, .icon-layers {
+	margin-right:0.5em;
+	width: 20px;
+	height: 20px;
+}
+
+.icon-sheets {
+	--svg: url('./images/next-page.svg');
+}
+
+.icon-layers {
+	--svg: url('./images/layers-solid.svg');
+}
+
+.layer_color_margin {
+	margin-left:0.5em;
+	margin-right:0.1em;
+	width: 0.7em;
+	height: 0.7em;
+	--svg: url('./images/square-solid.svg');
+}
+
+.icon-commit {
+	width: 1em;
+	height: 1em;
+	--svg: url('./images/commit.svg');
+}
+
+.commit-label {
+	display: block;
+	width: 640px;
+	margin-left: 0px;
+}
+
+.commit-icon-cell {
+	vertical-align: top;
+	width: 1.8em;
+}
+
+.commit-info-cell {
+	white-space:nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.commit-desc-cell {
+	line-height: 0.7;
+}
+
+.ui-style {
+	background-color: #333;
+	overflow-y: hidden;
+	overflow-x: hidden;
+	padding: 0px 10px 0px 10px;
+	margin: 0px;
+}
+
+.ui-row-style {
+	overflow-y: hidden;
+	overflow-x: hidden;
+	padding: 0px 0px 0px 0px;
+	margin: 0px;
+}
+
+.ui-col-prjdata {
+	height: 100%;
+	overflow-y: hidden;
+	overflow-x: hidden;
+	padding: 0px 0px 0px 0px;
+	margin: 0px;
+}
+
+.ui-list-prjdata {
+	height: 95%;
+	padding: 0px 0px 0px 0px;
+	margin: 0px 0px 0px 8px;
+}
+
+.ui-list-topsep-prjdata {
+	margin-top: 1em;
+}
+
+.ui-kiri-title {
+	margin-left: 5px;
+}
+
+.ui-sch-title-m {
+	margin-left: 5px;
+}
+
+.ui-pcb-title-m {
+	margin-left: 5px;
+}
+
+.ui-sch-title {
+	margin-bottom: 0px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.ui-pcb-title {
+	margin-bottom: 0px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.ui-commits-list {
+	padding: 0px 4px 8px 0px;
+	margin: 0px;
+	margin-right: 4px;
+	overflow-y: scroll;
+}
+
+.ui-center {
+	background-color: #333;
+	padding: 0px 0px 0px 0px;
+	margin: 0px;
+	height: 90vh;
+}
+
+.ui-center-row {
+	width: 100%;
+	padding: 0px 0px 0px 0px;
+	margin: 0px;
+}
+
+.ui-controls {
+	width: 100%;
+	flex: 1;
+	padding: 0px 0px 0px 0px;
+	margin: 0px;
+}
+
+.ui-controls-row {
+	width: 100%;
+	margin: 0px 0px 0px 5px;
+}
+
+.ui-pcb-sch-sel {
+	padding: 0px 0px 0px 0px;
+	margin: 20px 0px 0px 10px;
+}
+
+.ui-controls-sep1 {
+	width: 2em;
+}
+
+.ui-controls-svg {
+	padding: 0px 0px 0px 0px;
+	margin: 20px 0px 0px 20px;
+}
+
+.ui-controls-sep2 {
+	width: 1em;
+}
+
+.ui-controls-info {
+	padding: 0px 0px 0px 0px;
+	margin: 20px 0px 0px 20px;
+}
+
+.ui-canvas-out {
+	width: 100%;
+	height: 100%;
+	padding: 0px 0px 0px 0px;
+	margin: 0px;
+}
+
+.ui-canvas-in {
+	width: 100%;
+	height: 90%;
+	padding: 0px 0px 0px 0px;
+	margin: 0px;
+}
+
+.ui-legend {
+	background-color: #222;
+	width: 100%;
+	padding: 8px 5px 8px 5px;
+	margin: 0px;
+}
+
+.ui-legend-sep1 {
+	display: inline;
+	width: 2em;
+}
+
+.ui-legend-sep1-fs {
+	display: inline;
+	width: 3em;
+}
+
+.ui-legend-sep2-fs {
+	margin-left:1em;
+	margin-right:0.2em;
+}
+
+.ui-view-item-fs {
+	margin-left:1em;
+	margin-right:0.2em;
+}
+
+.ui-fs-label {
+	background-color: #333;
+}
+
+.ui-diff-container {
+	height: 94%;
+	padding: 0px;
+}
+
+.ui-sheets-col {
+	width: 100%;
+	padding: 0px 0px 0px 0px;
+	margin: 0px;
+	height: 100vh;
+}
+
+.ui-sheets-form {
+	width: 180px;
+	padding-top: 1em;
+}
+
+.ui-sheets-form-row {
+	height: 85%;
+	width: 300px;
+}
+
+.ui-sheets-form-col {
+	height: 100%;
+	width: 100%;
+}
+
+.ui-sheets-form-div {
+	height: 100%;
+	width: 100%;
+	padding: 0px 0px 8px 0px;
+	margin: 0px;
+	overflow-y: scroll;
+	max-height: 90vh;
+}
+
+.commit1, .commit2, .commit3 {
+	display: inline;
 }

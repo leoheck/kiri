@@ -3,40 +3,40 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
-		<script src="https://cdn.rawgit.com/ccampbell/mousetrap/825ce50c/mousetrap.min.js"></script>
-		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css" integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn" crossorigin="anonymous">
-		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-		<link rel="icon" href="./favicon.ico" type="image/x-icon">
-		<link rel="shortcut icon" href="./favicon.ico" type="image/x-icon">
+		<link rel="stylesheet" href="./utils/bootstrap.min.css" integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn" crossorigin="anonymous">
+		<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> -->
+		<link rel="shortcut icon" href="data:image/x-icon;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACABAMAAAAxEHz4AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAD1BMVEUAAACbAAAGANJpli7///8s69hEAAAAAXRSTlMAQObYZgAAAAFiS0dEBI9o2VEAAAAHdElNRQfnDBwQNhSXSmLEAAABzElEQVRo3u3ZbZKDIAwG4AgXwBs4ewJmuP/dtlb5CKIkwWLZ2fyTwafyqmAV5rMyEEr9nBf8AzcCa8cWYOs5iQHfVQrEznXgtX0E1l7a4UFwgLWve5VND4ED7Pu/BQlg1uPfCopFANxdgBUBcQRp2a6AK9UfAGxPQH8EcGSgcCUWgOV4hV7cCxqNgQDoJgDNByLAQDYjZSFUgcOcaArAxVk4zspsIKwLkwdQCAQgX5n4QLY24hRJQL40Pw+kIQiA+QuANAQJYNoB3QagEB4CkhBEgDkDsvokEEMQAXM7AI1AEsJjQAhhXCCEMDDgQ3gO8GMYGdhDGBnYQ2gGQA7sY3geUGKgnmInAORANUUioMQA3AK4dgDkQC3FboASA7UUOwD6+jQQAdsOKDFQCaEfAHLgOsWOgBIDxxSXJBE6kOyTPv5SgCwEQH/l+EBoVlxA+fH7IgMoxXh/bg0SILxyYgJoRO9tMoDfa7nw1kuJgP0A/PMjCTh749kMgAfSvmtNtwO6KAwFFEPgZFADqqfx7PtBG8C5EouWFJDcTMVDAMbtnC4JECcU+oyUAssmWODMiWhRylr5wOJb6etCtiziRslH2yX+/ld9Nh4X+AUBg9CLMlCEqAAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAyMy0xMi0yOFQxNjo0ODo1OCswMDowMGbztFMAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMjMtMTItMjZUMTE6MjY6MDUrMDA6MDCVFGlIAAAAAElFTkSuQmCC" type="image/x-icon">
 		<link rel="stylesheet" href="kiri.css" integrity="">
 		<link rel="stylesheet" href="layer_colors.css" integrity="">
 		<title>[PROJECT_TITLE]</title>
 	</head>
 	<body>
 
-		<div id="server_offline" style="display: none;">
+		<div id="server_offline" style="display: none; ">
+			<span>Server is offline, waiting ...</span>
 		</div>
 
-		<div class="container fill no-gutters" style="background-color: #333; overflow-y: hidden; overflow-x: hidden; padding: 0px 10px 0px 10px; margin: 0px;">
-			<div class="row fill align-items-start no-gutters" style="overflow-y: hidden; overflow-x: hidden; padding: 0px 0px 0px 0px; margin: 0px;">
-				<div class="col align-self-start justify-content-start col-3 no-gutters" style="height: 100%; overflow-y: hidden; overflow-x: hidden; padding: 0px 0px 0px 0px; margin: 0px;">
-					<div class="list-group 3 no-gutters" style="padding: 0px 0px 0px 0px; margin: 0px 0px 0px 8px; height: 95%;">
-						<span style="margin-top: 1em"></span>
-						<h3 class="text-light" style="margin-left: 5px;">Kicad Revision Inspector</h3>
-						<div id="sch_title" style="display: inline; margin-left: 5px;">
-							<h4 class="text-warning text-bold" style="margin-bottom: 0px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">[SCH_TITLE]</h4>
-							<p class="text-light text-sm" >Rev. [SCH_REVISION] ([SCH_DATE])</p>
+		<!-- User Interface -->
+		<div id="main_ui" class="container fill no-gutters ui-style">
+			<div class="row fill align-items-start no-gutters ui-row-style">
+				<!-- Project info and commits -->
+				<div class="col align-self-start justify-content-start col-3 no-gutters ui-col-prjdata">
+					<div class="list-group 3 no-gutters ui-list-prjdata">
+						<span class="ui-list-topsep-prjdata"></span>
+						<h3 class="text-light ui-kiri-title">Kicad Revision Inspector</h3>
+						<div id="sch_title" class="ui-sch-title-m" style="display: inline;">
+							<h4 id="sch_title_text" class="text-warning text-bold ui-sch-title">[SCH_TITLE]</h4>
+							<p id="sch_rev" class="text-light text-sm" >Rev. [SCH_REVISION] ([SCH_DATE])</p>
 						</div>
-						<div id="pcb_title" style="display: none; margin-left: 5px;">
-							<h4 class="text-info text-bold" style="margin-bottom: 0px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">[PCB_TITLE]</h4>
-							<p class="text-light text-sm">Rev. [PCB_REVISION] ([PCB_DATE])</p>
+						<div id="pcb_title" class="ui-pcb-title-m" style="display: none;">
+							<h4 id="pcb_title_text" class="text-info text-bold ui-pcb-title">[PCB_TITLE]</h4>
+							<p id="pcb_rev" class="text-light text-sm">Rev. [PCB_REVISION] ([PCB_DATE])</p>
 						</div>
-						<p class="text-light" >
-							<span style="margin-left:5px; margin-right:0.5em" class="iconify" data-icon="fa-solid:code-branch" data-inline="false"></span>
-							Commits
+						<!-- Commits -->
+						<p class="text-light">
+							<span class="icon-commits"></span> Commits
 						</p>
-						<div class="form-check scrollbox" style="padding: 0px 4px 8px 0px; margin: 0px; margin-right: 4px; overflow-y: scroll">
+						<div class="form-check scrollbox ui-commits-list">
 							<form id="commits_form" class="overflow-auto scrollbox-content">
 								<!-- FILL_COMMITS_HERE -->
 							</form>
@@ -44,49 +44,48 @@
 					</div>
 				</div>
 
-				<div class="col align-self-start justify-content-start col-7 no-gutters" style="background-color: #333; padding: 0px 0px 0px 0px; margin: 0px; height: 90vh;">
+				<!-- Controls, commit legends and diff -->
+				<div class="col align-self-start justify-content-start col-7 no-gutters ui-center">
+					<div class="row no-gutters ui-center-row">
+						<!-- Controls -->
+						<div class="container no-gutters ui-controls">
+							<div class="row no-gutters ui-controls-row">
 
-					<div class="row no-gutters" style="width: 100%; padding: 0px 0px 0px 0px; margin: 0px;">
-
-						<div class="container no-gutters" style="width: 100%; flex: 1; padding: 0px 0px 0px 0px; margin: 0px;">
-
-							<div class="row no-gutters" style="width: 100%; margin: 0px 0px 0px 5px;">
-
-								<form class="inline" style="padding: 0px 0px 0px 0px; margin: 20px 0px 0px 10px;">
+								<form class="inline ui-pcb-sch-sel">
 									<div id="view_mode" class="form-group row btn-group btn-group-toggle" data-toggle="buttons" role="group" aria-label="View Mode">
 										<label id="show_sch_lbl" data-toggle="tooltip" title="Schematic View (s)" class="btn btn-secondary active" onclick="show_sch()">
 											<input id="show_sch" type="radio" name="view_mode" value="show_sch" checked>
-											<span class="iconify" style="width: 20px; height: 20px;" data-icon="carbon:schematics" data-inline="false"></span>
+											<div class="icon-control-sch"></div>
 										</label>
 										<label id="show_pcb_lbl" data-toggle="tooltip" title="Layout View (s)" class="btn btn-secondary" onclick="show_pcb()">
 											<input id="show_pcb" type="radio" name="view_mode" value="show_pcb" >
-											<span class="iconify" style="width: 20px; height: 20px;" data-icon="codicon:circuit-board" data-inline="false"></span>
+											<div class="icon-control-pcb"></div>
 										</label>
 									</div>
 								</form>
 
-								<span style="width: 2em"></span>
+								<span class="ui-controls-sep1"></span>
 
-								<form class="inline" style="padding: 0px 0px 0px 0px; margin: 20px 0px 0px 20px;">
+								<form class="inline ui-controls-svg">
 									<div id="svg_controls" class="form-group btn-group btn-group-toggle" role="group" aria-label="Zoom Level">
 										<button id="zoom-in" data-toggle="tooltip" title="Zoom In (+)" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary" onclick="this.blur();">
-										<span class="iconify" style="width: 20px; height: 20px;" data-icon="akar-icons:zoom-in" data-inline="false"></span>
+										<span class="icon-control-zin"></span>
 										</button>
-										<button id="zoom-out" data-toggle="tooltip" title="Zoom Out (-)" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary" onclick="this.blur();" >
-										<span class="iconify" style="width: 20px; height: 20px;" data-icon="akar-icons:zoom-out" data-inline="false"></span>
+										<button id="zoom-out" data-toggle="tooltip" title="Zoom Out (-)" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary" onclick="this.blur();">
+										<span class="icon-control-zout"></span>
 										</button>
-										<button id="zoom-fit" data-toggle="tooltip" title="Fit View (0)" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary" onclick="this.blur();" >
-										<span class="iconify" style="width: 20px; height: 20px;" data-icon="carbon:center-to-fit" data-inline="false"></span>
+										<button id="zoom-fit" data-toggle="tooltip" title="Fit View (0)" name="svg_controls" type="button" aria-pressed="false" class="btn btn-secondary" onclick="this.blur();">
+										<span class="icon-control-center"></span>
 										</button>
 									</div>
 								</form>
 
-								<span style="width: 1em"></span>
+								<span class="ui-controls-sep2"></span>
 
-								<form class="inline" style="padding: 0px 0px 0px 0px; margin: 20px 0px 0px 20px;">
-									<div id="info_controls" class="form-group btn-group btn-group-toggle" role="group" aria-label="Info">
+								<form class="inline ui-controls-info">
+									<div id="info_controls" class="form-group btn-group btn-group-toggle" role="group" aria-label="Info" >
 										<button id="info-btn" data-toggle="modal" title="Info (i)" name="info_controls" type="button" aria-pressed="false" class="btn btn-secondary" data-target="#shortcuts-modal" onclick="this.blur();">
-											<span class="iconify" style="width: 20px; height: 20px;" data-icon="akar-icons:info" data-inline="false"></span>
+											<span class="icon-control-info"></span>
 										</button>
 									</div>
 								</form>
@@ -94,58 +93,65 @@
 							</div>
 						</div>
 					</div>
-					<div class="col no-gutters" style="width: 100%; padding: 0px 0px 0px 0px; margin: 0px; height: 100%; ">
-						<div class="col no-gutters" style="width: 100%; height: 90%; padding: 0px 0px 0px 0px; margin: 0px;">
-							<div id="legend" class="rounded no-gutters" style="background-color: #222; width: 100%; padding: 8px 5px 8px 5px; margin: 0px;">
+					<!-- Commit legends -->
+					<div class="col no-gutters ui-canvas-out">
+						<div class="col no-gutters ui-canvas-in">
+							<div id="legend" class="rounded no-gutters ui-legend">
 								<iframe name="hidden_post_target" class="hidden_iframe"></iframe>
-								<span id=commit1_legend style="margin-left:0.5em; margin-right:0.2em; color: #00FFFF; width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
-								<small id="commit1_legend_text" class="text-sm text-light">
-									Newer
-									<span class="text-monospace">
-										<form id="KICAD_COMMIT_1" class="form-inline" style="display: inline;" action="index.html" method="post" target="hidden_post_target">
-											<input id="commit1_hash" type="hidden" name="hash" value="[KICAD_COMMIT_1]">
-											<input id="commit1_kicad_pro_path" type="hidden" name="kicad_pro_path" value="[COMMIT_1_KICAD_PRO]">
-											(<a data-toggle="tooltip" title="Launch Kicad at this Rev" id="commit1_legend_hash" href="javascript:{}" onclick="document.getElementById('KICAD_COMMIT_1').submit();">[COMMIT_1_HASH]</a>)
-										</form>
-									</span>
-								</small>
-								<span style="display: inline; width: 2em;"></span>
-								<span id="commit2_legend" style="display: inline; margin-left:1em; margin-right:0.2em; color: #880808; width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
-								<small id="commit2_legend_text" class="text-sm text-light">
-									Older
-									<span class="text-monospace">
-										<form id="KICAD_COMMIT_2" class="form-inline" style="display: inline;" action="index.html" method="post" target="hidden_post_target">
-											<input id="commit2_hash" type="hidden" name="hash" value="[KICAD_COMMIT_2]">
-											<input id="commit2_kicad_pro_path" type="hidden" name="kicad_pro_path" value="[COMMIT_2_KICAD_PRO]">
-											(<a data-toggle="tooltip" title="Launch Kicad at this Rev" id="commit2_legend_hash" href="javascript:{}" onclick="document.getElementById('KICAD_COMMIT_2').submit();">[COMMIT_2_HASH]</a>)
-										</form>
-									</span>
-								</small>
-								<span id="commit3_legend" style="margin-left:1em; margin-right:0.2em; color: #807F7F; width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
-								<small id="commit3_legend_text" class="text-sm text-light">
-									Unchanged
-								</small>
+								<div id="commit1" class="commit1" style="visibility: visible;">
+									<span id="commit1_legend" class="icon-commit1 icon-commit1-color"></span>
+									<small id="commit1_legend_text" class="text-sm text-light">
+										Newer
+										<span class="text-monospace">
+											<form id="KICAD_COMMIT_1" class="form-inline" style="display: inline;" action="index.html" method="post" target="hidden_post_target">
+												<input id="commit1_hash" type="hidden" name="hash" value="[KICAD_COMMIT_1]">
+												<input id="commit1_kicad_pro_path" type="hidden" name="kicad_pro_path" value="[COMMIT_1_KICAD_PRO]">
+												(<a data-toggle="tooltip" title="Launch Kicad at this Rev" id="commit1_legend_hash" href="javascript:{}" onclick="document.getElementById('KICAD_COMMIT_1').submit();">[COMMIT_1_HASH]</a>)
+											</form>
+										</span>
+									</small>
+								</div>
+								<span class="ui-legend-sep1"></span>
+								<div id="commit2" class="commit2" style="visibility: visible;">
+									<span id="commit2_legend" class="icon-commit2 icon-commit2-color"></span>
+									<small id="commit2_legend_text" class="text-sm text-light">
+										Older
+										<span class="text-monospace">
+											<form id="KICAD_COMMIT_2" class="form-inline" style="display: inline;" action="index.html" method="post" target="hidden_post_target">
+												<input id="commit2_hash" type="hidden" name="hash" value="[KICAD_COMMIT_2]">
+												<input id="commit2_kicad_pro_path" type="hidden" name="kicad_pro_path" value="[COMMIT_2_KICAD_PRO]">
+												(<a data-toggle="tooltip" title="Launch Kicad at this Rev" id="commit2_legend_hash" href="javascript:{}" onclick="document.getElementById('KICAD_COMMIT_2').submit();">[COMMIT_2_HASH]</a>)
+											</form>
+										</span>
+									</small>
+								</div>
+								<div id="commit3" class="commit3" style="visibility: visible;">
+									<span id="commit3_legend" class="icon-commit3"></span>
+									<small id="commit3_legend_text" class="text-sm text-light">
+										Unchanged
+									</small>
+								</div>
+								<span class="commit-standalone-color"></span>
 							</div>
-
-							<div id="diff-container" class="position-relative" style="height: 94%; padding: 0px">
+							<!-- Diff canvas -->
+							<div id="diff-container" class="position-relative ui-diff-container">
 								<!-- SVGS_GOES_HERE -->
 							</div>
 						</div>
 					</div>
-
 				</div>
 
-				<div class="col align-self-start justify-content-start col-1 no-gutters" style="width: 100%; padding: 0px 0px 0px 0px; margin: 0px; height: 100vh;" >
-
+				<!-- Sheets/Layers -->
+				<div class="col align-self-start justify-content-start col-1 no-gutters ui-sheets-col">
 					<div class="list-group no-gutters" id="pages_list" style="display: inline;">
-						<div class="form-check no-gutters" style="width: 180px; padding-top: 1em">
+						<!-- Sheets form -->
+						<div class="form-check no-gutters ui-sheets-form">
 							<p class="text-light">
-								<span style="margin-right:0.5em; width: 20px; height: 20px;" class="iconify" data-icon="gridicons:next-page" data-inline="false"></span>
-								Pages
+								<span class="icon-sheets"></span> Pages
 							</p>
-							<div class="row" style="height: 85%; width: 300px;">
-								<div class="col" style="height: 100%; width: 100%">
-									<div id="pages_list_div" class="form-check scrollbox" style="height: 100%; width: 100%; padding: 0px 0px 8px 0px; margin: 0px; overflow-y: scroll; max-height: 90vh;">
+							<div class="row ui-sheets-form-row">
+								<div class="col ui-sheets-form-col">
+									<div id="pages_list_div" class="form-check scrollbox ui-sheets-form-div">
 										<form id="pages_list_form" class="overflow-auto scrollbox-content">
 											<!-- FILL_PAGES_HERE -->
 										</form>
@@ -155,15 +161,14 @@
 						</div>
 					</div>
 
-					<div class="list-group no-gutters" id="layers_list" style="display: none; height: 100%;">
-						<div class="form-check no-gutters" style="width: 180px; padding-top: 1em; height: 100%; ">
+					<div class="list-group no-gutters" id="layers_list" style="display: none;">
+						<div class="form-check no-gutters ui-sheets-form">
 							<p class="text-light">
-								<span style="margin-right:0.5em; width: 20px; height: 20px;" class="iconify" data-icon="teenyicons:layers-solid" data-inline="false"></span>
-								Layers
+								<span class="icon-layers"></span> Layers
 							</p>
-							<div class="row" style="height: 85%; width: 300px;">
-								<div class="col" style="height: 100%; width: 100%">
-									<div id="layers_list_div" class="form-check scrollbox" style="height: 100%; width: 100%; padding: 0px 0px 8px 0px; margin: 0px; overflow-y: scroll; max-height: 90vh;">
+							<div class="row ui-sheets-form-row">
+								<div class="col ui-sheets-form-col">
+									<div id="layers_list_div" class="form-check scrollbox ui-sheets-form-div">
 										<form id="layers_list_form" class="overflow-auto scrollbox-content">
 											<!-- FILL_LAYERS_HERE -->
 										</form>
@@ -176,6 +181,7 @@
 			</div>
 		</div>
 
+		<!-- Help dialog -->
 		<div class="modal fade text-light" id="shortcuts-modal" tabindex="-1" role="dialog" aria-labelledby="shortcuts-modal-title" aria-hidden="true">
 			<div class="modal-dialog modal-dialog-centered" role="document">
 				<div class="modal-content">
@@ -192,19 +198,19 @@
 						<table>
 							<tbody>
 							<tr>
-								<td class="shortcut_col"><small class="text-sm text-muted"><kbd><span class="iconify" data-icon="typcn-arrow-up" data-inline="false"></span></kbd></small></td>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>&#x21E7;</kbd></small></td>
 								<td>Move commits par upwards</td>
 							</tr>
 							<tr>
-								<td class="shortcut_col"><small class="text-sm text-muted"><kbd><span class="iconify" data-icon="typcn-arrow-down" data-inline="false"></span></kbd></small></td>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>&#x21E9;</kbd></small></td>
 								<td>Move commits par downwards</td>
 							</tr>
 							<tr>
-								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>[</kbd> or <kbd>Ctrl + <span class="iconify" data-icon="typcn-arrow-up" data-inline="false"></span></kbd></small></td>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>[</kbd> or <kbd>Ctrl+&#x21E7;</kbd></small></td>
 								<td>Move 2nd commit upwards</td>
 							</tr>
 							<tr>
-								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>]</kbd> or <kbd>Ctrl + <span class="iconify" data-icon="typcn-arrow-down" data-inline="false"></span></kbd></small></td>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>]</kbd> or <kbd>Ctrl+&#x21E9;</kbd></small></td>
 								<td>Move 2nd commit downwards</td>
 							</tr>
 							<tr>
@@ -232,19 +238,19 @@
 								<td>Toggle visibility of older commit</td>
 							</tr>
 							<tr>
-								<td class="shortcut_col"><small class="text-sm text-muted"><kbd><span class="iconify" data-icon="typcn-arrow-right" data-inline="false"></span></kbd></small></td>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>&#x21E8;</kbd></small></td>
 								<td>Select next page/layer</td>
 							</tr>
 							<tr>
-								<td class="shortcut_col"><small class="text-sm text-muted"><kbd><span class="iconify" data-icon="typcn-arrow-left" data-inline="false"></span></kbd></small></td>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>&#x21E6;</kbd></small></td>
 								<td>Select previous page/layer</td>
 							</tr>
 							<tr>
-								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>Ctrl + <span class="iconify" data-icon="typcn-arrow-right" data-inline="false"></span></kbd></small></td>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>Ctrl + &#x21E8;</kbd></small></td>
 								<td>Select next page/layer (cycling)</td>
 							</tr>
 							<tr>
-								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>Ctrl + <span class="iconify" data-icon="typcn-arrow-left" data-inline="false"></span></kbd></small></td>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>Ctrl + &#x21E6;</kbd></small></td>
 								<td>Select previous page/layer (cycling)</td>
 							</tr>
 							</tbody>
@@ -268,19 +274,19 @@
 								<td>Zoom fit</td>
 							</tr>
 							<tr>
-								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>Alt + <span class="iconify" data-icon="typcn-arrow-up" data-inline="false"></span></kbd></small></td>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>Alt + &#x21E7;</kbd></small></td>
 								<td>Pan svg up</td>
 							</tr>
 							<tr>
-								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>Alt + <span class="iconify" data-icon="typcn-arrow-down" data-inline="false"></span></kbd></small></td>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>Alt + &#x21E9;</kbd></small></td>
 								<td>Pan svg down</td>
 							</tr>
 							<tr>
-								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>Alt + <span class="iconify" data-icon="typcn-arrow-left" data-inline="false"></span></kbd></small></td>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>Alt + &#x21E8;</kbd></small></td>
 								<td>Pan svg left</td>
 							</tr>
 							<tr>
-								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>Alt + <span class="iconify" data-icon="typcn-arrow-right" data-inline="false"></span></kbd></small></td>
+								<td class="shortcut_col"><small class="text-sm text-muted"><kbd>Alt + &#x21E6;</kbd></small></td>
 								<td>Pan svg right</td>
 							</tr>
 							</tbody>
@@ -312,9 +318,9 @@
 			</div>
 		</div>
 
-		<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF" crossorigin="anonymous"></script>
-		<script src="https://code.iconify.design/2/2.2.1/iconify.min.js" integrity=""></script>
-		<script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js" integrity=""></script>
+		<script src="./utils/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+		<script src="./utils/bootstrap.bundle.min.js" integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF" crossorigin="anonymous"></script>
+		<script src="./utils/svg-pan-zoom.min.js" integrity=""></script>
 		<script src="./kiri.js" integrity="" crossorigin="anonymous"></script>
 	</body>
 </html>

@@ -1,20 +1,21 @@
-
 // jshint esversion:6
 
+// Hashes for the two selected commits
 var commit1;
 var commit2;
+// Commits objects list
+var commits_form;
+// How may commits
+var num_commits;
 
 var old_view;
-var current_view;
+var current_view = "show_sch";
 
 current_diff_filter = "diff" // diff or normal
 
 var panZoom_instance = null;
 var lastEventListener = null;
 var lastEmbed = null;
-
-var current_selected_page = 0;
-var previous_selected_page = -1;
 
 sch_current_zoom = null;
 sch_old_zoom = null;
@@ -29,210 +30,190 @@ var selected_view = "schematic";
 
 var is_fullscreen = false;
 
+// Schematic sheets for the commit1
+var sheet_pages_commit1 = new Set();
+// Schematic sheets for the commit1
+var sheet_pages_commit2 = new Set();
+// Displayed schematic sheets
+var current_sheets_list = [];
+// PCB layers for commit1
+var layers_commit1 = new Set();
+// PCB layers for commit2
+var layers_commit2 = new Set();
+// Displayed PCB layers
+var current_layers_list = [];
+// Icon to indicate the schematic was changed in a commit
+const SCH_IMG = '<span class="icon-sch-modif"></span>';
+// Icon to indicate the PCB was changed in a commit
+const PCB_IMG = '<span class="icon-pcb-modif"></span>';
+// Icon to indicate no change in a commit
+const EMPTY_IMG = '<span class="icon-x-modif"></span>';
+// Color for the commit1
+var commit1_legend_color;
+// Color for the commit2
+var commit2_legend_color;
+// Color when only one commit is displayed
+var commit_standalone_color;
+
+// Image 1 element
+var diff_xlink_1;
+// Image 2 element
+var diff_xlink_2;
+
+// List of pages (objects)
+var pages;
+// Which one is selected
+var selected_page = -1;
+// List of layers (objects)
+var layers;
+// Which one is selected
+var selected_layer = -1;
+
 // =======================================
 // HANDLE SHORTCUTS
 // =======================================
 
+// Move 2nd commit downwards
 function select_next_2_commits() {
-    commits = $("#commits_form input:checkbox[name='commit']");
-
-    selected_commits = [];
-    next_selected_commits = [];
-
-    for (i = 0; i < commits.length; i++) {
-        if ($("#commits_form input:checkbox[name='commit']")[i].checked) {
-            selected_commits.push(i);
-            next_selected_commits.push(i + 1);
-        }
+    var commit2_order = order_of(commit2);
+    if (commit2_order == num_commits) {
+        console.log('Already at the bottom');
+        return;
     }
-
-    // When second commit reaches the end, moves the first commit forward (if possible)
-    if (next_selected_commits[1] >= commits.length) {
-        next_selected_commits[1] = commits.length - 1;
-        if (next_selected_commits[0] <= commits.length - 2) {
-            next_selected_commits[0] = selected_commits[0] + 1;
-        }
-    }
-    else {
-        // By default does not change the first commit
-        next_selected_commits[0] = selected_commits[0];
-    }
-
-    // Fix bottom boundary
-    if (next_selected_commits[0] >= next_selected_commits[1]) {
-        next_selected_commits[0] = next_selected_commits[1] - 1;
-    }
-
-    // Fix bottom boundary
-    if (next_selected_commits[0] >= commits.length - 2) {
-        next_selected_commits[0] = commits.length - 2;
-    }
-
-    // Update selected commits
-    for (i = 0; i < selected_commits.length; i++) {
-        commits[selected_commits[i]].checked = false;
-    }
-    for (i = 0; i < selected_commits.length; i++) {
-        commits[next_selected_commits[i]].checked = true;
-    }
-
+    // Move the lower 1 place down
+    commit2.checked = false;
+    commit2 = commits_form[commit2_order];
+    commit2.checked = true;
     update_commits();
 }
 
+function order_of(commit) {
+    return parseInt(commit.getAttribute('order'));
+}
+
+// Move commits par downwards
 function select_next_commit() {
-    commits = $("#commits_form input:checkbox[name='commit']");
-
-    selected_commits = [];
-    next_selected_commits = [];
-
-    for (i = 0; i < commits.length; i++) {
-        if ($("#commits_form input:checkbox[name='commit']")[i].checked) {
-            selected_commits.push(i);
-            next_selected_commits.push(i + 1);
-        }
+    var commit1_order = order_of(commit1);
+    var commit2_order = order_of(commit2);
+    var changed = false;
+    if (commit2_order < num_commits) {
+        // Move the lower 1 place down
+        commit2.checked = false;
+        commit2 = commits_form[commit2_order];
+        commit2.checked = true;
+        changed = true;
+        commit2_order = commit2_order + 1;
     }
-
-    // Fix bottom boundary
-    if (next_selected_commits[1] >= commits.length - 1) {
-        next_selected_commits[1] = commits.length - 1;
+    if ((commit1_order + 1) < commit2_order) {
+        // Move the upper 1 place down
+        commit1.checked = false;
+        commit1 = commits_form[commit1_order];
+        commit1.checked = true;
+        changed = true;
     }
-
-    // Fix bottom boundary
-    if (next_selected_commits[0] >= commits.length - 2) {
-        next_selected_commits[0] = commits.length - 2;
+    if (! changed) {
+        console.log('Already at the bottom');
+        return;
     }
-
-    for (i = 0; i < selected_commits.length; i++) {
-        commits[selected_commits[i]].checked = false;
-    }
-    for (i = 0; i < selected_commits.length; i++) {
-        commits[next_selected_commits[i]].checked = true;
-    }
-
     update_commits();
 }
 
-function select_previows_2_commits() {
-    commits = $("#commits_form input:checkbox[name='commit']");
-
-    selected_commits = [];
-    next_selected_commits = [];
-
-    for (i = 0; i < commits.length; i++) {
-        if ($("#commits_form input:checkbox[name='commit']")[i].checked) {
-            selected_commits.push(i);
-            next_selected_commits.push(i - 1);
-        }
+// Move 2nd commit upwards
+function select_previous_2_commits() {
+    var commit1_order = order_of(commit1);
+    var commit2_order = order_of(commit2);
+    if ((commit2_order - 1) <= commit1_order) {
+        console.log('Already next to the first');
+        return;
     }
-
-    // By default does not change the first commit
-    next_selected_commits[0] = selected_commits[0];
-
-    // When commits are touching, move first backwards (if possible)
-    if (next_selected_commits[1] == next_selected_commits[0]) {
-        if (next_selected_commits[0] > 0) {
-            next_selected_commits[0] = next_selected_commits[0] -1;
-        }
-    }
-
-    // Fix top boundary
-    if (next_selected_commits[0] < 0) {
-        next_selected_commits[0] = 0;
-    }
-
-    // Fix top boundary
-    if (next_selected_commits[1] <= 1) {
-        next_selected_commits[1] = 1;
-    }
-
-    // Update selected commits
-    for (i = 0; i < selected_commits.length; i++) {
-        commits[selected_commits[i]].checked = false;
-    }
-    for (i = 0; i < selected_commits.length; i++) {
-        commits[next_selected_commits[i]].checked = true;
-    }
-
+    // Move the lower 1 place up
+    commit2.checked = false;
+    commit2 = commits_form[commit2_order - 2];
+    commit2.checked = true;
     update_commits();
 }
 
-function select_previows_commit()
+// Move commits par upwards
+function select_previous_commit()
 {
-    commits = $("#commits_form input:checkbox[name='commit']");
-
-    selected_commits = [];
-    next_selected_commits = [];
-
-    for (i = 0; i < commits.length; i++) {
-        if ($("#commits_form input:checkbox[name='commit']")[i].checked) {
-            selected_commits.push(i);
-            next_selected_commits.push(i - 1);
-        }
+    var commit1_order = order_of(commit1);
+    var commit2_order = order_of(commit2);
+    var changed = false;
+    if (commit1_order > 1) {
+        // Move the upper 1 place up
+        commit1.checked = false;
+        commit1 = commits_form[commit1_order - 2];
+        commit1.checked = true;
+        changed = true;
+        commit1_order = commit1_order - 1;
     }
-
-    // Fix top boundary
-    if (next_selected_commits[0] <= 0) {
-        next_selected_commits[0] = 0;
+    if ((commit2_order - 1) > commit1_order) {
+        // Move the lower 1 place up
+        commit2.checked = false;
+        commit2 = commits_form[commit2_order - 2];
+        commit2.checked = true;
+        changed = true;
     }
-
-    // Fix top boundary
-    if (next_selected_commits[1] <= 1) {
-        next_selected_commits[1] = 1;
+    if (! changed) {
+        console.log('Already at the top');
+        return;
     }
-
-    // Update selected commits
-    for (i = 0; i < selected_commits.length; i++) {
-        commits[selected_commits[i]].checked = false;
-    }
-    for (i = 0; i < selected_commits.length; i++) {
-        commits[next_selected_commits[i]].checked = true;
-    }
-
     update_commits();
+}
+
+function update_commit_legend_visibility(id, status)
+{   // Make all elements of the commitN class visible/hidden
+    for (const e of document.getElementsByClassName("commit"+id)) {
+        e.style.visibility = status;
+    }
+}
+
+function update_commit_legend_color(id, color)
+{   // Adjust the color for all the elements of the commitN class
+    if (! color) {
+        color = (id == 1 ? commit1_legend_color : commit2_legend_color);
+    }
+    for (const e of document.getElementsByClassName("icon-commit"+id+"-color")) {
+        e.style.color = color;
+    }
+}
+
+function set_image_filters(img1=true, img2=true) {
+    if (img1 && img2) {
+        diff_xlink_1.style.filter = 'url(#filter-1)'; /// FILTER_DEFAULT
+        diff_xlink_2.style.filter = 'url(#filter-2)'; /// FILTER_DEFAULT
+    } else if (img1) {
+        diff_xlink_1.style.filter = 'url(#filter-12)'; /// FILTER_WHITE
+    } else if (img2) {
+        diff_xlink_2.style.filter = 'url(#filter-22)'; /// FILTER_WHITE
+    }
 }
 
 function reset_commits_selection()
 {
-    commits = $("#commits_form input:checkbox[name='commit']");
-    selected_commits = [];
-    for (i = 0; i < commits.length; i++) {
-        $("#commits_form input:checkbox[name='commit']")[i].checked = false;
-    }
-    for (i = 0; i < 2; i++) {
-        $("#commits_form input:checkbox[name='commit']")[i].checked = true;
-    }
+    commit1.checked = false;
+    commit2.checked = false;
+    commit1 = commits_form[0];
+    commit2 = commits_form[1];
+    commit1.checked = true;
+    commit2.checked = true;
 
     // reset visibility of the diff images
-    $("#diff-xlink-1").css('visibility', 'visible')
-    $("#commit1_legend").css('visibility', 'visible');
-    $("#commit1_legend_text").css('visibility', 'visible');
-    $("#commit1_legend_fs").css('visibility', 'visible');
-    $("#commit1_legend_text_fs").css('visibility', 'visible');
-    $("#commit1_legend").css('color', '#00FFFF');
-    $("#commit1_legend_fs").css('color', '#00FFFF');
+    update_commit_legend_visibility(1, 'visible');
+    update_commit_legend_color(1);
 
-    $("#diff-xlink-2").css('visibility', 'visible')
-    $("#commit2_legend").css('visibility', 'visible');
-    $("#commit2_legend_text").css('visibility', 'visible');
-    $("#commit2_legend_fs").css('visibility', 'visible');
-    $("#commit2_legend_text_fs").css('visibility', 'visible');
-    $("#commit2_legend").css('color', '#880808');
-    $("#commit2_legend_fs").css('color', '#880808');
+    update_commit_legend_visibility(2, 'visible');
+    update_commit_legend_color(2);
 
-    $("#commit3_legend").css('visibility', 'visible');
-    $("#commit3_legend_text").css('visibility', 'visible');
-    $("#commit3_legend_fs").css('visibility', 'visible');
-    $("#commit3_legend_text_fs").css('visibility', 'visible');
+    update_commit_legend_visibility(3, 'visible');
 
-    $("#diff-xlink-1").css('filter', 'url(#filter-1)') /// FILTER_DEFAULT
-    $("#diff-xlink-2").css('filter', 'url(#filter-2)') /// FILTER_DEFAULT
+    set_image_filters();
 
     update_commits();
 }
 
 function toggle_sch_pcb_view() {
     old_view = current_view;
-    current_view = $('#view_mode input[name="view_mode"]:checked').val();
     if (current_view == "show_sch") {
         show_pcb();
     } else {
@@ -243,193 +224,83 @@ function toggle_sch_pcb_view() {
 
 function toggle_old_commit_visibility()
 {
-    if ($("#diff-xlink-1").css('visibility') === "hidden")
+    if (diff_xlink_1.style.visibility === "hidden")
     {
         current_diff_filter = "diff";
-        $("#diff-xlink-1").css('visibility', 'visible')
-        $("#commit1_legend").css('visibility', 'visible');
-        $("#commit1_legend_text").css('visibility', 'visible');
-        $("#commit1_legend_fs").css('visibility', 'visible');
-        $("#commit1_legend_text_fs").css('visibility', 'visible');
-
-        $("#commit3_legend").css('visibility', 'visible');
-        $("#commit3_legend_text").css('visibility', 'visible');
-        $("#commit3_legend_fs").css('visibility', 'visible');
-        $("#commit3_legend_text_fs").css('visibility', 'visible');
+        set_image_filters();
+        update_commit_legend_visibility(1, 'visible');
+        update_commit_legend_visibility(3, 'visible');
+        update_commit_legend_color(1);
+        update_commit_legend_color(2);
     }
     else
     {
         current_diff_filter = "single";
-        $("#diff-xlink-1").css('visibility', 'hidden')
-        $("#commit1_legend").css('visibility', 'hidden');
-        $("#commit1_legend_text").css('visibility', 'hidden');
-        $("#commit1_legend_fs").css('visibility', 'hidden');
-        $("#commit1_legend_text_fs").css('visibility', 'hidden');
-
-        $("#commit3_legend").css('visibility', 'hidden');
-        $("#commit3_legend_text").css('visibility', 'hidden');
-        $("#commit3_legend_fs").css('visibility', 'hidden');
-        $("#commit3_legend_text_fs").css('visibility', 'hidden');
-    }
-
-    // enable the other image back
-    if ($("#diff-xlink-1").css('visibility') === "hidden")
-    {
-        $("#diff-xlink-2").css('visibility', 'visible')
-        $("#diff-xlink-2").css('filter', 'url(#filter-22)') /// FILTER_WHITE
-        $("#commit2_legend").css('visibility', 'visible');
-        $("#commit2_legend_text").css('visibility', 'visible');
-        $("#commit2_legend_fs").css('visibility', 'visible');
-        $("#commit2_legend_text_fs").css('visibility', 'visible');
-
-        $("#commit2_legend").css('color', '#a7a7a7');
-        $("#commit2_legend_fs").css('color', '#a7a7a7');
-    }
-    else
-    {
-        $("#diff-xlink-1").css('filter', 'url(#filter-1)') /// FILTER_DEFAULT
-        $("#diff-xlink-2").css('filter', 'url(#filter-2)') /// FILTER_DEFAULT
-
-        $("#commit1_legend").css('color', '#00FFFF');
-        $("#commit1_legend_fs").css('color', '#00FFFF');
-        $("#commit2_legend").css('color', '#880808');
-        $("#commit2_legend_fs").css('color', '#880808');
+        set_image_filters(false, true);
+        update_commit_legend_visibility(1, 'hidden');
+        update_commit_legend_visibility(2, 'visible');
+        update_commit_legend_visibility(3, 'hidden');
+        update_commit_legend_color(2, commit_standalone_color);
     }
 }
 
 function toggle_new_commit_visibility()
 {
-    if ($("#diff-xlink-2").css('visibility') === "hidden")
+    if (diff_xlink_2.style.visibility === "hidden")
     {
         current_diff_filter = "diff";
-        $("#diff-xlink-2").css('visibility', 'visible')
-        $("#commit2_legend").css('visibility', 'visible');
-        $("#commit2_legend_text").css('visibility', 'visible');
-        $("#commit2_legend_fs").css('visibility', 'visible');
-        $("#commit2_legend_text_fs").css('visibility', 'visible');
-
-        $("#commit3_legend").css('visibility', 'visible');
-        $("#commit3_legend_text").css('visibility', 'visible');
-        $("#commit3_legend_fs").css('visibility', 'visible');
-        $("#commit3_legend_text_fs").css('visibility', 'visible');
+        set_image_filters();
+        update_commit_legend_visibility(2, 'visible');
+        update_commit_legend_visibility(3, 'visible');
+        update_commit_legend_color(1);
+        update_commit_legend_color(2);
     }
     else
     {
         current_diff_filter = "single";
-        $("#diff-xlink-2").css('visibility', 'hidden')
-        $("#commit2_legend").css('visibility', 'hidden');
-        $("#commit2_legend_text").css('visibility', 'hidden');
-        $("#commit2_legend_fs").css('visibility', 'hidden');
-        $("#commit2_legend_text_fs").css('visibility', 'hidden');
-
-        $("#commit3_legend").css('visibility', 'hidden');
-        $("#commit3_legend_text").css('visibility', 'hidden');
-        $("#commit3_legend_fs").css('visibility', 'hidden');
-        $("#commit3_legend_text_fs").css('visibility', 'hidden');
-    }
-
-    // enable the other image back
-    if ($("#diff-xlink-2").css('visibility') === "hidden")
-    {
-        $("#diff-xlink-1").css('visibility', 'visible')
-        $("#diff-xlink-1").css('filter', 'url(#filter-12)') /// FILTER_WHITE
-        $("#commit1_legend").css('visibility', 'visible');
-        $("#commit1_legend_text").css('visibility', 'visible');
-        $("#commit1_legend_fs").css('visibility', 'visible');
-        $("#commit1_legend_text_fs").css('visibility', 'visible');
-
-        $("#commit1_legend").css('color', '#a7a7a7');
-        $("#commit1_legend_text_fs").css('color', '#a7a7a7');
-    }
-    else
-    {
-        $("#diff-xlink-1").css('filter', 'url(#filter-1)') /// FILTER_DEFAULT
-        $("#diff-xlink-2").css('filter', 'url(#filter-2)') /// FILTER_DEFAULT
-
-        $("#commit1_legend").css('color', '#00FFFF');
-        $("#commit1_legend_fs").css('color', '#00FFFF');
-        $("#commit2_legend").css('color', '#880808');
-        $("#commit2_legend_fs").css('color', '#880808');
+        set_image_filters(true, false);
+        update_commit_legend_visibility(1, 'visible');
+        update_commit_legend_visibility(2, 'hidden');
+        update_commit_legend_visibility(3, 'hidden');
+        update_commit_legend_color(1, commit_standalone_color);
     }
 }
 
 function select_next_sch_or_pcb(cycle = false) {
-    if (document.getElementById("show_sch").checked) {
-        pages = $("#pages_list input:radio[name='pages']");
-        selected_page = pages.index(pages.filter(':checked'));
-
-        new_index = selected_page + 1;
-        if (new_index >= pages.length) {
-            if (cycle) {
-                new_index = 0;
-            }
-            else {
-                new_index = pages.length - 1;
-            }
+    if (current_view == "show_sch") {
+        selected_page = selected_page + 1;
+        if (selected_page >= pages.length) {
+            selected_page = (cycle ? 0 : pages.length - 1);
         }
-
-        pages[new_index].checked = true;
-
-        update_page();
+        pages[selected_page].checked = true;
+        update_selected_page();
     }
     else
     {
-        layers = $("#layers_list input:radio[name='layers']");
-        selected_layer = layers.index(layers.filter(':checked'));
-
-        new_index = selected_layer + 1;
-        if (new_index >= layers.length) {
-            if (cycle) {
-                new_index = 0;
-            }
-            else {
-                new_index = layers.length - 1;
-            }
+        selected_layer = selected_layer + 1;
+        if (selected_layer >= layers.length) {
+            selected_layer = (cycle ? 0 : layers.length - 1);
         }
-
-        layers[new_index].checked = true;
-
-        update_layer();
+        layers[selected_layer].checked = true;
+        update_selected_layer();
     }
 }
 
 function select_preview_sch_or_pcb(cycle = false) {
-    if (document.getElementById("show_sch").checked) {
-        pages = $("#pages_list input:radio[name='pages']");
-        selected_page = pages.index(pages.filter(':checked'));
-
-        new_index = selected_page - 1;
-        if (new_index < 0) {
-            if (cycle) {
-                new_index = pages.length - 1;
-            }
-            else {
-                new_index = 0;
-            }
+    if (current_view == "show_sch") {
+        selected_page = selected_page - 1;
+        if (selected_page < 0) {
+            selected_page = (cycle ? pages.length - 1 : 0);
         }
-
-        pages[new_index].checked = true;
-
-        update_page();
-        update_sheets_list(commit1, commit2);
-
+        pages[selected_page].checked = true;
+        update_selected_page();
     } else {
-        layers = $("#layers_list input:radio[name='layers']");
-        selected_layer = layers.index(layers.filter(':checked'));
-
-        new_index = selected_layer - 1;
-        if (new_index < 0) {
-            if (cycle) {
-                new_index = layers.length - 1;
-            }
-            else {
-                new_index = 0;
-            }
+        selected_layer = selected_layer - 1;
+        if (selected_layer < 0) {
+            selected_layer = (cycle ? layers.length - 1 : 0);
         }
-
-        layers[new_index].checked = true;
-
-        update_layer();
+        layers[selected_layer].checked = true;
+        update_selected_layer();
     }
 }
 
@@ -454,59 +325,108 @@ function manual_pan(direction)
     const step = 50;
 
     switch(direction) {
-       case "up":
+       case "Up":
             panZoom_instance.panBy({x: 0, y: step});
             break;
-       case "down":
+       case "Down":
             panZoom_instance.panBy({x: 0, y: -step});
             break;
-       case "left":
+       case "Left":
             panZoom_instance.panBy({x: step, y: 0});
             break;
-       case "right":
+       case "Right":
             panZoom_instance.panBy({x: -step, y: 0});
             break;
     }
 }
 
-// Commits
-Mousetrap.bind(['ctrl+down', 'ctrl+]','command+down', 'command+]'], function(){select_next_2_commits()});
-Mousetrap.bind(['down', ']'],      function(){select_next_commit()});
+document.onkeydown = function (e) {
+    /*console.log('e.key', e.key);
+    console.log('e.altKey', e.altKey);
+    console.log('e.code', e.code);*/
+    if (e.altKey && ! (e.ctrlKey || e.metaKey)) {
+        // ALT + xxx
+        switch (e.code) {
+            case "KeyR":
+                reset_commits_selection();
+                break;
+            case "KeyQ":
+                toggle_new_commit_visibility();
+                break;
+            case "KeyW":
+                toggle_old_commit_visibility();
+                break;
+            // SVG PAN
+            case "ArrowUp":
+            case "ArrowDown":
+            case "ArrowLeft":
+            case "ArrowRight":
+                manual_pan(e.key.substring(5));
+                break;
+        }
+    } else if ((e.ctrlKey || e.metaKey) && ! e.altKey) {
+        // CTRL/Command + xxxx
+        switch (e.code) {
+            case "ArrowUp":
+            case "BracketLeft":
+                select_previous_2_commits();
+                break;
+            case "ArrowDown":
+            case "BracketRight":
+                select_next_2_commits();
+                break;
+            case "ArrowLeft":
+                select_preview_sch_or_pcb(true);
+                break;
+            case "ArrowRight":
+                select_next_sch_or_pcb(true);
+                break;
+        }
+    } else if (! (e.ctrlKey || e.metaKey || e.altKey)) {
+        // Key alone
+        switch (e.code) {
+            case "ArrowUp":
+            case "BracketLeft":
+                select_previous_commit();
+                break;
+            case "ArrowDown":
+            case "BracketRight":
+                select_next_commit();
+                break;
+            // View
+            case "KeyS":
+                toggle_sch_pcb_view();
+                break;
+            case "ArrowLeft":
+                select_preview_sch_or_pcb();
+                break;
+            case "ArrowRight":
+                select_next_sch_or_pcb();
+                break;
+             // SVG ZOOM
+             case "Digit0":
+                 svg_fit_center();
+                 break;
+             // Misc
+             case "KeyF":
+                 toggle_fullscreen();
+                 break;
+             case "KeyI":
+                 document.getElementById("info-btn").click();
+                 break;
+             default:
+                 switch (e.key) {
+                     case "+":
+                          svg_zoom_in();
+                          break;
+                     case "-":
+                          svg_zoom_out();
+                          break;
+                 }
+        }
+    }
+}
 
-Mousetrap.bind(['ctrl+up', 'ctrl+[', 'command+up', 'command+['], function(){select_previows_2_commits()});
-Mousetrap.bind(['up', '['],        function(){select_previows_commit()});
-
-Mousetrap.bind(['r', 'R'],  function(){reset_commits_selection()});
-
-// View
-Mousetrap.bind(['s', 'S'],  function(){toggle_sch_pcb_view()});
-
-Mousetrap.bind(['q', 'Q'],  function(){toggle_old_commit_visibility()});
-Mousetrap.bind(['w', 'W'],  function(){toggle_new_commit_visibility()});
-
-Mousetrap.bind(['alt+q', 'alt+Q'],  function(){toggle_new_commit_visibility()});
-Mousetrap.bind(['alt+w', 'alt+W'],  function(){toggle_old_commit_visibility()});
-
-Mousetrap.bind(['right'], function(){select_next_sch_or_pcb()});
-Mousetrap.bind(['left'],  function(){select_preview_sch_or_pcb()});
-
-Mousetrap.bind(['ctrl+right', 'command+right'], function(){select_next_sch_or_pcb(true)});
-Mousetrap.bind(['ctrl+left', 'command+left'],  function(){select_preview_sch_or_pcb(true)});
-
-// SVG PAN
-Mousetrap.bind('alt+up',    function(){manual_pan("up")});
-Mousetrap.bind('alt+down',  function(){manual_pan("down")});
-Mousetrap.bind('alt+left',  function(){manual_pan("left")});
-Mousetrap.bind('alt+right', function(){manual_pan("right")});
-
-// SVG ZOOM
-Mousetrap.bind('0',        function(){svg_fit_center()});
-Mousetrap.bind(['+', '='], function(){svg_zoom_in()});
-Mousetrap.bind('-',        function(){svg_zoom_out()});
-
-// Misc
-Mousetrap.bind(['f', 'F'], function(){toggle_fullscreen()});
-Mousetrap.bind(['i', 'I'], function(){show_info_popup()});
 
 // =======================================
 // =======================================
@@ -542,65 +462,59 @@ function if_url_exists(url, callback) {
     request.send('');
 }
 
+// Called on commit checkbox change
+function update_selected_commits(commit, order) {
+    console.log('Changing '+commit.value+' to '+commit.checked);
+    if (! commit.checked) {
+        // Keep 2 selected
+        commit.checked = true;
+        console.log('- Not allowed, we need 2 selected');
+        return;
+    }
+    // A new selection, keep only 2 selected
+    if (order < parseInt(commit1.getAttribute('order'))) {
+        commit1.checked = false;
+        commit1 = commit;
+        console.log('- Moving commit1');
+    } else {
+        commit2.checked = false;
+        commit2 = commit;
+        console.log('- Moving commit2');
+    }
+    update_commits();
+}
+
 function update_commits() {
 
     // Remove tooltips so they dont get stuck
-    $('[data-toggle="tooltip"]').tooltip("hide");
+    //$('[data-toggle="tooltip"]').tooltip("hide");
 
     console.log("================================================================================");
-
-    var commits = $("#commits_form input:checkbox[name='commit']");
-    var hashes = [];
-
-    for (var i = 0; i < commits.length; i++) {
-        if (commits[i].checked) {
-            var value = commits[i].value;
-            hashes.push(value);
-        }
-    }
-
-    // It needs 2 items selected to do something
-    if (hashes.length < 2) {
-        return;
-    }
-
-    // Update selected commits
-    commit1 = hashes[0].replace(/\s+/g, '');
-    commit2 = hashes[1].replace(/\s+/g, '');
-
-    console.log("commit1:", commit1);
-    console.log("commit2:", commit2);
-
+    console.log("commit1:", commit1.value);
+    console.log("commit2:", commit2.value);
 
     // 1. Update commit_legend_links
     // 2. Update commit_legend
     // 3. Update current_diff_view
-
+    var commit1_hash = document.getElementById("commit1_hash");
+    var commit2_hash = document.getElementById("commit2_hash");
+    // Not yet synced, so this is the old
+    var old_commit1 = commit1_hash.value;
+    var old_commit2 = commit2_hash.value;
 
     // Update commit_legend_links
-
-    var old_commit1 = document.getElementById("commit1_hash").value;
-    var old_commit2 = document.getElementById("commit2_hash").value;
-
     var kicad_pro_path_1 = document.getElementById("commit1_kicad_pro_path").value;
     var kicad_pro_path_2 = document.getElementById("commit2_kicad_pro_path").value;
-
-    document.getElementById("commit1_kicad_pro_path").value = kicad_pro_path_1.replace(old_commit1, commit1);
-    document.getElementById("commit2_kicad_pro_path").value = kicad_pro_path_2.replace(old_commit2, commit2);
+    document.getElementById("commit1_kicad_pro_path").value = kicad_pro_path_1.replace(old_commit1, commit1.value);
+    document.getElementById("commit2_kicad_pro_path").value = kicad_pro_path_2.replace(old_commit2, commit2.value);
 
     // Update commit_legend
-
-    document.getElementById("commit1_hash").value = commit1;
-    document.getElementById("commit2_hash").value = commit2;
-
-    document.getElementById("commit1_legend_hash").innerHTML = commit1;
-    document.getElementById("commit2_legend_hash").innerHTML = commit2;
+    commit1_hash.value = commit1.value;
+    commit2_hash.value = commit2.value;
+    document.getElementById("commit1_legend_hash").innerHTML = commit1.value;
+    document.getElementById("commit2_legend_hash").innerHTML = commit2.value;
 
     // Update current_diff_view
-
-    old_view = current_view;
-    current_view = $('#view_mode input[name="view_mode"]:checked').val();
-
     if (current_view == "show_sch") {
         update_page();
     } else {
@@ -619,61 +533,38 @@ function loadFile(filePath) {
     if (xmlhttp.status==200) {
         result = xmlhttp.responseText;
     }
-    return result;
+    return result.split("\n").filter((a) => a);
 }
 
-function update_page()
+function change_selected_page(index) {
+    selected_page = index;
+    update_selected_page();
+}
+
+function update_selected_page()
 {
-    console.log("-----------------------------------------");
-
-    // Runs only when updating commits
-    update_sheets_list(commit1, commit2);
-
-    var pages = $("#pages_list input:radio[name='pages']");
-    var selected_page;
-    var page_name;
-
-    // if a different page was in use before, revert the selection to it
-    // TODO: maybe I have to use a list instead...
-    if (previous_selected_page > -1) {
-        pages[previous_selected_page].checked = true;
-        previous_selected_page = -1;
-    }
-
-    // try to get the first page
-    try {
-        selected_page = pages.index(pages.filter(':checked'));
-        page_name = pages[selected_page].id;
-        current_selected_page = selected_page;
-
-    // if there is no page selected, select the first one
-    // TODO: instead of the first item by default, a better solution would change to the next inferior index
-    // and keep decrementing until reaching a valid index
-    } catch (error) {
-        previous_selected_page = current_selected_page;
-        pages[0].checked = true;
-        selected_page = pages.index(pages.filter(':checked'));
-        page_name = pages[selected_page].id;
-    }
-
     var page_filename = pages[selected_page].value.replace(".kicad_sch", "").replace(".sch", "");
+    var image_path_1;
+    var image_path_2;
 
-    if (commit1 == ""){
-        commit1 = document.getElementById("diff-xlink-1-sch").href.baseVal.split("/")[1];
-    }
-    if (commit2 == ""){
-        commit2 = document.getElementById("diff-xlink-2-sch").href.baseVal.split("/")[1];
+    if (sheet_pages_commit1.has(page_filename)) {
+        image_path_1 = commit1.value + "/_KIRI_/sch/" + page_filename + ".svg";
+    } else {
+        image_path_1 = "blank.svg";
     }
 
-    var image_path_1 = "../" + commit1 + "/_KIRI_/sch/" + page_filename + ".svg";
-    var image_path_2 = "../" + commit2 + "/_KIRI_/sch/" + page_filename + ".svg";
+    if (sheet_pages_commit2.has(page_filename)) {
+        image_path_2 = commit2.value + "/_KIRI_/sch/" + page_filename + ".svg";
+    } else {
+        image_path_2 = "blank.svg";
+    }
 
     console.log("[SCH] page_filename =", page_filename);
     console.log("[SCH]  image_path_1 =", image_path_1);
     console.log("[SCH]  image_path_2 =", image_path_2);
 
-    var image_path_timestamp_1 = image_path_1 + url_timestamp(commit1);
-    var image_path_timestamp_2 = image_path_2 + url_timestamp(commit2);
+    var image_path_timestamp_1 = image_path_1 + url_timestamp(commit1.value);
+    var image_path_timestamp_2 = image_path_2 + url_timestamp(commit2.value);
 
     if (current_view != old_view)
     {
@@ -683,103 +574,93 @@ function update_page()
     }
     else
     {
-        document.getElementById("diff-xlink-1").href.baseVal = image_path_timestamp_1;
-        document.getElementById("diff-xlink-2").href.baseVal = image_path_timestamp_2;
+        diff_xlink_1.href.baseVal = image_path_timestamp_1;
+        diff_xlink_2.href.baseVal = image_path_timestamp_2;
 
-        document.getElementById("diff-xlink-1").setAttributeNS('http://www.w3.org/1999/xlink', 'href', image_path_timestamp_1);
-        document.getElementById("diff-xlink-2").setAttributeNS('http://www.w3.org/1999/xlink', 'href', image_path_timestamp_2);
-
-        if_url_exists(image_path_timestamp_1, function(exists) {
-            if (exists == true) {
-                document.getElementById("diff-xlink-1").parentElement.style.display = 'inline' }
-            else {
-                document.getElementById("diff-xlink-1").parentElement.style.display = "none";
-            }
-        });
-
-        if_url_exists(image_path_timestamp_2, function(exists) {
-            if (exists == true) {
-                document.getElementById("diff-xlink-2").parentElement.style.display = 'inline';
-            }
-            else {
-                document.getElementById("diff-xlink-2").parentElement.style.display = "none";
-            }
-        });
+        diff_xlink_1.setAttributeNS('http://www.w3.org/1999/xlink', 'href', image_path_timestamp_1);
+        diff_xlink_2.setAttributeNS('http://www.w3.org/1999/xlink', 'href', image_path_timestamp_2);
     }
-
-    // keep images visibility the same as the legend
-    $("#diff-xlink-1").css('visibility', $("#commit1_legend").css('visibility'))
-    $("#diff-xlink-2").css('visibility', $("#commit2_legend").css('visibility'))
 
     update_fullscreen_label();
 }
 
-function update_sheets_list(commit1, commit2) {
+function update_page()
+{
+    console.log("-----------------------------------------");
 
-    // Get current selected page name
-    var pages = $("#pages_list input:radio[name='pages']");
-    var selected_page = pages.index(pages.filter(':checked'));
+    // Runs only when updating commits
+    update_sheets_list();
+    update_selected_page();
+}
 
-    // Save the current selected page, if any
-    try {
-        selected_sheet = pages[selected_page].id;
-    }
-    catch(err) {
-        selected_sheet = "";
-        console.log("There isn't a sheet selected");
-    }
+function update_sheets_list() {
 
-    // Data format: ID|LAYER
+    // File = [COMMIT]/_KIRI_/sch_sheets
+    // Data format: Name_without_extension|Relative_file_name|UUID|Instance_name|Sheet_Path_Name
 
-    data1 = loadFile("../" + commit1 + "/_KIRI_/sch_sheets" + url_timestamp(commit1)).split("\n").filter((a) => a);
-    data2 = loadFile("../" + commit2 + "/_KIRI_/sch_sheets" + url_timestamp(commit2)).split("\n").filter((a) => a);
+    data1 = loadFile(commit1.value + "/_KIRI_/sch_sheets" + url_timestamp(commit1));
+    data2 = loadFile(commit2.value + "/_KIRI_/sch_sheets" + url_timestamp(commit2));
 
     var sheets = [];
+    var new_sheets_list = [];
 
+    sheet_pages_commit1 = new Set();
     for (const d of data1)
     {
-        sheet = d.split("|")[0];
-        sheets.push(sheet);
+        sheets.push(d);
+        sheet = d.split("|")[4];
+        sheet_pages_commit1.add(sheet);
+        new_sheets_list.push(sheet);
     }
 
+    sheet_pages_commit2 = new Set();
     for (const d of data2)
     {
-        sheet = d.split("|")[0];
-        if (! sheets.includes(sheet))
+        if (! sheets.includes(d))
         {
-            sheets.push(sheet);
+            sheets.push(d);
         }
+        sheet = d.split("|")[4];
+        sheet_pages_commit2.add(sheet);
+        new_sheets_list.push(sheet);
     }
 
-    // sheets.sort();
-    // sheets = Array.from(new Set(sheets.sort()));
     sheets = Array.from(new Set(sheets));
 
     console.log("[SCH]  Sheets =", sheets.length);
     console.log("sheets", sheets);
 
-    var new_sheets_list = [];
     var form_inputs_html;
+    var index = 0;
 
-    for (const sheet of sheets)
+    for (const d of sheets)
     {
+        var splitted = d.split("|");
+        var visible_sheet = splitted[3];
+        var sheet = splitted[4];
+        var color_style;
+        in_c1 = sheet_pages_commit1.has(sheet);
+        in_c2 = sheet_pages_commit2.has(sheet);
+        if (in_c1 && in_c2) {
+            color_style = "normal_item";
+        } else if (in_c2) {
+            color_style = "removed_item";
+        } else {
+            color_style = "added_item";
+        }
+
         var input_html = `
-        <input id="${sheet}" data-toggle="tooltip" title="${sheet}" type="radio" value="${sheet}" name="pages" onchange="update_page()">
-            <label for="${sheet}" data-toggle="tooltip" title="${sheet}" id="label-${sheet}" class="rounded text-sm-left list-group-item radio-box" onclick="update_page_onclick()" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                <span data-toggle="tooltip" title="${sheet}" style="margin-left:0.5em; margin-right:0.1em;" class="iconify" data-icon="gridicons:pages" data-inline="false"></span>
-                ${sheet}
+        <input id="${sheet}" data-toggle="tooltip" title="${sheet}" type="radio" value="${sheet}" name="pages" onchange="change_selected_page(${index})">
+            <label for="${sheet}" data-toggle="tooltip" title="${sheet}" id="label-${sheet}" class="rounded text-sm-left list-group-item radio-box">
+                <span data-toggle="tooltip" title="${sheet}" class="icon-sheet-page"></span>
+                <span class="${color_style}">${visible_sheet}</span>
             </label>
         </label>
         `;
 
-        new_sheets_list.push(sheet);
-
         form_inputs_html = form_inputs_html + input_html;
+        index = index + 1;
     }
-
-    // Get the current list of pages
-    pages = $("#pages_list input:radio[name='pages']");
-    const current_sheets_list = Array.from(pages).map((opt) => opt.id);
 
     // Return if the current list is equal to the new list
     console.log("current_sheets_list = ", current_sheets_list);
@@ -788,99 +669,29 @@ function update_sheets_list(commit1, commit2) {
         console.log("Keep the same list of sheets");
         return;
     }
+    current_sheets_list = new_sheets_list;
+
+    // ID for the previous selection (if any)
+    var old_selected_page_id;
+    if (selected_page >= 0) {
+        old_selected_page_id = pages[selected_page].id;
+    }
 
     // Update list of pages
-    sheets_element = document.getElementById("pages_list_form");
-    sheets_element.innerHTML = form_inputs_html.replace("undefined", "");
+    console.log('Updating the list of pages');
+    document.getElementById("pages_list_form").innerHTML = form_inputs_html.replace("undefined", "");
 
-    // rerun tooltips since they are getting ugly.
-    $('[data-toggle="tooltip"]').tooltip({html: true});
-    $('[data-toggle="tooltip"]').tooltip('update');
-    $('[data-toggle="tooltip"]').tooltip({boundary: 'body'});
-
-    const optionLabels = Array.from(pages).map((opt) => opt.id);
-
-    const hasOption = optionLabels.includes(selected_sheet);
-    if (hasOption) {
-        // Keep previews selection active
-        $("#pages_list input:radio[name='pages'][value='" + selected_sheet + "']").prop('checked', true);
+    var new_sel;
+    if (selected_page >= 0) {
+        const optionLabels = Array.from(pages).map((opt) => opt.id);
+        new_sel = optionLabels.indexOf(old_selected_page_id);
+        // Choose the last if it no longer exist (removed/added?)
+        new_sel = (new_sel >= 0 ? new_sel : optionLabels.length - 1);
+    } else { // First run, nothings selected, select the first
+        new_sel = 0;
     }
-    else {
-        // If old selection does not exist, maybe the list is now shorter, then select the last item...
-        if (optionLabels.length) {
-            layers[optionLabels.length-1].checked = true;
-        }
-        if (optionLabels.length) {
-            pages[optionLabels.length-1].checked = true;
-        }
-    }
-
-    // If nothing is selected still, select the first item
-    if (pages.length && !pages.filter(':checked').length) {
-        pages[0].checked = true;
-    }
-}
-
-function layer_color(layer_id) {
-
-    var color;
-
-    console.log(">>> layer_id", layer_id);
-
-    const F_Cu      = 0;
-    const In1_Cu    = 1;
-    const In2_Cu    = 2;
-    const In3_Cu    = 3;
-    const In4_Cu    = 4;
-    const B_Cu      = 31;
-    const B_Adhes   = 32;
-    const F_Adhes   = 33;
-    const B_Paste   = 34;
-    const F_Paste   = 35;
-    const B_SilkS   = 36;
-    const F_SilkS   = 37;
-    const B_Mask    = 38;
-    const F_Mask    = 39;
-    const Dwgs_User = 40;
-    const Cmts_User = 41;
-    const Eco1_User = 42;
-    const Eco2_User = 43;
-    const Edge_Cuts = 44;
-    const Margin    = 45;
-    const B_CrtYd   = 46;
-    const F_CrtYd   = 47;
-    const B_Fab     = 48;
-    const F_Fab     = 49;
-
-    switch(layer_id) {
-        case B_Adhes:   color="#3545A8"; break;
-        case B_CrtYd:   color="#D3D04B"; break;
-        case B_Cu:      color="#359632"; break;
-        case B_Fab:     color="#858585"; break;
-        case B_Mask:    color="#943197"; break;
-        case B_Paste:   color="#969696"; break;
-        case B_SilkS:   color="#481649"; break;
-        case Cmts_User: color="#7AC0F4"; break;
-        case Dwgs_User: color="#0364D3"; break;
-        case Eco1_User: color="#008500"; break;
-        case Eco2_User: color="#008500"; break;
-        case Edge_Cuts: color="#C9C83B"; break;
-        case F_Adhes:   color="#A74AA8"; break;
-        case F_CrtYd:   color="#A7A7A7"; break;
-        case F_Cu:      color="#952927"; break;
-        case F_Fab:     color="#C2C200"; break;
-        case F_Mask:    color="#943197"; break;
-        case F_Paste:   color="#3DC9C9"; break;
-        case F_SilkS:   color="#339697"; break;
-        case In1_Cu:    color="#C2C200"; break;
-        case In2_Cu:    color="#C200C2"; break;
-        case In3_Cu:    color="#C20000"; break;
-        case In4_Cu:    color="#0000C2"; break;
-        case Margin:    color="#D357D2"; break;
-        default:        color="#DBDBDB";
-    }
-
-    return color;
+    pages[new_sel].checked = true;
+    selected_page = new_sel;
 }
 
 function pad(num, size)
@@ -892,53 +703,116 @@ function pad(num, size)
     return num;
 }
 
-function update_layers_list(commit1, commit2, selected_layer_idx, selected_layer_id)
+function load_commits()
 {
-    var used_layers_1;
-    var used_layers_2;
+    commit1 = commit2 = -1;
+    commits = loadFile("commits");
+    var i = 1;
+    var all_commits_html = "";
+    for (const line of commits)
+    {
+        // Data format: HASH|DATE|AUTHOR|DESCRIPTION|SCH_CHANGED|PCB_CHANGED
+        splitted = line.split("|");
+        var hash = splitted[0];
+        var dt = splitted[1];
+        var author = splitted[2];
+        var desc = splitted[3];
+        var tooltip = `Commit: ${hash}&#013;&#010;Date: ${dt}&#013;&#010;Author: ${author}&#013;&#010;Description:&#013;&#010;${desc}`;
+        var sch_changed = splitted[4] == 'True';
+        var pcb_changed = splitted[5] == 'True';
+        var pcb_icon = (pcb_changed ? PCB_IMG : EMPTY_IMG);
+        var sch_icon = (sch_changed ? SCH_IMG : EMPTY_IMG);
+        var i02 = pad(i, 2);
+        var cls = (hash == '_local_' ? 'text-warning' : 'text-info');
+        var checked = (i <= 2 ? ' checked="checked"' : '');
+        var commit_html = `
+        <!-- Commit ${i} -->
+        <input class="chkGroup" type="checkbox" id="${hash}" name="commit" value="${hash}" onchange="update_selected_commits(this, ${i})"${checked} order="${i}">
+        <label class="text-sm-left list-group-item commit-label" for="${hash}">
+            <table data-toggle="tooltip" title="${tooltip}">
+                <tr>
+                    <td rowspan=2 class="commit-icon-cell">
+                        <span class="icon-commit"></span>
+                    </td>
+                    <td class="commit-info-cell">
+                        <span class="text-muted"> ${i02} | </span> <span class="text-success font-weight-normal">${hash}</span> <span class="text-muted"> | </span> ${sch_icon} ${pcb_icon} <span class="text-muted font-weight-normal"> | ${dt} | ${author}</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <em class="${cls} commit-desc-cell">${desc}</em>
+                    </td>
+                </tr>
+            </table>
+        </label>
+        `;
+        all_commits_html = all_commits_html + commit_html;
+        i = i + 1;
+    }
+    // Update commits list
+    document.getElementById("commits_form").innerHTML = all_commits_html;
+    commits_form = document.getElementsByClassName("chkGroup");
+    num_commits = i - 1;
+    // TODO What if just 1 or none?
+    commit1 = commits_form[0];
+    commit2 = commits_form[1];
+}
 
+function load_project_data()
+{
+    // Data format: TITLE
+    //              SCH_TITLE|SCH_REVISION|SCH_DATE
+    //              PCB_TITLE|PCB_REVISION|PCB_DATE
+    data = loadFile("project");
+    document.title = data[0];
+    splitted = data[1].split("|");
+    document.getElementById("sch_title_text").innerHTML = splitted[0];
+    document.getElementById("sch_rev").innerHTML = `Rev. ${splitted[1]} (${splitted[2]})`;
+    splitted = data[2].split("|");
+    document.getElementById("pcb_title_text").innerHTML = splitted[0];
+    document.getElementById("pcb_rev").innerHTML = `Rev. ${splitted[1]} (${splitted[2]})`;
+}
+
+function change_selected_layer(index) {
+    selected_layer = index;
+    update_selected_layer();
+}
+
+function update_layers_list()
+{
     var id;
     var layer;
     var dict = {};
 
     var id_pad;
     var layer_name;
-    var color;
-    var checked;
 
     var new_layers_list = [];
     var form_inputs_html;
 
-    // Get current selected page name
-    var layers = $("#layers_list input:radio[name='layers']");
-    var selected_layer_element = layers.index(layers.filter(':checked'));
-
-    // Save the current selected layer, if any
-    try {
-        selected_layer = layers[selected_layer_element].id;
-    }
-    catch(err) {
-        selected_layer = "";
-        console.log("There isn't a layer selected");
-    }
-
-    // File = ../[COMMIT]/_KIRI_/pcb_layers
+    // File = [COMMIT]/_KIRI_/pcb_layers
     // Format = ID|LAYER
 
-    used_layers_1 = loadFile("../" + commit1 + "/_KIRI_/pcb_layers" + url_timestamp(commit1)).split("\n").filter((a) => a);
-    used_layers_2 = loadFile("../" + commit2 + "/_KIRI_/pcb_layers" + url_timestamp(commit2)).split("\n").filter((a) => a);
+    var used_layers_1 = loadFile(commit1.value + "/_KIRI_/pcb_layers" + url_timestamp(commit1));
+    var used_layers_2 = loadFile(commit2.value + "/_KIRI_/pcb_layers" + url_timestamp(commit2));
 
+    layers_commit1 = new Set();
     for (const line of used_layers_1)
     {
         id = line.split("|")[0];
         layer = line.split("|")[1]; //.replace(".", "_");
         dict[id] = [layer];
+        layers_commit1.add(pad(id, 2));
+        new_layers_list.push(id);
     }
 
+    layers_commit2 = new Set();
     for (const line of used_layers_2)
     {
         id = line.split("|")[0];
         layer = line.split("|")[1]; //.replace(".", "_");
+        layers_commit2.add(pad(id, 2));
+        new_layers_list.push(id);
 
         // Add new key
         if (! dict.hasOwnProperty(id)) {
@@ -954,43 +828,36 @@ function update_layers_list(commit1, commit2, selected_layer_idx, selected_layer
 
     console.log("[PCB] Layers =", Object.keys(dict).length);
 
+    var index = 0;
     for (const [layer_id, layer_names] of Object.entries(dict))
     {
         id = parseInt(layer_id);
         id_pad = pad(id, 2);
         layer_name = layer_names[0];
-        // color = layer_color(id);
 
-        // THIS IS A BIT SLOW AND DOES NOT WORK FOR ALL THE LAYERS ALL THE TIME
-        // layer_svg_1 = "../" + commit1 + "/_KIRI_/pcb/layer-" + id_pad + ".svg"
-        // layer_svg_2 = "../" + commit2 + "/_KIRI_/pcb/layer-" + id_pad + ".svg"
-        // svg_content_1 = loadFile(layer_svg_1);
-        // svg_content_2 = loadFile(layer_svg_2);
-        // if (svg_content_1 === svg_content_2)
-        // {
-        //     console.log("Skipping layer with no changes:")
-        //     console.log(">", layer_svg_1)
-        //     console.log(">", layer_svg_2)
-        // }
-        // else
-        // {
-            var input_html = `
-            <!-- Generated Layer ${id} -->
-            <input  id="layer-${id_pad}" value="layer-${layer_names}" type="radio" name="layers" onchange="update_layer()">
-            <label for="layer-${id_pad}" id="label-layer-${id_pad}" data-toggle="tooltip" title="${id}, ${layer_names}" class="rounded text-sm-left list-group-item radio-box" onclick="update_layer_onclick()">
-                <span class="iconify layer_color_margin layer_color_${id}" data-icon="teenyicons-square-solid" data-inline="false"></span>
-                ${layer_names}
-            </label>
-            `;
+        var color_style;
+        in_c1 = layers_commit1.has(id_pad);
+        in_c2 = layers_commit2.has(id_pad);
+        if (in_c1 && in_c2) {
+            color_style = "normal_item";
+        } else if (in_c2) {
+            color_style = "removed_item";
+        } else {
+            color_style = "added_item";
+        }
 
-            new_layers_list.push(layer_names.toString());
+        var input_html = `
+        <!-- Generated Layer ${id} -->
+        <input  id="layer-${id_pad}" value="layer-${layer_names}" type="radio" name="layers" onchange="change_selected_layer(${index})">
+        <label for="layer-${id_pad}" id="label-layer-${id_pad}" data-toggle="tooltip" title="${id}, ${layer_names}" class="rounded text-sm-left list-group-item radio-box">
+            <span class="layer_color_margin layer_color_${id}"></span>
+            <span class="${color_style}">${layer_names}</span>
+        </label>
+        `;
 
-            form_inputs_html = form_inputs_html + input_html;
-        // }
+        form_inputs_html = form_inputs_html + input_html;
+        index = index + 1;
     }
-
-    // Get the current list of layers
-    const current_layers_list = Array.from(layers).map((opt) => opt.value.replace("layer-", ""));
 
     // Return if the current list is equal to the new list
     console.log("current_layers_list = ", current_layers_list);
@@ -999,100 +866,63 @@ function update_layers_list(commit1, commit2, selected_layer_idx, selected_layer
         console.log("Keep the same list of layers");
         return;
     }
+    current_layers_list = new_layers_list;
 
-    // Update layers list
-    layers_element = document.getElementById("layers_list_form");
-    layers_element.innerHTML = form_inputs_html.replace("undefined", "");
-
-    // Update html tooltips
-    $('[data-toggle="tooltip"]').tooltip({html:true});
-    $('[data-toggle="tooltip"]').tooltip('update');
-    $('[data-toggle="tooltip"]').tooltip({boundary: 'body'});
-
-    // Enable back the selected layer
-    const optionLabels = Array.from(layers).map((opt) => opt.id);
-
-    const hasOption = optionLabels.includes(selected_layer);
-    if (hasOption) {
-        // Keep previews selection active
-        $("#layers_list input:radio[name='layers'][value=" + selected_layer + "]").prop('checked', true);
-    }
-    else {
-        // If old selection does not exist, maybe the list is now shorter, then select the last item...
-        layers[optionLabels.length-1].checked = true;
+    // ID for the previous selection (if any)
+    var old_selected_layer_id;
+    if (selected_layer >= 0) {
+        old_selected_layer_id = layers[selected_layer].id;
     }
 
-    // restore previously selected index
-    layers = $("#layers_list input:radio[name='layers']");
-    if (selected_layer_idx >= 0) {
-        layers[selected_layer_idx].checked = true;
-    }
+    // Update list of layers
+    console.log('Updating the list of layers');
+    document.getElementById("layers_list_form").innerHTML = form_inputs_html.replace("undefined", "");
 
-    // If nothing is selected still, select the first item
-    if (! layers.filter(':checked').length) {
-        layers[0].checked = true;
+    var new_sel;
+    if (selected_layer >= 0) {
+        const optionLabels = Array.from(layers).map((opt) => opt.id);
+        new_sel = optionLabels.indexOf(old_selected_layer_id);
+        // Choose the last if it no longer exist (removed/added?)
+        new_sel = (new_sel >= 0 ? new_sel : optionLabels.length - 1);
+    } else { // First run, nothings selected, select the first
+        new_sel = 0;
     }
+    layers[new_sel].checked = true;
+    selected_layer = new_sel;
 }
 
-function update_layer() {
-
+function update_layer()
+{
     console.log("-----------------------------------------");
 
-    var layers = $("#layers_list input:radio[name='layers']");
-    var selected_layer;
-    var layer_id;
+    // Runs only when updating commits
+    update_layers_list();
+    update_selected_layer();
+}
 
-    if (layers)
-    {
-        selected_layer = layers.index(layers.filter(':checked'));
-        console.log(">>>> [selected_layer] = ", selected_layer);
-        if (selected_layer >= 0) {
-            layer_id = layers[selected_layer].id.split("-")[1];
-            console.log(">>>> [label_id_IF] = ", layer_id);
-        }
-        else {
-            try {
-                layers[0].checked = true;
-                selected_layer = layers.index(layers.filter(':checked'));
-                layer_id = layers[selected_layer].id.split("-")[1];
-                console.log(">>>> [label_id_ELSE] = ", layer_id);
-            } catch (error) {
-                if (layers.length == 0) {
-                    selected_layer = -1
-                    layer_id = ""
-                }
-                else {
-                    console.log("[PCB] Images may not exist and Kicad layout may be missing.");
-                    show_sch();
-                    return;
-                }
-            }
-        }
-    }
-    else {
-        console.log("[PCB] Images may not exist and Kicad layout may be missing.");
-        show_sch();
-        return;
-    }
+function update_selected_layer() {
 
-    if (commit1 == "") {
-        commit1 = document.getElementById("diff-xlink-1-pcb").href.baseVal.split("/")[1];
-    }
-    if (commit2 == "") {
-        commit2 = document.getElementById("diff-xlink-2-pcb").href.baseVal.split("/")[1];
-    }
+    var layer_id = layers[selected_layer].id.split("-")[1];
+    var image_path_1;
+    var image_path_2;
 
-    update_layers_list(commit1, commit2, selected_layer, layer_id);
-
-    var image_path_1 = "../" + commit1 + "/_KIRI_/pcb/layer" + "-" + layer_id + ".svg";
-    var image_path_2 = "../" + commit2 + "/_KIRI_/pcb/layer" + "-" + layer_id + ".svg";
+    if (layers_commit1.has(layer_id)) {
+        image_path_1 = commit1.value + "/_KIRI_/pcb/layer" + "-" + layer_id + ".svg";
+    } else {
+        image_path_1 = "blank.svg";
+    }
+    if (layers_commit2.has(layer_id)) {
+        image_path_2 = commit2.value + "/_KIRI_/pcb/layer" + "-" + layer_id + ".svg";
+    } else {
+        image_path_2 = "blank.svg";
+    }
 
     console.log("[PCB]      layer_id =", layer_id);
     console.log("[PCB]  image_path_1 =", image_path_1);
     console.log("[PCB]  image_path_2 =", image_path_2);
 
-    var image_path_timestamp_1 = image_path_1 + url_timestamp(commit1);
-    var image_path_timestamp_2 = image_path_2 + url_timestamp(commit2);
+    var image_path_timestamp_1 = image_path_1 + url_timestamp(commit1.value);
+    var image_path_timestamp_2 = image_path_2 + url_timestamp(commit2.value);
 
     if (current_view != old_view)
     {
@@ -1102,33 +932,12 @@ function update_layer() {
     }
     else if (layer_id != "")
     {
-        document.getElementById("diff-xlink-1").href.baseVal = image_path_timestamp_1;
-        document.getElementById("diff-xlink-2").href.baseVal = image_path_timestamp_2;
+        diff_xlink_1.href.baseVal = image_path_timestamp_1;
+        diff_xlink_2.href.baseVal = image_path_timestamp_2;
 
-        document.getElementById("diff-xlink-1").setAttributeNS('http://www.w3.org/1999/xlink', 'href', image_path_timestamp_1);
-        document.getElementById("diff-xlink-2").setAttributeNS('http://www.w3.org/1999/xlink', 'href', image_path_timestamp_2);
-
-        if_url_exists(image_path_timestamp_1, function(exists) {
-            if (exists == true) {
-                document.getElementById("diff-xlink-1").parentElement.style.display = 'inline' }
-            else {
-                document.getElementById("diff-xlink-1").parentElement.style.display = "none";
-            }
-        });
-
-        if_url_exists(image_path_timestamp_2, function(exists) {
-            if (exists == true) {
-                document.getElementById("diff-xlink-2").parentElement.style.display = 'inline';
-            }
-            else {
-                document.getElementById("diff-xlink-2").parentElement.style.display = "none";
-            }
-        });
+        diff_xlink_1.setAttributeNS('http://www.w3.org/1999/xlink', 'href', image_path_timestamp_1);
+        diff_xlink_2.setAttributeNS('http://www.w3.org/1999/xlink', 'href', image_path_timestamp_2);
     }
-
-    // keep images visibility the same as the legend
-    $("#diff-xlink-1").css('visibility', $("#commit1_legend").css('visibility'))
-    $("#diff-xlink-2").css('visibility', $("#commit2_legend").css('visibility'))
 
     update_fullscreen_label();
 }
@@ -1137,88 +946,23 @@ function update_layer() {
 // SVG Controls
 // =======================================
 
-function select_initial_commits()
-{
-    var commits = $("#commits_form input:checkbox[name='commit']");
-
-    if (commits.length >= 2)
-    {
-        commit1 = commits[0].value;
-        commit2 = commits[1].value;
-        commits[0].checked = true;
-        commits[1].checked = true;
-    }
-    else if (commits.length == 1)
-    {
-        commit1 = commits[0].value;
-        commits[0].checked = true;
-    }
-}
-
-function get_selected_commits()
-{
-    var commits = [];
-    var hashes = [];
-    for (var i = 0; i < commits.length; i++) {
-        if ($("#commits_form input:checkbox[name='commit']")[i].checked) {
-            var value = $("#commits_form input:checkbox[name='commit']")[i].value;
-            hashes.push(value);
-        }
-    }
-
-    // It needs 2 items selected to do something
-    if (hashes.length < 2) {
-        return;
-    }
-
-    var commit1 = hashes[0].replace(/\s+/g, '');
-    var commit2 = hashes[1].replace(/\s+/g, '');
-
-    return [commit1, commit2];
-}
-
-
-// Interpret tooltois as html
-$(document).ready(function()
-{
-    $('[data-toggle="tooltip"]').tooltip({html:true});
-    $('[data-toggle="tooltip"]').tooltip('update');
-    $('[data-toggle="tooltip"]').tooltip({boundary: 'body'});
-});
-
-// Limit commits list with 2 checked commits at most
-$(document).ready(function()
-{
-    $("#commits_form input:checkbox[name='commit']").change(function() {
-        var max_allowed = 2;
-        var count = $("input[name='commit']:checked").length;
-        if (count > max_allowed) {
-            $(this).prop("checked", "");
-        }
-    });
-});
-
 function ready()
 {
+    console.log('Starting JS');
     check_server_status();
-    select_initial_commits();
 
+    pages = document.getElementById("pages_list_form");
+    layers = document.getElementById("layers_list_form");
+
+    commit1_legend_color = window.getComputedStyle(document.querySelector(".icon-commit1")).color;
+    commit2_legend_color = window.getComputedStyle(document.querySelector(".icon-commit2")).color;
+    commit_standalone_color = window.getComputedStyle(document.querySelector(".commit-standalone-color")).color
+    load_project_data();
+    load_commits();
+
+    current_view = (selected_view == "schematic" ? "show_sch" : "show_pcb");
     update_commits();
-
-    if (selected_view == "schematic") {
-        // show_sch();
-        update_page(commit1, commit2);
-    }
-    else {
-        // show_pcb();
-        update_layer(commit1, commit2);
-    }
 }
-
-window.onload = function()
-{
-    console.log("function onload");
-};
 
 window.addEventListener('DOMContentLoaded', ready);
 
@@ -1228,12 +972,13 @@ window.addEventListener('DOMContentLoaded', ready);
 
 function show_sch()
 {
+    current_view = "show_sch";
     // Show schematic stuff
     document.getElementById("show_sch_lbl").classList.add('active');
     document.getElementById("show_sch").checked = true;
     // document.getElementById("diff-sch").style.display = "inline";
-    document.getElementById("diff-xlink-1").parentElement.style.display = "inline";
-    document.getElementById("diff-xlink-2").parentElement.style.display = "inline";
+    diff_xlink_1.parentElement.style.display = "inline";
+    diff_xlink_2.parentElement.style.display = "inline";
     document.getElementById("pages_list").style.display = "inline";
     document.getElementById("sch_title").style.display = "inline";
 
@@ -1246,17 +991,18 @@ function show_sch()
     document.getElementById("layers_list").style.display = "none";
     document.getElementById("pcb_title").style.display = "none";
 
-    update_page(commit1, commit2);
+    update_page();
 }
 
 function show_pcb()
 {
+    current_view = "show_pcb";
     // Show layout stuff
     document.getElementById("show_pcb_lbl").classList.add('active');
     document.getElementById("show_pcb").checked = true;
     // document.getElementById("diff-pcb").style.display = "inline";
-    document.getElementById("diff-xlink-1").parentElement.style.display = "inline";
-    document.getElementById("diff-xlink-2").parentElement.style.display = "inline";
+    diff_xlink_1.parentElement.style.display = "inline";
+    diff_xlink_2.parentElement.style.display = "inline";
     document.getElementById("layers_list").style.display = "inline";
     document.getElementById("pcb_title").style.display = "inline";
 
@@ -1269,31 +1015,11 @@ function show_pcb()
     document.getElementById("pages_list").style.display = "none";
     document.getElementById("sch_title").style.display = "none";
 
-    update_layer(commit1, commit2);
-}
-
-// =======================================
-// Toggle Onion/Slide
-// =======================================
-
-function show_onion() {
-    // console.log("Function:", "show_onion");
-}
-
-function show_slide() {
-    // console.log("Function:", "show_slide");
-}
-
-// =======================================
-// =======================================
-
-function update_page_onclick(obj) {
-    update_page();
-}
-
-function update_layer_onclick(obj) {
     update_layer();
 }
+
+// =======================================
+// =======================================
 
 // Hide fields with missing images
 function imgError(image)
@@ -1331,7 +1057,7 @@ function check_server_status()
         server_is_offline();
     };
 
-    img.src = "favicon.ico" + url_timestamp();
+    img.src = "blank.svg" + url_timestamp();
 
     setTimeout(check_server_status, 5000);
 }
@@ -1365,6 +1091,9 @@ function createNewEmbed(src1, src2)
     embed.setAttribute('class', "position-relative");
     embed.setAttribute('style', "padding: 0px; height: 94%;");
 
+    var filter_1 = (current_diff_filter === "diff" ? 'url(#filter-1)' : 'url(#filter-12)');
+    var filter_2 = (current_diff_filter === "diff" ? 'url(#filter-2)' : 'url(#filter-22)');
+
     // WORKING WITH FILTERS..
     // https://fecolormatrix.com/
 
@@ -1378,18 +1107,18 @@ function createNewEmbed(src1, src2)
                       <feColorMatrix in=SourceGraphic type="matrix"
                       values="1.0  0.0  0.0  0.0  0.0
                               0.0  1.0  0.0  1.0  0.0
-                              0.0  0.0  1.0  1.0  0.0
-                              0.0  0.0  0.0  1.0  0.0">
+                              0.0  0.0  1.0  0.0  0.0
+                              0.0  0.0  0.0  0.5  0.0">
                   </filter>
                   <filter id="filter-12">
                       <feColorMatrix in=SourceGraphic type="matrix"
-                      values="-1.0   0.0   0.0  1.0  1.0
-                               0.0  -1.0   0.0  0.0  1.0
+                      values="-1.0   0.0   0.0  0.0  1.0
+                               0.0  -1.0   0.0  1.0  1.0
                                0.0   0.0  -1.0  0.0  1.0
                                0.0   0.0   0.0  0.6  0.0">
                   </filter>
               </defs>
-              <image id="diff-xlink-1" height="100%" width="100%" filter="url(#filter-1)"
+              <image id="diff-xlink-1" height="100%" width="100%" filter="${filter_1}" class="commit1"
                   onerror="this.onerror=null; imgError(this);"
                   href="${src1}" xlink:href="${src1}"/>
           </svg>
@@ -1410,7 +1139,7 @@ function createNewEmbed(src1, src2)
                                0.0   0.0   0.0  0.6  0.0">
                   </filter>
               </defs>
-              <image id="diff-xlink-2" height="100%" width="100%" filter="url(#filter-2)"
+              <image id="diff-xlink-2" height="100%" width="100%" filter="${filter_2}" class="commit2"
                   onerror="this.onerror=null; imgError(this);"
                   href="${src2}" xlink:href="${src2}"/>
           </svg>
@@ -1420,6 +1149,7 @@ function createNewEmbed(src1, src2)
 
     document.getElementById('diff-container').replaceWith(embed);
     document.getElementById('diff-container').innerHTML = svg_element;
+    document.getElementById('diff-container').onfullscreenchange = fullscreenchanged;
     console.log(">>> SVG: ", embed);
 
     svgpanzoom_selector = "#svg-id";
@@ -1479,16 +1209,8 @@ function createNewEmbed(src1, src2)
         panZoom_instance.center();
     });
 
-    if (current_diff_filter === "diff")
-    {
-        $("#diff-xlink-1").css('filter', 'url(#filter-1)') /// FILTER_DIFF
-        $("#diff-xlink-2").css('filter', 'url(#filter-2)') /// FILTER_DIFF
-    }
-    else
-    {
-        $("#diff-xlink-1").css('filter', 'url(#filter-12)') /// FILTER_WHITE
-        $("#diff-xlink-2").css('filter', 'url(#filter-22)') /// FILTER_WHITE
-    }
+    diff_xlink_1 = document.getElementById("diff-xlink-1");
+    diff_xlink_2 = document.getElementById("diff-xlink-2");
 
     return embed;
 }
@@ -1533,20 +1255,13 @@ function update_fullscreen_label()
 {
     fullscreen_label = document.getElementById("fullscreen_label");
 
-    commit1 = document.getElementById("commit1_hash").value;
-    commit2 = document.getElementById("commit2_hash").value;
-
     if (current_view == "show_sch")
     {
-        pages = $("#pages_list input:radio[name='pages']");
-        selected_page = pages.index(pages.filter(':checked'));
         page_name = document.getElementById("label-" + pages[selected_page].id).innerHTML;
         view_item = "Page " + page_name;
     }
     else
     {
-        layers = $("#layers_list input:radio[name='layers']");
-        selected_layer = layers.index(layers.filter(':checked'));
         layer_name = document.getElementById("label-" + layers[selected_layer].id).innerHTML;
         view_item = "Layer " + layer_name;
     }
@@ -1555,53 +1270,58 @@ function update_fullscreen_label()
     {
         if (fullscreen_label)
         {
-            document.getElementById("commit1_fs").innerHTML = `(<a id="commit1_legend_hash">${commit1}</a>)`;
-            document.getElementById("commit2_fs").innerHTML = `(<a id="commit2_legend_hash">${commit2}</a>)`;
+            document.getElementById("commit1_fs").innerHTML = `(<a id="commit1_legend_hash">${commit1.value}</a>)`;
+            document.getElementById("commit2_fs").innerHTML = `(<a id="commit2_legend_hash">${commit2.value}</a>)`;
             document.getElementById("view_item_fs").innerHTML = view_item;
         }
         else
         {
+            var vis1 = document.getElementById("commit1").style.visibility;
+            var col1 = document.getElementById("commit1_legend").style.color;
+            var vis2 = document.getElementById("commit2").style.visibility;
+            var col2 = document.getElementById("commit2_legend").style.color;
+            var vis3 = document.getElementById("commit3").style.visibility;
             label = `
-                <div id="fullscreen_label" class="alert alert-dark border border-dark rounded-pill position-absolute top-10 start-50 translate-middle" style="background-color: #333;" role="alert">
-                    <span id=commit1_legend_fs style="margin-left:0em; margin-right:0.2em; color: #00FFFF; width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
-                    <small id=commit1_legend_text_fs class="text-sm text-light">
-                        Newer
-                        <span id="commit1_fs" class="text-monospace">(<a id="commit1_legend_hash">${commit1}</a>)</span>
-                    </small>
+                <div id="fullscreen_label" class="alert alert-dark border border-dark rounded-pill position-absolute top-10 start-50 translate-middle ui-fs-label" role="alert">
+                    <div id="commit1_div_fs" class="commit1" style="visibility: ${vis1};">
+                        <span id="commit1_legend_fs" class="icon-commit1-fs icon-commit1-color" style="color: ${col1};"></span>
+                        <small id="commit1_legend_text_fs" class="text-sm text-light">
+                            Newer
+                            <span id="commit1_fs" class="text-monospace">(<a id="commit1_legend_hash">${commit1.value}</a>)</span>
+                        </small>
+                    </div>
 
-                    <span style="display: inline; width: 3em;"></span>
-                    <span id="commit2_legend_fs" style="display: inline; margin-left:1em; margin-right:0.2em; color: #880808; width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
-                    <small id=commit2_legend_text_fs class="text-sm text-light">
-                        Older
-                        <span id="commit2_fs" class="text-monospace">(<a id="commit2_legend_hash">${commit2}</a>)</span>
-                    </small>
+                    <span class="ui-legend-sep1-fs"></span>
 
-                    <span style="display: inline; width: 3em;"></span>
-                    <span id="commit3_legend_fs" style="margin-left:1em; margin-right:0.2em; color: #807F7F; width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
-                    <small id="commit3_legend_text_fs" class="text-sm text-light">
-                        Unchanged
-                    </small>
+                    <div id="commit2_div_fs" class="commit2" style="visibility: ${vis2};">
+                        <span id="commit2_legend_fs" class="icon-commit2-fs icon-commit2-color" style="color: ${col2};"></span>
+                        <small id=commit2_legend_text_fs class="text-sm text-light">
+                            Older
+                            <span id="commit2_fs" class="text-monospace">(<a id="commit2_legend_hash">${commit2.value}</a>)</span>
+                        </small>
+                    </div>
 
-                    <small class="text-sm text-muted" style="margin-left:1em; margin-right:0.2em;">
+                    <span class="ui-legend-sep1-fs"></span>
+
+                    <div id="commit3_div_fs" class="commit3" style="visibility: ${vis3};">
+                       <span id="commit3_legend_fs" class="icon-commit3-fs"></span>
+                       <small id="commit3_legend_text_fs" class="text-sm text-light">
+                           Unchanged
+                       </small>
+                    </div>
+
+                    <small class="text-sm text-muted ui-legend-sep2-fs">
                         |
                     </small>
-                    <span style="display: inline; width: 3em;"></span>
-                    <small id="view_item_fs" class="text-sm text-light" style="margin-left:1em; margin-right:0.2em;">
+                    <span class="ui-legend-sep1-fs"></span>
+                    <small id="view_item_fs" class="text-sm text-light ui-view-item-fs">
                         ${view_item}
                     </small>
                 </div>
             `
 
-            const element = $('#diff-container').get(0);
+            const element = document.getElementById("diff-container");
             element.insertAdjacentHTML("afterbegin", label);
-
-            var visibility1 = $("#diff-xlink-1").css('visibility');
-            $("#commit1_legend_fs").css('visibility', visibility1)
-            $("#commit1_legend_text_fs").css('visibility', visibility1)
-
-            var visibility2 = $("#diff-xlink-2").css('visibility');
-            $("#commit2_legend_fs").css('visibility', visibility2)
-            $("#commit2_legend_text_fs").css('visibility', visibility2)
         }
     }
 }
@@ -1625,7 +1345,7 @@ function toggle_fullscreen()
     box.remove();
 
   } else {
-    element = $('#diff-container').get(0);
+    element = document.getElementById("diff-container");
     if (element.requestFullscreen) {
       element.requestFullscreen();
     } else if (element.mozRequestFullScreen) {
@@ -1641,17 +1361,15 @@ function toggle_fullscreen()
   }
 }
 
-function show_info_popup()
-{
-    document.getElementById("info-btn").click();
-}
-
-// Remove focus whne info buttons is clicked with shortcut i
-$('#shortcuts-modal').on('shown.bs.modal', function(e){
-    $('#info-btn').one('focus', function(e){$(this).blur();});
-});
-
-function change_page()
-{
-    update_page();
+/********************************************************************
+  Workaround for Chrome exiting full screen using ESC
+  Note: If this works for any browser we could just do the API
+  changes here.
+********************************************************************/
+function fullscreenchanged(event) {
+  if (! document.fullscreenElement && is_fullscreen) {
+    is_fullscreen = false;
+    const box = document.getElementById('fullscreen_label');
+    box.remove();
+  }
 }
