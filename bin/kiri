@@ -1250,7 +1250,7 @@ get_git_commits_list()
 			COMMITS=$(echo "${COMMITS}" | grep -Ew "${commit_a}|${commit_b}")
 
 			echo -e "$COMMITS"
-			exit 1
+			# exit 1
 		fi
 
 		if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]]; then
