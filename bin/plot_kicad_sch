@@ -144,7 +144,7 @@ launch_eeschema()
 	# Force English to preserve shortcuts
 	# The common value is C.utf8 on my Ubuntu.
 	# WSL uses C.UTF-8
-	C_UTF8=$(locale -a | grep -i "C.utf" | head)
+	C_UTF8=$(locale -a | grep -i "^C.utf" | head)
 	export LC_ALL=${C_UTF8}
 
 	$(launch_virtual_display) eeschema "${kicad_sch_path}" &> /dev/null &
