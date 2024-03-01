@@ -578,8 +578,11 @@ show_help()
 	     -o|--older HASH  Show commits starting from this one. It uses the short hash.
 	     -n|--newer HASH  Show commits until this one. It uses the short hash.
 	     -t|--last VAL    Show last N commits.
-	     -g|--git-diff X  Use git style comparison where X is "commit..commit"
-
+	     -g|--git-diff X  Use git style comparison where X is two commit hashes or tags separated by ".."
+						  Examples:
+	                           -g 1a8168c..0807c21
+	                           -g v1.1.0..v1.0.0
+	                           -g v1.1.0..0807c21
 	     -c|--diff HASH..HASH
 	                      Compare 2 commits only
 	                      Examples:
@@ -592,8 +595,8 @@ show_help()
 	     -p|--port PORT   Set webserver port. By default it will try to use an available port.
 	     -i|--ip ADDR     Override the default 127.0.0.1 IP address
 
-	     -s|--skip-cache  Skip usage of -chache.lib on plotgitsch
-	     -6|--skip-kicad6 Skip ploting Kicad 6 schematics (.kicad.sch)
+	     -s|--skip-cache  Skip usage of -cache.lib on plotgitsch
+	     -6|--skip-kicad6 Skip plotting Kicad 6 schematics (.kicad.sch)
 
 	     -u|--layout      Force starting with the Layout view selected
 	     -f|--page-frame  Disable page frame for PCB
@@ -1078,9 +1081,9 @@ get_git_commits()
 	local files=("${@}")
 	local current_git_branch=$(git rev-parse --abbrev-ref HEAD)
 
-	command_end=1>&2
+	command_end="1>&2"
 
-	local cmd="git log --date=format:'%Y-%m-%d %H:%M:%S' --pretty='format:%h | %ad | %an | %s' ${current_git_branch} -- ${files[@]}"
+	local cmd="git log --date=format:'%Y-%m-%d %H:%M:%S' --pretty='format:%h | %ad | %an | %s%d' ${current_git_branch} -- ${files[@]}"
 	if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" == "1" ]]; then
 		echo -e "${LBL}Get commits command${RCO}" 1>&2
 		echo -e "   ${LYE}${cmd}${RCO}" | fmt -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g' 1>&2
@@ -1159,10 +1162,10 @@ get_git_commits_list()
 	local kicad_sch="${2}"
 	local kicad_pcb="${3}"
 	local extra_sch_files="${4}"
-
+	
 	if [[ -n ${GIT_DIFF} ]]; then
-		commit1=$(echo "${GIT_DIFF}" | sed "s/[\. ]\+/ /g" | cut -d" " -f1)
-		commit2=$(echo "${GIT_DIFF}" | sed "s/[\. ]\+/ /g" | cut -d" " -f2)
+		commit1=$(echo "${GIT_DIFF}" | sed "s/[\.]\{2\}/ /g" | cut -d" " -f1)
+		commit2=$(echo "${GIT_DIFF}" | sed "s/[\.]\{2\}/ /g" | cut -d" " -f2)
 		commit1_hash=$(git log --date=format:'%Y-%m-%d %H:%M:%S' --pretty='format:%h | %ad | %an | %s' -n1 ${commit1})
 		commit2_hash=$(git log --date=format:'%Y-%m-%d %H:%M:%S' --pretty='format:%h | %ad | %an | %s' -n1 ${commit2})
 		echo "Commit 1: ${commit1_hash} (${commit1})"
@@ -1223,8 +1226,12 @@ get_git_commits_list()
 			${COMMITS}
 			EOM
 
-			commit_a=$(echo "${DIFF_COMMITS}" | sed "s/[\.]\+/ /g" | cut -d" " -f1)
-			commit_b=$(echo "${DIFF_COMMITS}" | sed "s/[\.]\+/ /g" | cut -sd" " -f2)
+			commit_a=$(echo "${DIFF_COMMITS}" | sed "s/[\.]\{2\}/ /g" | cut -d" " -f1)
+			commit_b=$(echo "${DIFF_COMMITS}" | sed "s/[\.]\{2\}/ /g" | cut -sd" " -f2)
+
+			commit_a_hash=$(git rev-parse --short ${commit_a})
+			commit_b_hash=$(git rev-parse --short  ${commit_b})
+
 			if [[ -z "${commit_b}" ]]; then
 				commit_b="_local_"
 			fi
@@ -1232,25 +1239,16 @@ get_git_commits_list()
 			shopt -s nocasematch
 			local_pattern="[.]*local[.]*"
 			if [[ ${commit_a} =~ ${local_pattern} ]]; then
-				commit_a="_local_"
+				commit_a_hash="_local_"
 			fi
 			if [[ ${commit_b} =~ ${local_pattern} ]]; then
-				commit_b="_local_"
+				commit_b_hash="_local_"
 			fi
-
-			shopt -u nocasematch
-			head_pattern="HEAD[.]*"
-			if [[ ${commit_a} =~ ${head_pattern} ]]; then
-				commit_a=$(git rev-parse --short ${commit_a})
-			fi
-			if [[ ${commit_b} =~ ${head_pattern} ]]; then
-				commit_b=$(git rev-parse --short ${commit_b})
-			fi
-
-			COMMITS=$(echo "${COMMITS}" | grep -Ew "${commit_a}|${commit_b}")
+			
+			COMMITS=$(echo "${COMMITS}" | grep -Ew "${commit_a_hash}|${commit_b_hash}")
 
 			echo -e "$COMMITS"
-			# exit 1
+			
 		fi
 
 		if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]]; then
@@ -1527,7 +1525,7 @@ manual_schematic_plot()
 		if [[ "${SKIP_KICAD_6}" == "0" ]] && [[ ! "${OSTYPE}" =~ "darwin" ]]; then
 
 			if [[ -z ${PLOT_TIMEOUT} ]]; then
-				PLOT_TIMEOUT=5
+				PLOT_TIMEOUT=10
 			fi
 
 			msg="# Plotting schematics, ${commit_hash}"
@@ -2012,7 +2010,7 @@ generate_diffs()
 	local hashes
 	local n_hashes
 	local n_comparisons
-
+    
 	hashes=$(echo "${COMMITS}" | tac | cut -d' '  -f1 | tac);
 	n_hashes=$(echo "${hashes}" | wc -w | sed "s/^[ \t]\+//g")
 	# n_comparisons=$((n_hashes * $((n_hashes - 1))))
