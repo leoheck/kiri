@@ -1075,9 +1075,10 @@ get_layout_version()
 	# (kicad_pcb (version 20200104) (host pcbnew "(5.99.0-879-ga0698723b)")
 	# (kicad_pcb (version 20210606) (generator pcbnew)  # Kicad 6
 	# (kicad_pcb (version 20221018) (generator pcbnew)  # Kicad 7
+	# (version 20240108)
 
 	local kicad_pcb="${1}"
-	head -n1 "${kicad_pcb}" | sed "s/[()]//g" | cut -d" " -f3 | tr -d '\0'
+	grep -i "(version" "${kicad_pcb}" -m 1 | sed "s/.*version //g" | cut -d")" -f1 | tr -d '\0'
 }
 
 set_default_html_view()
