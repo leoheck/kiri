@@ -1056,7 +1056,8 @@ get_schematic_vesion()
 			# Format
 			# (kicad_sch (version 20211123) (generator eeschema) # Kicad 6
 			# (kicad_sch (version 20230121) (generator eeschema) # Kicad 7
-			grep -i "kicad_sch" "${kicad_sch}" -m 1 | sed "s/[()]//g" | cut -d" " -f3 | tr -d '\0'
+			# (version 20231120) # Kicad 8
+			grep -i "(version" "${kicad_sch}" -m 1 | sed "s/.*version //g" | cut -d")" -f1 | tr -d '\0'
 			;;
 	esac
 }
@@ -1408,6 +1409,7 @@ create_project_info()
 		20210606) kicad_version="6"    ;;
 		20211014) kicad_version="6"    ;;
 		20221018) kicad_version="7"    ;;
+		20240108) kicad_version="8"    ;;
 		*) kicad_version="Unknown"
 	esac
 
