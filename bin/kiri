@@ -1462,15 +1462,34 @@ parse_layout_layers()
 	# Kicad .kicad_pcb format:
 	# (2 "In2.Cu" power|signal|user hide "Pwr")
 
-	local layers=$( \
-		sed -n '/^  (layers/,/  )$/{/^  (layers/!{/  )$/!p}}' "${kicad_pcb}" | \
-		sed "s/^[ \t]\+//g" | \
-		sed "s/[()]//g" | \
-		sed "s/\r$//g" | \
-		sed "s/\"//g" | \
-		sed '/^[[:space:]]*$/d' | \
-		sed -r "s/ (signal|user|power|hide)//g" | \
-		awk -F '[ ]' '{if ($3) {printf "%s|%s\n", $1, $3} else {printf "%s|%s\n", $1, $2}}')
+	kicad_major_version=$(kicad_version | cut -d"." -f1)
+	# kicad_major_version=8
+
+	if [[ ${kicad_major_version} -ge 8 ]]; then
+
+		local layers=$( \
+			sed -n '/^\t(layers/,/\t)$/{/^\t(layers/!{/\t)$/!p}}' "${kicad_pcb}" | \
+			sed "s/^[ \t]\+//g" | \
+			sed "s/[()]//g" | \
+			sed "s/\r$//g" | \
+			sed "s/\"//g" | \
+			sed '/^[[:space:]]*$/d' | \
+			sed -r "s/ (signal|user|power|hide)//g" | \
+			awk -F '[ ]' '{if ($3) {printf "%s|%s\n", $1, $3} else {printf "%s|%s\n", $1, $2}}')
+
+	else
+
+		local layers=$( \
+			sed -n '/^  (layers/,/  )$/{/^  (layers/!{/  )$/!p}}' "${kicad_pcb}" | \
+			sed "s/^[ \t]\+//g" | \
+			sed "s/[()]//g" | \
+			sed "s/\r$//g" | \
+			sed "s/\"//g" | \
+			sed '/^[[:space:]]*$/d' | \
+			sed -r "s/ (signal|user|power|hide)//g" | \
+			awk -F '[ ]' '{if ($3) {printf "%s|%s\n", $1, $3} else {printf "%s|%s\n", $1, $2}}')
+
+	fi
 
 	printf "%s\n" "${layers}"
 }
