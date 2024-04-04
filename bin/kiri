@@ -383,6 +383,7 @@ export START_ON_LAYOUT_VIEW=0
 export START_SERVER=1
 export VERBOSE=0
 export SKIP_KICAD_6=0
+export KICAD_PRO_FIND_EXCLUDE_PATTERN="#"
 
 export NEWER_COMMIT
 export OLDER_COMMIT
@@ -587,6 +588,9 @@ show_help()
 	                           -c HEAD~1..0807c21
 	                           -c HEAD~1..LOCAL
 
+	     -e|--exclude-proj REGEXP
+	                      Sed regepx pattern to exclude when looking for kicad project files.
+
 	     -l|--no-server   Do not launch webserver/browser at the end
 	     -S|--server-only Start webserver but not launch browser
 	     -p|--port PORT   Set webserver port. By default it will try to use an available port.
@@ -759,6 +763,11 @@ command_line_parse()
 				shift 2
 				;;
 
+			-e|--exclude-proj)
+				KICAD_PRO_FIND_EXCLUDE_PATTERN="${2}"
+				shift 2
+				;;
+
 			-n|--newer)
 				NEWER_COMMIT="${2}"
 				shift 2
@@ -906,7 +915,7 @@ command_line_parse()
 		if [[ -n ${kicad_pro_path} ]]; then
 			echo "Kicad pro (${kicad_pro_path}) does not exist"
 		fi
-		local kicad_pro_path=$(find ./ -maxdepth 1 -name "*\.pro" -o -name "*\.kicad_pro" | head -n1)
+		local kicad_pro_path=$(find ./ -maxdepth 1 -name "*\.pro" -o -name "*\.kicad_pro" | sed "/${KICAD_PRO_FIND_EXCLUDE_PATTERN}/d" | sort -n | head -n1)
 		if [[ -f ${kicad_pro_path} ]]; then
 			echo "Using Kicad project ${kicad_pro_path}"
 		fi
@@ -1293,9 +1302,9 @@ get_kicad_pro_extension()
 	local kicad_project_path="${1}"
 
 	# Find's project version on that commit
-	kicad_pro=$(find "${OUTPUT_DIR_PATH}/${commit_hash}/" -name "*.kicad_pro")
+	kicad_pro=$(find "${OUTPUT_DIR_PATH}/${commit_hash}/" -name "*.kicad_pro" | sed "/${KICAD_PRO_FIND_EXCLUDE_PATTERN}/d" | sort -n | head -n1)
 	if [[ -z ${kicad_pro} ]]; then
-		kicad_pro=$(find "${OUTPUT_DIR_PATH}/${commit_hash}/" -name "*.pro")
+		kicad_pro=$(find "${OUTPUT_DIR_PATH}/${commit_hash}/" -name "*.pro" | sed "/${KICAD_PRO_FIND_EXCLUDE_PATTERN}/d" | sort -n | head -n1)
 	fi
 
 	get_file_extension "${kicad_pro}"
@@ -1307,9 +1316,9 @@ get_kicad_pro_filename()
 	local kicad_project_path="${1}"
 
 	# Find's project version on that commit
-	local kicad_pro=$(find "${OUTPUT_DIR_PATH}/${commit_hash}/" -name "*.kicad_pro")
+	local kicad_pro=$(find "${OUTPUT_DIR_PATH}/${commit_hash}/" -name "*.kicad_pro" | sed "/${KICAD_PRO_FIND_EXCLUDE_PATTERN}/d" | sort -n | head -n1)
 	if [[ -z ${kicad_pro} ]]; then
-		local kicad_pro=$(find "${OUTPUT_DIR_PATH}/${commit_hash}/" -name "*.pro")
+		local kicad_pro=$(find "${OUTPUT_DIR_PATH}/${commit_hash}/" -name "*.pro" | sed "/${KICAD_PRO_FIND_EXCLUDE_PATTERN}/d" | sort -n | head -n1)
 	fi
 
 	get_file_without_extention "${kicad_pro}"
@@ -2345,9 +2354,9 @@ get_kicad_pro()
 {
 	local kicad_proj_path="${1}"
 
-	local kicad_pro="$(find "${kicad_proj_path}" -maxdepth 1 -name "*.kicad_pro")"
+	local kicad_pro="$(find "${kicad_proj_path}" -maxdepth 1 -name "*.kicad_pro" | sed "/${KICAD_PRO_FIND_EXCLUDE_PATTERN}/d" | sort -n | head -n1)"
 	if [[ -z "${kicad_pro}" ]]; then
-		kicad_pro="$(find "${kicad_proj_path}" -maxdepth 1 -name "*.pro")"
+		kicad_pro="$(find "${kicad_proj_path}" -maxdepth 1 -name "*.pro" | sed "/${KICAD_PRO_FIND_EXCLUDE_PATTERN}/d" | sort -n | head -n1)"
 	fi
 
 	basename "${kicad_pro}"
