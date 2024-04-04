@@ -2282,9 +2282,11 @@ build_main_html()
 	sed -i "s|var board_name =.*|var board_name = \"${_kicad_proj_name}\"; // updated by kiri script|g" "${WEB_DIR_PATH}/kiri.js"
 
 	# Set schematic and board titles
-	local sch_title=$(grep -i "title " "${_kicad_sch}" -m1 2> /dev/null | sed "s/^[ \t]\+//g" | cut -d" " -f 2- | sed "s/[)\"]//g")
+	# local sch_title=$(grep -i "title " "${_kicad_sch}" -m1 2> /dev/null | sed "s/^[ \t]\+//g" | cut -d" " -f 2- | sed "s/[)\"]//g")
+	local sch_title=$(grep -i "title " -m1 "${_kicad_sch}" | sed "s/.*[Tt]itle //g" | cut -d")" -f1 | sed "s/\"//g")
 	local sch_label="${sch_title}"
-	local pcb_title=$(grep -i "(title .*)" "${_kicad_pcb}" -m1 2> /dev/null | sed "s/^[ \t]\+//g" | cut -d" " -f 2- | sed "s/[)\"]//g")
+	# local pcb_title=$(grep -i "(title .*)" "${_kicad_pcb}" -m1 2> /dev/null | sed "s/^[ \t]\+//g" | cut -d" " -f 2- | sed "s/[)\"]//g")
+	local pcb_title=$(grep -i "(title " -m1 "${_kicad_pcb}" | sed "s/.*title //g" | cut -d")" -f1 | sed "s/\"//g")
 	local pcb_label="${pcb_title}"
 	if [[ -z "${sch_title}" ]]; then sch_title="{sch_title}"; sch_label="${BTE}${LRE}[missing]${RCO}"; fi
 	if [[ -z "${pcb_title}" ]]; then pcb_title="{pcb_title}"; pcb_label="${BTE}${LRE}[missing]${RCO}"; fi
@@ -2294,9 +2296,11 @@ build_main_html()
 	sed -i "s|\[PCB_TITLE\]|PCB \| ${pcb_title}|g" "${WEB_DIR_PATH}/${main_html}"
 
 	# Set schematic and board revision
-	local sch_revision=$(grep -i "Rev" "${_kicad_sch}" -m1 2> /dev/null | sed "s/^[ \t]\+//g" | sed "s/[()]//g" | cut -d" " -f2- | sed "s/\"//g")
+	# local sch_revision=$(grep -i "Rev" "${_kicad_sch}" -m1 2> /dev/null | sed "s/^[ \t]\+//g" | sed "s/[()]//g" | cut -d" " -f2- | sed "s/\"//g")
+	local sch_revision=$(grep -i "rev " -m1 "${_kicad_sch}" | sed "s/.*[Rr]ev //g" | cut -d")" -f1 | sed "s/\"//g")
 	local sch_label="${sch_revision}"
-	local pcb_revision=$(grep "(rev " "${_kicad_pcb}" -m1 2> /dev/null | sed "s/^[ \t]\+//g" | sed "s/[()]//g" | cut -d" " -f2- | sed "s/\"//g")
+	# local pcb_revision=$(grep "(rev " "${_kicad_pcb}" -m1 2> /dev/null | sed "s/^[ \t]\+//g" | sed "s/[()]//g" | cut -d" " -f2- | sed "s/\"//g")
+	local pcb_revision=$(grep -i "(rev " -m1 "${_kicad_pcb}" | sed "s/.*rev //g" | cut -d")" -f1 | sed "s/\"//g")
 	local pcb_label="${pcb_revision}"
 	if [[ -z "${pcb_revision}" ]]; then pcb_revision="{pcb_rev}"; pcb_label="${BTE}${LRE}[missing]${RCO}"; fi
 	if [[ -z "${sch_revision}" ]]; then sch_revision="{sch_rev}"; sch_label="${BTE}${LRE}[missing]${RCO}"; fi
