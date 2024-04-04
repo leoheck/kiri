@@ -406,6 +406,18 @@ readonly LBL=$(printf "\e[94m") # Light BLue
 readonly LMA=$(printf "\e[95m") # Light MAgenta
 readonly LCY=$(printf "\e[96m") # Light CYan
 
+date()
+{
+	case ${OSTYPE} in
+		darwin*)
+			gdate "$@"
+			;;
+		*)
+			command date "$@"
+			;;
+	esac
+}
+
 find()
 {
 	case ${OSTYPE} in
