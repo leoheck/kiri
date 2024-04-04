@@ -657,7 +657,7 @@ is_tool_avail()
 			echo "ERROR: ${tool} could not be found" 1>&2
 			exit 1
 		else
-			echo "${LBL}INFO: ${tool} is missing, skiping its use${RCO}" 1>&2
+			# echo "${LBL}INFO: ${tool} is missing, skiping its use${RCO}" 1>&2
 			return 1
 		fi
 	else
@@ -1006,14 +1006,26 @@ get_kiri_version()
 
 show_tools_versions()
 {
+	if which plotgitsch &> /dev/null; then
+		plotgitsch_version="plotgitsch $(plotgitsch --version)"
+	else
+		plotgitsch_version="plotgitsch is not installed"
+	fi
+
+	if which kidiff &> /dev/null; then
+		kidiff_version="kidiff $(get_kidiff_version)"
+	else
+		kidiff_version="kidiff is not installed"
+	fi
+
 	IFS= read -r -d '' VERSION <<-EOM
 	    $(basename "${0}") $(get_kiri_version)
 	    kicad $(kicad_version)
-	    plotgitsch $(plotgitsch --version)
-	    kidiff $(get_kidiff_version)
+	    ${plotgitsch_version}
+	    ${kidiff_version}
 	EOM
 
-	printf "\n%s\n" "$VERSION"
+	printf "\n%s\n" "${VERSION}"
 }
 
 get_file_without_extention()
