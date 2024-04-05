@@ -591,14 +591,16 @@ show_help()
 	     -o|--older HASH  Show commits starting from this one. It uses the short hash.
 	     -n|--newer HASH  Show commits until this one. It uses the short hash.
 	     -t|--last VAL    Show last N commits.
-	     -g|--git-diff X  Use git style comparison where X is "commit..commit"
 
-	     -c|--diff HASH..HASH
-	                      Compare 2 commits only
+	     -g|--git-diff HASH..HASH
+	                      Git style comparison where X is two commit hashes (or tags)
 	                      Examples:
-	                           -c 1a8168c..0807c21
-	                           -c HEAD~1..0807c21
-	                           -c HEAD~1..LOCAL
+	                        -g 1a8168c..0807c21
+	                        -g HEAD~1..0807c21
+	                        -g HEAD
+	                        -g HEAD..LOCAL
+	                        -g v1.1.0..v1.0.0
+	                        -g v1.1.0..0807c21
 
 	     -e|--exclude-proj REGEXP
 	                      Sed regepx pattern to exclude when looking for kicad project files.
@@ -608,8 +610,8 @@ show_help()
 	     -p|--port PORT   Set webserver port. By default it will try to use an available port.
 	     -i|--ip ADDR     Override the default 127.0.0.1 IP address
 
-	     -s|--skip-cache  Skip usage of -chache.lib on plotgitsch
-	     -6|--skip-kicad6 Skip ploting Kicad 6 schematics (.kicad.sch)
+	     -s|--skip-cache  Skip usage of -cache.lib on plotgitsch
+	     -6|--skip-kicad6 Skip plotting Kicad 6 schematics (.kicad.sch)
 
 	     -u|--layout      Force starting with the Layout view selected
 	     -f|--page-frame  Disable page frame for PCB
@@ -749,7 +751,7 @@ command_line_parse()
 				;;
 
 			-g|--git-diff)
-				GIT_DIFF="${2}"
+				DIFF_COMMITS="${2}"
 				shift 2
 				;;
 
@@ -768,11 +770,6 @@ command_line_parse()
 			-l|--no-server)
 				START_SERVER=0
 				shift
-				;;
-
-			-c|--diff)
-				DIFF_COMMITS="${2}"
-				shift 2
 				;;
 
 			-e|--exclude-proj)
@@ -1113,11 +1110,12 @@ set_default_html_view()
 get_git_commits()
 {
 	local files=("${@}")
+
 	local current_git_branch=$(git rev-parse --abbrev-ref HEAD)
 
 	command_end=1>&2
 
-	local cmd="git log --date=format:'%Y-%m-%d %H:%M:%S' --pretty='format:%h | %ad | %an | %s' ${current_git_branch} -- ${files[@]}"
+	local cmd="git log --date=format:'%Y-%m-%d %H:%M:%S' --pretty='format:%h | %ad | %an | %s%d' ${current_git_branch} -- ${files[@]} ${command_end}"
 	if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" == "1" ]]; then
 		echo -e "${LBL}Get commits command${RCO}" 1>&2
 		echo -e "   ${LYE}${cmd}${RCO}" | fmt -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g' 1>&2
@@ -1197,19 +1195,40 @@ get_git_commits_list()
 	local kicad_pcb="${3}"
 	local extra_sch_files="${4}"
 
-	if [[ -n ${GIT_DIFF} ]]; then
-		commit1=$(echo "${GIT_DIFF}" | sed "s/[\. ]\+/ /g" | cut -d" " -f1)
-		commit2=$(echo "${GIT_DIFF}" | sed "s/[\. ]\+/ /g" | cut -d" " -f2)
-		commit1_hash=$(git log --date=format:'%Y-%m-%d %H:%M:%S' --pretty='format:%h | %ad | %an | %s' -n1 ${commit1})
-		commit2_hash=$(git log --date=format:'%Y-%m-%d %H:%M:%S' --pretty='format:%h | %ad | %an | %s' -n1 ${commit2})
-		echo "Commit 1: ${commit1_hash} (${commit1})"
-		echo "Commit 2: ${commit2_hash} (${commit2})"
+	if [[ -n "${DIFF_COMMITS}" ]]; then
+
+		commit_a=$(echo "${DIFF_COMMITS}" | sed "s/[\.]\{2\}/ /g" | cut -d" " -f1)
+		commit_b=$(echo "${DIFF_COMMITS}" | sed "s/[\.]\{2\}/ /g" | cut -sd" " -f2)
+		if [[ -z "${commit_b}" ]]; then
+			commit_b="_local_"
+		fi
+
+		shopt -s nocasematch
+		local_pattern="[.]*local[.]*"
+		if [[ ${commit_a} =~ ${local_pattern} ]]; then
+			commit_a_hash="_local_"
+			commit_a="_local_ | $(date "+%Y-%m-%d %H:%M:%S") | $(get_name_of_current_user "${USER}") | Local changes not committed"
+		else
+			commit_a_hash=$(git rev-parse --short "${commit_a}")
+		fi
+		if [[ ${commit_b} =~ ${local_pattern} ]]; then
+			commit_b_hash="_local_"
+			commit_b="_local_ | $(date "+%Y-%m-%d %H:%M:%S") | $(get_name_of_current_user "${USER}") | Local changes not committed"
+		else
+			commit_b_hash=$(git rev-parse --short "${commit_b}")
+		fi
+
+		commit_a=$(git log --date=format:'%Y-%m-%d %H:%M:%S' --pretty='format:%h | %ad | %an | %s%d' -n1 ${commit_a})
+		commit_b=$(git log --date=format:'%Y-%m-%d %H:%M:%S' --pretty='format:%h | %ad | %an | %s%d' -n1 ${commit_b})
+		echo "Commit 1: ${commit_a_hash} | ${commit_a}"
+		echo "Commit 2: ${commit_b_hash} | ${commit_b}"
 		read -r -d '' COMMITS <<- EOM
-			${commit1_hash} (${commit1})
-			${commit2_hash} (${commit2})
+			${commit_a}
+			${commit_b}
 		EOM
-		# exit
+
 	else
+
 		if [[ "${ALL_COMMITS}" == "1" ]]; then
 			COMMITS=$(get_git_commits)
 		else
@@ -1251,43 +1270,6 @@ get_git_commits_list()
 
 		if [[ -n "${SELECT_LASTEST_N_COMMITS}" ]]; then
 			COMMITS=$(echo "${COMMITS}" | head -n "${SELECT_LASTEST_N_COMMITS}")
-		fi
-
-		if [[ -n "${DIFF_COMMITS}" ]]; then
-			COMMITS=$(get_git_commits)
-			IFS= read -r -d '' COMMITS <<-EOM
-			_local_ | $(date "+%Y-%m-%d %H:%M:%S") | $(get_name_of_current_user "${USER}") | Local changes not committed
-			${COMMITS}
-			EOM
-
-			commit_a=$(echo "${DIFF_COMMITS}" | sed "s/[\.]\+/ /g" | cut -d" " -f1)
-			commit_b=$(echo "${DIFF_COMMITS}" | sed "s/[\.]\+/ /g" | cut -sd" " -f2)
-			if [[ -z "${commit_b}" ]]; then
-				commit_b="_local_"
-			fi
-
-			shopt -s nocasematch
-			local_pattern="[.]*local[.]*"
-			if [[ ${commit_a} =~ ${local_pattern} ]]; then
-				commit_a="_local_"
-			fi
-			if [[ ${commit_b} =~ ${local_pattern} ]]; then
-				commit_b="_local_"
-			fi
-
-			shopt -u nocasematch
-			head_pattern="HEAD[.]*"
-			if [[ ${commit_a} =~ ${head_pattern} ]]; then
-				commit_a=$(git rev-parse --short ${commit_a})
-			fi
-			if [[ ${commit_b} =~ ${head_pattern} ]]; then
-				commit_b=$(git rev-parse --short ${commit_b})
-			fi
-
-			COMMITS=$(echo "${COMMITS}" | grep -Ew "${commit_a}|${commit_b}")
-
-			echo -e "$COMMITS"
-			exit 1
 		fi
 
 		if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]]; then
