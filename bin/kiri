@@ -983,8 +983,9 @@ get_kidiff_version()
 	# Using standalone cloned KiDiff project
 	if [[ "${kidiff_repo_path}" == "${git_toplevel}" ]]; then
 		last_commit_hash=$(git --git-dir "${super_git_path}" rev-parse --short HEAD)
-		last_commit_date=$(git --git-dir "${super_git_path}" log -1 --format="%at" | xargs -I{} date -d @{} +"%Y/%m/%d %Hh%M")
-		echo "${last_commit_hash} ${last_commit_date}"
+		last_commit_date=$(git --git-dir "${super_git_path}" log -1 --format="%at")
+		last_commit_date_formatted=$(date -d @"${last_commit_date}" +"%Y/%m/%d %Hh%M")
+		echo "${last_commit_hash} ${last_commit_date_formatted}"
 	else
 		# Using cloned KiDiff as KiRI submodule
 		if [[ -d "${submodule_git_path}" ]]; then
@@ -1009,8 +1010,9 @@ get_kiri_version()
 
 	if [[ -d "${git_dir_path}" ]]; then
 		last_commit_hash=$(git --git-dir "${git_dir_path}" rev-parse --short HEAD)
-		last_commit_date=$(git --git-dir "${git_dir_path}" log -1 --format="%at" | xargs -I{} date -d @{} +"%Y/%m/%d %Hh%M")
-		echo "${last_commit_hash} ${last_commit_date}"
+		last_commit_date=$(git --git-dir "${git_dir_path}" log -1 --format="%at")
+		last_commit_date_formatted=$(date -d @"${last_commit_date}" +"%Y/%m/%d %Hh%M")
+		echo "${last_commit_hash} ${last_commit_date_formatted}"
 	else
 		echo "Unknown"
 	fi
