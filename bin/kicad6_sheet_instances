@@ -39,7 +39,8 @@ main()
 
 			kicad_app_path="/Applications/Kicad/kicad.app/"
 			python="${kicad_app_path}/Contents/Frameworks/Python.framework/Versions/Current/bin/python"
-			if [[ ! -d ${kicad_app_path} ]]; then
+
+			if [[ ! -d ${kicad_app_path} ]] || [[ ! -f ${python} ]]; then
 				kicad_app_path=/Applications/KiCad/KiCad.app/
 				python="${kicad_app_path}/Contents/Frameworks/Python.framework/Versions/Current/bin/python3"
 			fi
