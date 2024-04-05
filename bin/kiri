@@ -1416,6 +1416,7 @@ create_project_info()
 	# (kicad_pcb (version 20211014) (generator pcbnew)  # Kicad 6 ??
 	# (kicad_pcb (version 20210606) (generator pcbnew)  # Kicad 6
 	# (kicad_pcb (version 20221018) (generator pcbnew)  # Kicad 7
+	# (version 20221018) # Kicad 8
 
 	case ${pcb_version} in
 		       4) kicad_version="4"    ;;
@@ -1476,10 +1477,9 @@ parse_layout_layers()
 	# Kicad .kicad_pcb format:
 	# (2 "In2.Cu" power|signal|user hide "Pwr")
 
-	kicad_major_version=$(kicad_version | cut -d"." -f1)
-	# kicad_major_version=8
+	pcb_version=$(get_layout_version ${kicad_pcb})
 
-	if [[ ${kicad_major_version} -ge 8 ]]; then
+	if [[ ${pcb_version} -ge 20240108 ]]; then   # (version 20240108) # Kicad 8
 
 		local layers=$( \
 			sed -n '/^\t(layers/,/\t)$/{/^\t(layers/!{/\t)$/!p}}' "${kicad_pcb}" | \
