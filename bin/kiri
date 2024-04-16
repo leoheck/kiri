@@ -1107,17 +1107,109 @@ set_default_html_view()
 	fi
 }
 
+uniq_files_list()
+{
+	local files=("${@}")
+	local files_parsed
+	local item
+	local found
+
+	files_parsed=$(echo "${files[@]}" | sed "s/\([\._]sch\) /\1\n/g" | sed "s/\([\._]pcb\) /\1\n/g" | sed "s/\([\._]pro\) /\1\n/g" | sed '/^$/N;/^\n$/D' | tr "\n" "#" | sed "s/#$//g")
+
+	unset files
+	SAVEIFS=${IFS}
+	IFS='#'
+
+	# echo ">> ${files_parsed}" >&2
+
+	for item in ${files_parsed[@]}; do
+
+		# echo >&2
+		# echo ">> ${item}" >&2
+
+		# echo "=> ${files[@]}" >&2
+
+		# found=0
+		for i in ${files[@]}; do
+		  if [[ "${i}" == "${item}" ]]; then
+		    found=1
+		    # echo "<< FOUND >>" >&2
+		  fi
+		done
+
+		if [[ ${found} == 0 ]]; then
+	    # 	# echo "------------> (${item})" >&2
+			# files+=("${item}")
+			files="${item}#${files}"
+		# # else
+		# 	# echo "------------> (${item}) SKIPPING" >&2
+		fi
+
+	done
+	IFS=${SAVEIFS}
+
+	echo "${files[@]}" | sed "s/#$//g"
+}
+
 get_git_commits()
 {
 	local files=("${@}")
+	local item
 
 	local current_git_branch=$(git rev-parse --abbrev-ref HEAD)
 
-	command_end=1>&2
+	command_end="1>&2"
+	command_end="| cat"
 
-	local cmd="git log --date=format:'%Y-%m-%d %H:%M:%S' --pretty='format:%h | %ad | %an | %s%d' ${current_git_branch} -- ${files[@]} ${command_end}"
+	# separate files with pipe
+	files_parsed=$(echo "${files[@]}" | sed "s/\([\._]sch\) /\1\n/g" | sed "s/\([\._]pcb\) /\1\n/g" | sed "s/\([\._]pro\) /\1\n/g" | sed '/^$/N;/^\n$/D' | tr "\n" "#" | sed "s/#$//g")
+
+	unset files
+	SAVEIFS=${IFS}
+	IFS='|'
+
+
+# echo ">> ${files_parsed}" >&2
+
+	for item in ${files_parsed[@]}; do
+
+		# echo >&2
+		# echo ">> ${item}" >&2
+
+		# echo "=> ${files[@]}" >&2
+
+		found=0
+		for i in ${files[@]}; do
+		  if [[ -n ${item} ]] && [[ "${i}" == "${item}" ]]; then
+		    found=1
+		    # echo "<< FOUND >>" >&2
+		  fi
+		done
+
+		if [[ ${found} == 0 ]]; then
+	    # 	# echo "------------> (${item})" >&2
+			# files+=("${item}")
+			files="${item}#${files}"
+		# # else
+		# 	# echo "------------> (${item}) SKIPPING" >&2
+		fi
+
+	done
+	IFS=${SAVEIFS}
+
+	# files_parsed_quotes=$(echo "${files_parsed[@]}" | sed "s/^/'/g" | sed "s/|/' '/")
+	files_quotes=$(echo "${files[@]}" | sed "s/#$/'/g" | sed "s/^/'/g" | sed "s/#/' '/g")
+
+	# echo >&2
+	# echo "==================" >&2
+	# echo "${files_parsed_quotes}" >&2
+	# echo "==================" >&2
+	# echo "${files_quotes[@]}" >&2
+	# echo "==================" >&2
+
+	local cmd="git log --date=format:'%Y-%m-%d %H:%M:%S' --pretty='format:%h | %ad | %an | %s%d' ${current_git_branch} -- ${files_quotes} ${command_end}"
 	if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" == "1" ]]; then
-		echo -e "${LBL}Get commits command${RCO}" 1>&2
+		echo -e "\n${LBL}Selecting commits${RCO}" 1>&2
 		echo -e "   ${LYE}${cmd}${RCO}" | fmt -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g' 1>&2
 		echo 1>&2
 	fi
@@ -1160,13 +1252,23 @@ git_files_have_changes()
 		echo "${LBL}Checking local changes${RCO}" 2>&1
 	fi
 
-	uniq_files=($(for f in "${files[@]}"; do echo "${f}"; done | sort -u))
+	# uniq_files=($(for f in "${files[@]}"; do echo "${f}"; done | sort -u))
+	uniq_files_aux=($(uniq_files_list ${files[@]}))
 
 	# Testing, it looks like this variable is not needed even for nested projects
 	# here it is being overwritten
 	KICAD_PROJ_NESTED_PATH="."
 
-	for file in "${uniq_files[@]}"; do
+	IFS='#'
+	echo "${uniq_files_aux[@]}" | sed "s/#/\n/g"
+
+	uniq_files=()
+	read -a uniq_files <<< ${uniq_files_aux[@]}
+
+	for file in ${uniq_files[@]}; do
+
+		# echo "--(${file})"
+
 		if [[ -n "${file}" ]]; then
 			if ! git diff --quiet -- "${KICAD_PROJ_NESTED_PATH}/${file}"; then
 				if [[ "${DEBUG}" == "1" ]]; then
@@ -1182,7 +1284,7 @@ git_files_have_changes()
 		fi
 	done
 	if [[ "${DEBUG}" == "1" ]]; then
-		echo "${LBL}Files have local changes? ${LRE}${has_changes}${RCO}" 2>&1
+		echo "${LMA}Files have local changes? ${LRE}${has_changes}${RCO}" 2>&1
 	fi
 
 	return ${ret}
@@ -2531,7 +2633,7 @@ main()
 	rm -rf "${OUTPUT_DIR_PATH}/_local_"
 	if [[ "${REMOVE_KIRI_FOLDER}" == 1 ]]; then
 		echo -e "\n${LBL}Output folder:${RCO} $(realpath --relative-to="${KICAD_PROJ_ABSOLUTE_PATH}" "${OUTPUT_DIR_PATH}")"
-		echo -e "${LYE}Removing leftovers from the previous run${RCO}"
+		echo -e "${LRE}Removing leftovers from the previous run${RCO}"
 		rm -rf "${OUTPUT_DIR_PATH}"
 	fi
 
