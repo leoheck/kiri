@@ -1129,20 +1129,15 @@ uniq_files_list()
 
 		# echo "=> ${files[@]}" >&2
 
-		# found=0
+		found=0
 		for i in ${files[@]}; do
 		  if [[ "${i}" == "${item}" ]]; then
 		    found=1
-		    # echo "<< FOUND >>" >&2
 		  fi
 		done
 
 		if [[ ${found} == 0 ]]; then
-	    # 	# echo "------------> (${item})" >&2
-			# files+=("${item}")
 			files="${item}#${files}"
-		# # else
-		# 	# echo "------------> (${item}) SKIPPING" >&2
 		fi
 
 	done
@@ -1252,22 +1247,17 @@ git_files_have_changes()
 		echo "${LBL}Checking local changes${RCO}" 2>&1
 	fi
 
-	# uniq_files=($(for f in "${files[@]}"; do echo "${f}"; done | sort -u))
-	uniq_files_aux=($(uniq_files_list ${files[@]}))
+	uniq_files_aux=($(uniq_files_list "${files[@]}"))
 
 	# Testing, it looks like this variable is not needed even for nested projects
 	# here it is being overwritten
 	KICAD_PROJ_NESTED_PATH="."
 
 	IFS='#'
-	echo "${uniq_files_aux[@]}" | sed "s/#/\n/g"
-
 	uniq_files=()
 	read -a uniq_files <<< ${uniq_files_aux[@]}
 
 	for file in ${uniq_files[@]}; do
-
-		# echo "--(${file})"
 
 		if [[ -n "${file}" ]]; then
 			if ! git diff --quiet -- "${KICAD_PROJ_NESTED_PATH}/${file}"; then
