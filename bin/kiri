@@ -308,7 +308,7 @@ insert_layers_html()
 	for layer in ${layers}; do
 
 		local layer_id=$(echo "${layer}" | cut -d "|" -f1)
-		local layer_id_padding=$(printf "%02d" "$layer_id")
+		local layer_id_padding=$(printf "%02d" "${layer_id}")
 		local layer_name=$(echo "${layer}" | cut -d "|" -f2 | sed "s/\./_/g")
 		local layer_color=$(get_layer_color "${layer_id}")
 
@@ -1153,56 +1153,62 @@ get_git_commits()
 
 	local current_git_branch=$(git rev-parse --abbrev-ref HEAD)
 
-	command_end="1>&2"
-	command_end="| cat"
+	command_end=""
 
-	# separate files with pipe
-	files_parsed=$(echo "${files[@]}" | sed "s/\([\._]sch\) /\1\n/g" | sed "s/\([\._]pcb\) /\1\n/g" | sed "s/\([\._]pro\) /\1\n/g" | sed '/^$/N;/^\n$/D' | tr "\n" "#" | sed "s/#$//g")
+	if [[ "${ALL_COMMITS}" == "1" ]]; then
 
-	unset files
-	SAVEIFS=${IFS}
-	IFS='|'
+		local cmd="git log --date=format:'%Y-%m-%d %H:%M:%S' --pretty='format:%h | %ad | %an | %s%d' ${current_git_branch} -- ${command_end}"
 
+	else
 
-# echo ">> ${files_parsed}" >&2
+		# separate files with pipe
+		files_parsed=$(echo "${files[@]}" | sed "s/\([\._]sch\) /\1\n/g" | sed "s/\([\._]pcb\) /\1\n/g" | sed "s/\([\._]pro\) /\1\n/g" | sed '/^$/N;/^\n$/D' | tr "\n" "#" | sed "s/#$//g")
 
-	for item in ${files_parsed[@]}; do
+		unset files
+		SAVEIFS=${IFS}
+		IFS='|'
+
+		# echo ">> ${files_parsed}" >&2
+
+		for item in ${files_parsed[@]}; do
+
+			# echo >&2
+			# echo ">> ${item}" >&2
+
+			# echo "=> ${files[@]}" >&2
+
+			found=0
+			for i in ${files[@]}; do
+			  if [[ -n ${item} ]] && [[ "${i}" == "${item}" ]]; then
+			    found=1
+			    # echo "<< FOUND >>" >&2
+			  fi
+			done
+
+			if [[ ${found} == 0 ]]; then
+		    # 	# echo "------------> (${item})" >&2
+				# files+=("${item}")
+				files="${item}#${files}"
+			# # else
+			# 	# echo "------------> (${item}) SKIPPING" >&2
+			fi
+
+		done
+		IFS=${SAVEIFS}
+
+		# files_parsed_quotes=$(echo "${files_parsed[@]}" | sed "s/^/'/g" | sed "s/|/' '/")
+		files_quotes=$(echo "${files[@]}" | sed "s/#$/'/g" | sed "s/^/'/g" | sed "s/#/' '/g")
 
 		# echo >&2
-		# echo ">> ${item}" >&2
+		# echo "==================" >&2
+		# echo "${files_parsed_quotes}" >&2
+		# echo "==================" >&2
+		# echo "${files_quotes[@]}" >&2
+		# echo "==================" >&2
 
-		# echo "=> ${files[@]}" >&2
+		local cmd="git log --date=format:'%Y-%m-%d %H:%M:%S' --pretty='format:%h | %ad | %an | %s%d' ${current_git_branch} -- ${files_quotes} ${command_end}"
+	fi
 
-		found=0
-		for i in ${files[@]}; do
-		  if [[ -n ${item} ]] && [[ "${i}" == "${item}" ]]; then
-		    found=1
-		    # echo "<< FOUND >>" >&2
-		  fi
-		done
-
-		if [[ ${found} == 0 ]]; then
-	    # 	# echo "------------> (${item})" >&2
-			# files+=("${item}")
-			files="${item}#${files}"
-		# # else
-		# 	# echo "------------> (${item}) SKIPPING" >&2
-		fi
-
-	done
-	IFS=${SAVEIFS}
-
-	# files_parsed_quotes=$(echo "${files_parsed[@]}" | sed "s/^/'/g" | sed "s/|/' '/")
-	files_quotes=$(echo "${files[@]}" | sed "s/#$/'/g" | sed "s/^/'/g" | sed "s/#/' '/g")
-
-	# echo >&2
-	# echo "==================" >&2
-	# echo "${files_parsed_quotes}" >&2
-	# echo "==================" >&2
-	# echo "${files_quotes[@]}" >&2
-	# echo "==================" >&2
-
-	local cmd="git log --date=format:'%Y-%m-%d %H:%M:%S' --pretty='format:%h | %ad | %an | %s%d' ${current_git_branch} -- ${files_quotes} ${command_end}"
 	if [[ "${VERBOSE}" = "1" ]] || [[ "${DEBUG}" == "1" ]]; then
 		echo -e "\n${LBL}Selecting commits${RCO}" 1>&2
 		echo -e "   ${LYE}${cmd}${RCO}" | fmt -w "$(tput cols)" | tr "\n" "#" | sed "s/#$/\n/g" | sed 's/\#/ \\\n/g' 1>&2
@@ -1244,7 +1250,7 @@ git_files_have_changes()
 	local file
 
 	if [[ "${DEBUG}" == "1" ]]; then
-		echo "${LBL}Checking local changes${RCO}" 2>&1
+		echo -e "\n${LBL}Checking local changes${RCO}" 2>&1
 	fi
 
 	uniq_files_aux=($(uniq_files_list "${files[@]}"))
@@ -1302,18 +1308,21 @@ get_git_commits_list()
 			commit_a="_local_ | $(date "+%Y-%m-%d %H:%M:%S") | $(get_name_of_current_user "${USER}") | Local changes not committed"
 		else
 			commit_a_hash=$(git rev-parse --short "${commit_a}")
+			commit_a=$(git log --date=format:'%Y-%m-%d %H:%M:%S' --pretty='format:%h | %ad | %an | %s%d' -n1 ${commit_a_hash})
 		fi
+
 		if [[ ${commit_b} =~ ${local_pattern} ]]; then
 			commit_b_hash="_local_"
 			commit_b="_local_ | $(date "+%Y-%m-%d %H:%M:%S") | $(get_name_of_current_user "${USER}") | Local changes not committed"
 		else
 			commit_b_hash=$(git rev-parse --short "${commit_b}")
+			commit_b=$(git log --date=format:'%Y-%m-%d %H:%M:%S' --pretty='format:%h | %ad | %an | %s%d' -n1 ${commit_b_hash})
 		fi
 
-		commit_a=$(git log --date=format:'%Y-%m-%d %H:%M:%S' --pretty='format:%h | %ad | %an | %s%d' -n1 ${commit_a})
-		commit_b=$(git log --date=format:'%Y-%m-%d %H:%M:%S' --pretty='format:%h | %ad | %an | %s%d' -n1 ${commit_b})
-		echo "Commit 1: ${commit_a_hash} | ${commit_a}"
-		echo "Commit 2: ${commit_b_hash} | ${commit_b}"
+		# echo
+		# echo "Commit 1: ${commit_a_hash} | ${commit_a}"
+		# echo "Commit 2: ${commit_b_hash} | ${commit_b}"
+
 		read -r -d '' COMMITS <<- EOM
 			${commit_a}
 			${commit_b}
@@ -2150,7 +2159,11 @@ generate_diffs()
 	# Check for local changes
 	echo -e "\n${LBL}Artifacts Summary${RCO}"
 	if echo "${COMMITS}" | cut -d' '  -f1 | grep "_local_" -q; then
-		echo "$((n_hashes-1)) commits ${BTE}plus local changes${RCO} ($((n_comparisons)) comparisons)"
+		if [[ $((n_hashes-1)) == 1 ]] ; then
+			echo "$((n_hashes-1)) commit ${BTE}plus local changes${RCO} ($((n_comparisons)) comparisons)"
+		else
+			echo "$((n_hashes-1)) commits ${BTE}plus local changes${RCO} ($((n_comparisons)) comparisons)"
+		fi
 	else
 		echo "${n_hashes} commits (${n_comparisons} comparisons)"
 	fi
@@ -2595,6 +2608,8 @@ show_main_global_variables()
 
 main()
 {
+	export GIT_PAGER=cat git diff
+
 	export KIRI_PID="${$}"
 
 	trap "exit 1" TERM
