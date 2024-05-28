@@ -1640,10 +1640,11 @@ cmd_run()
 	# present the command status
 	if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]]; then
 		if [[ "${ret}" -gt "0" ]]; then
-			echo -e "${LRE}${BTE}${indent}status: ${ret}${RCO}"
+			echo -e "${indent}${LRE}${BTE}Status: ${ret}${RCO}"
 		else
-			echo -e "${LGR}${BTE}${indent}status: ${ret}${RCO}"
+			echo -e "${indent}${LMA}${BTE}Status: ${ret}${RCO}"
 		fi
+		echo "${indent}--"
 		echo
 	fi
 
