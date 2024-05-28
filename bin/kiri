@@ -1401,6 +1401,10 @@ export_project_files()
 	if [[ "${commit_hash}" == "_local_" ]]; then
 		mkdir -p "${OUTPUT_DIR_PATH}/_local_"
 		cp -r * "${OUTPUT_DIR_PATH}/_local_"
+
+		# Convert windows CRLF line-endings on local files if any
+		sed -i 's/\r//' "${OUTPUT_DIR_PATH}/_local_/"* &> /dev/null
+
 	else
 		mkdir -p "${OUTPUT_DIR_PATH}/${commit_hash}"
 		git archive --format=tar ${commit_hash} | (cd "${OUTPUT_DIR_PATH}/${commit_hash}" && tar xf -)
