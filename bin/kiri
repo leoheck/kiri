@@ -1403,7 +1403,11 @@ export_project_files()
 		cp -r * "${OUTPUT_DIR_PATH}/_local_"
 
 		# Convert windows CRLF line-endings on local files if any
-		sed -i 's/\r//' "${OUTPUT_DIR_PATH}/_local_/"* &> /dev/null
+		find "${OUTPUT_DIR_PATH}/_local_/" -type f \
+		| xargs file {} \; \
+		| grep -i "ASCII text.*CRLF" \
+		| cut -d: -f1 \
+		| xargs -I '{}' sed -i 's/\r//' '{}' &> /dev/null
 
 	else
 		mkdir -p "${OUTPUT_DIR_PATH}/${commit_hash}"
