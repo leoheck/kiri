@@ -62,6 +62,7 @@ class KiRI(pcbnew.ActionPlugin):
         print("======================================")
 
         kiri_bin = "kiri"
+        kiri_server_bin = "kiri-server"
 
         if self.which(kiri_bin) == None:
             print("Warning: {} is not in the path, check your environment.".format(kiri_bin))
@@ -103,7 +104,8 @@ class KiRI(pcbnew.ActionPlugin):
         p.wait()
 
         print("\nLaunching kiri-server (may take some time)...")
-        cmd = "{kiri} -t 2 -r -R -u &".format(kiri=kiri_bin)
+        # cmd = "{kiri} -t 2 -r -R -u &".format(kiri=kiri_bin)
+        cmd = "{kiri_server} .kiri".format(kiri_server=kiri_server_bin)
         print(cmd)
         cmd = shlex.split(cmd)
 
