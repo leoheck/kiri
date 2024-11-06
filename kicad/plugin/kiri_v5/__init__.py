@@ -5,7 +5,7 @@ import traceback
 import sys
 
 try:
-    print("Starting KiRI")
+    print("Starting KiRI plugin...")
     from kiri import KiRI
 
 except Exception as e:
