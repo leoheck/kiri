@@ -20,7 +20,7 @@ install_kiri_for_kicad_5()
 		mkdir -p "${KICAD_PLUGINS_PATH}"
 		rm -rf "${KICAD_PLUGINS_PATH}/kiri"
 		cp -r "${KIRI_REPO_PATH}/kicad/plugin/kiri_v5" "${KICAD_PLUGINS_PATH}/kiri"
-		echo "Installed kiri plugin in ${KICAD_PLUGINS_PATH}/kiri"
+		echo "Kiri plugin installed in ${KICAD_PLUGINS_PATH}/kiri"
 	fi
 }
 
@@ -43,7 +43,7 @@ install_kiri_for_kicad()
 		mkdir -p "${KICAD_PLUGINS_PATH}"
 		rm -rf "${KICAD_PLUGINS_PATH}/kiri"
 		cp -r "${KIRI_REPO_PATH}/kicad/plugin/kiri_v6" "${KICAD_PLUGINS_PATH}/kiri"
-		echo "Installed kiri plugin in ${KICAD_PLUGINS_PATH}/kiri"
+		echo "Kiri plugin installed in ${KICAD_PLUGINS_PATH}/kiri"
 	fi
 }
 
