@@ -1181,11 +1181,11 @@ function ready()
     update_commits();
 
     if (selected_view == "schematic") {
-        // show_sch();
+        show_sch();
         update_page(commit1, commit2);
     }
     else {
-        // show_pcb();
+        show_pcb();
         update_layer(commit1, commit2);
     }
 }
@@ -1221,6 +1221,10 @@ function show_sch()
     document.getElementById("layers_list").style.display = "none";
     document.getElementById("pcb_title").style.display = "none";
 
+    // Update view_mode
+    $('#show_sch').attr('checked', true);
+    $('#show_pcb').attr('checked', false);
+
     update_page(commit1, commit2);
 }
 
@@ -1243,6 +1247,10 @@ function show_pcb()
     // document.getElementById("diff-xlink-2-sch").parentElement.style.display = "none";
     document.getElementById("pages_list").style.display = "none";
     document.getElementById("sch_title").style.display = "none";
+
+    // Update view_mode
+    $('#show_sch').attr('checked', false);
+    $('#show_pcb').attr('checked', true);
 
     update_layer(commit1, commit2);
 }

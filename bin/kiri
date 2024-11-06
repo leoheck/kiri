@@ -1096,14 +1096,14 @@ set_default_html_view()
 {
 	local kicad_sch="${1}"
 
-	# Kicad-6 boards do not have a schematic cli-exporter working yet (only my xdootool script)
-	if [[ $(get_schematic_vesion "${kicad_sch}") -ge 20211014 ]]; then
+	# Kicad-6 does not have a schematic cli-exporter fully working (only my xdootool script for linux)
+	if [[ $(kicad_version | cut -d"." -f1) == 6 ]]; then
 		START_ON_LAYOUT_VIEW=1
 	fi
 
 	if [[ "${START_ON_LAYOUT_VIEW}" == 1 ]]; then
 		echo "- Setting initial view to layout"
-		sed -i "s/default_view = \"schematic\";/default_view = \"layout\";/g" "${WEB_DIR_PATH}/kiri.js"
+		sed -i "s/selected_view = \"schematic\";/selected_view = \"layout\";/g" "${WEB_DIR_PATH}/kiri.js"
 	fi
 }
 
@@ -2459,7 +2459,7 @@ build_main_html()
 	sed -i "s|\[COMMIT_2_KICAD_PRO\]|${project_path_2}|g" "${WEB_DIR_PATH}/${main_html}"
 
 	# Change initial view to layout
-	# set_default_html_view "${kicad_sch}"
+	set_default_html_view "${kicad_sch}"
 }
 
 archive_kiri_website()
