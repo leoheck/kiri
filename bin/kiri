@@ -1412,6 +1412,18 @@ export_project_files()
 	else
 		mkdir -p "${OUTPUT_DIR_PATH}/${commit_hash}"
 		git archive --format=tar ${commit_hash} | (cd "${OUTPUT_DIR_PATH}/${commit_hash}" && tar xf -)
+
+		# Convert lfs pointers to actual files
+		cd "${OUTPUT_DIR_PATH}/${commit_hash}"
+		for file in *
+		do
+			git check-attr -a $file | grep "filter: lfs" > /dev/null
+			if [ $? -eq 0 ]; then
+				cat $file > tmp; cat tmp | git lfs smudge > $file
+			fi
+		done
+		rm -f tmp
+		cd - > /dev/null
 	fi
 }
 
