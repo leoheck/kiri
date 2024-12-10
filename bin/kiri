@@ -1417,9 +1417,9 @@ export_project_files()
 		cd "${OUTPUT_DIR_PATH}/${commit_hash}"
 		for file in *
 		do
-			git check-attr -a $file | grep "filter: lfs" > /dev/null
+			git check-attr -a ${file} | grep "filter: lfs" > /dev/null
 			if [ $? -eq 0 ]; then
-				cat $file > tmp; cat tmp | git lfs smudge > $file
+				cat ${file} > tmp; cat tmp | git lfs smudge > ${file}
 			fi
 		done
 		rm -f tmp
