@@ -566,7 +566,7 @@ cleanup_on_exit()
 
 kiri_kill()
 {
-	# Auxiliar function to exit form inside functions
+	# Auxiliary function to exit form inside functions
 	kill -s TERM "${KIRI_PID}" &> /dev/null
 }
 
@@ -588,8 +588,8 @@ show_help()
 	     lsa              List all commits of the project
 
 	     -a|--all         Include all commits even if schematics/layout don't have changes
-	     -o|--older HASH  Proccess commits until this one. The HASH is the short one.
-	     -n|--newer HASH  Proccess commits after this one, including it. The HASH is the short one.
+	     -o|--older HASH  Process commits until this one. The HASH is the short one.
+	     -n|--newer HASH  Process commits after this one, including it. The HASH is the short one.
 	     -t|--last VAL    Show last N commits.
 
 	     -g|--git-diff HASH..HASH
