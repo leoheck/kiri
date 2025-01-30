@@ -1548,14 +1548,14 @@ function update_fullscreen_label()
                 <div id="fullscreen_label" class="alert alert-dark border border-dark rounded-pill position-absolute top-10 start-50 translate-middle" style="background-color: #333;" role="alert">
                     <span id=commit1_legend_fs style="margin-left:0em; margin-right:0.2em; color: #00FFFF; width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
                     <small id=commit1_legend_text_fs class="text-sm text-light">
-                        Newer
+                        Newest
                         <span id="commit1_fs" class="text-monospace">(<a id="commit1_legend_hash">${commit1}</a>)</span>
                     </small>
 
                     <span style="display: inline; width: 3em;"></span>
                     <span id="commit2_legend_fs" style="display: inline; margin-left:1em; margin-right:0.2em; color: #880808; width: 10px; height: 10px;" class="iconify" data-icon="teenyicons-square-solid"></span>
                     <small id=commit2_legend_text_fs class="text-sm text-light">
-                        Older
+                        Oldest
                         <span id="commit2_fs" class="text-monospace">(<a id="commit2_legend_hash">${commit2}</a>)</span>
                     </small>
 

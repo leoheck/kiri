@@ -385,8 +385,8 @@ export VERBOSE=0
 export SKIP_KICAD_6=0
 export KICAD_PRO_FIND_EXCLUDE_PATTERN="#"
 
-export NEWER_COMMIT
-export OLDER_COMMIT
+export NEWEST_COMMIT
+export OLDEST_COMMIT
 export WEBSERVER_PORT
 export PLOTGITSCH_MISSING
 export KIDIFF_MISSING
@@ -588,8 +588,8 @@ show_help()
 	     lsa              List all commits of the project
 
 	     -a|--all         Include all commits even if schematics/layout don't have changes
-	     -o|--older HASH  Show commits starting from this one. It uses the short hash.
-	     -n|--newer HASH  Show commits until this one. It uses the short hash.
+	     -o|--oldest HASH Show commits starting with this one. It uses the short hash.
+	     -n|--newest HASH Show commits until this one. It uses the short hash.
 	     -t|--last VAL    Show last N commits.
 
 	     -g|--git-diff HASH..HASH
@@ -777,13 +777,13 @@ command_line_parse()
 				shift 2
 				;;
 
-			-n|--newer)
-				NEWER_COMMIT="${2}"
+			-n|--newer|--newest)
+				NEWEST_COMMIT="${2}"
 				shift 2
 				;;
 
-			-o|--older)
-				OLDER_COMMIT="${2}"
+			-o|--older|--oldest)
+				OLDEST_COMMIT="${2}"
 				shift 2
 				;;
 
@@ -1344,28 +1344,28 @@ get_git_commits_list()
 			EOM
 		fi
 
-		if [[ -n "${OLDER_COMMIT}" ]]; then
-			if grep -q "^${OLDER_COMMIT}" <<< ${COMMITS}; then
+		if [[ -n "${OLDEST_COMMIT}" ]]; then
+			if grep -q "^${OLDEST_COMMIT}" <<< ${COMMITS}; then
 				if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]]; then
-					commit_info=$(grep -s "^${OLDER_COMMIT}" <<< ${COMMITS})
-					echo "  Older commit: ${commit_info}"
+					commit_info=$(grep -s "^${OLDEST_COMMIT}" <<< ${COMMITS})
+					echo "  Oldest commit: ${commit_info}"
 				fi
-				COMMITS=$(echo "${COMMITS}" | sed "/^${OLDER_COMMIT}/q")
+				COMMITS=$(echo "${COMMITS}" | sed "/^${OLDEST_COMMIT}/q")
 			else
-				echo -e "\n${LYE}Warning:${RCO} There is no OLDER_COMMIT=${OLDER_COMMIT} hash in the commits list"
+				echo -e "\n${LYE}Warning:${RCO} There is no OLDEST_COMMIT=${OLDEST_COMMIT} hash in the commits list"
 			fi
 		fi
 
-		if [[ -n "${NEWER_COMMIT}" ]]; then
-			if grep -q "^${NEWER_COMMIT}" <<< ${COMMITS}; then
+		if [[ -n "${NEWEST_COMMIT}" ]]; then
+			if grep -q "^${NEWEST_COMMIT}" <<< ${COMMITS}; then
 				if [[ "${VERBOSE}" == "1" ]] || [[ "${DEBUG}" == "1" ]]; then
-					commit_info=$(grep -s "^${NEWER_COMMIT}" <<< ${COMMITS})
-					echo "  Newer commit: ${commit_info}"
+					commit_info=$(grep -s "^${NEWEST_COMMIT}" <<< ${COMMITS})
+					echo "  Newest commit: ${commit_info}"
 					echo
 				fi
-				COMMITS=$(echo "${COMMITS}" | sed -n "/^${NEWER_COMMIT}/,\$p")
+				COMMITS=$(echo "${COMMITS}" | sed -n "/^${NEWEST_COMMIT}/,\$p")
 			else
-				echo -e "\n${LYE}Warning:${RCO} There is no NEWER_COMMIT=${OLDER_COMMIT} hash in the commits list"
+				echo -e "\n${LYE}Warning:${RCO} There is no NEWEST_COMMIT=${OLDEST_COMMIT} hash in the commits list"
 			fi
 		fi
 
