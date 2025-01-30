@@ -566,7 +566,7 @@ cleanup_on_exit()
 
 kiri_kill()
 {
-	# Auxiliar function to exit form inside functions
+	# Auxiliary function to exit form inside functions
 	kill -s TERM "${KIRI_PID}" &> /dev/null
 }
 
@@ -584,7 +584,7 @@ show_help()
 
 	OPTIONS:
 
-	     ls               List commits with changes in *_sch/kicad_pcb
+	     ls               List commits with changes in .*sch/.kicad_pcb
 	     lsa              List all commits of the project
 
 	     -a|--all         Include all commits even if schematics/layout don't have changes
@@ -898,13 +898,14 @@ command_line_parse()
 				;;
 
 			ls)
-				get_git_commits ".*sch" "*.kicad_pcb" | cat | nl
-				exit 0
+				LIST_COMMITS_AND_LEAVE=1
+				shift 1
 				;;
 
 			lsa)
-				get_git_commits | cat | nl
-				exit 0
+				LIST_COMMITS_AND_LEAVE=1
+				ALL_COMMITS=1
+				shift 1
 				;;
 
 			--*|-*)
@@ -926,7 +927,9 @@ command_line_parse()
 		fi
 		local kicad_pro_path=$(find ./ -maxdepth 1 -name "*\.pro" -o -name "*\.kicad_pro" | sed "/${KICAD_PRO_FIND_EXCLUDE_PATTERN}/d" | sort -n | head -n1)
 		if [[ -f ${kicad_pro_path} ]]; then
-			echo "Using Kicad project ${kicad_pro_path}"
+			if [[ ! "${LIST_COMMITS_AND_LEAVE}" == "1" ]]; then
+				echo "Using Kicad project ${kicad_pro_path}"
+			fi
 		fi
 		KICAD_PRO_ABSOLUTE_PATH=$(realpath "${kicad_pro_path}" 2> /dev/null)
 			if [[ ! -f ${KICAD_PRO_ABSOLUTE_PATH} ]]; then
@@ -1380,9 +1383,15 @@ get_git_commits_list()
 
 	fi
 
+	if [[ "${LIST_COMMITS_AND_LEAVE}" == "1" ]]; then
+		echo
+		echo "${COMMITS}" | column -t -s "|" | nl | cut -c -$(($(tput cols)-4))
+		exit 0
+	fi
+
 	# Commits list has to have 2 commits at least
 	if [[ $(echo -e "${COMMITS}" | wc -l ) -lt 2 ]]; then
-		echo -e "\n${LRE}Leaving, less than 2 commits found${RCO}"
+		echo -e "\n${LRE}Fewer than 2 commits found.${RCO}"
 		exit 0
 	fi
 }
