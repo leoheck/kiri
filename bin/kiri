@@ -588,8 +588,8 @@ show_help()
 	     lsa              List all commits of the project
 
 	     -a|--all         Include all commits even if schematics/layout don't have changes
-	     -o|--oldest HASH Show commits starting with this one. It uses the short hash.
-	     -n|--newest HASH Show commits until this one. It uses the short hash.
+	     -o|--oldest HASH  Process commits until this one. The HASH is the short one.
+	     -n|--newest HASH  Process commits after this one, including it. The HASH is the short one.
 	     -t|--last VAL    Show last N commits.
 
 	     -g|--git-diff HASH..HASH
@@ -777,12 +777,12 @@ command_line_parse()
 				shift 2
 				;;
 
-			-n|--newer|--newest)
+			-n|--newest|--newer)
 				NEWEST_COMMIT="${2}"
 				shift 2
 				;;
 
-			-o|--older|--oldest)
+			-o|--oldest|--older)
 				OLDEST_COMMIT="${2}"
 				shift 2
 				;;
@@ -1365,7 +1365,7 @@ get_git_commits_list()
 				fi
 				COMMITS=$(echo "${COMMITS}" | sed -n "/^${NEWEST_COMMIT}/,\$p")
 			else
-				echo -e "\n${LYE}Warning:${RCO} There is no NEWEST_COMMIT=${OLDEST_COMMIT} hash in the commits list"
+				echo -e "\n${LYE}Warning:${RCO} There is no NEWEST_COMMIT=${NEWEST_COMMIT} hash in the commits list"
 			fi
 		fi
 
