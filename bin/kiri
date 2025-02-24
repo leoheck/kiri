@@ -1071,6 +1071,7 @@ get_schematic_vesion()
 			# (kicad_sch (version 20211123) (generator eeschema) # Kicad 6
 			# (kicad_sch (version 20230121) (generator eeschema) # Kicad 7
 			# (version 20231120) # Kicad 8
+			# (version 20250114) # Kicad 9
 			grep -i "(version" "${kicad_sch}" -m 1 | sed "s/.*version //g" | cut -d")" -f1 | tr -d '\0'
 			;;
 	esac
@@ -1089,7 +1090,8 @@ get_layout_version()
 	# (kicad_pcb (version 20200104) (host pcbnew "(5.99.0-879-ga0698723b)")
 	# (kicad_pcb (version 20210606) (generator pcbnew)  # Kicad 6
 	# (kicad_pcb (version 20221018) (generator pcbnew)  # Kicad 7
-	# (version 20240108)
+	# (version 20240108)  # Kicad 8
+	# (version 20241229)  # Kicad 9
 
 	local kicad_pcb="${1}"
 	grep -i "(version" "${kicad_pcb}" -m 1 | sed "s/.*version //g" | cut -d")" -f1 | tr -d '\0'
@@ -1510,6 +1512,8 @@ create_project_info()
 	# EESchema Schematic File Version 4
 	# (kicad_sch (version 20211123) (generator eeschema) # Kicad 6
 	# (kicad_sch (version 20230121) (generator eeschema) # Kicad 7
+	# (version 20231120) # Kicad 8
+	# (version 20250114) # Kicad 9
 
 	# (kicad_pcb (version 4) (host kicad "dummy file") )
 	# (kicad_pcb (version 20171130) (host pcbnew "(5.0.0-rc2-76-gb5f63567d)")
@@ -1529,6 +1533,7 @@ create_project_info()
 	# (kicad_pcb (version 20210606) (generator pcbnew)  # Kicad 6
 	# (kicad_pcb (version 20221018) (generator pcbnew)  # Kicad 7
 	# (version 20221018) # Kicad 8
+	# (version 20241229) # Kicad 9
 
 	case ${pcb_version} in
 		       4) kicad_version="4"    ;;
@@ -1538,6 +1543,7 @@ create_project_info()
 		20211014) kicad_version="6"    ;;
 		20221018) kicad_version="7"    ;;
 		20240108) kicad_version="8"    ;;
+		20241229) kicad_version="9"    ;;
 		*) kicad_version="Unknown"
 	esac
 
