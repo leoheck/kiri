@@ -203,6 +203,7 @@ macos_install_brew_modules()
 	brew install imagemagick
 	brew install cliclick
 	brew install rename
+	brew install dos2unix
 }
 
 # =============================================
@@ -262,6 +263,7 @@ install_opam_modules()
 	opam install -y base64
 	opam install -y sha
 	opam install -y tyxml
+	opam install -y git
 	opam install -y git-unix
 }
 
