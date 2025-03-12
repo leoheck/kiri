@@ -938,6 +938,8 @@ command_line_parse()
 			fi
 	fi
 
+	readonly KICAD_PRO_FILENAME_HEAD=$(basename "${KICAD_PRO_ABSOLUTE_PATH}")
+
 	readonly KICAD_PRO_ABSOLUTE_PATH
 	readonly REPO_ABSOLUTE_PATH="$(get_project_repo_abspath)"
 	KICAD_PROJ_NESTED_PATH="$(get_project_nested_path)"
@@ -1559,9 +1561,13 @@ create_project_info()
 		echo
 	fi
 
-	# Probing...
-	echo "# $(grep -E -i -m 1 "version [0-9]+" "${kicad_sch}")" >> "/tmp/sch_info"
-	echo "# $(grep -E -i -m 1 "version [0-9]+" "${kicad_pcb}")" >> "/tmp/pcb_info"
+	# Probing versions...
+	# if [ -f "${kicad_sch}" ]; then
+	# 	echo "$(grep -E -i -m 1 "version [0-9]+" "${kicad_sch}")" >> "/tmp/sch_info"
+	# fi
+	# if [ -f "${kicad_pcb}" ]; then
+	# 	echo "$(grep -E -i -m 1 "version [0-9]+" "${kicad_pcb}")" >> "/tmp/pcb_info"
+	# fi
 }
 
 create_list_of_pages()
@@ -2527,9 +2533,18 @@ get_kicad_pro()
 {
 	local kicad_proj_path="${1}"
 
-	local kicad_pro="$(find "${kicad_proj_path}" -maxdepth 1 -name "*.kicad_pro" | sed "/${KICAD_PRO_FIND_EXCLUDE_PATTERN}/d" | sort -n | head -n1)"
-	if [[ -z "${kicad_pro}" ]]; then
-		kicad_pro="$(find "${kicad_proj_path}" -maxdepth 1 -name "*.pro" | sed "/${KICAD_PRO_FIND_EXCLUDE_PATTERN}/d" | sort -n | head -n1)"
+	if [[ -f ${KICAD_PRO_FILENAME_HEAD} ]]; then
+		kicad_pro="${KICAD_PRO_FILENAME_HEAD}"
+	else
+
+		# echo "Missing missing ${KICAD_PRO_FILENAME_HEAD}, it was moved or renamed"
+		# Poor way to try guessing the filename when it was removed/renamed
+		# Initially form .pro to .kicad_pro
+
+		local kicad_pro="$(find "${kicad_proj_path}" -maxdepth 1 -name "*.kicad_pro" | sed "/${KICAD_PRO_FIND_EXCLUDE_PATTERN}/d")"
+		if [[ -z "${kicad_pro}" ]]; then
+			kicad_pro="$(find "${kicad_proj_path}" -maxdepth 1 -name "*.pro" | sed "/${KICAD_PRO_FIND_EXCLUDE_PATTERN}/d")"
+		fi
 	fi
 
 	basename "${kicad_pro}"
@@ -2598,7 +2613,7 @@ show_project_files()
 	local kicad_cache_lib="${5}"
 
 	local kicad_sch_pages="$(get_kicad_sch_pages "${kicad_project_path}/${kicad_sch}")"
-	local extra_kicad_sch_pages=$(echo "${kicad_sch_pages}" | sed "s/${kicad_sch}//g" | sed '/^[[:space:]]*$/d')
+	local extra_kicad_sch_pages=$(echo "${kicad_sch_pages}" | sed "s/${kicad_sch}//g" 2> /dev/null | sed '/^[[:space:]]*$/d')
 
 	indent=$(printf ' %.0s' {1..4})
 	commit_hash=$(basename "${kicad_project_path}")
@@ -2667,6 +2682,7 @@ main()
 	local kicad_pcb="$(get_kicad_pcb "${KICAD_PROJ_ABSOLUTE_PATH}" "${kicad_proj_name}")"
 	local kicad_sch_pages="$(get_kicad_sch_pages "${KICAD_PROJ_ABSOLUTE_PATH}/${kicad_sch}")"
 	local kicad_cache_lib="$(get_kicad_cache_lib "${KICAD_PROJ_ABSOLUTE_PATH}" "${kicad_proj_name}")"
+
 	show_project_files "${KICAD_PROJ_ABSOLUTE_PATH}" "${kicad_pro}" "${kicad_sch}" "${kicad_pcb}" "${kicad_cache_lib}"
 
 	rm -rf "${OUTPUT_DIR_PATH}/_local_"
