@@ -9,13 +9,13 @@ Internally it uses existing tools to generate svg images of schematics and layou
 
 In this way, when exporting schematics, if:
 
-- KiCad 7/8 is installed, the `kicad-cli` is used.
+- KiCad >= 7 is installed, the `kicad-cli` is used.
 - KiCad 6 is installed (which does not have `kicad-cli` available), schematics are exported using [xdotool](https://github.com/jordansissel/xdotool) on Linux/Windows and [cliclick](https://github.com/BlueM/cliclick) on macOS, using the GUI. This method is far from the ideal and it is not recommended.
 - KiCad 5 is installed or if the projects is based on KiCad 5, [plotkicadsch/plotgitsch](https://github.com/jnavila/plotkicadsch) are used to export the schematics.
 
 However, when exporting the layout layers:
 
-- [Kicad-Diff](https://github.com/Gasman2014/KiCad-Diff) is used for all supported KiCad versions using `pcbnew` library available in python. It is also possible to use `kicad-cli` to export the layout layers however this process is slower than using Kicad-Diff.
+- [Kicad-Diff](https://github.com/Gasman2014/KiCad-Diff) is used for all supported KiCad versions using `pcbnew` library available in python. It is also possible to use `kicad-cli` to export the layout layers however this process is slower than using Kicad-Diff since the other exports all the layers at once and `kicad-cli` can only do one layer at a time.
 
 
 ## KiRI Installation
