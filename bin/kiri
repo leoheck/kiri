@@ -1074,6 +1074,7 @@ get_schematic_vesion()
 			# (kicad_sch (version 20230121) (generator eeschema) # Kicad 7
 			# (version 20231120) # Kicad 8
 			# (version 20250114) # Kicad 9
+			# (version 20260101) # Kicad 10
 			grep -i "(version" "${kicad_sch}" -m 1 | sed "s/.*version //g" | cut -d")" -f1 | tr -d '\0'
 			;;
 	esac
@@ -1090,10 +1091,11 @@ get_layout_version()
 	# (kicad_pcb (version 20171130) (host pcbnew 5.1.6-c6e7f7d~86~ubuntu20.04.1)
 	# (kicad_pcb (version 20171130) (host pcbnew 6.0.0-rc1-unknown-da35b16~65~ubuntu18.04.1)
 	# (kicad_pcb (version 20200104) (host pcbnew "(5.99.0-879-ga0698723b)")
-	# (kicad_pcb (version 20210606) (generator pcbnew)  # Kicad 6
-	# (kicad_pcb (version 20221018) (generator pcbnew)  # Kicad 7
-	# (version 20240108)  # Kicad 8
-	# (version 20241229)  # Kicad 9
+	# (kicad_pcb (version 20210606) (generator pcbnew) # Kicad 6
+	# (kicad_pcb (version 20221018) (generator pcbnew) # Kicad 7
+	# (version 20240108) # Kicad 8
+	# (version 20241229) # Kicad 9
+	# (version 20260206) # Kicad 10
 
 	local kicad_pcb="${1}"
 	grep -i "(version" "${kicad_pcb}" -m 1 | sed "s/.*version //g" | cut -d")" -f1 | tr -d '\0'
@@ -1516,6 +1518,7 @@ create_project_info()
 	# (kicad_sch (version 20230121) (generator eeschema) # Kicad 7
 	# (version 20231120) # Kicad 8
 	# (version 20250114) # Kicad 9
+	# (version 20260101) # Kicad 10
 
 	# (kicad_pcb (version 4) (host kicad "dummy file") )
 	# (kicad_pcb (version 20171130) (host pcbnew "(5.0.0-rc2-76-gb5f63567d)")
@@ -1531,11 +1534,12 @@ create_project_info()
 	# (kicad_pcb (version 20171130) (host pcbnew 5.1.7-a382d34a8~87~ubuntu20.04.1)
 	# (kicad_pcb (version 20171130) (host pcbnew 6.0.0-rc1-unknown-da35b16~65~ubuntu18.04.1)
 	# (kicad_pcb (version 20200104) (host pcbnew "(5.99.0-879-ga0698723b)")
-	# (kicad_pcb (version 20211014) (generator pcbnew)  # Kicad 6 ??
-	# (kicad_pcb (version 20210606) (generator pcbnew)  # Kicad 6
-	# (kicad_pcb (version 20221018) (generator pcbnew)  # Kicad 7
+	# (kicad_pcb (version 20211014) (generator pcbnew) # Kicad 6 ??
+	# (kicad_pcb (version 20210606) (generator pcbnew) # Kicad 6
+	# (kicad_pcb (version 20221018) (generator pcbnew) # Kicad 7
 	# (version 20221018) # Kicad 8
 	# (version 20241229) # Kicad 9
+	# (version 20260206) # Kicad 10
 
 	case ${pcb_version} in
 		       4) kicad_version="4"    ;;
@@ -1546,6 +1550,7 @@ create_project_info()
 		20221018) kicad_version="7"    ;;
 		20240108) kicad_version="8"    ;;
 		20241229) kicad_version="9"    ;;
+		20260206) kicad_version="10"   ;;
 		*) kicad_version="Unknown"
 	esac
 
