@@ -14,12 +14,12 @@ export PATH=/Applications/KiCad/KiCad.app/Contents/MacOS/:${PATH}
 # shellcheck disable=SC2155 # Disable declare and assign separately
 
 if [[ -n "${SUPER_DEBUG}" ]]; then
-	PS4='$(printf "%d)" ${LINENO}) | '
+	PS4='+ ${BASH_SOURCE}:${LINENO}:${FUNCNAME[0]}: '
 	set -x
 fi
 
 if [[ -n "${SUPER_DEBUG_EXIT_ON_ERROR}" ]]; then
-	PS4='$(printf "%d)" ${LINENO}) | '
+	PS4='+ ${BASH_SOURCE}:${LINENO}:${FUNCNAME[0]}: '
 	set -xe
 fi
 
@@ -446,10 +446,10 @@ readlink()
 {
 	case ${OSTYPE} in
 		darwin*)
-			greadlink -f "$@"
+			greadlink "$@"
 			;;
 		*)
-			command readlink -f "$@"
+			command readlink "$@"
 			;;
 	esac
 }
